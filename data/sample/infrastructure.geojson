@@ -1,0 +1,678 @@
+{
+	"type": "FeatureCollection",
+	"dataset": {
+		"id": "mobility-sandbox-mv-demo",
+		"title": "Greater Malé demo infrastructure",
+		"version": "0.1.0",
+		"provenance": "demo",
+		"description": "Synthetic demonstration dataset. Names reference real Greater Malé places, but positions are approximate and numeric or operational attributes are invented. Not suitable for planning decisions."
+	},
+	"features": [
+		{
+			"type": "Feature",
+			"id": "bs-male-majeedhee-w",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5025, 4.1738]
+			},
+			"properties": {
+				"name": "Majeedhee Magu West",
+				"type": "bus_stop",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["shelter", "dailyBoardings"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Malé",
+					"atoll": "Malé City",
+					"road": "Majeedhee Magu",
+					"shelter": true,
+					"dailyBoardings": 640
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "bs-male-majeedhee-c",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.508, 4.1735]
+			},
+			"properties": {
+				"name": "Majeedhee Magu Central",
+				"type": "bus_stop",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["shelter", "dailyBoardings"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Malé",
+					"atoll": "Malé City",
+					"road": "Majeedhee Magu",
+					"shelter": true,
+					"dailyBoardings": 910
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "bs-male-majeedhee-e",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.514, 4.174]
+			},
+			"properties": {
+				"name": "Majeedhee Magu East",
+				"type": "bus_stop",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["shelter", "dailyBoardings"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Malé",
+					"atoll": "Malé City",
+					"road": "Majeedhee Magu",
+					"shelter": false,
+					"dailyBoardings": 520
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "bs-male-boduthakurufaanu-n",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.51, 4.1785]
+			},
+			"properties": {
+				"name": "Boduthakurufaanu Magu North",
+				"type": "bus_stop",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["shelter", "dailyBoardings"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Malé",
+					"atoll": "Malé City",
+					"road": "Boduthakurufaanu Magu",
+					"shelter": true,
+					"dailyBoardings": 780
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "bs-male-boduthakurufaanu-w",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.501, 4.177]
+			},
+			"properties": {
+				"name": "Boduthakurufaanu Magu West",
+				"type": "bus_stop",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["shelter", "dailyBoardings"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Malé",
+					"atoll": "Malé City",
+					"road": "Boduthakurufaanu Magu",
+					"shelter": false,
+					"dailyBoardings": 430
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "bs-hulhule-airport",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5268, 4.1912]
+			},
+			"properties": {
+				"name": "Velana Airport Bus Stop",
+				"type": "bus_stop",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["shelter", "dailyBoardings"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Hulhulé",
+					"atoll": "Malé City",
+					"road": "Airport Road",
+					"shelter": true,
+					"dailyBoardings": 1350
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "bs-hulhumale-nirolhu",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.539, 4.2075]
+			},
+			"properties": {
+				"name": "Nirolhu Magu",
+				"type": "bus_stop",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["shelter", "dailyBoardings"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Hulhumalé",
+					"atoll": "Malé City",
+					"road": "Nirolhu Magu",
+					"shelter": true,
+					"dailyBoardings": 690
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "bs-hulhumale-central",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5412, 4.2135]
+			},
+			"properties": {
+				"name": "Hulhumalé Central Park",
+				"type": "bus_stop",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["shelter", "dailyBoardings"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Hulhumalé",
+					"atoll": "Malé City",
+					"road": "Javaahiru Hingun",
+					"shelter": true,
+					"dailyBoardings": 820
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "bs-hulhumale-north",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.544, 4.221]
+			},
+			"properties": {
+				"name": "Hulhumalé Phase I North",
+				"type": "bus_stop",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["shelter", "dailyBoardings"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Hulhumalé",
+					"atoll": "Malé City",
+					"road": "Javaahiru Hingun",
+					"shelter": false,
+					"dailyBoardings": 380
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "bt-male",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5185, 4.1748]
+			},
+			"properties": {
+				"name": "Malé Bus Terminal",
+				"type": "bus_terminal",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["operator", "bays", "dailyDepartures"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Malé",
+					"atoll": "Malé City",
+					"operator": "RTL",
+					"bays": 6,
+					"dailyDepartures": 220
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "bt-hulhumale",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5398, 4.21]
+			},
+			"properties": {
+				"name": "Hulhumalé Bus Terminal",
+				"type": "bus_terminal",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["operator", "bays", "dailyDepartures"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Hulhumalé",
+					"atoll": "Malé City",
+					"operator": "RTL",
+					"bays": 8,
+					"dailyDepartures": 240
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "ft-male-hulhumale",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5172, 4.1782]
+			},
+			"properties": {
+				"name": "Malé – Hulhumalé Ferry Terminal",
+				"type": "ferry_terminal",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["operator", "berths", "dailyPassengers"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Malé",
+					"atoll": "Malé City",
+					"operator": "MTCC",
+					"berths": 3,
+					"dailyPassengers": 4200
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "ft-male-villimale",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5, 4.1725]
+			},
+			"properties": {
+				"name": "Malé – Villimalé Ferry Terminal",
+				"type": "ferry_terminal",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["operator", "berths", "dailyPassengers"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Malé",
+					"atoll": "Malé City",
+					"operator": "MTCC",
+					"berths": 2,
+					"dailyPassengers": 3100
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "ft-male-airport",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5125, 4.179]
+			},
+			"properties": {
+				"name": "Malé Airport Ferry Jetty",
+				"type": "ferry_terminal",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["operator", "berths", "dailyPassengers"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Malé",
+					"atoll": "Malé City",
+					"operator": "MTCC",
+					"berths": 2,
+					"dailyPassengers": 2600
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "ft-hulhule",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5257, 4.1893]
+			},
+			"properties": {
+				"name": "Velana Airport Ferry Terminal",
+				"type": "ferry_terminal",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["operator", "berths", "dailyPassengers"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Hulhulé",
+					"atoll": "Malé City",
+					"operator": "MTCC",
+					"berths": 2,
+					"dailyPassengers": 2500
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "ft-villimale",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.4882, 4.1748]
+			},
+			"properties": {
+				"name": "Villimalé Ferry Terminal",
+				"type": "ferry_terminal",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["operator", "berths", "dailyPassengers"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Villimalé",
+					"atoll": "Malé City",
+					"operator": "MTCC",
+					"berths": 1,
+					"dailyPassengers": 3000
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "ft-hulhumale",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5378, 4.2088]
+			},
+			"properties": {
+				"name": "Hulhumalé Ferry Terminal",
+				"type": "ferry_terminal",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["operator", "berths", "dailyPassengers"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Hulhumalé",
+					"atoll": "Malé City",
+					"operator": "MTCC",
+					"berths": 3,
+					"dailyPassengers": 4100
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "ap-velana",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5285, 4.1925]
+			},
+			"properties": {
+				"name": "Velana International Airport",
+				"type": "airport",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["annualPassengers"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Hulhulé",
+					"atoll": "Malé City",
+					"iataCode": "MLE",
+					"icaoCode": "VRMM",
+					"annualPassengers": 2100000
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "hp-igmh",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5045, 4.1748]
+			},
+			"properties": {
+				"name": "Indira Gandhi Memorial Hospital",
+				"type": "hospital",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["beds"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Malé",
+					"atoll": "Malé City",
+					"beds": 450,
+					"emergencyDepartment": true
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "hp-hulhumale",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.542, 4.2165]
+			},
+			"properties": {
+				"name": "Hulhumalé Hospital",
+				"type": "hospital",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["beds"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Hulhumalé",
+					"atoll": "Malé City",
+					"beds": 120,
+					"emergencyDepartment": true
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "sc-majeediyya",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5055, 4.1715]
+			},
+			"properties": {
+				"name": "Majeediyya School",
+				"type": "school",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["level", "students"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Malé",
+					"atoll": "Malé City",
+					"level": "secondary",
+					"students": 1400
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "sc-aminiya",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.511, 4.1752]
+			},
+			"properties": {
+				"name": "Aminiya School",
+				"type": "school",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["level", "students"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Malé",
+					"atoll": "Malé City",
+					"level": "secondary",
+					"students": 1300
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "sc-hulhumale-primary",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5428, 4.212]
+			},
+			"properties": {
+				"name": "Hulhumalé Primary School (demo)",
+				"type": "school",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["level", "students"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Hulhumalé",
+					"atoll": "Malé City",
+					"level": "primary",
+					"students": 900
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "sc-villimale",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.4868, 4.1738]
+			},
+			"properties": {
+				"name": "Villimalé School (demo)",
+				"type": "school",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["level", "students"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Villimalé",
+					"atoll": "Malé City",
+					"level": "primary",
+					"students": 600
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "gv-male-city-council",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5098, 4.177]
+			},
+			"properties": {
+				"name": "Malé City Council",
+				"type": "government_service",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["services"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Malé",
+					"atoll": "Malé City",
+					"services": "Civil registration, permits"
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "gv-hulhumale-service",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5405, 4.215]
+			},
+			"properties": {
+				"name": "Hulhumalé Service Centre (demo)",
+				"type": "government_service",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["services"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"island": "Hulhumalé",
+					"atoll": "Malé City",
+					"services": "Housing, utilities"
+				}
+			}
+		}
+	]
+}

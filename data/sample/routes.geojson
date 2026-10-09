@@ -1,0 +1,184 @@
+{
+	"type": "FeatureCollection",
+	"dataset": {
+		"id": "mobility-sandbox-mv-demo",
+		"title": "Greater Malé demo infrastructure",
+		"version": "0.1.0",
+		"provenance": "demo",
+		"description": "Synthetic demonstration dataset. Names reference real Greater Malé places, but positions are approximate and numeric or operational attributes are invented. Not suitable for planning decisions."
+	},
+	"features": [
+		{
+			"type": "Feature",
+			"id": "rt-bus-airport-hulhumale",
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [
+					[73.5185, 4.1748],
+					[73.5205, 4.1755],
+					[73.5262, 4.1792],
+					[73.5268, 4.185],
+					[73.5268, 4.1912],
+					[73.53, 4.199],
+					[73.5345, 4.204],
+					[73.539, 4.2075],
+					[73.5398, 4.21],
+					[73.5412, 4.2135],
+					[73.544, 4.221]
+				]
+			},
+			"properties": {
+				"name": "Malé – Velana – Hulhumalé (demo)",
+				"mode": "bus",
+				"status": "existing",
+				"stopIds": [
+					"bt-male",
+					"bs-hulhule-airport",
+					"bs-hulhumale-nirolhu",
+					"bt-hulhumale",
+					"bs-hulhumale-central",
+					"bs-hulhumale-north"
+				],
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["operator", "headwayMinutes"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"operator": "RTL",
+					"headwayMinutes": 15
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "rt-bus-male-loop",
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [
+					[73.501, 4.177],
+					[73.5025, 4.1738],
+					[73.508, 4.1735],
+					[73.514, 4.174],
+					[73.5185, 4.1748],
+					[73.517, 4.178],
+					[73.51, 4.1785],
+					[73.501, 4.177]
+				]
+			},
+			"properties": {
+				"name": "Malé City Loop (demo)",
+				"mode": "bus",
+				"status": "existing",
+				"stopIds": [
+					"bs-male-boduthakurufaanu-w",
+					"bs-male-majeedhee-w",
+					"bs-male-majeedhee-c",
+					"bs-male-majeedhee-e",
+					"bt-male",
+					"bs-male-boduthakurufaanu-n"
+				],
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["operator", "headwayMinutes"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"operator": "RTL",
+					"headwayMinutes": 10
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "rt-ferry-villimale",
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [
+					[73.5, 4.1725],
+					[73.495, 4.1718],
+					[73.4882, 4.1748]
+				]
+			},
+			"properties": {
+				"name": "Malé – Villimalé Ferry",
+				"mode": "ferry",
+				"status": "existing",
+				"stopIds": ["ft-male-villimale", "ft-villimale"],
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["operator", "headwayMinutes", "crossingMinutes"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"operator": "MTCC",
+					"headwayMinutes": 10,
+					"crossingMinutes": 10
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "rt-ferry-airport",
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [
+					[73.5125, 4.179],
+					[73.518, 4.183],
+					[73.5257, 4.1893]
+				]
+			},
+			"properties": {
+				"name": "Malé – Airport Ferry",
+				"mode": "ferry",
+				"status": "existing",
+				"stopIds": ["ft-male-airport", "ft-hulhule"],
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["operator", "headwayMinutes", "crossingMinutes"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"operator": "MTCC",
+					"headwayMinutes": 15,
+					"crossingMinutes": 12
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "rt-ferry-hulhumale",
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [
+					[73.5172, 4.1782],
+					[73.5215, 4.186],
+					[73.5225, 4.196],
+					[73.53, 4.206],
+					[73.5378, 4.2088]
+				]
+			},
+			"properties": {
+				"name": "Malé – Hulhumalé Ferry",
+				"mode": "ferry",
+				"status": "existing",
+				"stopIds": ["ft-male-hulhumale", "ft-hulhumale"],
+				"source": {
+					"provenance": "demo",
+					"dataset": "mobility-sandbox-mv-demo",
+					"syntheticFields": ["operator", "headwayMinutes", "crossingMinutes"],
+					"note": "Demo record: position approximate, synthetic fields invented."
+				},
+				"metadata": {
+					"operator": "MTCC",
+					"headwayMinutes": 20,
+					"crossingMinutes": 25
+				}
+			}
+		}
+	]
+}

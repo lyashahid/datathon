@@ -1,0 +1,68 @@
+@import 'tailwindcss';
+
+@theme {
+	--font-sans:
+		'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+		sans-serif;
+	--font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+
+	/* Dark-neutral HUD palette. Accent is a lagoon teal; warn is reserved for alerts/disruptions. */
+	--color-hud-void: #070a0e;
+	--color-hud-base: #0c1117;
+	--color-hud-panel: rgb(14 19 26 / 0.86);
+	--color-hud-raised: #18202a;
+	--color-hud-hover: #1f2935;
+	--color-hud-line: rgb(255 255 255 / 0.07);
+	--color-hud-line-strong: rgb(255 255 255 / 0.14);
+	--color-hud-text: #e3e8ee;
+	--color-hud-muted: #8b96a5;
+	--color-hud-faint: #566170;
+	--color-hud-accent: #2dd4bf;
+	--color-hud-accent-dim: rgb(45 212 191 / 0.14);
+	--color-hud-warn: #f2b35b;
+}
+
+:root {
+	/* Shell geometry shared by every floating HUD element. */
+	--hud-top-h: 2.75rem;
+	--hud-gap: 0.5rem;
+	--hud-toolbar-h: 3.25rem;
+	--hud-rail-w: 2.75rem;
+	--hud-sidebar-w: 15rem;
+	--hud-inspector-w: 18.5rem;
+	color-scheme: dark;
+}
+
+html,
+body {
+	height: 100%;
+	overflow: hidden;
+	background: var(--color-hud-void);
+	color: var(--color-hud-text);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+	outline: 1px solid var(--color-hud-accent);
+	outline-offset: 1px;
+}
+
+/* Frosted floating panel used for every HUD surface over the map. */
+@utility hud-panel {
+	background-color: var(--color-hud-panel);
+	border: 1px solid var(--color-hud-line);
+	border-radius: 0.5rem;
+	box-shadow:
+		0 8px 24px -12px rgb(0 0 0 / 0.7),
+		inset 0 1px 0 rgb(255 255 255 / 0.03);
+	backdrop-filter: blur(10px) saturate(1.2);
+}
+
+@utility hud-label {
+	font-size: 0.625rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--color-hud-faint);
+}
