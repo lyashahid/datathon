@@ -1,0 +1,238 @@
+{
+	"type": "FeatureCollection",
+	"dataset": {
+		"id": "ingestion-fixture",
+		"title": "Ingestion pipeline fixture",
+		"version": "0.1.0",
+		"provenance": "demo",
+		"description": "Hand-made fixture demonstrating the ingestion pipeline. Not real data; not suitable for planning decisions."
+	},
+	"features": [
+		{
+			"type": "Feature",
+			"id": "osm-node-1001",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.505, 4.1737]
+			},
+			"properties": {
+				"name": "Majeedhee Magu (fixture)",
+				"type": "bus_stop",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "ingestion-fixture",
+					"syntheticFields": [],
+					"reference": "https://www.openstreetmap.org/node/1001",
+					"note": "© OpenStreetMap contributors (ODbL)"
+				},
+				"metadata": {
+					"island": "Malé"
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "osm-node-1002",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.511, 4.1745]
+			},
+			"properties": {
+				"name": "Bus stop (OSM node 1002)",
+				"type": "bus_stop",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "ingestion-fixture",
+					"syntheticFields": [],
+					"reference": "https://www.openstreetmap.org/node/1002",
+					"note": "© OpenStreetMap contributors (ODbL)"
+				},
+				"metadata": {
+					"island": "Malé"
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "osm-node-1003",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5026, 4.1749]
+			},
+			"properties": {
+				"name": "IGMH (fixture)",
+				"type": "hospital",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "ingestion-fixture",
+					"syntheticFields": [],
+					"reference": "https://www.openstreetmap.org/node/1003",
+					"note": "© OpenStreetMap contributors (ODbL)"
+				},
+				"metadata": {
+					"island": "Malé",
+					"operator": "Ministry of Health"
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "osm-node-1004",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.4995, 4.1753]
+			},
+			"properties": {
+				"name": "Villimalé Ferry (fixture)",
+				"type": "ferry_terminal",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "ingestion-fixture",
+					"syntheticFields": [],
+					"reference": "https://www.openstreetmap.org/node/1004",
+					"note": "© OpenStreetMap contributors (ODbL)"
+				},
+				"metadata": {}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "osm-node-1008",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.518, 4.1748]
+			},
+			"properties": {
+				"name": "Malé Bus Terminal (fixture)",
+				"type": "bus_terminal",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "ingestion-fixture",
+					"syntheticFields": [],
+					"reference": "https://www.openstreetmap.org/node/1008",
+					"note": "© OpenStreetMap contributors (ODbL)"
+				},
+				"metadata": {
+					"island": "Malé"
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "osm-node-1009",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.507, 4.176]
+			},
+			"properties": {
+				"name": "Central School (fixture)",
+				"type": "school",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "ingestion-fixture",
+					"syntheticFields": [],
+					"reference": "https://www.openstreetmap.org/node/1009",
+					"note": "© OpenStreetMap contributors (ODbL)"
+				},
+				"metadata": {
+					"island": "Malé"
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "osm-way-2002",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.529, 4.1918]
+			},
+			"properties": {
+				"name": "Velana (fixture)",
+				"type": "airport",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "ingestion-fixture",
+					"syntheticFields": [],
+					"reference": "https://www.openstreetmap.org/way/2002",
+					"note": "© OpenStreetMap contributors (ODbL)"
+				},
+				"metadata": {
+					"island": "Hulhulé"
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "svc-s1",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5405, 4.2155]
+			},
+			"properties": {
+				"name": "Hulhumalé Hospital (fixture)",
+				"type": "hospital",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "ingestion-fixture",
+					"syntheticFields": []
+				},
+				"metadata": {
+					"island": "Hulhumalé",
+					"category": "hospital"
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "svc-s2",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.542, 4.212]
+			},
+			"properties": {
+				"name": "Hulhumalé Primary (fixture)",
+				"type": "school",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "ingestion-fixture",
+					"syntheticFields": []
+				},
+				"metadata": {
+					"island": "Hulhumalé",
+					"category": "primary school"
+				}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "svc-s4",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [73.5085, 4.1765]
+			},
+			"properties": {
+				"name": "Malé City Council (fixture)",
+				"type": "government_service",
+				"status": "existing",
+				"source": {
+					"provenance": "demo",
+					"dataset": "ingestion-fixture",
+					"syntheticFields": []
+				},
+				"metadata": {
+					"island": "Malé",
+					"category": "council"
+				}
+			}
+		}
+	]
+}

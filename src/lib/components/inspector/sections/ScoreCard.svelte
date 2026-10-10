@@ -27,7 +27,7 @@
 	const signed = (n: number) => (n > 0 ? `+${fixed(n)}` : fixed(n));
 </script>
 
-<InspectorSection title="Accessibility score" {provenance} provenanceNote={method.label}>
+<InspectorSection title="Facility score" {provenance} provenanceNote={method.label}>
 	<div class="flex items-end gap-3">
 		<div class="flex items-baseline gap-1">
 			<span class="font-mono text-3xl leading-none font-semibold tabular-nums">
@@ -45,7 +45,7 @@
 	</div>
 	<div class="h-1.5 overflow-hidden rounded-full bg-hud-line" aria-hidden="true">
 		<div
-			class="h-full rounded-full"
+			class="h-full rounded-full transition-[width] duration-300 ease-out motion-reduce:transition-none"
 			style:width="{breakdown.score}%"
 			style:background-color={category.color}
 		></div>

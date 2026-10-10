@@ -1,0 +1,67 @@
+{
+	"dataset": {
+		"id": "ingestion-fixture",
+		"title": "Ingestion pipeline fixture",
+		"version": "0.1.0",
+		"provenance": "demo",
+		"description": "Hand-made fixture demonstrating the ingestion pipeline. Not real data; not suitable for planning decisions."
+	},
+	"records": [
+		{
+			"areaId": "A01",
+			"name": "Malé west (fixture)",
+			"island": "Malé",
+			"atoll": "Kaafu",
+			"population": 18200,
+			"children": 4100,
+			"workingAge": 12900,
+			"olderPopulation": 1200,
+			"households": 3600,
+			"centroid": [73.5035, 4.1745],
+			"provenance": "demo",
+			"dataset": "ingestion-fixture"
+		},
+		{
+			"areaId": "A02",
+			"name": "Malé east (fixture)",
+			"island": "Malé",
+			"atoll": "Kaafu",
+			"population": 15400,
+			"children": 3500,
+			"workingAge": 10900,
+			"olderPopulation": 1000,
+			"households": null,
+			"centroid": [73.515, 4.174],
+			"provenance": "demo",
+			"dataset": "ingestion-fixture"
+		},
+		{
+			"areaId": "A03",
+			"name": "Hulhumalé phase 1 (fixture)",
+			"island": "Hulhumalé",
+			"atoll": "Kaafu",
+			"population": 22000,
+			"children": 6200,
+			"workingAge": 15000,
+			"olderPopulation": 800,
+			"households": 4800,
+			"centroid": [73.541, 4.213],
+			"provenance": "demo",
+			"dataset": "ingestion-fixture"
+		},
+		{
+			"areaId": "A04",
+			"name": "Villimalé (fixture)",
+			"island": "Villimalé",
+			"atoll": "Kaafu",
+			"population": 7000,
+			"children": 1600,
+			"workingAge": 4900,
+			"olderPopulation": 500,
+			"households": 1400,
+			"centroid": [73.488, 4.1735],
+			"provenance": "demo",
+			"dataset": "ingestion-fixture"
+		}
+	]
+}

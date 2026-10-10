@@ -10,9 +10,14 @@
 		Sun,
 		Waves
 	} from '@lucide/svelte';
-	import { describeWeatherCode, type WeatherIconGroup } from '#lib/config/weather.ts';
+	import {
+		classifySeaState,
+		describeWeatherCode,
+		type WeatherIconGroup
+	} from '#lib/config/weather.ts';
 	import { getWeatherState } from '#lib/stores/weather.svelte.ts';
 	import type { IconComponent } from '#lib/types/ui.ts';
+	import { formatMvtTime } from '#lib/utils/format.ts';
 
 	const state = getWeatherState();
 
@@ -30,16 +35,9 @@
 	const condition = $derived(describeWeatherCode(w?.weatherCode ?? null));
 	const Icon = $derived(ICONS[condition.group]);
 	const fmt = (v: number | null | undefined, digits = 0) => (v == null ? '--' : v.toFixed(digits));
+	const seaState = $derived(classifySeaState(m?.waveHeightM ?? null));
 	const source = $derived(w?.source ?? m?.source ?? null);
-	const updated = $derived(
-		w
-			? new Date(w.timestamp).toLocaleTimeString('en-GB', {
-					hour: '2-digit',
-					minute: '2-digit',
-					timeZone: 'Indian/Maldives'
-				})
-			: null
-	);
+	const updated = $derived(w ? formatMvtTime(w.timestamp) : null);
 	const title = $derived(
 		state.status === 'unavailable'
 			? `Weather unavailable: ${state.errors.join('; ')}`
@@ -77,7 +75,8 @@
 		</span>
 		<span
 			class="flex items-center gap-1 text-xs"
-			aria-label="Waves {fmt(m?.waveHeightM, 1)} metres"
+			aria-label="Waves {fmt(m?.waveHeightM, 1)} metres{seaState ? `, ${seaState}` : ''}"
+			title={seaState ? `Sea state: ${seaState}` : undefined}
 		>
 			<Waves class="size-3.5 text-hud-muted" />
 			<span class="font-mono tabular-nums">{fmt(m?.waveHeightM, 1)}</span>

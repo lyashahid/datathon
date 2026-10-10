@@ -145,6 +145,19 @@ describe('withCache', () => {
 		expect(inner.calls).toBe(2);
 	});
 
+	it('stays bounded: the oldest entry is dropped at the cap', async () => {
+		const inner = counting();
+		const cached = withCache(inner, 1000, () => 0, 2);
+		const at = (lat: number) => ({ latitude: lat, longitude: 73.5 });
+		await cached.getWeather(at(4.1));
+		await cached.getWeather(at(4.2));
+		await cached.getWeather(at(4.3)); // evicts 4.1
+		await cached.getWeather(at(4.2)); // still cached
+		expect(inner.calls).toBe(3);
+		await cached.getWeather(at(4.1)); // reloaded after eviction
+		expect(inner.calls).toBe(4);
+	});
+
 	it('does not cache failures', async () => {
 		const inner = counting(true);
 		const cached = withCache(inner, 1000, () => 0);
@@ -168,6 +181,8 @@ describe('coordinatesFrom', () => {
 		});
 		expect(coordinatesFrom(new URL('http://x/api/weather?lat=abc&lon=1'))).toBeNull();
 		expect(coordinatesFrom(new URL('http://x/api/weather?lat=95&lon=1'))).toBeNull();
+		// Outside the app's map bounds: not a general-purpose weather proxy.
+		expect(coordinatesFrom(new URL('http://x/api/weather?lat=51.5&lon=-0.1'))).toBeNull();
 	});
 });
 

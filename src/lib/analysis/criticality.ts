@@ -38,7 +38,9 @@ function explain(c: Omit<FacilityCriticality, 'explanation' | 'rank'>): string[]
 		`If closed, ${formatPopulation(c.residentsAffected)} residents would lose accessibility (largest single-area drop: ${Math.round(c.maxCellDrop)} points).`
 	];
 	if (c.underservedIncrease >= 1) {
-		lines.push(`Underserved residents would rise by ${formatPopulation(c.underservedIncrease)}.`);
+		lines.push(
+			`Weighted underserved residents would rise by ${formatPopulation(c.underservedIncrease)}.`
+		);
 	}
 	lines.push(
 		c.nearestAlternative

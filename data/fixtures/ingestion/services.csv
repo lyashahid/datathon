@@ -1,0 +1,8 @@
+id,name,category,x,y,island
+s1,Hulhumalé Hospital (fixture),Hospital,338013.2,466099.5,Hulhumalé
+s2,Hulhumalé Primary (fixture),Primary School,338179.0,465712.2,Hulhumalé
+s3,IGMH (fixture duplicate),hospital,333799.4,461620.4,Malé
+s4,Malé City Council (fixture),council,334452.6,461793.9,Malé
+s5,Corner Pharmacy (fixture),pharmacy,334618.8,461627.7,Malé
+s6,"School, no coordinates (fixture)",school,,,Malé
+s7,,school,334500.0,461700.0,Malé

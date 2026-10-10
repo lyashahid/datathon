@@ -19,5 +19,12 @@
 		<Plus class="size-3.5" />
 		{ui.observationDraft ? 'Cancel' : 'Add observation'}
 	</button>
-	<span class="text-[10px] text-hud-faint tabular-nums">{feedback.observations.length} saved</span>
+	{#if feedback.status === 'error'}
+		<span class="text-[10px] text-hud-warn" title="Browser storage is unavailable or blocked"
+			>Not saved in this browser</span
+		>
+	{:else}
+		<span class="text-[10px] text-hud-faint tabular-nums">{feedback.observations.length} saved</span
+		>
+	{/if}
 </div>

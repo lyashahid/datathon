@@ -8,3 +8,10 @@ export function isTypingTarget(target: EventTarget | null): boolean {
 		target instanceof HTMLSelectElement
 	);
 }
+
+/** Label for the platform's shortcut modifier, for tooltips and hints ("⌘" or "Ctrl+"). */
+export function modifierKeyLabel(): string {
+	return typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
+		? '⌘'
+		: 'Ctrl+';
+}

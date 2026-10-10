@@ -12,6 +12,17 @@ export const variables = defineEnvVars({
 			return trimmed;
 		}
 	},
+	BASELINE_SOURCE: {
+		description:
+			"Baseline data source: 'sample' (bundled demo, default) or 'processed' (output of npm run ingest in data/processed/).",
+		schema: (value) => {
+			const v = value?.trim() || 'sample';
+			if (v !== 'sample' && v !== 'processed') {
+				throw new Error("BASELINE_SOURCE must be 'sample' or 'processed'");
+			}
+			return v;
+		}
+	},
 	WEATHER_PROVIDER: {
 		description:
 			"Server-side weather provider id. Defaults to 'open-meteo' (keyless). Future official adapters register under their own id.",

@@ -41,7 +41,7 @@
 	<h3 class="hud-label">Community feedback</h3>
 	<div class="grid grid-cols-2 gap-2">
 		<div class="rounded border border-hud-line p-2">
-			<p class="text-[10px] text-hud-muted">Technical analysis</p>
+			<p class="text-[10px] text-hud-muted">Technical analysis (facility score)</p>
 			<p class="font-mono text-base font-semibold tabular-nums">
 				{technicalScore ?? '--'}<span class="text-[10px] text-hud-faint">/100</span>
 			</p>

@@ -73,10 +73,11 @@
 									{c.rank === 1 ? CANDIDATE_LABELS.top : CANDIDATE_LABELS.ranked(c.rank)}
 								</span>
 								<span class="block text-[11px] text-hud-muted tabular-nums">
-									Serves {formatPopulation(c.expectedPopulationServed)} · transport
+									{formatPopulation(c.expectedPopulationServed)} within {BUS_STOP_SCORING.catchmentRadiusM}
+									m · transport
 									{c.estimatedAccessibilityGain >= 0
 										? '+'
-										: ''}{c.estimatedAccessibilityGain.toFixed(1)}
+										: ''}{c.estimatedAccessibilityGain.toFixed(1)} pts
 								</span>
 							</span>
 							<span class="font-mono text-base font-semibold tabular-nums">{c.score}</span>

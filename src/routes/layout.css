@@ -16,7 +16,8 @@
 	--color-hud-line-strong: rgb(255 255 255 / 0.14);
 	--color-hud-text: #e3e8ee;
 	--color-hud-muted: #8b96a5;
-	--color-hud-faint: #566170;
+	/* ≥4.5:1 on panels so small secondary text stays legible (WCAG AA). */
+	--color-hud-faint: #7a8594;
 	--color-hud-accent: #2dd4bf;
 	--color-hud-accent-dim: rgb(45 212 191 / 0.14);
 	--color-hud-warn: #f2b35b;
@@ -65,4 +66,41 @@ body {
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	color: var(--color-hud-faint);
+}
+
+/* Demo Mode: draws the presenter's eye to the control the current step uses. */
+.demo-highlight {
+	outline: 2px solid var(--color-hud-accent);
+	outline-offset: 2px;
+	animation: demo-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes demo-pulse {
+	50% {
+		outline-color: rgb(45 212 191 / 0.25);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.demo-highlight {
+		animation: none;
+	}
+}
+
+/* Inspector content settles in instead of snapping; fast enough to never feel like waiting. */
+@utility panel-in {
+	animation: panel-in 140ms ease-out;
+}
+
+@keyframes panel-in {
+	from {
+		opacity: 0;
+		transform: translateY(3px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.panel-in {
+		animation: none;
+	}
 }

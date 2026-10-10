@@ -1,0 +1,15 @@
+{
+	"dataset": {
+		"id": "ingestion-fixture",
+		"title": "Ingestion pipeline fixture",
+		"version": "0.1.0",
+		"provenance": "demo",
+		"description": "Hand-made fixture demonstrating the ingestion pipeline. Not real data; not suitable for planning decisions."
+	},
+	"sources": [
+		{ "adapter": "osm-infrastructure", "file": "osm-overpass.json", "crs": "EPSG:4326" },
+		{ "adapter": "essential-services", "file": "services.csv", "crs": "EPSG:32643" },
+		{ "adapter": "transport-routes", "file": "routes.geojson", "crs": "EPSG:4326" },
+		{ "adapter": "census-style-demographics", "file": "demographics.csv", "crs": "EPSG:4326" }
+	]
+}

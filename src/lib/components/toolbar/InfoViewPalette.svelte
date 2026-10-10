@@ -6,9 +6,13 @@
 
 	const ui = getUiState();
 	const analysisGrid = getAnalysisGrid();
-	// The disruption view only means something once a disruption is selected.
+	// Change views only mean something once there is a change to show.
 	const available = (v: InfoViewDefinition) =>
-		v.id !== 'disruptionImpact' || analysisGrid.disruptionImpact !== null;
+		v.id === 'disruptionImpact'
+			? analysisGrid.disruptionImpact !== null
+			: v.id === 'scenarioImpact'
+				? analysisGrid.impact.hasChanges
+				: true;
 	const GROUPS = [
 		{ label: 'Analysis', title: 'Demo accessibility model', layer: 'grid' },
 		{ label: 'Conditions', title: 'Live forecast, visual only', layer: 'environment' }
@@ -18,7 +22,7 @@
 </script>
 
 <div
-	class="pointer-events-auto flex max-w-full items-center gap-0.5 overflow-x-auto hud-panel p-1"
+	class="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-0.5 hud-panel p-1"
 	role="toolbar"
 	aria-label="Info views"
 >
@@ -39,6 +43,7 @@
 					: 'text-hud-text hover:bg-hud-hover'}"
 				aria-pressed={on}
 				title={view.description}
+				data-demo="view-{view.id}"
 				onclick={() => ui.setInfoView(on ? null : view.id)}
 			>
 				<span

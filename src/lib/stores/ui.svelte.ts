@@ -120,6 +120,11 @@ export class UiState {
 		this.compare = false;
 	}
 
+	/** Selects one analytical cell (or clears a cell selection). */
+	selectCell(h3Index: string | null): void {
+		this.select(h3Index ? { kind: 'area', cellIds: [h3Index], label: `H3 cell ${h3Index}` } : null);
+	}
+
 	setInfoView(id: InfoViewId | null): void {
 		this.infoView = id;
 		// Cell selections only make sense while a grid view is showing.

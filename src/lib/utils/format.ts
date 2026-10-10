@@ -1,3 +1,4 @@
+import { APP_CONFIG } from '#lib/config/app.ts';
 import type { MetadataValue } from '#lib/types/domain.ts';
 
 const NUMBER_FORMAT = new Intl.NumberFormat('en-US');
@@ -47,4 +48,13 @@ const COMPACT_FORMAT = new Intl.NumberFormat('en-US', {
 /** Short axis/legend labels, e.g. 90000 → "90K". */
 export function formatCompact(value: number): string {
 	return COMPACT_FORMAT.format(value);
+}
+
+/** "HH:MM" in Maldives time for an ISO timestamp, e.g. a forecast's validity. */
+export function formatMvtTime(iso: string): string {
+	return new Date(iso).toLocaleTimeString('en-GB', {
+		hour: '2-digit',
+		minute: '2-digit',
+		timeZone: APP_CONFIG.timeZone
+	});
 }

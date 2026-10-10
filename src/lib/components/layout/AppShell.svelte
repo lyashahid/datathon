@@ -13,11 +13,13 @@
 	import { MapState, setMapState } from '#lib/stores/map.svelte.ts';
 	import { WeatherState, setWeatherState } from '#lib/stores/weather.svelte.ts';
 	import { FeedbackState, setFeedbackState } from '#lib/stores/feedback.svelte.ts';
+	import { DemoState, setDemoState } from '#lib/stores/demo.svelte.ts';
 	import {
 		createLocalFeedbackRepository,
 		createLocalObservationRepository
 	} from '#lib/data/repositories/local.ts';
 	import { UiState, setUiState } from '#lib/stores/ui.svelte.ts';
+	import { reconcileSelection } from '#lib/stores/selection.ts';
 	import { isTypingTarget } from '#lib/utils/dom.ts';
 	import TopHud from '#lib/components/hud/TopHud.svelte';
 	import LayerSidebar from '#lib/components/sidebar/LayerSidebar.svelte';
@@ -54,9 +56,10 @@
 			islandAt: demoIslandAt
 		})
 	);
-	setMapState(new MapState());
+	const mapState = setMapState(new MapState());
 	const weather = setWeatherState(new WeatherState());
 	// Browser-local for the MVP; swap the repositories for server-backed ones without UI changes.
+	setDemoState(new DemoState({ ui, scenarios, analysisGrid, candidateSearch, mapState }));
 	const feedback = setFeedbackState(
 		new FeedbackState(createLocalObservationRepository(), createLocalFeedbackRepository())
 	);
@@ -64,21 +67,14 @@
 	// Undo, reset, switching scenarios or re-ranking can remove what is selected; drop it then.
 	$effect(() => {
 		const sel = ui.selection;
-		if (!sel) return;
-		const exists =
-			sel.kind === 'infrastructure'
-				? !!scenarios.effective.getInfrastructure(sel.id)
-				: sel.kind === 'route'
-					? !!scenarios.effective.getRoute(sel.id)
-					: sel.kind === 'candidates'
-						? candidateSearch.result !== null
-						: sel.kind === 'candidate'
-							? !!candidateSearch.get(sel.id)
-							: sel.kind === 'observation'
-								? !!feedback.getObservation(sel.id)
-								: true;
-		if (!exists)
-			ui.select(sel.kind === 'candidate' && candidateSearch.result ? { kind: 'candidates' } : null);
+		const next = reconcileSelection(sel, {
+			hasInfrastructure: (id) => !!scenarios.effective.getInfrastructure(id),
+			hasRoute: (id) => !!scenarios.effective.getRoute(id),
+			hasCandidateSearch: () => candidateSearch.result !== null,
+			hasCandidate: (id) => !!candidateSearch.get(id),
+			hasObservation: (id) => !!feedback.getObservation(id)
+		});
+		if (next !== sel) ui.select(next);
 	});
 
 	onMount(() => {
@@ -91,7 +87,8 @@
 	});
 
 	function onKeydown(event: KeyboardEvent) {
-		if (isTypingTarget(event.target)) return;
+		// Open menus claim Escape first (they mark it handled during capture).
+		if (event.defaultPrevented || isTypingTarget(event.target)) return;
 		const mod = event.metaKey || event.ctrlKey;
 		const key = event.key.toLowerCase();
 		if (mod && !event.altKey && (key === 'z' || key === 'y')) {

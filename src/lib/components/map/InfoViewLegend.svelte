@@ -73,7 +73,7 @@
 			Study-area total: <span class="font-mono text-hud-text tabular-nums"
 				>{formatPopulation(grid.totals.underservedPopulation)}</span
 			>
-			of {formatPopulation(grid.totals.population)} residents
+			weighted, among {formatPopulation(grid.totals.population)} residents
 		</p>
 	{/if}
 	{#if criticality && onselectfacility}

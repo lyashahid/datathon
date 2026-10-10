@@ -1,0 +1,9 @@
+area_id,area_name,island,atoll,population,age_0_14,age_15_64,age_65_plus,households,x,y
+A01,Malé west (fixture),Malé,Kaafu,18200,4100,12900,1200,3600,73.5035,4.1745
+A02,Malé east (fixture),Malé,Kaafu,15400,3500,10900,1000,,73.5150,4.1740
+A03,Hulhumalé phase 1 (fixture),Hulhumalé,Kaafu,22000,6200,15000,800,4800,73.5410,4.2130
+A04,Villimalé (fixture),Villimalé,Kaafu,7000,1600,4900,500,1400,73.4880,4.1735
+A05,Mismatched totals (fixture),Malé,Kaafu,5000,4000,4000,1000,900,73.5100,4.1760
+A06,Negative count (fixture),Malé,Kaafu,-20,0,0,0,0,73.5100,4.1760
+A01,Repeated area id (fixture),Malé,Kaafu,100,20,70,10,25,73.5040,4.1745
+A08,Missing island (fixture),,Kaafu,300,60,220,20,70,73.5050,4.1745

@@ -4,6 +4,7 @@ import type {
 	BasemapCandidate,
 	BasemapFailure,
 	LngLat,
+	LngLatBounds,
 	MapCamera,
 	MapStatus,
 	MapViewPresetId,
@@ -49,6 +50,10 @@ export class MapState {
 
 	showPreset(id: MapViewPresetId): void {
 		this.#camera?.fitBounds(MAP_VIEW_PRESETS[id].bounds);
+	}
+
+	fitBounds(bounds: LngLatBounds): void {
+		this.#camera?.fitBounds(bounds);
 	}
 
 	flyTo(view: Partial<MapViewState>): void {

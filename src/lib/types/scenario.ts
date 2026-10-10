@@ -54,8 +54,6 @@ export type ScenarioChange =
 			target: AssetRef;
 	  });
 
-export type ScenarioChangeKind = ScenarioChange['kind'];
-
 export interface Scenario {
 	id: ScenarioId;
 	name: string;

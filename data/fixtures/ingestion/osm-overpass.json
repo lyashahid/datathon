@@ -1,0 +1,69 @@
+{
+	"version": 0.6,
+	"generator": "fixture (hand-made, not an Overpass response)",
+	"elements": [
+		{
+			"type": "node",
+			"id": 1001,
+			"lat": 4.1737,
+			"lon": 73.505,
+			"tags": { "highway": "bus_stop", "name": "Majeedhee Magu (fixture)" }
+		},
+		{ "type": "node", "id": 1002, "lat": 4.1745, "lon": 73.511, "tags": { "highway": "bus_stop" } },
+		{
+			"type": "node",
+			"id": 1003,
+			"lat": 4.1749,
+			"lon": 73.5026,
+			"tags": { "amenity": "hospital", "name": "IGMH (fixture)", "operator": "Ministry of Health" }
+		},
+		{
+			"type": "way",
+			"id": 2001,
+			"center": { "lat": 4.17492, "lon": 73.50262 },
+			"tags": { "amenity": "hospital", "name": "IGMH building outline (fixture)" }
+		},
+		{
+			"type": "node",
+			"id": 1004,
+			"lat": 4.1753,
+			"lon": 73.4995,
+			"tags": { "amenity": "ferry_terminal", "name": "Villimalé Ferry (fixture)" }
+		},
+		{
+			"type": "node",
+			"id": 1005,
+			"lat": 4.1751,
+			"lon": 73.507,
+			"tags": { "amenity": "cafe", "name": "Not infrastructure" }
+		},
+		{
+			"type": "node",
+			"id": 1006,
+			"lat": 95,
+			"lon": 73.51,
+			"tags": { "highway": "bus_stop", "name": "Bad latitude" }
+		},
+		{ "type": "node", "id": 1007, "lat": 4.174, "lon": 73.509 },
+		{
+			"type": "node",
+			"id": 1008,
+			"lat": 4.1748,
+			"lon": 73.518,
+			"tags": { "amenity": "bus_station", "name": "Malé Bus Terminal (fixture)" }
+		},
+		{
+			"type": "node",
+			"id": 1009,
+			"lat": 4.176,
+			"lon": 73.507,
+			"tags": { "amenity": "school", "name": "Central School (fixture)" }
+		},
+		{
+			"type": "way",
+			"id": 2002,
+			"center": { "lat": 4.1918, "lon": 73.529 },
+			"tags": { "aeroway": "aerodrome", "name": "Velana (fixture)" }
+		}
+	]
+}

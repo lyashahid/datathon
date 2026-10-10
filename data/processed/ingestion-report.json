@@ -1,0 +1,179 @@
+{
+	"manifest": "data/fixtures/ingestion/manifest.json",
+	"reports": [
+		{
+			"adapter": "osm-infrastructure",
+			"source": "osm-overpass.json",
+			"crs": "EPSG:4326",
+			"processed": 11,
+			"accepted": 7,
+			"rejected": 4,
+			"missingFields": {
+				"name": 1,
+				"island": 1,
+				"tags": 1
+			},
+			"invalidGeometry": 1,
+			"invalidValues": 1,
+			"duplicates": 1,
+			"issues": [
+				{
+					"index": 1,
+					"reason": "missing_field",
+					"detail": "unnamed; generated a descriptive name",
+					"warning": true
+				},
+				{
+					"index": 3,
+					"reason": "duplicate",
+					"detail": "IGMH building outline (fixture) [osm-way-2001] duplicates IGMH (fixture) [osm-node-1003]",
+					"warning": false
+				},
+				{
+					"index": 4,
+					"reason": "missing_field",
+					"detail": "outside known island outlines",
+					"warning": true
+				},
+				{
+					"index": 5,
+					"reason": "invalid_value",
+					"detail": "no mapped infrastructure tag",
+					"warning": false
+				},
+				{
+					"index": 6,
+					"reason": "invalid_geometry",
+					"detail": "bad coordinates 73.51, 95",
+					"warning": false
+				},
+				{
+					"index": 7,
+					"reason": "missing_field",
+					"detail": "no tags",
+					"warning": false
+				}
+			]
+		},
+		{
+			"adapter": "essential-services",
+			"source": "services.csv",
+			"crs": "EPSG:32643",
+			"processed": 7,
+			"accepted": 4,
+			"rejected": 3,
+			"missingFields": {
+				"coordinates": 1,
+				"name": 1
+			},
+			"invalidGeometry": 0,
+			"invalidValues": 1,
+			"duplicates": 0,
+			"issues": [
+				{
+					"index": 4,
+					"reason": "invalid_value",
+					"detail": "unsupported category \"pharmacy\"",
+					"warning": false
+				},
+				{
+					"index": 5,
+					"reason": "missing_field",
+					"detail": "no coordinates",
+					"warning": false
+				},
+				{
+					"index": 6,
+					"reason": "missing_field",
+					"detail": "no name",
+					"warning": false
+				}
+			]
+		},
+		{
+			"adapter": "transport-routes",
+			"source": "routes.geojson",
+			"crs": "EPSG:4326",
+			"processed": 5,
+			"accepted": 2,
+			"rejected": 3,
+			"missingFields": {},
+			"invalidGeometry": 1,
+			"invalidValues": 1,
+			"duplicates": 1,
+			"issues": [
+				{
+					"index": 2,
+					"reason": "duplicate",
+					"detail": "Malé loop again (fixture) [rt-copy-of-loop] duplicates Malé loop (fixture) [rt-male-loop]",
+					"warning": false
+				},
+				{
+					"index": 3,
+					"reason": "invalid_geometry",
+					"detail": "expected LineString, got Point",
+					"warning": false
+				},
+				{
+					"index": 4,
+					"reason": "invalid_value",
+					"detail": "unsupported mode \"tram\"",
+					"warning": false
+				}
+			]
+		},
+		{
+			"adapter": "census-style-demographics",
+			"source": "demographics.csv",
+			"crs": "EPSG:4326",
+			"processed": 8,
+			"accepted": 4,
+			"rejected": 4,
+			"missingFields": {
+				"households": 1,
+				"island": 1
+			},
+			"invalidGeometry": 0,
+			"invalidValues": 2,
+			"duplicates": 1,
+			"issues": [
+				{
+					"index": 1,
+					"reason": "missing_field",
+					"detail": "households not provided",
+					"warning": true
+				},
+				{
+					"index": 4,
+					"reason": "invalid_value",
+					"detail": "age groups sum to 9000, population is 5000",
+					"warning": false
+				},
+				{
+					"index": 5,
+					"reason": "invalid_value",
+					"detail": "population \"-20\" is not a count",
+					"warning": false
+				},
+				{
+					"index": 6,
+					"reason": "duplicate",
+					"detail": "area A01 duplicates area A01",
+					"warning": false
+				},
+				{
+					"index": 7,
+					"reason": "missing_field",
+					"detail": "no island",
+					"warning": false
+				}
+			]
+		}
+	],
+	"crossCheck": {
+		"duplicatesAcrossSources": [
+			"IGMH (fixture duplicate) [svc-s3] = IGMH (fixture) [osm-node-1003]"
+		],
+		"unknownRouteStops": 1
+	}
+}

@@ -69,7 +69,7 @@
 			<MetricChangeRow label="Education accessibility" change={summary.education} format={score} />
 		{/if}
 		<MetricChangeRow
-			label="Underserved population"
+			label="Underserved (weighted)"
 			change={summary.underservedPopulation}
 			format={people}
 			higherIsBetter={false}
@@ -112,6 +112,7 @@
 		<button
 			type="button"
 			class="flex items-center justify-center gap-1.5 rounded border border-hud-line py-1.5 text-[11px] font-medium hover:border-hud-accent/50 hover:bg-hud-accent-dim hover:text-hud-accent"
+			data-demo="show-change-on-map"
 			onclick={onshowmap}
 		>
 			<MapIcon class="size-3.5" /> Show change on map

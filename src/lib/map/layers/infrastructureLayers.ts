@@ -254,7 +254,6 @@ export function removeInfrastructureLayers(map: MaplibreMap): void {
 export function setInfrastructureData(
 	map: MaplibreMap,
 	features: readonly InfrastructureFeature[],
-	routes: readonly TransportRoute[],
 	deltas: ReadonlyMap<string, AssetDelta>
 ): void {
 	map
@@ -263,6 +262,10 @@ export function setInfrastructureData(
 	map
 		.getSource<GeoJSONSource>(MAP_SOURCE_IDS.moveTrails)
 		?.setData(moveTrailsToGeoJSON(features, deltas));
+}
+
+/** Separate from facilities: most edits leave routes untouched, so they skip this upload. */
+export function setRouteData(map: MaplibreMap, routes: readonly TransportRoute[]): void {
 	map.getSource<GeoJSONSource>(MAP_SOURCE_IDS.routes)?.setData(routesToGeoJSON(routes));
 }
 

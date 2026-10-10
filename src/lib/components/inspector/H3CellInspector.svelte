@@ -117,6 +117,7 @@
 				<button
 					type="button"
 					class="flex w-full items-center justify-center gap-1.5 rounded border border-hud-accent/40 bg-hud-accent-dim py-1.5 text-[11px] font-medium text-hud-accent hover:bg-hud-accent/20"
+					data-demo="find-bus-stops"
 					onclick={() => {
 						candidateSearch.start(cell.h3Index);
 						ui.select({ kind: 'candidates' });
@@ -152,7 +153,7 @@
 		</p>
 	</InspectorSection>
 
-	<InspectorSection title="Underserved residents" provenance="demo">
+	<InspectorSection title="Underserved (weighted)" provenance="demo">
 		<div class="flex items-baseline justify-between text-[11px]">
 			<span class="text-hud-muted">Gap-weighted</span>
 			<span class="font-mono font-medium tabular-nums">

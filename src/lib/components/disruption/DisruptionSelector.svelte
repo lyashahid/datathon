@@ -28,7 +28,15 @@
 	}
 </script>
 
-<svelte:window onpointerdown={onWindowPointerDown} />
+<svelte:window
+	onpointerdown={onWindowPointerDown}
+	onkeydowncapture={(e) => {
+		if (open && e.key === 'Escape') {
+			e.preventDefault();
+			open = false;
+		}
+	}}
+/>
 
 <div class="relative shrink-0" bind:this={root}>
 	<button
@@ -38,6 +46,7 @@
 			: 'border-hud-line bg-hud-raised hover:border-hud-line-strong'}"
 		aria-haspopup="menu"
 		aria-expanded={open}
+		data-demo="conditions"
 		title="{DISRUPTION_LABELS.kind}: {current.label}"
 		onclick={() => (open = !open)}
 	>

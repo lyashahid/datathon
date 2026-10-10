@@ -12,6 +12,16 @@
 	const ui = getUiState();
 	const scenarios = getScenarioStore();
 	const analysisGrid = getAnalysisGrid();
+	// What the panel is showing; a new value fades the content in (subtly) instead of snapping.
+	const contentKey = $derived(
+		ui.observationDraft
+			? 'draft'
+			: ui.compare
+				? 'compare'
+				: ui.selection
+					? `${ui.selection.kind}:${'id' in ui.selection ? ui.selection.id : 'cellIds' in ui.selection ? ui.selection.cellIds.join() : ''}`
+					: 'overview'
+	);
 </script>
 
 {#if ui.rightPanelOpen}
@@ -34,49 +44,55 @@
 		</div>
 
 		<div class="min-h-0 flex-1 overflow-y-auto">
-			{#if ui.observationDraft}
-				<ObservationForm />
-			{:else if ui.compare && scenarios.active}
-				<div class="p-3">
-					<ComparisonSummary
-						summary={analysisGrid.impact.summary}
-						scenarioName={scenarios.active.name}
-						conditionsLabel={analysisGrid.disruptionImpact ? analysisGrid.disruption.label : null}
-						onclose={() => ui.endCompare()}
-					/>
-				</div>
-			{:else if ui.selection}
-				<InspectorSelectionView selection={ui.selection} />
-			{:else if analysisGrid.disruptionImpact || (scenarios.active && analysisGrid.impact.hasChanges)}
-				<div class="flex flex-col gap-4 p-3">
-					{#if analysisGrid.disruptionImpact}
-						<DisruptionPanel
-							disruption={analysisGrid.disruption}
-							impact={analysisGrid.disruptionImpact}
-							onshowmap={() => ui.setInfoView('disruptionImpact')}
-						/>
+			{#key contentKey}
+				<div class="h-full panel-in">
+					{#if ui.observationDraft}
+						<ObservationForm />
+					{:else if ui.compare && scenarios.active}
+						<div class="p-3">
+							<ComparisonSummary
+								summary={analysisGrid.impact.summary}
+								scenarioName={scenarios.active.name}
+								conditionsLabel={analysisGrid.disruptionImpact
+									? analysisGrid.disruption.label
+									: null}
+								onclose={() => ui.endCompare()}
+							/>
+						</div>
+					{:else if ui.selection}
+						<InspectorSelectionView selection={ui.selection} />
+					{:else if analysisGrid.disruptionImpact || (scenarios.active && analysisGrid.impact.hasChanges)}
+						<div class="flex flex-col gap-4 p-3">
+							{#if analysisGrid.disruptionImpact}
+								<DisruptionPanel
+									disruption={analysisGrid.disruption}
+									impact={analysisGrid.disruptionImpact}
+									onshowmap={() => ui.setInfoView('disruptionImpact')}
+								/>
+							{/if}
+							{#if scenarios.active && analysisGrid.impact.hasChanges}
+								<ImpactPanel
+									summary={analysisGrid.impact.summary}
+									title="Scenario impact"
+									subtitle="Baseline → {scenarios.active.name}{analysisGrid.disruptionImpact
+										? `, both under ${analysisGrid.disruption.shortLabel.toLowerCase()} disruption`
+										: ''}"
+									onshowmap={() => ui.setInfoView('scenarioImpact')}
+								/>
+							{/if}
+							<p class="flex items-center gap-1.5 text-[11px] text-hud-faint">
+								<Crosshair class="size-3.5" /> Select a facility or cell for local detail.
+							</p>
+						</div>
+					{:else}
+						<div class="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
+							<Crosshair class="size-5 text-hud-faint" />
+							<p class="text-xs text-hud-muted">Select an area or infrastructure</p>
+							<p class="text-[11px] text-hud-faint">Use Inspect (1) and click on the map.</p>
+						</div>
 					{/if}
-					{#if scenarios.active && analysisGrid.impact.hasChanges}
-						<ImpactPanel
-							summary={analysisGrid.impact.summary}
-							title="Scenario impact"
-							subtitle="Baseline → {scenarios.active.name}{analysisGrid.disruptionImpact
-								? `, both under ${analysisGrid.disruption.shortLabel.toLowerCase()} disruption`
-								: ''}"
-							onshowmap={() => ui.setInfoView('scenarioImpact')}
-						/>
-					{/if}
-					<p class="flex items-center gap-1.5 text-[11px] text-hud-faint">
-						<Crosshair class="size-3.5" /> Select a facility or cell for local detail.
-					</p>
 				</div>
-			{:else}
-				<div class="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
-					<Crosshair class="size-5 text-hud-faint" />
-					<p class="text-xs text-hud-muted">Select an area or infrastructure</p>
-					<p class="text-[11px] text-hud-faint">Use Inspect (1) and click on the map.</p>
-				</div>
-			{/if}
+			{/key}
 		</div>
 	</aside>
 {:else}

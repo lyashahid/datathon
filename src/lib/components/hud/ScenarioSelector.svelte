@@ -12,6 +12,7 @@
 	} from '@lucide/svelte';
 	import { getScenarioStore } from '#lib/stores/scenario.svelte.ts';
 	import { tick } from 'svelte';
+	import { modifierKeyLabel } from '#lib/utils/dom.ts';
 
 	const scenarios = getScenarioStore();
 
@@ -23,8 +24,7 @@
 
 	const active = $derived(scenarios.active);
 	const changeCount = $derived(active?.changes.length ?? 0);
-	const modKey =
-		typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl';
+	const modKey = modifierKeyLabel();
 
 	function close() {
 		open = false;
@@ -60,7 +60,16 @@
 		'grid size-7 place-items-center rounded text-hud-muted hover:bg-hud-hover hover:text-hud-text disabled:text-hud-faint disabled:hover:bg-transparent';
 </script>
 
-<svelte:window onpointerdown={onWindowPointerDown} />
+<svelte:window
+	onpointerdown={onWindowPointerDown}
+	onkeydowncapture={(e) => {
+		// While renaming, Escape belongs to the name field.
+		if (open && !renaming && e.key === 'Escape') {
+			e.preventDefault();
+			close();
+		}
+	}}
+/>
 
 <div class="flex shrink-0 items-center gap-0.5">
 	<div class="relative" bind:this={root}>
@@ -71,6 +80,7 @@
 				: 'border-hud-line bg-hud-raised hover:border-hud-line-strong'}"
 			aria-haspopup="menu"
 			aria-expanded={open}
+			data-demo="scenario-selector"
 			onclick={() => (open ? close() : (open = true))}
 		>
 			<GitBranch class="size-3.5 {active ? 'text-hud-accent' : 'text-hud-muted'}" />
@@ -215,7 +225,7 @@
 		disabled={!scenarios.canUndo}
 		onclick={() => scenarios.undo()}
 		aria-label="Undo"
-		title="Undo ({modKey}+Z)"
+		title="Undo ({modKey}Z)"
 	>
 		<Undo2 class="size-3.5" />
 	</button>
@@ -225,7 +235,7 @@
 		disabled={!scenarios.canRedo}
 		onclick={() => scenarios.redo()}
 		aria-label="Redo"
-		title="Redo ({modKey}+Shift+Z)"
+		title="Redo ({modKey}Shift+Z)"
 	>
 		<Redo2 class="size-3.5" />
 	</button>

@@ -1,0 +1,69 @@
+{
+	"type": "FeatureCollection",
+	"features": [
+		{
+			"type": "Feature",
+			"id": "male-loop",
+			"properties": {
+				"name": "Malé loop (fixture)",
+				"mode": "bus",
+				"stop_ids": "osm-node-1001,osm-node-1008,osm-node-9999"
+			},
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [
+					[73.505, 4.1737],
+					[73.511, 4.1745],
+					[73.518, 4.1748]
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "male-villimale-ferry",
+			"properties": {
+				"name": "Malé – Villimalé ferry (fixture)",
+				"route": "ferry",
+				"stop_ids": ["osm-node-1004"]
+			},
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [
+					[73.4995, 4.1753],
+					[73.493, 4.1745]
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "copy-of-loop",
+			"properties": { "name": "Malé loop again (fixture)", "mode": "bus" },
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [
+					[73.505, 4.1737],
+					[73.511, 4.1745],
+					[73.518, 4.1748]
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "point-route",
+			"properties": { "name": "Not a line (fixture)", "mode": "bus" },
+			"geometry": { "type": "Point", "coordinates": [73.505, 4.1737] }
+		},
+		{
+			"type": "Feature",
+			"id": "tram",
+			"properties": { "name": "Tram (fixture)", "mode": "tram" },
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [
+					[73.505, 4.1737],
+					[73.51, 4.175]
+				]
+			}
+		}
+	]
+}

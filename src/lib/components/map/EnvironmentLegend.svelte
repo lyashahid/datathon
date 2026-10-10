@@ -2,7 +2,7 @@
 <script lang="ts">
 	import type { EnvironmentInfoView } from '#lib/config/infoViews.ts';
 	import type { SampleGrid } from '#lib/types/weather.ts';
-	import { formatCompact } from '#lib/utils/format.ts';
+	import { formatCompact, formatMvtTime } from '#lib/utils/format.ts';
 
 	let {
 		view,
@@ -20,15 +20,7 @@
 	const gradient = $derived(
 		`linear-gradient(to right, ${stops.map(([v, c]) => `${c} ${pct(v)}%`).join(', ')})`
 	);
-	const validAt = $derived(
-		grid?.validAt
-			? new Date(grid.validAt).toLocaleTimeString('en-GB', {
-					hour: '2-digit',
-					minute: '2-digit',
-					timeZone: 'Indian/Maldives'
-				})
-			: null
-	);
+	const validAt = $derived(grid?.validAt ? formatMvtTime(grid.validAt) : null);
 </script>
 
 <section class="w-60 hud-panel p-2.5" aria-label="{view.label} legend">

@@ -3,12 +3,16 @@
 	import { PLACEABLE_TYPES } from '#lib/config/placement.ts';
 	import { SIMULATOR_TOOLS, getTool } from '#lib/config/tools.ts';
 	import { getUiState } from '#lib/stores/ui.svelte.ts';
+	import { getScenarioStore } from '#lib/stores/scenario.svelte.ts';
+	import { modifierKeyLabel } from '#lib/utils/dom.ts';
 	import { getInfoView } from '#lib/config/infoViews.ts';
 	import InfoViewPalette from './InfoViewPalette.svelte';
 	import PlacePalette from './PlacePalette.svelte';
 	import ToolButton from './ToolButton.svelte';
 
 	const ui = getUiState();
+	const scenarios = getScenarioStore();
+	const modKey = modifierKeyLabel();
 	const active = $derived(getTool(ui.activeTool));
 	const placeable = $derived(PLACEABLE_TYPES[ui.activeTool] ?? []);
 	const placingLabel = $derived(
@@ -43,6 +47,9 @@
 			<span class="mx-1 text-hud-faint">·</span>{placeable.length > 0
 				? 'Choose something to place'
 				: active.hint}
+			{#if scenarios.canUndo}
+				<span class="mx-1 text-hud-faint">·</span><kbd class="font-sans">{modKey}Z</kbd> undo
+			{/if}
 		{/if}
 	</p>
 

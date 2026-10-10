@@ -39,9 +39,11 @@
 	} = $props();
 
 	let hovered = $state<H3Index | null>(null);
+	let uploaded: { grid: H3Grid; external: CellValueSource | null } | null = null;
 
 	$effect(() => {
 		addH3Layers(map);
+		uploaded = null;
 
 		const onMove = (e: MapMouseEvent) => {
 			// Infrastructure stays on top: hovering a marker is not hovering a cell.
@@ -81,7 +83,13 @@
 		};
 	});
 
-	$effect(() => setH3Data(map, grid, external));
+	// Hidden cells need no data. Upload only while a view is showing, and only when the grid or
+	// its external values actually changed, so scenario edits and view switches stay cheap.
+	$effect(() => {
+		if (!view || (uploaded?.grid === grid && uploaded.external === external)) return;
+		setH3Data(map, grid, external);
+		uploaded = { grid, external };
+	});
 	$effect(() => showInfoView(map, view));
 	$effect(() => setHoveredCell(map, view ? hovered : null));
 	$effect(() => setSelectedCell(map, selected));

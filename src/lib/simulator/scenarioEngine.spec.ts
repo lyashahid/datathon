@@ -86,6 +86,13 @@ const coords = (state: ReturnType<typeof deriveEffectiveState>, id: string) =>
 	state.getInfrastructure(id)?.geometry.coordinates;
 
 describe('deriveEffectiveState', () => {
+	it('reuses untouched baseline objects, so map layers can skip unchanged uploads', () => {
+		const state = deriveEffectiveState(baseline, [disable('a'), add('c')]);
+		expect(state.routes[0]).toBe(baseline.routes[0]);
+		expect(state.getInfrastructure('b')).toBe(baseline.infrastructure[1]);
+		expect(state.getInfrastructure('a')).not.toBe(baseline.infrastructure[0]);
+	});
+
 	it('1. leaves the baseline unchanged after a move', () => {
 		const state = deriveEffectiveState(baseline, [move('a', [73.6, 4.2])]);
 		expect(coords(state, 'a')).toEqual([73.6, 4.2]);

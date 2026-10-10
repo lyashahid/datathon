@@ -118,11 +118,12 @@ export const INFO_VIEWS: readonly InfoViewDefinition[] = [
 	{
 		id: 'underservedPopulation',
 		layer: 'grid',
-		label: 'Underserved Population',
+		label: 'Underserved (weighted)',
 		shortLabel: 'Underserved',
 		metric: 'underservedPopulation',
-		unit: 'residents',
-		description: 'Residents weighted by how far overall access falls below the threshold.',
+		unit: 'weighted residents',
+		description:
+			'Residents weighted by how far their overall accessibility falls below 60: a score of 30 counts as half a resident. Not a headcount.',
 		higherIs: 'worse',
 		scale: {
 			kind: 'sequential',

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { Settings } from '@lucide/svelte';
 	import { APP_CONFIG } from '#lib/config/app.ts';
 	import LocationSearch from './LocationSearch.svelte';
 	import ScenarioSelector from './ScenarioSelector.svelte';
 	import DisruptionSelector from '#lib/components/disruption/DisruptionSelector.svelte';
 	import CompareToggle from '#lib/components/compare/CompareToggle.svelte';
+	import DemoToggle from '#lib/components/demo/DemoToggle.svelte';
 	import WeatherReadout from './WeatherReadout.svelte';
 	import HudClock from './HudClock.svelte';
 </script>
@@ -34,14 +34,6 @@
 	<CompareToggle />
 	<DisruptionSelector />
 	<WeatherReadout />
+	<DemoToggle />
 	<HudClock />
-
-	<button
-		type="button"
-		class="grid size-7 shrink-0 place-items-center rounded text-hud-muted transition-colors hover:bg-hud-hover hover:text-hud-text"
-		aria-label="Settings"
-		title="Settings"
-	>
-		<Settings class="size-4" />
-	</button>
 </header>

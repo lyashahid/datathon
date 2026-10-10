@@ -18,6 +18,7 @@
 		removeInfrastructureLayers,
 		setInfrastructureData,
 		setInfrastructureEmphasis,
+		setRouteData,
 		setSelectedAsset,
 		setVisibleCategories
 	} from './infrastructureLayers.ts';
@@ -56,9 +57,16 @@
 		onpick: (asset: AssetRef | null) => void;
 	} = $props();
 
+	// Effective routes are rebuilt on every scenario edit but reuse the same frozen route
+	// objects when unchanged; comparing items avoids re-uploading identical route data.
+	let uploadedRoutes: readonly TransportRoute[] | null = null;
+	const sameItems = <T,>(a: readonly T[], b: readonly T[]) =>
+		a.length === b.length && a.every((item, i) => item === b[i]);
+
 	$effect(() => {
 		removeInfrastructureLayers(map);
 		addInfrastructureLayers(map);
+		uploadedRoutes = null;
 
 		const onClick = (e: MapMouseEvent) => {
 			// Candidate badges sit on top and own their clicks.
@@ -88,7 +96,12 @@
 		};
 	});
 
-	$effect(() => setInfrastructureData(map, infrastructure, routes, deltas));
+	$effect(() => setInfrastructureData(map, infrastructure, deltas));
+	$effect(() => {
+		if (uploadedRoutes && sameItems(uploadedRoutes, routes)) return;
+		setRouteData(map, routes);
+		uploadedRoutes = routes;
+	});
 
 	$effect(() => setSelectedAsset(map, selected));
 

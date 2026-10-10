@@ -42,7 +42,8 @@ interface CacheEntry<T> {
 export function withCache(
 	provider: WeatherProvider,
 	ttlMs: number = WEATHER_CONFIG.cacheTtlMs,
-	now: () => number = Date.now
+	now: () => number = Date.now,
+	maxEntries: number = WEATHER_CONFIG.cacheMaxEntries
 ): WeatherProvider {
 	const cache = new Map<string, CacheEntry<unknown>>();
 	const round = (at: Coordinates) =>
@@ -53,6 +54,9 @@ export function withCache(
 		const hit = cache.get(k) as CacheEntry<T> | undefined;
 		if (hit && hit.expires > now()) return hit.value;
 		const value = load();
+		// Bounded: drop expired entries, then the oldest (Map keeps insertion order).
+		for (const [key, entry] of cache) if (entry.expires <= now()) cache.delete(key);
+		while (cache.size >= maxEntries) cache.delete(cache.keys().next().value!);
 		cache.set(k, { expires: now() + ttlMs, value });
 		value.catch(() => cache.delete(k));
 		return value;

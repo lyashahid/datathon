@@ -9,7 +9,9 @@ export const WEATHER_CONFIG = {
 	/** How often the HUD refreshes; the server cache absorbs repeated requests. */
 	clientRefreshMs: 10 * 60 * 1000,
 	/** Coordinates are rounded to this many decimals for cache keys (~1 km). */
-	cacheKeyDecimals: 2
+	cacheKeyDecimals: 2,
+	/** Upper bound on cached responses; oldest are dropped first. */
+	cacheMaxEntries: 256
 } as const;
 
 /** WMO weather interpretation codes → short labels and icon groups. */

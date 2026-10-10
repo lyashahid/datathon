@@ -16,6 +16,8 @@
 	import ObservationLayers from '#lib/map/layers/ObservationLayers.svelte';
 	import { OBSERVATION_LAYER_ID } from '#lib/config/feedback.ts';
 	import { getFeedbackState } from '#lib/stores/feedback.svelte.ts';
+	import { getDemoState } from '#lib/stores/demo.svelte.ts';
+	import DemoGuide from '#lib/components/demo/DemoGuide.svelte';
 	import CompareOverlay from '#lib/components/compare/CompareOverlay.svelte';
 	import SwipeHandle from '#lib/components/compare/SwipeHandle.svelte';
 	import type { CameraPose } from '#lib/types/map.ts';
@@ -50,6 +52,7 @@
 	const candidateSearch = getCandidateSearch();
 	const weather = getWeatherState();
 	const feedback = getFeedbackState();
+	const demo = getDemoState();
 	const usingOfflineBasemap = $derived(mapState.basemap?.id === 'offline');
 
 	// Compare mode: baseline overlay (left of the divider) over the scenario map.
@@ -98,9 +101,6 @@
 	let mapSize = $state({ width: 0, height: 0 });
 	const hoveredCell = $derived(cellHover ? analysisGrid.grid.get(cellHover.h3Index) : undefined);
 
-	function selectCell(h3Index: H3Index | null) {
-		ui.select(h3Index ? { kind: 'area', cellIds: [h3Index], label: `H3 cell ${h3Index}` } : null);
-	}
 	const selectedAsset = $derived(
 		ui.selection?.kind === 'infrastructure' || ui.selection?.kind === 'route' ? ui.selection : null
 	);
@@ -208,7 +208,7 @@
 			selected={selectedCell}
 			interactive={mapInteractive}
 			onhover={(h) => (cellHover = h)}
-			onselect={selectCell}
+			onselect={(h) => ui.selectCell(h)}
 		/>
 		<ObservationLayers
 			{map}
@@ -300,6 +300,12 @@
 			grid={environmentSamples}
 			status={weather.sampleStatus[environmentView.sample]}
 		/>
+	</div>
+{/if}
+
+{#if demo.active}
+	<div class="pointer-events-none absolute right-3 bottom-24 z-20">
+		<DemoGuide />
 	</div>
 {/if}
 

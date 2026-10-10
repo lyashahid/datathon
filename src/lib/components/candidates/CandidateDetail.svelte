@@ -1,7 +1,7 @@
 <!-- Detailed analysis of one bus-stop candidate, with Add to Scenario. -->
 <script lang="ts">
 	import { ArrowLeft, CirclePlus, CircleCheck, TriangleAlert } from '@lucide/svelte';
-	import { CANDIDATE_LABELS } from '#lib/config/busStopScoring.ts';
+	import { BUS_STOP_SCORING, CANDIDATE_LABELS } from '#lib/config/busStopScoring.ts';
 	import { CURSOR_COORDINATE_DECIMALS } from '#lib/config/map.ts';
 	import { proposedName } from '#lib/simulator/placement.ts';
 	import { getCandidateSearch } from '#lib/stores/candidates.svelte.ts';
@@ -78,9 +78,9 @@
 	</div>
 
 	<dl class="grid grid-cols-[1fr_auto] gap-x-2 gap-y-1 text-[11px] tabular-nums">
-		<dt class="text-hud-muted">Expected population served</dt>
+		<dt class="text-hud-muted">Residents within {BUS_STOP_SCORING.catchmentRadiusM} m</dt>
 		<dd class="text-right font-mono">{formatPopulation(candidate.expectedPopulationServed)}</dd>
-		<dt class="text-hud-muted">Underserved residents reached</dt>
+		<dt class="text-hud-muted">Underserved reached (weighted)</dt>
 		<dd class="text-right font-mono">{formatPopulation(candidate.underservedReached)}</dd>
 		<dt class="text-hud-muted">Est. transport accessibility gain</dt>
 		<dd class="text-right font-mono text-emerald-400">
@@ -90,7 +90,8 @@
 		</dd>
 	</dl>
 	<p class="-mt-2 text-[10px] text-hud-faint">
-		Gain = population-weighted change in transport accessibility across the search area.
+		Gain = change in the population-weighted average transport score (0–100) across the
+		{BUS_STOP_SCORING.areaRadiusM} m search area; straight-line model.
 	</p>
 
 	<section>
@@ -159,6 +160,7 @@
 	<button
 		type="button"
 		class="flex items-center justify-center gap-1.5 rounded border border-hud-accent/50 bg-hud-accent-dim py-2 text-xs font-medium text-hud-accent hover:bg-hud-accent/20"
+		data-demo="add-to-scenario"
 		onclick={addToScenario}
 	>
 		<CirclePlus class="size-4" /> Add to Scenario

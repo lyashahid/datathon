@@ -37,12 +37,23 @@ export function colorExpression(metric: string, scale: ColorScale): ExpressionSp
 	] as ExpressionSpecification;
 }
 
+// Cell outlines never change, so each is computed once per page instead of on every update.
+const boundaries = new Map<H3Index, number[][]>();
+function boundaryOf(h3Index: H3Index): number[][] {
+	let ring = boundaries.get(h3Index);
+	if (!ring) {
+		ring = cellToBoundary(h3Index, true);
+		boundaries.set(h3Index, ring);
+	}
+	return ring;
+}
+
 function gridToGeoJSON(grid: H3Grid, external: CellValueSource | null): FeatureCollection<Polygon> {
 	return {
 		type: 'FeatureCollection',
 		features: grid.cells.map((c): Feature<Polygon> => ({
 			type: 'Feature',
-			geometry: { type: 'Polygon', coordinates: [cellToBoundary(c.h3Index, true)] },
+			geometry: { type: 'Polygon', coordinates: [boundaryOf(c.h3Index)] },
 			properties: {
 				h3Index: c.h3Index,
 				populationDensity: c.populationDensity,

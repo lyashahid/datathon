@@ -18,6 +18,7 @@
 	<button
 		type="button"
 		class="flex items-center justify-center gap-1.5 rounded border border-hud-line py-1.5 text-[11px] font-medium hover:border-hud-accent/50 hover:bg-hud-accent-dim hover:text-hud-accent"
+		data-demo="find-improvements"
 		onclick={() => (open = true)}
 	>
 		<Lightbulb class="size-3.5" /> Find Improvements

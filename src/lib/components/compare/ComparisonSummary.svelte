@@ -50,7 +50,7 @@
 		<MetricChangeRow label="Health access" change={summary.health} format={score} />
 		<MetricChangeRow label="Education access" change={summary.education} format={score} />
 		<MetricChangeRow
-			label="Underserved residents"
+			label="Underserved (weighted)"
 			change={summary.underservedPopulation}
 			format={people}
 			higherIsBetter={false}

@@ -29,7 +29,7 @@ export const BUS_STOP_CRITERIA: readonly { id: BusStopCriterion; label: string; 
 	},
 	{
 		id: 'underservedReached',
-		label: 'Underserved population',
+		label: 'Underserved reached (weighted)',
 		hint: 'Gap-weighted underserved residents within walking distance'
 	},
 	{

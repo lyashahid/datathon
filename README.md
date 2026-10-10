@@ -9,13 +9,14 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 
-| Script          | Purpose                        |
-| --------------- | ------------------------------ |
-| `npm run dev`   | Development server             |
-| `npm run check` | Svelte + TypeScript type check |
-| `npm run lint`  | Prettier check + ESLint        |
-| `npm test`      | Unit tests (Vitest)            |
-| `npm run build` | Production build               |
+| Script           | Purpose                                    |
+| ---------------- | ------------------------------------------ |
+| `npm run dev`    | Development server                         |
+| `npm run check`  | Svelte + TypeScript type check             |
+| `npm run lint`   | Prettier check + ESLint                    |
+| `npm test`       | Unit tests (Vitest)                        |
+| `npm run build`  | Production build                           |
+| `npm run ingest` | Run the data ingestion pipeline (fixtures) |
 
 ## Environment variables
 
@@ -25,6 +26,7 @@ Declared and validated in `src/env.ts`; see `.env.example`. All are optional.
 | ------------------ | ------------------ | ----------------------------------------------------------- |
 | `MAP_STYLE_URL`    | yes                | MapLibre style JSON URL tried before the built-in basemaps. |
 | `WEATHER_PROVIDER` | no                 | Weather provider id; defaults to `open-meteo` (keyless).    |
+| `BASELINE_SOURCE`  | no                 | `sample` (default) or `processed` (`data/processed/`).      |
 
 ### Basemap fallback
 
@@ -52,7 +54,9 @@ Data flow (each layer is replaceable on its own):
 3. `/api/infrastructure`, `/api/routes` — JSON endpoints.
 4. `src/routes/+page.ts` → frozen `Baseline` store → map and inspector. UI never reads raw files.
 
-To use real data, implement `BaselineSource` for the new source and assign it in `baselineSource.ts`.
+To use real data, run it through the ingestion pipeline (`npm run ingest`, see
+[docs/data-model.md](docs/data-model.md)) and set `BASELINE_SOURCE=processed`, or implement
+`BaselineSource` for a new source.
 
 ## Weather
 
@@ -62,6 +66,20 @@ Open-Meteo is the first provider (keyless; attribution shown in the HUD). Respon
 in memory for 10 minutes per rounded location; upstream failures return HTTP 503 and the HUD shows
 "Weather unavailable" without affecting the planning simulator. Weather does not alter
 accessibility scores.
+
+## Documentation
+
+| Document                                                 | Contents                                                            |
+| -------------------------------------------------------- | ------------------------------------------------------------------- |
+| [docs/metric-definitions.md](docs/metric-definitions.md) | Every metric shown, its formula, assumptions and a verified example |
+| [docs/demo-plan.md](docs/demo-plan.md)                   | Seven-minute presentation script and fallback path                  |
+| [docs/data-model.md](docs/data-model.md)                 | Canonical schemas and the ingestion pipeline                        |
+| [docs/performance.md](docs/performance.md)               | Profiling results and optimisations                                 |
+| [docs/qa-report.md](docs/qa-report.md)                   | Correctness and reliability pass                                    |
+| [docs/review.md](docs/review.md)                         | Pre-datathon engineering review (P0–P3)                             |
+
+**Demo Mode:** click **Demo** in the top bar for a guided, 13-step walkthrough that drives the real
+simulator (no pre-baked results). **Restart Demo** returns to a known state.
 
 ## Project layout
 

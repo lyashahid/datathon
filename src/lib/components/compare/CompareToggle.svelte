@@ -25,6 +25,7 @@
 		? 'border-hud-accent/50 bg-hud-accent-dim text-hud-accent'
 		: 'border-hud-line bg-hud-raised hover:border-hud-line-strong'}"
 	aria-pressed={ui.compare}
+	data-demo="compare"
 	disabled={!scenarios.active}
 	title={scenarios.active
 		? 'Compare baseline (left) with this scenario (right)'

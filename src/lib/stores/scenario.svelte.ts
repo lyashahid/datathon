@@ -56,6 +56,8 @@ type ChangeDraft = ScenarioChange extends infer C
 		: never
 	: never;
 
+const NO_CHANGES: ChangeList = [];
+
 /**
  * Owns all scenarios and the active selection. Every edit becomes a ScenarioChange appended to
  * the active scenario; the effective world is always derived, never stored. Undo/redo keep
@@ -75,8 +77,11 @@ export class ScenarioStore {
 
 	readonly active = $derived(this.scenarios.find((s) => s.id === this.activeId) ?? null);
 	readonly isBaseline = $derived(this.active === null);
+	// Renames and analysis settings replace the scenario object but keep its change list; going
+	// through the list's identity stops those from rebuilding the world, grid and map sources.
+	readonly #changes = $derived(this.active?.changes ?? NO_CHANGES);
 	readonly effective: EffectiveState = $derived(
-		deriveEffectiveState(this.#baseline, this.active?.changes ?? [])
+		deriveEffectiveState(this.#baseline, this.#changes)
 	);
 	readonly canUndo = $derived(
 		this.active !== null && (this.#history[this.active.id]?.past.length ?? 0) > 0

@@ -25,8 +25,14 @@
 		if (!position) return (error = 'Click the map to set the location.');
 		if (!type) return (error = 'Choose a type.');
 		saving = true;
-		const result = await feedback.addObservation({ type, position, description });
-		saving = false;
+		let result;
+		try {
+			result = await feedback.addObservation({ type, position, description });
+		} catch {
+			return (error = 'Could not save the observation. Try again.');
+		} finally {
+			saving = false;
+		}
 		if (!result.ok) return (error = result.reason);
 		ui.cancelObservation();
 		ui.select({ kind: 'observation', id: result.value.id });

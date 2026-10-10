@@ -1,0 +1,59 @@
+{
+	"type": "FeatureCollection",
+	"dataset": {
+		"id": "ingestion-fixture",
+		"title": "Ingestion pipeline fixture",
+		"version": "0.1.0",
+		"provenance": "demo",
+		"description": "Hand-made fixture demonstrating the ingestion pipeline. Not real data; not suitable for planning decisions."
+	},
+	"features": [
+		{
+			"type": "Feature",
+			"id": "rt-male-loop",
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [
+					[73.505, 4.1737],
+					[73.511, 4.1745],
+					[73.518, 4.1748]
+				]
+			},
+			"properties": {
+				"name": "Malé loop (fixture)",
+				"mode": "bus",
+				"status": "existing",
+				"stopIds": ["osm-node-1001", "osm-node-1008"],
+				"source": {
+					"provenance": "demo",
+					"dataset": "ingestion-fixture",
+					"syntheticFields": []
+				},
+				"metadata": {}
+			}
+		},
+		{
+			"type": "Feature",
+			"id": "rt-male-villimale-ferry",
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [
+					[73.4995, 4.1753],
+					[73.493, 4.1745]
+				]
+			},
+			"properties": {
+				"name": "Malé – Villimalé ferry (fixture)",
+				"mode": "ferry",
+				"status": "existing",
+				"stopIds": ["osm-node-1004"],
+				"source": {
+					"provenance": "demo",
+					"dataset": "ingestion-fixture",
+					"syntheticFields": []
+				},
+				"metadata": {}
+			}
+		}
+	]
+}
