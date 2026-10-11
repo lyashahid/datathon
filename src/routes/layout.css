@@ -24,6 +24,14 @@
 }
 
 :root {
+	/* Shared surface geometry keeps the floating navigation and workspaces cohesive. */
+	--surface-radius: 28px;
+	--surface-radius-mobile: 24px;
+	--surface-radius-inner: 16px;
+	--surface-radius-field: 14px;
+	--surface-radius-pill: 999px;
+	--surface-shadow: 0 4px 16px #102e3412, 0 1px 3px #102e340a;
+	--surface-shadow-raised: 0 12px 36px #102e3418, 0 2px 6px #102e340a;
 	/* Shell geometry shared by every floating HUD element. */
 	--hud-top-h: 2.75rem;
 	--hud-gap: 0.5rem;

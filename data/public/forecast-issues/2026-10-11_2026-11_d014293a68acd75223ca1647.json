@@ -1,0 +1,1216 @@
+{
+  "version": 1,
+  "id": "2026-10-11_2026-11_d014293a68acd75223ca1647",
+  "issuedAt": "2026-10-11T13:26:04.695Z",
+  "issueDateMvt": "2026-10-11",
+  "target": {
+    "month": "2026-11",
+    "currentMonthMvt": "2026-10",
+    "kind": "future"
+  },
+  "sourceFingerprint": "6db50a63dfbbe6ce73100982e60dbb2ef60ecb11993b08f548894eb0bcbff5d4",
+  "sourceAsOf": "2026-10-11T12:00:06.863747+00:00",
+  "provenance": {
+    "modelVersion": "monthly-baselines-v2",
+    "transformVersion": "mbs-monthly-source-v1",
+    "checkedAt": "2026-10-11T12:00:06.863747+00:00",
+    "latestPublicationDate": "2026-09-07",
+    "revisionQualification": "Historical checks use the current revised workbook vintage. Original publication-time availability has not been reconstructed; reference-month embargo does not remove revision or publication-lag bias.",
+    "sources": [
+      {
+        "id": "latest_june_2026",
+        "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2026/09/MIF_June-2026.xlsx",
+        "sha256": "e591c7a3adbf20937a7fea49ec5970fb28f2aa25adf53bea191436b26e15bfaa",
+        "publicationSheet": "June 2026"
+      },
+      {
+        "id": "may_2026",
+        "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2026/07/MIF-May-2026.xlsx",
+        "sha256": "c990a3eb076b226cd429e2d95ae25c7b9e112c23b357a0f58612cd948d6ce933",
+        "publicationSheet": "May 2026"
+      },
+      {
+        "id": "dec_2023_issue",
+        "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2024/02/MIF-Dec-2023.xlsx",
+        "sha256": "b4052e088770773caa4a40b3cc5af445b30c88d193b336dbcbf4c2c0dca89f34",
+        "publicationSheet": "Nov 2022"
+      },
+      {
+        "id": "dec_2024_issue",
+        "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2025/01/MIF_Dec-2024.xlsx",
+        "sha256": "f5a79931a5e3ab1a78e3fda26a47464eb730a58665c79071c2a6af073fa46d0d",
+        "publicationSheet": "dec 2024"
+      }
+    ]
+  },
+  "forecasts": [
+    {
+      "seriesId": "ferry-male-vm",
+      "name": "Malé · VM ferry endpoint",
+      "mode": "ferry",
+      "geography": "Malé endpoint of the published VM ferry category",
+      "unit": "passenger movements",
+      "sourceUrl": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2026/09/MIF_June-2026.xlsx",
+      "lastActualMonth": "2026-06",
+      "forecastMonth": "2026-11",
+      "horizonMonths": 5,
+      "status": "exploratory",
+      "estimate": 233479.33333333334,
+      "empiricalRange": {
+        "lower": 227706.33333333334,
+        "upper": 270101.5,
+        "label": "Empirical historical range (10th–90th residual percentiles); not a certified probability interval",
+        "residualCount": 16,
+        "historicalCoverage": 0.3333333333333333
+      },
+      "model": "mean-3-months",
+      "evaluation": {
+        "mae": 13959.11111111111,
+        "wape": 0.061709911545459184,
+        "n": 6,
+        "firstTargetMonth": "2026-01",
+        "lastTargetMonth": "2026-06",
+        "horizonMonths": 5,
+        "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+      },
+      "benchmarks": [
+        {
+          "model": "mean-3-months",
+          "metrics": {
+            "mae": 13959.11111111111,
+            "wape": 0.061709911545459184,
+            "n": 6,
+            "firstTargetMonth": "2026-01",
+            "lastTargetMonth": "2026-06",
+            "horizonMonths": 5,
+            "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+          },
+          "estimate": 233479.33333333334
+        },
+        {
+          "model": "mean-6-months",
+          "metrics": {
+            "mae": 13406.555555555553,
+            "wape": 0.05926719480039766,
+            "n": 6,
+            "firstTargetMonth": "2026-01",
+            "lastTargetMonth": "2026-06",
+            "horizonMonths": 5,
+            "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+          },
+          "estimate": 226205.33333333334
+        },
+        {
+          "model": "last-month",
+          "metrics": {
+            "mae": 13742.833333333334,
+            "wape": 0.06075379890836644,
+            "n": 6,
+            "firstTargetMonth": "2026-01",
+            "lastTargetMonth": "2026-06",
+            "horizonMonths": 5,
+            "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+          },
+          "estimate": 227237
+        },
+        {
+          "model": "seasonal-naive",
+          "metrics": {
+            "mae": 14520.5,
+            "wape": 0.06419167835712686,
+            "n": 6,
+            "firstTargetMonth": "2026-01",
+            "lastTargetMonth": "2026-06",
+            "horizonMonths": 5,
+            "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+          },
+          "estimate": 238679
+        }
+      ],
+      "projections": [
+        {
+          "month": "2026-07",
+          "estimate": 233479.33333333334
+        },
+        {
+          "month": "2026-08",
+          "estimate": 233479.33333333334
+        },
+        {
+          "month": "2026-09",
+          "estimate": 233479.33333333334
+        },
+        {
+          "month": "2026-10",
+          "estimate": 233479.33333333334
+        },
+        {
+          "month": "2026-11",
+          "estimate": 233479.33333333334
+        }
+      ],
+      "history": [
+        {
+          "month": "2022-01",
+          "value": 149608
+        },
+        {
+          "month": "2022-02",
+          "value": 154728
+        },
+        {
+          "month": "2022-03",
+          "value": 195808
+        },
+        {
+          "month": "2022-04",
+          "value": 160885
+        },
+        {
+          "month": "2022-05",
+          "value": 170668
+        },
+        {
+          "month": "2022-06",
+          "value": 171264
+        },
+        {
+          "month": "2022-07",
+          "value": 155262
+        },
+        {
+          "month": "2022-08",
+          "value": 171041
+        },
+        {
+          "month": "2022-09",
+          "value": 173489
+        },
+        {
+          "month": "2022-10",
+          "value": 176715
+        },
+        {
+          "month": "2022-11",
+          "value": 178651
+        },
+        {
+          "month": "2022-12",
+          "value": 183235
+        },
+        {
+          "month": "2023-01",
+          "value": 190858
+        },
+        {
+          "month": "2023-02",
+          "value": 178020
+        },
+        {
+          "month": "2023-03",
+          "value": 182973
+        },
+        {
+          "month": "2023-04",
+          "value": 167365
+        },
+        {
+          "month": "2023-05",
+          "value": 182480
+        },
+        {
+          "month": "2023-06",
+          "value": 170460
+        },
+        {
+          "month": "2023-07",
+          "value": 176250
+        },
+        {
+          "month": "2023-08",
+          "value": 189264
+        },
+        {
+          "month": "2023-09",
+          "value": 175180
+        },
+        {
+          "month": "2023-10",
+          "value": 185784
+        },
+        {
+          "month": "2023-11",
+          "value": 184755
+        },
+        {
+          "month": "2023-12",
+          "value": 178273
+        },
+        {
+          "month": "2024-01",
+          "value": 183900
+        },
+        {
+          "month": "2024-02",
+          "value": 204952
+        },
+        {
+          "month": "2024-03",
+          "value": 202768
+        },
+        {
+          "month": "2024-04",
+          "value": 183761
+        },
+        {
+          "month": "2024-05",
+          "value": 188398
+        },
+        {
+          "month": "2024-06",
+          "value": 196110
+        },
+        {
+          "month": "2024-07",
+          "value": 208544
+        },
+        {
+          "month": "2024-08",
+          "value": 207013
+        },
+        {
+          "month": "2024-09",
+          "value": 218607
+        },
+        {
+          "month": "2024-10",
+          "value": 225523
+        },
+        {
+          "month": "2024-11",
+          "value": 227186
+        },
+        {
+          "month": "2024-12",
+          "value": 239166
+        },
+        {
+          "month": "2025-01",
+          "value": 209124
+        },
+        {
+          "month": "2025-02",
+          "value": 207140
+        },
+        {
+          "month": "2025-03",
+          "value": 182949
+        },
+        {
+          "month": "2025-04",
+          "value": 216474
+        },
+        {
+          "month": "2025-05",
+          "value": 237182
+        },
+        {
+          "month": "2025-06",
+          "value": 229782
+        },
+        {
+          "month": "2025-07",
+          "value": 222975
+        },
+        {
+          "month": "2025-08",
+          "value": 235219
+        },
+        {
+          "month": "2025-09",
+          "value": 246864
+        },
+        {
+          "month": "2025-10",
+          "value": 229701
+        },
+        {
+          "month": "2025-11",
+          "value": 238679
+        },
+        {
+          "month": "2025-12",
+          "value": 234491
+        },
+        {
+          "month": "2026-01",
+          "value": 236957
+        },
+        {
+          "month": "2026-02",
+          "value": 203414
+        },
+        {
+          "month": "2026-03",
+          "value": 216423
+        },
+        {
+          "month": "2026-04",
+          "value": 231559
+        },
+        {
+          "month": "2026-05",
+          "value": 241642
+        },
+        {
+          "month": "2026-06",
+          "value": 227237
+        }
+      ],
+      "backtest": [
+        {
+          "trainingCutoff": "2025-08",
+          "targetMonth": "2026-01",
+          "estimate": 229325.33333333334,
+          "actual": 236957,
+          "error": 7631.666666666657
+        },
+        {
+          "trainingCutoff": "2025-09",
+          "targetMonth": "2026-02",
+          "estimate": 235019.33333333334,
+          "actual": 203414,
+          "error": -31605.333333333343
+        },
+        {
+          "trainingCutoff": "2025-10",
+          "targetMonth": "2026-03",
+          "estimate": 237261.33333333334,
+          "actual": 216423,
+          "error": -20838.333333333343
+        },
+        {
+          "trainingCutoff": "2025-11",
+          "targetMonth": "2026-04",
+          "estimate": 238414.66666666666,
+          "actual": 231559,
+          "error": -6855.666666666657
+        },
+        {
+          "trainingCutoff": "2025-12",
+          "targetMonth": "2026-05",
+          "estimate": 234290.33333333334,
+          "actual": 241642,
+          "error": 7351.666666666657
+        },
+        {
+          "trainingCutoff": "2026-01",
+          "targetMonth": "2026-06",
+          "estimate": 236709,
+          "actual": 227237,
+          "error": -9472
+        }
+      ],
+      "qualification": "Official source label: Male' ( VM Ferry ). Monthly passenger movements, not unique people. Endpoint direction/boarding versus alighting interpretation is undocumented; endpoints remain separate.",
+      "unavailableReason": null,
+      "modelCard": {
+        "target": "Source-defined aggregate monthly passenger movements",
+        "intendedUse": "Review aggregate service-resource plans with release lag and historical error visible.",
+        "excludedUses": [
+          "Neighborhood demand",
+          "Road congestion",
+          "Peak-hour capacity or occupancy",
+          "Predicted healthcare access"
+        ],
+        "trainingCutoff": "2026-06",
+        "evaluation": "Earlier expanding origins select the model; six later origins evaluate it at the current release-lag horizon. Previously explored history; this is not a pristine prospective holdout.",
+        "limitations": [
+          "Aggregate movements are not unique people.",
+          "COVID, service changes and category revisions can break historical relationships.",
+          "No pristine prospective holdout has been claimed.",
+          "Checks use current revised source values, not the vintages available at each historical issue date. Publication-lag and revision bias remain.",
+          "The historical range is not a certified probability interval."
+        ]
+      }
+    },
+    {
+      "seriesId": "ferry-villigili-vm",
+      "name": "Villigili · VM ferry endpoint",
+      "mode": "ferry",
+      "geography": "Villigili endpoint of the published VM ferry category",
+      "unit": "passenger movements",
+      "sourceUrl": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2026/09/MIF_June-2026.xlsx",
+      "lastActualMonth": "2026-06",
+      "forecastMonth": "2026-11",
+      "horizonMonths": 5,
+      "status": "exploratory",
+      "estimate": 235136.33333333334,
+      "empiricalRange": {
+        "lower": 228526,
+        "upper": 279421,
+        "label": "Empirical historical range (10th–90th residual percentiles); not a certified probability interval",
+        "residualCount": 16,
+        "historicalCoverage": 0.5
+      },
+      "model": "mean-3-months",
+      "evaluation": {
+        "mae": 14833.611111111115,
+        "wape": 0.06525005822297851,
+        "n": 6,
+        "firstTargetMonth": "2026-01",
+        "lastTargetMonth": "2026-06",
+        "horizonMonths": 5,
+        "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+      },
+      "benchmarks": [
+        {
+          "model": "mean-3-months",
+          "metrics": {
+            "mae": 14833.611111111115,
+            "wape": 0.06525005822297851,
+            "n": 6,
+            "firstTargetMonth": "2026-01",
+            "lastTargetMonth": "2026-06",
+            "horizonMonths": 5,
+            "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+          },
+          "estimate": 235136.33333333334
+        },
+        {
+          "model": "mean-6-months",
+          "metrics": {
+            "mae": 14013.083333333338,
+            "wape": 0.06164072231194958,
+            "n": 6,
+            "firstTargetMonth": "2026-01",
+            "lastTargetMonth": "2026-06",
+            "horizonMonths": 5,
+            "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+          },
+          "estimate": 227334.83333333334
+        },
+        {
+          "model": "last-month",
+          "metrics": {
+            "mae": 13572,
+            "wape": 0.05970048584723415,
+            "n": 6,
+            "firstTargetMonth": "2026-01",
+            "lastTargetMonth": "2026-06",
+            "horizonMonths": 5,
+            "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+          },
+          "estimate": 226614
+        },
+        {
+          "model": "seasonal-naive",
+          "metrics": {
+            "mae": 12405.833333333334,
+            "wape": 0.05457075429854202,
+            "n": 6,
+            "firstTargetMonth": "2026-01",
+            "lastTargetMonth": "2026-06",
+            "horizonMonths": 5,
+            "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+          },
+          "estimate": 235116
+        }
+      ],
+      "projections": [
+        {
+          "month": "2026-07",
+          "estimate": 235136.33333333334
+        },
+        {
+          "month": "2026-08",
+          "estimate": 235136.33333333334
+        },
+        {
+          "month": "2026-09",
+          "estimate": 235136.33333333334
+        },
+        {
+          "month": "2026-10",
+          "estimate": 235136.33333333334
+        },
+        {
+          "month": "2026-11",
+          "estimate": 235136.33333333334
+        }
+      ],
+      "history": [
+        {
+          "month": "2022-01",
+          "value": 151709
+        },
+        {
+          "month": "2022-02",
+          "value": 156571
+        },
+        {
+          "month": "2022-03",
+          "value": 198032
+        },
+        {
+          "month": "2022-04",
+          "value": 160443
+        },
+        {
+          "month": "2022-05",
+          "value": 169072
+        },
+        {
+          "month": "2022-06",
+          "value": 171667
+        },
+        {
+          "month": "2022-07",
+          "value": 156769
+        },
+        {
+          "month": "2022-08",
+          "value": 168903
+        },
+        {
+          "month": "2022-09",
+          "value": 176112
+        },
+        {
+          "month": "2022-10",
+          "value": 179205
+        },
+        {
+          "month": "2022-11",
+          "value": 179136
+        },
+        {
+          "month": "2022-12",
+          "value": 183236
+        },
+        {
+          "month": "2023-01",
+          "value": 190604
+        },
+        {
+          "month": "2023-02",
+          "value": 178539
+        },
+        {
+          "month": "2023-03",
+          "value": 182499
+        },
+        {
+          "month": "2023-04",
+          "value": 166625
+        },
+        {
+          "month": "2023-05",
+          "value": 183760
+        },
+        {
+          "month": "2023-06",
+          "value": 170848
+        },
+        {
+          "month": "2023-07",
+          "value": 170418
+        },
+        {
+          "month": "2023-08",
+          "value": 191465
+        },
+        {
+          "month": "2023-09",
+          "value": 174935
+        },
+        {
+          "month": "2023-10",
+          "value": 185673
+        },
+        {
+          "month": "2023-11",
+          "value": 183811
+        },
+        {
+          "month": "2023-12",
+          "value": 178754
+        },
+        {
+          "month": "2024-01",
+          "value": 186946
+        },
+        {
+          "month": "2024-02",
+          "value": 205656
+        },
+        {
+          "month": "2024-03",
+          "value": 204794
+        },
+        {
+          "month": "2024-04",
+          "value": 178376
+        },
+        {
+          "month": "2024-05",
+          "value": 188251
+        },
+        {
+          "month": "2024-06",
+          "value": 192765
+        },
+        {
+          "month": "2024-07",
+          "value": 202835
+        },
+        {
+          "month": "2024-08",
+          "value": 204057
+        },
+        {
+          "month": "2024-09",
+          "value": 222729
+        },
+        {
+          "month": "2024-10",
+          "value": 229970
+        },
+        {
+          "month": "2024-11",
+          "value": 235537
+        },
+        {
+          "month": "2024-12",
+          "value": 244984
+        },
+        {
+          "month": "2025-01",
+          "value": 213235
+        },
+        {
+          "month": "2025-02",
+          "value": 215520
+        },
+        {
+          "month": "2025-03",
+          "value": 197257
+        },
+        {
+          "month": "2025-04",
+          "value": 221470
+        },
+        {
+          "month": "2025-05",
+          "value": 242916
+        },
+        {
+          "month": "2025-06",
+          "value": 229004
+        },
+        {
+          "month": "2025-07",
+          "value": 219301
+        },
+        {
+          "month": "2025-08",
+          "value": 241193
+        },
+        {
+          "month": "2025-09",
+          "value": 245941
+        },
+        {
+          "month": "2025-10",
+          "value": 229010
+        },
+        {
+          "month": "2025-11",
+          "value": 235116
+        },
+        {
+          "month": "2025-12",
+          "value": 237349
+        },
+        {
+          "month": "2026-01",
+          "value": 237576
+        },
+        {
+          "month": "2026-02",
+          "value": 202996
+        },
+        {
+          "month": "2026-03",
+          "value": 218028
+        },
+        {
+          "month": "2026-04",
+          "value": 231818
+        },
+        {
+          "month": "2026-05",
+          "value": 246977
+        },
+        {
+          "month": "2026-06",
+          "value": 226614
+        }
+      ],
+      "backtest": [
+        {
+          "trainingCutoff": "2025-08",
+          "targetMonth": "2026-01",
+          "estimate": 229832.66666666666,
+          "actual": 237576,
+          "error": 7743.333333333343
+        },
+        {
+          "trainingCutoff": "2025-09",
+          "targetMonth": "2026-02",
+          "estimate": 235478.33333333334,
+          "actual": 202996,
+          "error": -32482.333333333343
+        },
+        {
+          "trainingCutoff": "2025-10",
+          "targetMonth": "2026-03",
+          "estimate": 238714.66666666666,
+          "actual": 218028,
+          "error": -20686.666666666657
+        },
+        {
+          "trainingCutoff": "2025-11",
+          "targetMonth": "2026-04",
+          "estimate": 236689,
+          "actual": 231818,
+          "error": -4871
+        },
+        {
+          "trainingCutoff": "2025-12",
+          "targetMonth": "2026-05",
+          "estimate": 233825,
+          "actual": 246977,
+          "error": 13152
+        },
+        {
+          "trainingCutoff": "2026-01",
+          "targetMonth": "2026-06",
+          "estimate": 236680.33333333334,
+          "actual": 226614,
+          "error": -10066.333333333343
+        }
+      ],
+      "qualification": "Official source label: Villigili' ( VM Ferry ). Monthly passenger movements, not unique people. Endpoint direction/boarding versus alighting interpretation is undocumented; endpoints remain separate.",
+      "unavailableReason": null,
+      "modelCard": {
+        "target": "Source-defined aggregate monthly passenger movements",
+        "intendedUse": "Review aggregate service-resource plans with release lag and historical error visible.",
+        "excludedUses": [
+          "Neighborhood demand",
+          "Road congestion",
+          "Peak-hour capacity or occupancy",
+          "Predicted healthcare access"
+        ],
+        "trainingCutoff": "2026-06",
+        "evaluation": "Earlier expanding origins select the model; six later origins evaluate it at the current release-lag horizon. Previously explored history; this is not a pristine prospective holdout.",
+        "limitations": [
+          "Aggregate movements are not unique people.",
+          "COVID, service changes and category revisions can break historical relationships.",
+          "No pristine prospective holdout has been claimed.",
+          "Checks use current revised source values, not the vintages available at each historical issue date. Publication-lag and revision bias remain.",
+          "The historical range is not a certified probability interval."
+        ]
+      }
+    },
+    {
+      "seriesId": "bus-male-hulhumale",
+      "name": "Malé / Hulhumalé bus movements",
+      "mode": "bus",
+      "geography": "Published Malé/Hulhumalé bus category; no route or stop allocation",
+      "unit": "passenger movements",
+      "sourceUrl": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2026/09/MIF_June-2026.xlsx",
+      "lastActualMonth": "2026-05",
+      "forecastMonth": "2026-11",
+      "horizonMonths": 6,
+      "status": "exploratory",
+      "estimate": 289225,
+      "empiricalRange": {
+        "lower": 262979.8,
+        "upper": 335567.2,
+        "label": "Empirical historical range (10th–90th residual percentiles); not a certified probability interval",
+        "residualCount": 13,
+        "historicalCoverage": 0.6666666666666666
+      },
+      "model": "seasonal-naive",
+      "evaluation": {
+        "mae": 36925.166666666664,
+        "wape": 0.12329842815387664,
+        "n": 6,
+        "firstTargetMonth": "2025-12",
+        "lastTargetMonth": "2026-05",
+        "horizonMonths": 6,
+        "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+      },
+      "benchmarks": [
+        {
+          "model": "seasonal-naive",
+          "metrics": {
+            "mae": 36925.166666666664,
+            "wape": 0.12329842815387664,
+            "n": 6,
+            "firstTargetMonth": "2025-12",
+            "lastTargetMonth": "2026-05",
+            "horizonMonths": 6,
+            "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+          },
+          "estimate": 289225
+        },
+        {
+          "model": "mean-6-months",
+          "metrics": {
+            "mae": 20261.30555555555,
+            "wape": 0.06765540559091336,
+            "n": 6,
+            "firstTargetMonth": "2025-12",
+            "lastTargetMonth": "2026-05",
+            "horizonMonths": 6,
+            "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+          },
+          "estimate": 299478
+        },
+        {
+          "model": "mean-3-months",
+          "metrics": {
+            "mae": 20310.50000000001,
+            "wape": 0.06781967289750836,
+            "n": 6,
+            "firstTargetMonth": "2025-12",
+            "lastTargetMonth": "2026-05",
+            "horizonMonths": 6,
+            "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+          },
+          "estimate": 297258
+        },
+        {
+          "model": "last-month",
+          "metrics": {
+            "mae": 28641.666666666668,
+            "wape": 0.0956386334444155,
+            "n": 6,
+            "firstTargetMonth": "2025-12",
+            "lastTargetMonth": "2026-05",
+            "horizonMonths": 6,
+            "qualification": "Six later expanding origins evaluate a model selected on earlier origins. This history was previously explored; overlapping origins are not independent experiments."
+          },
+          "estimate": 301954
+        }
+      ],
+      "projections": [
+        {
+          "month": "2026-06",
+          "estimate": 246952
+        },
+        {
+          "month": "2026-07",
+          "estimate": 298748
+        },
+        {
+          "month": "2026-08",
+          "estimate": 315530
+        },
+        {
+          "month": "2026-09",
+          "estimate": 303982
+        },
+        {
+          "month": "2026-10",
+          "estimate": 292331
+        },
+        {
+          "month": "2026-11",
+          "estimate": 289225
+        }
+      ],
+      "history": [
+        {
+          "month": "2022-01",
+          "value": 189416
+        },
+        {
+          "month": "2022-02",
+          "value": 186237
+        },
+        {
+          "month": "2022-03",
+          "value": 246420
+        },
+        {
+          "month": "2022-04",
+          "value": 177791
+        },
+        {
+          "month": "2022-05",
+          "value": 228727
+        },
+        {
+          "month": "2022-06",
+          "value": 255223
+        },
+        {
+          "month": "2022-07",
+          "value": 262198
+        },
+        {
+          "month": "2022-08",
+          "value": 292534
+        },
+        {
+          "month": "2022-09",
+          "value": 264768
+        },
+        {
+          "month": "2022-10",
+          "value": 266364
+        },
+        {
+          "month": "2022-11",
+          "value": 260155
+        },
+        {
+          "month": "2022-12",
+          "value": 295562
+        },
+        {
+          "month": "2023-01",
+          "value": 261223
+        },
+        {
+          "month": "2023-02",
+          "value": 253947
+        },
+        {
+          "month": "2023-03",
+          "value": 278056
+        },
+        {
+          "month": "2023-04",
+          "value": 244060
+        },
+        {
+          "month": "2023-05",
+          "value": 274895
+        },
+        {
+          "month": "2023-06",
+          "value": 250348
+        },
+        {
+          "month": "2023-07",
+          "value": 280314
+        },
+        {
+          "month": "2023-08",
+          "value": 295794
+        },
+        {
+          "month": "2023-09",
+          "value": 261221
+        },
+        {
+          "month": "2023-10",
+          "value": 281209
+        },
+        {
+          "month": "2023-11",
+          "value": 271972
+        },
+        {
+          "month": "2023-12",
+          "value": 262468
+        },
+        {
+          "month": "2024-01",
+          "value": 243808
+        },
+        {
+          "month": "2024-02",
+          "value": 253279
+        },
+        {
+          "month": "2024-03",
+          "value": 238256
+        },
+        {
+          "month": "2024-04",
+          "value": 230852
+        },
+        {
+          "month": "2024-05",
+          "value": 279324
+        },
+        {
+          "month": "2024-06",
+          "value": 254792
+        },
+        {
+          "month": "2024-07",
+          "value": 275937
+        },
+        {
+          "month": "2024-08",
+          "value": 265902
+        },
+        {
+          "month": "2024-09",
+          "value": 290947
+        },
+        {
+          "month": "2024-10",
+          "value": 280221
+        },
+        {
+          "month": "2024-11",
+          "value": 260314
+        },
+        {
+          "month": "2024-12",
+          "value": 305567
+        },
+        {
+          "month": "2025-01",
+          "value": 290961
+        },
+        {
+          "month": "2025-02",
+          "value": 309792
+        },
+        {
+          "month": "2025-03",
+          "value": 201470
+        },
+        {
+          "month": "2025-04",
+          "value": 261436
+        },
+        {
+          "month": "2025-05",
+          "value": 300607
+        },
+        {
+          "month": "2025-06",
+          "value": 246952
+        },
+        {
+          "month": "2025-07",
+          "value": 298748
+        },
+        {
+          "month": "2025-08",
+          "value": 315530
+        },
+        {
+          "month": "2025-09",
+          "value": 303982
+        },
+        {
+          "month": "2025-10",
+          "value": 292331
+        },
+        {
+          "month": "2025-11",
+          "value": 289225
+        },
+        {
+          "month": "2025-12",
+          "value": 294395
+        },
+        {
+          "month": "2026-01",
+          "value": 336993
+        },
+        {
+          "month": "2026-02",
+          "value": 273706
+        },
+        {
+          "month": "2026-03",
+          "value": 284931
+        },
+        {
+          "month": "2026-04",
+          "value": 304889
+        },
+        {
+          "month": "2026-05",
+          "value": 301954
+        }
+      ],
+      "backtest": [
+        {
+          "trainingCutoff": "2025-06",
+          "targetMonth": "2025-12",
+          "estimate": 305567,
+          "actual": 294395,
+          "error": -11172
+        },
+        {
+          "trainingCutoff": "2025-07",
+          "targetMonth": "2026-01",
+          "estimate": 290961,
+          "actual": 336993,
+          "error": 46032
+        },
+        {
+          "trainingCutoff": "2025-08",
+          "targetMonth": "2026-02",
+          "estimate": 309792,
+          "actual": 273706,
+          "error": -36086
+        },
+        {
+          "trainingCutoff": "2025-09",
+          "targetMonth": "2026-03",
+          "estimate": 201470,
+          "actual": 284931,
+          "error": 83461
+        },
+        {
+          "trainingCutoff": "2025-10",
+          "targetMonth": "2026-04",
+          "estimate": 261436,
+          "actual": 304889,
+          "error": 43453
+        },
+        {
+          "trainingCutoff": "2025-11",
+          "targetMonth": "2026-05",
+          "estimate": 300607,
+          "actual": 301954,
+          "error": 1347
+        }
+      ],
+      "qualification": "Official source label: Male'/Hulhumale. Monthly passenger movements, not unique people. June 2026 bus values quarantined as ambiguous carry-forward. No route/peak/stop demand allocation.",
+      "unavailableReason": null,
+      "modelCard": {
+        "target": "Source-defined aggregate monthly passenger movements",
+        "intendedUse": "Review aggregate service-resource plans with release lag and historical error visible.",
+        "excludedUses": [
+          "Neighborhood demand",
+          "Road congestion",
+          "Peak-hour capacity or occupancy",
+          "Predicted healthcare access"
+        ],
+        "trainingCutoff": "2026-05",
+        "evaluation": "Earlier expanding origins select the model; six later origins evaluate it at the current release-lag horizon. Previously explored history; this is not a pristine prospective holdout.",
+        "limitations": [
+          "Aggregate movements are not unique people.",
+          "COVID, service changes and category revisions can break historical relationships.",
+          "No pristine prospective holdout has been claimed.",
+          "Checks use current revised source values, not the vintages available at each historical issue date. Publication-lag and revision bias remain.",
+          "The historical range is not a certified probability interval."
+        ]
+      }
+    }
+  ],
+  "integritySha256": "5ddca5ed1845b1213c387c5d8b3c207397278199a2d031c4311b5a1cea426bb5"
+}

@@ -260,6 +260,7 @@ export type PlanningAction =
 	| { kind: 'enable-stop'; stopId: string }
 	| { kind: 'disable-service'; patternId: string }
 	| { kind: 'enable-service'; patternId: string }
+	| { kind: 'shift-timetable'; patternId: string; minutes: number }
 	| {
 			kind: 'add-route';
 			pattern: PlanningServicePattern;

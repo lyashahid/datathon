@@ -1,8 +1,9 @@
 node_modules
 
-# Original public downloads are reproducible from scripts/public-data.py.
+# Keep acquisition originals locally; source manifests record their hashes.
 /data/raw/
 /data/public/archive/
+/data/local/
 /artifacts/qa/
 /artifacts/graphics/
 /output/pdf/

@@ -30,6 +30,10 @@ const command = process.argv[2];
 const args =
 	command === 'setup'
 		? ['-m', 'pip', 'install', '-r', 'scripts/public-data-requirements.txt']
-		: ['scripts/public-data.py', command, ...process.argv.slice(3)];
+		: command === 'prediction'
+			? ['scripts/prediction-data.py', ...process.argv.slice(3)]
+			: command === 'prediction-test'
+				? ['scripts/test_prediction_data.py']
+				: ['scripts/public-data.py', command, ...process.argv.slice(3)];
 const result = spawnSync(python, args, { stdio: 'inherit', windowsHide: true });
 process.exit(result.status ?? 1);

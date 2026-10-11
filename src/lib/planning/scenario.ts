@@ -9,6 +9,7 @@ import type {
 import { buildNetworkGraph, nearestGraphNode, pathCoordinates, shortestPaths } from './graph.ts';
 import { patternIsValid } from './routing.ts';
 import { isFacilityProposal } from './facilities.ts';
+import { shiftTimetable } from './shiftTimetable.ts';
 
 export interface PlanningWorld {
 	stops: PlanningStop[];
@@ -204,6 +205,17 @@ export function derivePlanningWorld(
 					? { ...p, enabled: action.kind === 'enable-service', provenance: 'assumed' }
 					: p
 			);
+			continue;
+		}
+		if (action.kind === 'shift-timetable') {
+			const replacement = shiftTimetable(target, action.minutes);
+			if (!replacement) {
+				warnings.push(
+					`${target.name}: timetable shift ignored; requires a valid scheduled bus pattern, whole minutes within 15, and no midnight crossing.`
+				);
+				continue;
+			}
+			patterns = patterns.map((p) => (p.id === target.id ? replacement : p));
 			continue;
 		}
 		if (action.kind === 'replace-route') {

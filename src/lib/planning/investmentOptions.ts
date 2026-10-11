@@ -220,6 +220,24 @@ export async function compareAffordableInvestments(
 	const currentActions = [...(options.actions ?? [])];
 	const current = await analyze(currentActions, options.assumptions);
 	const basis = options.costBasis ?? 'high';
+	if (
+		currentActions.some((action) => action.kind === 'shift-timetable') ||
+		options.assumptions.disruptions?.length
+	) {
+		const reason =
+			'Timetable changes or road interventions have unestimated implementation costs. Obtain operator and engineering cost estimates before comparing the whole proposal against capital and annual operating limits.';
+		return {
+			alternatives: [],
+			excluded: [{ label: 'Whole-proposal affordability', reason }],
+			notes: [
+				'Whole-proposal affordability is not established; no affordable options are certified.',
+				reason,
+				'You can still inspect access and journey changes. To compare a separate fully costed proposal, remove these timetable or road assumptions from that comparison.'
+			],
+			baseline: current,
+			costBasis: basis
+		};
+	}
 	const generated = candidates(baseline, options);
 	const excluded = generated.excluded;
 	const alternatives: InvestmentAlternative[] = [];

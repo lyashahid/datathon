@@ -67,10 +67,10 @@ The custom layer sits below route layers, keeping route markings legible. Reduce
 
 The permanent honeycomb revision was checked on the production preview at 1366 × 768 and 390 × 844. People and Access both showed hexagonal cells. Selecting a mixed cell displayed 545 modeled residents and 5% within the access target, with a separately labeled example journey. A local clinic edit and its Undo/Redo illustrated Hulhumalé only; Malé and Vilimalé retained their ordinary map colors throughout the captured frames. The brighter leading edge and deeper trail remained legible over the atlas. Mobile selection, collapsed/expanded details, and menu history controls worked; the document width stayed 390 px at the 390 px viewport. Undo restored the original saved proposal's 230,523 reached residents and cost/carbon estimates.
 
-Current screenshots are `artifacts/qa/honeycomb-map-desktop.png`, `artifacts/qa/honeycomb-map-local-wave.png`, `artifacts/qa/honeycomb-map-mobile.png`, and `artifacts/qa/honeycomb-map-mobile-wave.png`. All 454 tests, Svelte checks, lint, and the production build passed. These visual checks confirm scope and appearance; they do not measure frame rate.
+The renderer release passed its automated checks and visual review. See [current release verification](prediction-release.md#verification) for the maintained application checks. These recorded visual checks confirm scope and appearance; they do not measure frame rate. Temporary screenshots are not retained.
 
 ### Earlier renderer checks
 
 The production preview was exercised at 1366 × 768 and 390 × 844. Proposed clinic and school placement, adding an unserved stop, committing a bus connection, and Undo each triggered recalculation feedback. The unserved stop did not increase access. Rapid Redo → Undo → Redo published the final matching clinic result; a subsequent Undo restored the original saved proposal. The GPU overlay remained aligned with the shoreline in perspective mode, and no recalculation-renderer warnings were captured.
 
-Screenshots are saved in `artifacts/qa/recalculation-wave-honeycomb.png`, `artifacts/qa/recalculation-wave-mobile.png`, and `artifacts/qa/recalculation-wave-perspective.png`. These visual checks confirm layout, alignment, and feedback states; they do not establish a measured frame-rate guarantee.
+These recorded visual checks confirm layout, alignment, and feedback states; they do not establish a measured frame-rate guarantee. Temporary screenshots are not retained.

@@ -6,11 +6,17 @@
 	let {
 		comparison,
 		pending = false,
-		example = false
+		example = false,
+		beforeLabel = 'Before',
+		afterLabel = 'With proposal',
+		unavailable = false
 	}: {
 		comparison: OriginComparison | null;
 		pending?: boolean;
 		example?: boolean;
+		beforeLabel?: string;
+		afterLabel?: string;
+		unavailable?: boolean;
 	} = $props();
 
 	const change = $derived(journeyChange(comparison ?? undefined));
@@ -40,26 +46,28 @@
 
 <section
 	class="journey-comparison"
-	class:improved={!pending && improved}
-	class:worsened={!pending && worsened}
+	class:improved={!pending && !unavailable && improved}
+	class:worsened={!pending && !unavailable && worsened}
 	class:pending
-	aria-label="Before and after journey time"
+	aria-label={`${beforeLabel} and ${afterLabel} journey time`}
 	aria-busy={pending}
 >
 	<header>
 		<h3>Journey time</h3>
-		{#if pending}<span class="calculating" role="status">Recalculating…</span>{/if}
+		{#if pending && !unavailable}<span class="calculating" role="status">Recalculating…</span>{/if}
 	</header>
-	{#if comparison}
+	{#if unavailable}
+		<p class="empty">Journey results are unavailable. Retry the calculation to assess this area.</p>
+	{:else if comparison}
 		{#if example}<p class="example">Example journey in this area</p>{/if}
 		<div class="comparison-values">
 			<div class="before">
-				<span class="label">Before</span>
+				<span class="label">{beforeLabel}</span>
 				<strong>{time(comparison.before)}</strong>
 			</div>
 			<ArrowRight size={17} strokeWidth={1.8} class="journey-arrow" aria-hidden="true" />
 			<div class="after">
-				<span class="label">With proposal</span>
+				<span class="label">{afterLabel}</span>
 				<strong>{time(comparison.after)}</strong>
 			</div>
 		</div>

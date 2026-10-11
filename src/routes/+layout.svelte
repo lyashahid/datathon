@@ -1,13 +1,19 @@
 <script lang="ts">
 	import './layout.css';
-	import favicon from '#lib/assets/favicon.svg';
 	import type { LayoutProps } from './$types';
+	import MobilityWorkspace from '#lib/components/workspace/MobilityWorkspace.svelte';
+	import { page } from '$app/state';
 
-	let { children }: LayoutProps = $props();
+	let { children, data }: LayoutProps = $props();
+	const pathname = $derived(page.url.pathname);
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" href="data:," />
 </svelte:head>
 
-{@render children()}
+{#if ['/', '/forecasts', '/decisions', '/evidence'].includes(pathname)}
+	<MobilityWorkspace {data} />
+{:else}
+	{@render children()}
+{/if}

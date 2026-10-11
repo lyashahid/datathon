@@ -20,7 +20,7 @@ State takes precedence over category color. Proposed investments and placement p
 
 The visual hierarchy is controlled by zoom and collisions. Baseline stops remain small dots in the overview; bus badges appear from zoom 14 and grow from about 23 to 27 px in visible diameter. Facilities grow from about 21 to 30 px. Existing badges respect symbol collisions; the underlying stop dots remain available when a badge is suppressed. Proposed and moved stop badges remain visible, grow from about 24 to 32 px, and may overlap so scenario changes can be found. Placement previews, selection handles and drag overlays have priority above ordinary markers. Sea and air context badges stay upright and compact, rather than rotating their whole background by vessel heading.
 
-Visual QA on 2026-10-10 covered desktop overview, neighborhood stops, hospital and clinic details, proposed-stop selection, and the 390 px phone overview. The saved scenario was not edited. Svelte check, lint and production build passed, along with the 13 existing map-editing tests. Captures: [neighborhood](../artifacts/qa/map-symbols-neighborhood.png), [healthcare](../artifacts/qa/map-symbols-healthcare.png) and [phone](../artifacts/qa/map-symbols-phone.png).
+Visual QA on 2026-10-10 covered desktop overview, neighborhood stops, hospital and clinic details, proposed-stop selection, and the 390 px phone overview. The saved scenario was not edited. Svelte check, lint and production build passed, along with the 13 existing map-editing tests. Temporary screenshots are not retained; the original illustrations below remain available for regeneration.
 
 ## Generated illustrations
 

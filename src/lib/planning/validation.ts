@@ -188,6 +188,13 @@ export function validSavedActions(v: unknown): v is PlanningAction[] {
 					(a.returnPattern === undefined || pattern(a.returnPattern)) &&
 					(a.stops === undefined || (Array.isArray(a.stops) && a.stops.every(stop)))
 				);
+			case 'shift-timetable':
+				return (
+					id(a.patternId) &&
+					finite(a.minutes) &&
+					Number.isInteger(a.minutes) &&
+					Math.abs(a.minutes) <= 15
+				);
 			case 'replace-route':
 				return (
 					id(a.patternId) &&

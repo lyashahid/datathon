@@ -1,6 +1,7 @@
 import { PDFDocument, PDFName, PDFString, StandardFonts, rgb, type PDFFont } from 'pdf-lib';
 
 export interface PolicyBriefPdfPayload {
+	kind?: 'policy' | 'forecast';
 	title: string;
 	location: string;
 	summary?: string;
@@ -159,7 +160,16 @@ export async function generatePolicyBriefPdf(payload: PolicyBriefPdfPayload): Pr
 			color: rgb(0.78, 0.85, 0.84)
 		});
 	}
-	text('MOBILITY SANDBOX MV / POLICY BRIEF', MARGIN, 810, contentWidth, 8, 1, true, teal);
+	text(
+		`MOBILITY SANDBOX MV / ${payload.kind === 'forecast' ? 'FORECAST' : 'POLICY'} BRIEF`,
+		MARGIN,
+		810,
+		contentWidth,
+		8,
+		1,
+		true,
+		teal
+	);
 	text(`${payload.location} | ${payload.date}`, MARGIN, 791, contentWidth, 9, 1, false, muted);
 	text(payload.title, MARGIN, 768, contentWidth, 20, 2, true);
 	text(
@@ -202,7 +212,9 @@ export async function generatePolicyBriefPdf(payload: PolicyBriefPdfPayload): Pr
 	}
 	if (!mapRendered)
 		text(
-			'Map capture unavailable. Open the saved scenario to inspect the intervention geography.',
+			payload.kind === 'forecast'
+				? 'Open Plan ahead in the application to inspect the passenger chart.'
+				: 'Map capture unavailable. Open the saved scenario to inspect the intervention geography.',
 			MARGIN + 16,
 			mapBottom + 82,
 			mapWidth - 32,
@@ -212,7 +224,9 @@ export async function generatePolicyBriefPdf(payload: PolicyBriefPdfPayload): Pr
 			muted
 		);
 	text(
-		'Top-down scenario map; population distribution is modeled.',
+		payload.kind === 'forecast'
+			? 'Recorded passenger totals and exploratory forecasts.'
+			: 'Top-down scenario map; population distribution is modeled.',
 		MARGIN,
 		mapBottom - 12,
 		mapWidth,
@@ -223,7 +237,12 @@ export async function generatePolicyBriefPdf(payload: PolicyBriefPdfPayload): Pr
 	);
 	const rightX = MARGIN + mapWidth + 18,
 		rightWidth = contentWidth - mapWidth - 18;
-	heading('Proposed change', rightX, 681, rightWidth);
+	heading(
+		payload.kind === 'forecast' ? 'Planning use' : 'Proposed change',
+		rightX,
+		681,
+		rightWidth
+	);
 	if (!payload.interventions.length)
 		text('No intervention selected.', rightX, 659, rightWidth, 8.5, 2, false, muted);
 	else
@@ -245,10 +264,24 @@ export async function generatePolicyBriefPdf(payload: PolicyBriefPdfPayload): Pr
 		);
 
 	const metricTop = 491;
-	heading('Investment and impact', MARGIN, 503, contentWidth);
+	heading(
+		payload.kind === 'forecast' ? 'Passenger outlook' : 'Investment and impact',
+		MARGIN,
+		503,
+		contentWidth
+	);
 	text('MEASURE', MARGIN, metricTop, 250, 7, 1, true, muted);
-	text('BASELINE', 310, metricTop, 105, 7, 1, true, muted);
-	text('PROPOSAL', 434, metricTop, 130, 7, 1, true, teal);
+	if (payload.kind !== 'forecast') text('BASELINE', 310, metricTop, 105, 7, 1, true, muted);
+	text(
+		payload.kind === 'forecast' ? 'VALUE' : 'PROPOSAL',
+		payload.kind === 'forecast' ? 310 : 434,
+		metricTop,
+		130,
+		7,
+		1,
+		true,
+		teal
+	);
 	payload.metrics.slice(0, 6).forEach((metric, index) => {
 		const y = 471 - index * 27;
 		if (index % 2 === 0)
@@ -261,7 +294,8 @@ export async function generatePolicyBriefPdf(payload: PolicyBriefPdfPayload): Pr
 			});
 		text(metric.label, MARGIN + 5, y, 260, 8.2, 1, true);
 		text(metric.detail ?? '', MARGIN + 5, y - 10.5, 260, 6.6, 1, false, muted);
-		text(formatted(metric.before, metric.unit), 310, y, 112, 8, 2, false, muted);
+		if (payload.kind !== 'forecast')
+			text(formatted(metric.before, metric.unit), 310, y, 112, 8, 2, false, muted);
 		const resultColor =
 			metric.after == null
 				? muted
@@ -270,7 +304,16 @@ export async function generatePolicyBriefPdf(payload: PolicyBriefPdfPayload): Pr
 					: metric.afterTone === 'favorable'
 						? teal
 						: ink;
-		text(formatted(metric.after, metric.unit), 434, y, 126, 8, 2, true, resultColor);
+		text(
+			formatted(metric.after, metric.unit),
+			payload.kind === 'forecast' ? 310 : 434,
+			y,
+			payload.kind === 'forecast' ? 250 : 126,
+			8,
+			2,
+			true,
+			resultColor
+		);
 	});
 	if (!payload.metrics.length)
 		text(
@@ -297,21 +340,32 @@ export async function generatePolicyBriefPdf(payload: PolicyBriefPdfPayload): Pr
 		);
 	}
 
-	heading('Residents gaining and losing access', MARGIN, 302, contentWidth);
-	text('ISLAND', MARGIN, 284, 245, 7, 1, true, muted);
-	text('GAIN', 312, 284, 67, 7, 1, true, muted);
-	text('LOSS', 393, 284, 67, 7, 1, true, muted);
-	text('UNKNOWN', 474, 284, 91, 7, 1, true, muted);
-	const impacts = payload.islandImpacts ?? [];
-	impacts.slice(0, 4).forEach((impact, index) => {
-		const y = 269 - index * 12;
-		text(impact.name, MARGIN, y, 265, 7.8);
-		text(formatted(Math.round(impact.gained)), 312, y, 67, 7.8);
-		text(formatted(Math.round(impact.lost)), 393, y, 67, 7.8);
-		text(formatted(Math.round(impact.unknown)), 474, y, 91, 7.8);
-	});
-	if (!impacts.length)
-		text('Island-level distribution not supplied.', MARGIN, 273, contentWidth, 8, 1, false, muted);
+	if (payload.kind !== 'forecast') {
+		heading('Residents gaining and losing access', MARGIN, 302, contentWidth);
+		text('ISLAND', MARGIN, 284, 245, 7, 1, true, muted);
+		text('GAIN', 312, 284, 67, 7, 1, true, muted);
+		text('LOSS', 393, 284, 67, 7, 1, true, muted);
+		text('UNKNOWN', 474, 284, 91, 7, 1, true, muted);
+		const impacts = payload.islandImpacts ?? [];
+		impacts.slice(0, 4).forEach((impact, index) => {
+			const y = 269 - index * 12;
+			text(impact.name, MARGIN, y, 265, 7.8);
+			text(formatted(Math.round(impact.gained)), 312, y, 67, 7.8);
+			text(formatted(Math.round(impact.lost)), 393, y, 67, 7.8);
+			text(formatted(Math.round(impact.unknown)), 474, y, 91, 7.8);
+		});
+		if (!impacts.length)
+			text(
+				'Island-level distribution not supplied.',
+				MARGIN,
+				273,
+				contentWidth,
+				8,
+				1,
+				false,
+				muted
+			);
+	}
 
 	const columnWidth = (contentWidth - 20) / 2,
 		columnRight = MARGIN + columnWidth + 20;

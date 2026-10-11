@@ -109,6 +109,7 @@
 		overviewRequest = 0,
 		controlsHeight = 44,
 		mobileBottomInset = 76,
+		planningDockActive = false,
 		onselect,
 		onplace,
 		onready,
@@ -177,6 +178,7 @@
 		controlsHeight?: number;
 		/** Visible mobile navigation and sheet height, in map-container pixels. */
 		mobileBottomInset?: number;
+		planningDockActive?: boolean;
 		onselect: (originId: string, cellId: string) => void;
 		onplace: (position: [number, number]) => void;
 		onready?: (capture: () => Promise<string>) => void;
@@ -270,6 +272,7 @@
 	let renderPlacement: (() => void) | undefined;
 	let insetCameraMap: LibreMap | null = null;
 	let cameraBottomInset: number | undefined;
+	let pendingFocusCoordinate: [number, number] | null = null;
 	let policyLayerMap: LibreMap | null = null;
 	const policyLayerIds = new SvelteMap<string, string[]>();
 	let mobileFocus: {
@@ -279,7 +282,14 @@
 		cancel: () => void;
 	} | null = null;
 	function panMobileInset(m: LibreMap, difference: number) {
-		if (autoFit || container.clientWidth > 680 || Math.abs(difference) < 1) return;
+		if (
+			autoFit ||
+			container.clientWidth <= 0 ||
+			container.clientHeight <= 0 ||
+			container.clientWidth > 680 ||
+			Math.abs(difference) < 1
+		)
+			return;
 		m.panBy([0, difference / 2], {
 			duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 220
 		});
@@ -331,13 +341,18 @@
 				right: 24
 			};
 		return {
-			top: Math.min(height * 0.35, controlsHeight + 40),
-			bottom: Math.min(height * 0.45, 110),
+			top: Math.min(height * 0.25, controlsHeight + 12, 90),
+			bottom: Math.min(height * 0.45, mobileBottomInset + 20),
 			left: Math.min(240, width * 0.16),
 			right: Math.min(240, width * 0.16)
 		};
 	}
 	function focusOptions() {
+		if (planningDockActive && container.clientWidth > 680) {
+			const top = Math.min(100, controlsHeight);
+			const bottom = Math.min(mobileBottomInset + 20, container.clientHeight - top - 96);
+			return { padding: 0, offset: [0, (top - bottom) / 2] as [number, number] };
+		}
 		if (container.clientWidth <= 680) {
 			const { top } = overviewPadding();
 			// Focus uses the actual sheet occlusion; overview's capped padding is
@@ -352,10 +367,34 @@
 				offset: [0, (top - bottom) / 2] as [number, number]
 			};
 		}
+		const width = container.clientWidth;
+		const panelWidth =
+			container.clientHeight <= 500
+				? Math.min(420, width - 384)
+				: width >= 1600
+					? 390
+					: width <= 900
+						? 300
+						: width <= 1150
+							? 335
+							: 360;
 		return {
 			padding: 0,
-			offset: [Math.min(110, container.clientWidth * 0.11), -65] as [number, number]
+			// Keep the selected location between the planning controls and detail panel.
+			offset: [(312 - panelWidth) / 2, -65] as [number, number]
 		};
+	}
+	function focusAt(m: LibreMap, coordinate: [number, number], animate = true) {
+		insetCameraMap = m;
+		cameraBottomInset = mobileBottomInset;
+		if (container.clientWidth <= 680) trackMobileFocus(m, mobileBottomInset);
+		else mobileFocus?.cancel();
+		m.easeTo({
+			center: coordinate,
+			zoom: 14.5,
+			...focusOptions(),
+			duration: animate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 250 : 0
+		});
 	}
 	function removeBasemap(m: LibreMap) {
 		for (const layer of [...(m.getStyle().layers ?? [])].reverse())
@@ -391,13 +430,18 @@
 		let removeWaveListeners: (() => void) | undefined;
 		let resizeFrame = 0;
 		let cameraWasMobile = container.clientWidth <= 680;
+		let cameraWasShort = container.clientHeight <= 500;
 		const resizeObserver = new ResizeObserver(() => {
 			cancelAnimationFrame(resizeFrame);
 			resizeFrame = requestAnimationFrame(() => {
 				const m = instance;
 				if (!m) return;
+				// Analytical pages keep this map mounted. A hidden container is not a
+				// mobile viewport, and resizing it to zero would discard its camera.
+				if (container.clientWidth <= 0 || container.clientHeight <= 0) return;
 				const mobile = container.clientWidth <= 680;
-				const crossedBreakpoint = mobile !== cameraWasMobile;
+				const short = container.clientHeight <= 500;
+				const crossedBreakpoint = mobile !== cameraWasMobile || short !== cameraWasShort;
 				const center = m.getCenter();
 				const zoom = m.getZoom();
 				const padding = m.getPadding();
@@ -414,7 +458,11 @@
 					insetCameraMap = m;
 					cameraBottomInset = mobileBottomInset;
 				}
-				if (autoFit)
+				if (pendingFocusCoordinate) {
+					const coordinate = pendingFocusCoordinate;
+					pendingFocusCoordinate = null;
+					focusAt(m, coordinate, false);
+				} else if (autoFit)
 					m.fitBounds(
 						[
 							[73.476, 4.165],
@@ -423,13 +471,14 @@
 						{ duration: 0, padding: overviewPadding() }
 					);
 				else if (crossedBreakpoint && focusCoordinate) {
-					// A selected area has different desktop and phone offsets. Re-anchor
+					// Compact layouts change the position of the overlays. Re-anchor
 					// it once to the new usable viewport, keeping the explored zoom.
 					if (mobile) trackMobileFocus(m, mobileBottomInset);
 					m.easeTo({ center: focusCoordinate, zoom, ...focusOptions(), duration: 0 });
 				} else if (crossedBreakpoint || retainedPadding)
 					m.jumpTo({ center, zoom, padding: { top: 0, bottom: 0, left: 0, right: 0 } });
 				cameraWasMobile = mobile;
+				cameraWasShort = short;
 			});
 		});
 		resizeObserver.observe(container);
@@ -469,6 +518,11 @@
 			instance.touchZoomRotate.disableRotation();
 			instance.on('dragstart', () => {
 				autoFit = false;
+			});
+			instance.on('movestart', (event) => {
+				// Wheel, navigation-button and keyboard exploration should survive a
+				// page switch just as dragging does. Programmatic overview fits stay automatic.
+				if (event.originalEvent) autoFit = false;
 			});
 			instance.addControl(
 				new lib.AttributionControl({
@@ -1915,38 +1969,35 @@
 		if (placing || connectionMode) canvas.focus({ preventScroll: true });
 	});
 	$effect(() => {
-		map?.easeTo({
+		if (!map || container.clientWidth <= 0 || container.clientHeight <= 0) return;
+		map.easeTo({
 			pitch: perspective ? 32 : 0,
 			bearing: 0,
 			duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 220
 		});
 	});
 	$effect(() => {
-		if (focusCoordinate) {
-			autoFit = false;
-			const focusMap = map;
-			// A new focus already includes the current sheet inset. Seed the pan baseline
-			// without subscribing this effect to subsequent drawer-height changes.
-			if (focusMap)
-				untrack(() => {
-					insetCameraMap = focusMap;
-					cameraBottomInset = mobileBottomInset;
-					if (container.clientWidth <= 680) trackMobileFocus(focusMap, mobileBottomInset);
-					else mobileFocus?.cancel();
-				});
-			focusMap?.easeTo({
-				center: focusCoordinate,
-				zoom: 14.5,
-				// Opening details must not refocus or reset a map the user has explored.
-				...untrack(focusOptions),
-				duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 250
-			});
+		if (!focusCoordinate) {
+			pendingFocusCoordinate = null;
+			return;
 		}
+		autoFit = false;
+		const focusMap = map;
+		if (!focusMap || container.clientWidth <= 0 || container.clientHeight <= 0) {
+			pendingFocusCoordinate = [...focusCoordinate];
+			return;
+		}
+		pendingFocusCoordinate = null;
+		// A new selection owns focus. Opening a sheet or returning from an
+		// analytical page must not reset a map the user has subsequently panned.
+		untrack(() => focusAt(focusMap, focusCoordinate!));
 	});
 	$effect(() => {
 		if (!overviewRequest || !map) return;
 		mobileFocus?.cancel();
 		autoFit = true;
+		pendingFocusCoordinate = null;
+		if (container.clientWidth <= 0 || container.clientHeight <= 0) return;
 		map.fitBounds(
 			[
 				[73.476, 4.165],
@@ -1959,7 +2010,7 @@
 		);
 	});
 	$effect(() => {
-		if (map && autoFit) {
+		if (map && autoFit && container.clientWidth > 0 && container.clientHeight > 0) {
 			map.fitBounds(
 				[
 					[73.476, 4.165],
@@ -2011,8 +2062,9 @@
 	aria-label="Interactive Greater Malé policy atlas"
 ></div>
 <p id={instructionsId} class="map-instructions">
-	Use arrow keys to pan the map, and plus or minus to zoom. For keyboard stop editing, choose
-	Services in the map tool tray, then use Move in the Stops panel.
+	Use arrow keys to pan the map, and plus or minus to zoom.
+	{#if onstopselect && onstopcommit}Use Add stop or Draw route in the bottom planning panel. To move
+		an existing stop, select it and choose Move stop.{/if}
 	{#if connectionMode}Choose bus stops in order. Tap an existing stop or a road to add a stop. For
 		keyboard input, pan a stop or road under the center target, then press Enter or Space. Escape
 		cancels the connection.
@@ -2113,11 +2165,11 @@
 		gap: 16px;
 		padding: 9px 10px 9px 14px;
 		border: 1px solid #c7dbd7;
-		border-radius: 12px;
+		border-radius: var(--surface-radius);
 		background: #ffffffee;
 		color: #17444d;
 		font-size: 12px;
-		box-shadow: 0 6px 20px #17444d1a;
+		box-shadow: var(--surface-shadow);
 		z-index: 3;
 		width: max-content;
 		max-width: calc(100% - 24px);
@@ -2125,7 +2177,7 @@
 	}
 	.drag-hint button {
 		border: 0;
-		border-radius: 7px;
+		border-radius: var(--surface-radius-pill);
 		padding: 7px 9px;
 		background: #edf5f3;
 		color: #17444d;
@@ -2142,7 +2194,7 @@
 		margin-top: 8px;
 		padding: 9px 10px;
 		border: 1px solid #d7e4df;
-		border-radius: 7px;
+		border-radius: var(--surface-radius-pill);
 		background: #f3f8f6;
 		color: #17444d;
 		text-align: left;
@@ -2185,12 +2237,14 @@
 	:global(.maplibregl-popup-close-button) {
 		width: 28px;
 		height: 28px;
-		border-radius: 6px;
+		border-radius: var(--surface-radius-pill);
 		color: #536c74;
 		font-size: 20px;
 	}
 	:global(.maplibregl-popup-content) {
-		padding-right: 32px;
+		padding: 18px 38px 18px 18px;
+		border-radius: var(--surface-radius-mobile);
+		box-shadow: var(--surface-shadow-raised);
 		max-height: calc(100dvh - 80px);
 		overflow-y: auto;
 		overflow-wrap: anywhere;
@@ -2238,8 +2292,8 @@
 			0 0 8px #14323f;
 	}
 	:global(.maplibregl-ctrl-group) {
-		border-radius: 10px;
-		box-shadow: 0 3px 18px #2e67751a;
+		border-radius: var(--surface-radius-pill);
+		box-shadow: var(--surface-shadow);
 		overflow: hidden;
 	}
 	:global(.maplibregl-ctrl-scale) {

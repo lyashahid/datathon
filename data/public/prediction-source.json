@@ -1,0 +1,867 @@
+{
+  "version": 1,
+  "asOf": "2026-10-11T12:00:06.863747+00:00",
+  "sourceIds": [
+    "latest_june_2026",
+    "may_2026",
+    "dec_2023_issue",
+    "dec_2024_issue"
+  ],
+  "dataQualityNotes": [
+    "Experimental aggregate outlook. Forecasts are not predicted riders, road congestion or capacity utilization.",
+    "All six June 2026 bus categories repeat May exactly; quarantine June as ambiguous carry-forward, without claiming proven imputation.",
+    "Ferry endpoint categories are kept separate. Boarding/alighting and directional definitions are unresolved.",
+    "Free-of-charge passengers are not added to route categories because overlap is undocumented.",
+    "Published history has been explored and uses revised historical values. Backtests are exploratory revised-vintage evaluation, not an untouched final or real-time publication-vintage test.",
+    "Latest checked monthly issue June 2026 was published 7 September 2026. Last actual ferry month June; trusted bus month May. Intervening months are unobserved estimates.",
+    "No explicit open redistribution licence has been established for the RTL coordinate capability. Vehicle capture stays private; only aggregate receipt is public.",
+    "A bounded route-133 capture verified changing public coordinates. Only aggregate capture evidence is published; no source measurement timestamp or evaluated passage-time forecast exists."
+  ],
+  "series": [
+    {
+      "id": "ferry-male-vm",
+      "name": "Malé · VM ferry endpoint",
+      "mode": "ferry",
+      "geography": "Malé endpoint of the published VM ferry category",
+      "lastActualMonth": "2026-06",
+      "unit": "passenger movements",
+      "sourceUrl": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2026/09/MIF_June-2026.xlsx",
+      "points": [
+        {
+          "month": "2022-01",
+          "value": 149608
+        },
+        {
+          "month": "2022-02",
+          "value": 154728
+        },
+        {
+          "month": "2022-03",
+          "value": 195808
+        },
+        {
+          "month": "2022-04",
+          "value": 160885
+        },
+        {
+          "month": "2022-05",
+          "value": 170668
+        },
+        {
+          "month": "2022-06",
+          "value": 171264
+        },
+        {
+          "month": "2022-07",
+          "value": 155262
+        },
+        {
+          "month": "2022-08",
+          "value": 171041
+        },
+        {
+          "month": "2022-09",
+          "value": 173489
+        },
+        {
+          "month": "2022-10",
+          "value": 176715
+        },
+        {
+          "month": "2022-11",
+          "value": 178651
+        },
+        {
+          "month": "2022-12",
+          "value": 183235
+        },
+        {
+          "month": "2023-01",
+          "value": 190858
+        },
+        {
+          "month": "2023-02",
+          "value": 178020
+        },
+        {
+          "month": "2023-03",
+          "value": 182973
+        },
+        {
+          "month": "2023-04",
+          "value": 167365
+        },
+        {
+          "month": "2023-05",
+          "value": 182480
+        },
+        {
+          "month": "2023-06",
+          "value": 170460
+        },
+        {
+          "month": "2023-07",
+          "value": 176250
+        },
+        {
+          "month": "2023-08",
+          "value": 189264
+        },
+        {
+          "month": "2023-09",
+          "value": 175180
+        },
+        {
+          "month": "2023-10",
+          "value": 185784
+        },
+        {
+          "month": "2023-11",
+          "value": 184755
+        },
+        {
+          "month": "2023-12",
+          "value": 178273
+        },
+        {
+          "month": "2024-01",
+          "value": 183900
+        },
+        {
+          "month": "2024-02",
+          "value": 204952
+        },
+        {
+          "month": "2024-03",
+          "value": 202768
+        },
+        {
+          "month": "2024-04",
+          "value": 183761
+        },
+        {
+          "month": "2024-05",
+          "value": 188398
+        },
+        {
+          "month": "2024-06",
+          "value": 196110
+        },
+        {
+          "month": "2024-07",
+          "value": 208544
+        },
+        {
+          "month": "2024-08",
+          "value": 207013
+        },
+        {
+          "month": "2024-09",
+          "value": 218607
+        },
+        {
+          "month": "2024-10",
+          "value": 225523
+        },
+        {
+          "month": "2024-11",
+          "value": 227186
+        },
+        {
+          "month": "2024-12",
+          "value": 239166
+        },
+        {
+          "month": "2025-01",
+          "value": 209124
+        },
+        {
+          "month": "2025-02",
+          "value": 207140
+        },
+        {
+          "month": "2025-03",
+          "value": 182949
+        },
+        {
+          "month": "2025-04",
+          "value": 216474
+        },
+        {
+          "month": "2025-05",
+          "value": 237182
+        },
+        {
+          "month": "2025-06",
+          "value": 229782
+        },
+        {
+          "month": "2025-07",
+          "value": 222975
+        },
+        {
+          "month": "2025-08",
+          "value": 235219
+        },
+        {
+          "month": "2025-09",
+          "value": 246864
+        },
+        {
+          "month": "2025-10",
+          "value": 229701
+        },
+        {
+          "month": "2025-11",
+          "value": 238679
+        },
+        {
+          "month": "2025-12",
+          "value": 234491
+        },
+        {
+          "month": "2026-01",
+          "value": 236957
+        },
+        {
+          "month": "2026-02",
+          "value": 203414
+        },
+        {
+          "month": "2026-03",
+          "value": 216423
+        },
+        {
+          "month": "2026-04",
+          "value": 231559
+        },
+        {
+          "month": "2026-05",
+          "value": 241642
+        },
+        {
+          "month": "2026-06",
+          "value": 227237
+        }
+      ],
+      "qualification": "Official source label: Male' ( VM Ferry ). Monthly passenger movements, not unique people. Endpoint direction/boarding versus alighting interpretation is undocumented; endpoints remain separate."
+    },
+    {
+      "id": "ferry-villigili-vm",
+      "name": "Villigili · VM ferry endpoint",
+      "mode": "ferry",
+      "geography": "Villigili endpoint of the published VM ferry category",
+      "lastActualMonth": "2026-06",
+      "unit": "passenger movements",
+      "sourceUrl": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2026/09/MIF_June-2026.xlsx",
+      "points": [
+        {
+          "month": "2022-01",
+          "value": 151709
+        },
+        {
+          "month": "2022-02",
+          "value": 156571
+        },
+        {
+          "month": "2022-03",
+          "value": 198032
+        },
+        {
+          "month": "2022-04",
+          "value": 160443
+        },
+        {
+          "month": "2022-05",
+          "value": 169072
+        },
+        {
+          "month": "2022-06",
+          "value": 171667
+        },
+        {
+          "month": "2022-07",
+          "value": 156769
+        },
+        {
+          "month": "2022-08",
+          "value": 168903
+        },
+        {
+          "month": "2022-09",
+          "value": 176112
+        },
+        {
+          "month": "2022-10",
+          "value": 179205
+        },
+        {
+          "month": "2022-11",
+          "value": 179136
+        },
+        {
+          "month": "2022-12",
+          "value": 183236
+        },
+        {
+          "month": "2023-01",
+          "value": 190604
+        },
+        {
+          "month": "2023-02",
+          "value": 178539
+        },
+        {
+          "month": "2023-03",
+          "value": 182499
+        },
+        {
+          "month": "2023-04",
+          "value": 166625
+        },
+        {
+          "month": "2023-05",
+          "value": 183760
+        },
+        {
+          "month": "2023-06",
+          "value": 170848
+        },
+        {
+          "month": "2023-07",
+          "value": 170418
+        },
+        {
+          "month": "2023-08",
+          "value": 191465
+        },
+        {
+          "month": "2023-09",
+          "value": 174935
+        },
+        {
+          "month": "2023-10",
+          "value": 185673
+        },
+        {
+          "month": "2023-11",
+          "value": 183811
+        },
+        {
+          "month": "2023-12",
+          "value": 178754
+        },
+        {
+          "month": "2024-01",
+          "value": 186946
+        },
+        {
+          "month": "2024-02",
+          "value": 205656
+        },
+        {
+          "month": "2024-03",
+          "value": 204794
+        },
+        {
+          "month": "2024-04",
+          "value": 178376
+        },
+        {
+          "month": "2024-05",
+          "value": 188251
+        },
+        {
+          "month": "2024-06",
+          "value": 192765
+        },
+        {
+          "month": "2024-07",
+          "value": 202835
+        },
+        {
+          "month": "2024-08",
+          "value": 204057
+        },
+        {
+          "month": "2024-09",
+          "value": 222729
+        },
+        {
+          "month": "2024-10",
+          "value": 229970
+        },
+        {
+          "month": "2024-11",
+          "value": 235537
+        },
+        {
+          "month": "2024-12",
+          "value": 244984
+        },
+        {
+          "month": "2025-01",
+          "value": 213235
+        },
+        {
+          "month": "2025-02",
+          "value": 215520
+        },
+        {
+          "month": "2025-03",
+          "value": 197257
+        },
+        {
+          "month": "2025-04",
+          "value": 221470
+        },
+        {
+          "month": "2025-05",
+          "value": 242916
+        },
+        {
+          "month": "2025-06",
+          "value": 229004
+        },
+        {
+          "month": "2025-07",
+          "value": 219301
+        },
+        {
+          "month": "2025-08",
+          "value": 241193
+        },
+        {
+          "month": "2025-09",
+          "value": 245941
+        },
+        {
+          "month": "2025-10",
+          "value": 229010
+        },
+        {
+          "month": "2025-11",
+          "value": 235116
+        },
+        {
+          "month": "2025-12",
+          "value": 237349
+        },
+        {
+          "month": "2026-01",
+          "value": 237576
+        },
+        {
+          "month": "2026-02",
+          "value": 202996
+        },
+        {
+          "month": "2026-03",
+          "value": 218028
+        },
+        {
+          "month": "2026-04",
+          "value": 231818
+        },
+        {
+          "month": "2026-05",
+          "value": 246977
+        },
+        {
+          "month": "2026-06",
+          "value": 226614
+        }
+      ],
+      "qualification": "Official source label: Villigili' ( VM Ferry ). Monthly passenger movements, not unique people. Endpoint direction/boarding versus alighting interpretation is undocumented; endpoints remain separate."
+    },
+    {
+      "id": "bus-male-hulhumale",
+      "name": "Malé / Hulhumalé bus movements",
+      "mode": "bus",
+      "geography": "Published Malé/Hulhumalé bus category; no route or stop allocation",
+      "lastActualMonth": "2026-05",
+      "unit": "passenger movements",
+      "sourceUrl": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2026/09/MIF_June-2026.xlsx",
+      "points": [
+        {
+          "month": "2022-01",
+          "value": 189416
+        },
+        {
+          "month": "2022-02",
+          "value": 186237
+        },
+        {
+          "month": "2022-03",
+          "value": 246420
+        },
+        {
+          "month": "2022-04",
+          "value": 177791
+        },
+        {
+          "month": "2022-05",
+          "value": 228727
+        },
+        {
+          "month": "2022-06",
+          "value": 255223
+        },
+        {
+          "month": "2022-07",
+          "value": 262198
+        },
+        {
+          "month": "2022-08",
+          "value": 292534
+        },
+        {
+          "month": "2022-09",
+          "value": 264768
+        },
+        {
+          "month": "2022-10",
+          "value": 266364
+        },
+        {
+          "month": "2022-11",
+          "value": 260155
+        },
+        {
+          "month": "2022-12",
+          "value": 295562
+        },
+        {
+          "month": "2023-01",
+          "value": 261223
+        },
+        {
+          "month": "2023-02",
+          "value": 253947
+        },
+        {
+          "month": "2023-03",
+          "value": 278056
+        },
+        {
+          "month": "2023-04",
+          "value": 244060
+        },
+        {
+          "month": "2023-05",
+          "value": 274895
+        },
+        {
+          "month": "2023-06",
+          "value": 250348
+        },
+        {
+          "month": "2023-07",
+          "value": 280314
+        },
+        {
+          "month": "2023-08",
+          "value": 295794
+        },
+        {
+          "month": "2023-09",
+          "value": 261221
+        },
+        {
+          "month": "2023-10",
+          "value": 281209
+        },
+        {
+          "month": "2023-11",
+          "value": 271972
+        },
+        {
+          "month": "2023-12",
+          "value": 262468
+        },
+        {
+          "month": "2024-01",
+          "value": 243808
+        },
+        {
+          "month": "2024-02",
+          "value": 253279
+        },
+        {
+          "month": "2024-03",
+          "value": 238256
+        },
+        {
+          "month": "2024-04",
+          "value": 230852
+        },
+        {
+          "month": "2024-05",
+          "value": 279324
+        },
+        {
+          "month": "2024-06",
+          "value": 254792
+        },
+        {
+          "month": "2024-07",
+          "value": 275937
+        },
+        {
+          "month": "2024-08",
+          "value": 265902
+        },
+        {
+          "month": "2024-09",
+          "value": 290947
+        },
+        {
+          "month": "2024-10",
+          "value": 280221
+        },
+        {
+          "month": "2024-11",
+          "value": 260314
+        },
+        {
+          "month": "2024-12",
+          "value": 305567
+        },
+        {
+          "month": "2025-01",
+          "value": 290961
+        },
+        {
+          "month": "2025-02",
+          "value": 309792
+        },
+        {
+          "month": "2025-03",
+          "value": 201470
+        },
+        {
+          "month": "2025-04",
+          "value": 261436
+        },
+        {
+          "month": "2025-05",
+          "value": 300607
+        },
+        {
+          "month": "2025-06",
+          "value": 246952
+        },
+        {
+          "month": "2025-07",
+          "value": 298748
+        },
+        {
+          "month": "2025-08",
+          "value": 315530
+        },
+        {
+          "month": "2025-09",
+          "value": 303982
+        },
+        {
+          "month": "2025-10",
+          "value": 292331
+        },
+        {
+          "month": "2025-11",
+          "value": 289225
+        },
+        {
+          "month": "2025-12",
+          "value": 294395
+        },
+        {
+          "month": "2026-01",
+          "value": 336993
+        },
+        {
+          "month": "2026-02",
+          "value": 273706
+        },
+        {
+          "month": "2026-03",
+          "value": 284931
+        },
+        {
+          "month": "2026-04",
+          "value": 304889
+        },
+        {
+          "month": "2026-05",
+          "value": 301954
+        }
+      ],
+      "qualification": "Official source label: Male'/Hulhumale. Monthly passenger movements, not unique people. June 2026 bus values quarantined as ambiguous carry-forward. No route/peak/stop demand allocation."
+    }
+  ],
+  "audit": {
+    "sources": {
+      "latest_june_2026": {
+        "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2026/09/MIF_June-2026.xlsx",
+        "sha256": "e591c7a3adbf20937a7fea49ec5970fb28f2aa25adf53bea191436b26e15bfaa",
+        "publication_sheet": "June 2026"
+      },
+      "may_2026": {
+        "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2026/07/MIF-May-2026.xlsx",
+        "sha256": "c990a3eb076b226cd429e2d95ae25c7b9e112c23b357a0f58612cd948d6ce933",
+        "publication_sheet": "May 2026"
+      },
+      "dec_2023_issue": {
+        "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2024/02/MIF-Dec-2023.xlsx",
+        "sha256": "b4052e088770773caa4a40b3cc5af445b30c88d193b336dbcbf4c2c0dca89f34",
+        "publication_sheet": "Nov 2022"
+      },
+      "dec_2024_issue": {
+        "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2025/01/MIF_Dec-2024.xlsx",
+        "sha256": "f5a79931a5e3ab1a78e3fda26a47464eb730a58665c79071c2a6af073fa46d0d",
+        "publication_sheet": "dec 2024"
+      }
+    },
+    "publishedAt": "2026-09-07",
+    "sourceTables": [
+      "11.2",
+      "11.3"
+    ],
+    "quarantinedBusMonth": "2026-06",
+    "repeatedBusValues": [
+      {
+        "source_row": 166,
+        "label": "Airport",
+        "may": 52386,
+        "june": 52386,
+        "equal": true,
+        "matches_prior_may_release": true
+      },
+      {
+        "source_row": 167,
+        "label": "Male'/Hulhumale",
+        "may": 301954,
+        "june": 301954,
+        "equal": true,
+        "matches_prior_may_release": true
+      },
+      {
+        "source_row": 168,
+        "label": "Hulhumale Phase 1 & Phase2",
+        "may": 73376,
+        "june": 73376,
+        "equal": true,
+        "matches_prior_may_release": true
+      },
+      {
+        "source_row": 169,
+        "label": "Male'",
+        "may": 30827,
+        "june": 30827,
+        "equal": true,
+        "matches_prior_may_release": true
+      },
+      {
+        "source_row": 170,
+        "label": "Villimale Internal",
+        "may": 16994,
+        "june": 16994,
+        "equal": true,
+        "matches_prior_may_release": true
+      },
+      {
+        "source_row": 171,
+        "label": "Free of Charge Passengers",
+        "may": 280002,
+        "june": 280002,
+        "equal": true,
+        "matches_prior_may_release": true
+      }
+    ],
+    "crossVintage": {
+      "ferry_male_vm": [
+        {
+          "vintage": "dec_2023_issue",
+          "older_row": 161,
+          "compared_months": 23,
+          "differences": []
+        },
+        {
+          "vintage": "dec_2024_issue",
+          "older_row": 163,
+          "compared_months": 35,
+          "differences": []
+        },
+        {
+          "vintage": "may_2026",
+          "older_row": 161,
+          "compared_months": 53,
+          "differences": []
+        }
+      ],
+      "ferry_villigili_vm": [
+        {
+          "vintage": "dec_2023_issue",
+          "older_row": 162,
+          "compared_months": 23,
+          "differences": []
+        },
+        {
+          "vintage": "dec_2024_issue",
+          "older_row": 164,
+          "compared_months": 35,
+          "differences": []
+        },
+        {
+          "vintage": "may_2026",
+          "older_row": 162,
+          "compared_months": 53,
+          "differences": []
+        }
+      ],
+      "bus_male_hulhumale": [
+        {
+          "vintage": "dec_2023_issue",
+          "older_row": 167,
+          "compared_months": 23,
+          "differences": []
+        },
+        {
+          "vintage": "dec_2024_issue",
+          "older_row": 169,
+          "compared_months": 35,
+          "differences": []
+        },
+        {
+          "vintage": "may_2026",
+          "older_row": 167,
+          "compared_months": 53,
+          "differences": []
+        }
+      ]
+    },
+    "revisionVintageBias": "Published history has been explored and uses revised historical values. Backtests are exploratory revised-vintage evaluation, not an untouched final or real-time publication-vintage test.",
+    "definitionStatus": "published passenger movement; finer interpretation unresolved",
+    "transformVersion": "mbs-monthly-source-v1",
+    "monthlyAuditAsOf": "2026-10-11T12:00:06.863747+00:00",
+    "busCapture": {
+      "status": "completed",
+      "sourceUrl": "https://bo.rtl.mv:4455/maldives/api/booking/v1/bus/livecoordinates",
+      "routeId": "133",
+      "startedAt": "2026-10-11T11:48:56.238Z",
+      "completedAt": "2026-10-11T11:58:56.251Z",
+      "snapshots": 10,
+      "vehicles": 4,
+      "observedDays": 1,
+      "changedPositionIntervals": 9,
+      "positionChanges": 35,
+      "measurementTimestampAvailable": false,
+      "firstReceivedAt": "2026-10-11T11:48:56.604Z",
+      "lastReceivedAt": "2026-10-11T11:57:58.797Z",
+      "stopReason": "bounded-duration-complete",
+      "intervalSeconds": 60,
+      "redistributionLicence": "Unverified; normalized positions retained in ignored private research archive",
+      "qualification": "Bounded sample collected; collector stopped. No validated bus forecast available. Fetch-time public route-coordinate observations. Source measurement timestamp, trip/direction and GPS freshness are unverified. Stationary positions do not by themselves establish stale data. No arrival prediction has been evaluated. Public access does not establish an open redistribution licence."
+    }
+  }
+}

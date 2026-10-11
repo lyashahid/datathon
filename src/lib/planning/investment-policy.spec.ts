@@ -6,7 +6,7 @@ import { compareAffordableInvestments } from './investmentOptions.ts';
 import { planningPopulation } from './population.ts';
 import { PlanningScenarioState } from './scenarioState.svelte.ts';
 import { validPlanningAssumptions } from './validation.ts';
-import type { PlanningBaseline, PlanningServicePattern } from './types.ts';
+import type { PlanningAction, PlanningBaseline, PlanningServicePattern } from './types.ts';
 
 const range = (n: number) => ({ low: n * 0.8, central: n, high: n * 1.2 });
 function fixture(): PlanningBaseline {
@@ -346,6 +346,89 @@ describe('policy evidence and supported snapshot settings', () => {
 });
 
 describe('affordable investment search', () => {
+	it('does not certify a whole proposal containing an unpriced timetable shift', async () => {
+		const b = fixture();
+		b.transit.patterns = [
+			{
+				...frequency(),
+				timing: {
+					kind: 'scheduled',
+					trips: [
+						{
+							id: 'afternoon',
+							stopTimes: [
+								{ arrivalMinutes: 930, departureMinutes: 930 },
+								{ arrivalMinutes: 940, departureMinutes: 940 }
+							]
+						}
+					]
+				}
+			}
+		];
+		const assumptions = createDefaultAssumptions(b);
+		const actions: PlanningAction[] = [{ kind: 'shift-timetable', patternId: 'bus', minutes: 5 }];
+		const analyzer = vi.fn(async (actions, assumptions) =>
+			analyzePlanning(b, actions, assumptions)
+		);
+		const comparison = await compareAffordableInvestments(b, {
+			originId: 'origin-a',
+			actions,
+			assumptions,
+			capitalBudgetMvr: 30000000,
+			annualOperatingBudgetMvr: 30000000,
+			analyze: analyzer
+		});
+		expect(comparison.baseline).toEqual(analyzePlanning(b, actions, assumptions));
+		expect(comparison.baseline.world.patterns[0].timing).toMatchObject({
+			trips: [{ stopTimes: [{ departureMinutes: 935 }, { departureMinutes: 945 }] }]
+		});
+		expect(comparison.alternatives).toEqual([]);
+		expect(analyzer).toHaveBeenCalledTimes(1);
+		expect(comparison.notes.join(' ')).toContain('affordability is not established');
+		expect(comparison.notes.join(' ')).toContain('operator and engineering cost estimates');
+		expect(comparison.notes.join(' ')).not.toContain('fit both');
+	});
+	it('withholds affordability even when modeled road-delay service costs are numeric', async () => {
+		const b = fixture();
+		const assumptions = createDefaultAssumptions(b);
+		assumptions.disruptions = [
+			{
+				id: 'assumed-road-delay',
+				name: 'Road-delay scenario',
+				kind: 'delay',
+				edgeIds: ['road'],
+				modes: ['bus'],
+				direction: 'both',
+				startDate: assumptions.date,
+				endDate: assumptions.date,
+				startMinutes: 0,
+				endMinutes: 1439,
+				delayMinutes: 5,
+				provenance: 'assumed'
+			}
+		];
+		const analyzer = vi.fn(async (actions, assumptions) =>
+			analyzePlanning(b, actions, assumptions)
+		);
+		const comparison = await compareAffordableInvestments(b, {
+			originId: 'origin-a',
+			assumptions,
+			capitalBudgetMvr: 30000000,
+			annualOperatingBudgetMvr: 30000000,
+			analyze: analyzer
+		});
+		expect(comparison.baseline.costs.capitalMvr?.central).toBe(0);
+		expect(comparison.baseline.costs.annualOperatingMvr?.central).toBe(0);
+		expect(comparison.alternatives).toEqual([]);
+		expect(analyzer).toHaveBeenCalledTimes(1);
+		expect(comparison.excluded).toEqual([
+			{
+				label: 'Whole-proposal affordability',
+				reason: expect.stringContaining('unestimated implementation costs')
+			}
+		]);
+		expect(comparison.notes.join(' ')).not.toContain('fit both');
+	});
 	it('shows only beneficial options within both high-estimate caps on identical worker inputs', async () => {
 		const b = fixture();
 		const a = createDefaultAssumptions(b);

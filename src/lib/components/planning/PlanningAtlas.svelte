@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { onMount, tick, untrack } from 'svelte';
+	import { onMount, tick, untrack, type Snippet } from 'svelte';
+	import CompactPolicySummary from './CompactPolicySummary.svelte';
+	import EditImpactReceipt from './EditImpactReceipt.svelte';
+	import { compareEditOrigins } from './editImpact.ts';
+	import type { PolicyMapContext } from '#lib/policy/decisions.ts';
+	import type { MapSelection } from '#lib/workspace/context.ts';
 	import { latLngToCell } from 'h3-js';
 	import type { FeatureCollection, LineString } from 'geojson';
 	import type { Point } from 'geojson';
@@ -26,7 +31,6 @@
 		Check,
 		ChevronRight,
 		ChevronDown,
-		Menu,
 		LocateFixed,
 		ListRestart,
 		Download,
@@ -36,6 +40,9 @@
 		Leaf,
 		MousePointer2,
 		BusFront,
+		MapPinPlus,
+		Route,
+		SquareMousePointer,
 		Ellipsis,
 		RotateCcw,
 		RotateCw,
@@ -48,7 +55,8 @@
 		createBusProposal,
 		createFacilityProposal,
 		PlanningScenarioState,
-		AnalysisWorkerClient
+		AnalysisWorkerClient,
+		PLANNING_MODEL_VERSION
 	} from '#lib/planning/index.ts';
 	import type {
 		PlanningAction,
@@ -130,13 +138,21 @@
 		snapshotStale = false,
 		transportContext = null,
 		policyEvidence = null,
-		operations = null
+		operations = null,
+		embedded = false,
+		active = true,
+		forecastSummary,
+		onContextChange
 	}: {
 		baseline: PlanningBaseline;
 		snapshotStale?: boolean;
 		transportContext?: TransportContext | null;
 		policyEvidence?: PolicyEvidenceBundle | null;
 		operations?: OperationsBundle | null;
+		embedded?: boolean;
+		active?: boolean;
+		forecastSummary?: Snippet;
+		onContextChange?: (context: PolicyMapContext) => void;
 	} = $props();
 	let showVessels = $state(false);
 	let showAirport = $state(false);
@@ -162,6 +178,7 @@
 	let returnRequest = 0;
 	let returnOpen = $state(false);
 	function openOperations() {
+		workflowOpen = false;
 		closeOverlay();
 		dismissContext();
 		playbackOpen = false;
@@ -171,6 +188,7 @@
 	}
 	function togglePlayback() {
 		const opening = !playbackOpen;
+		workflowOpen = false;
 		closeOperations();
 		dismissContext();
 		playbackOpen = opening;
@@ -244,6 +262,7 @@
 	let lastWaveDisruptions: PlanningAssumptions['disruptions'] = undefined;
 	let pendingMapResult: { id: number; result: PlanningAnalysis } | null = null;
 	let busy = $state(true);
+	let analysisFailed = $state(false);
 	let selectedId = $state('');
 	let selectedCellId = $state('');
 	let view = $state('access');
@@ -261,14 +280,43 @@
 		| null
 	>(null);
 	let overlayDialog = $state<HTMLDialogElement>();
-	let mapToolbar: HTMLDivElement;
+	let mapToolbar: HTMLDetailsElement;
+	let outcomeDock: HTMLDivElement;
+	let outcomeHeight = $state(150);
+	let transportExpanded = $state(true);
+	let impactExamplesOpen = $state(false);
+	let wholeProposalImpact = $state(false);
+	let analyzedActions = $state.raw<readonly PlanningAction[] | null>(null);
+	let analyzedAssumptions = $state.raw<PlanningAssumptions | null>(null);
+	let editReceipt = $state.raw<{
+		before: PlanningAnalysis | null;
+		actions: readonly PlanningAction[];
+		assumptions: PlanningAssumptions;
+		label: string;
+	} | null>(null);
+	let workflowOpen = $state(false);
+	let legendOpen = $state(true);
 	let mapControlsHeight = $state(44);
+	let viewportWidth = $state(1280);
 	let isMobile = $state(false);
 	let mobileDetailExpanded = $state(false);
 	let mobileSheetHeight = $state(0);
-	const mapOverlayHeight = $derived(isMobile ? 104 : mapControlsHeight);
+	const mapOverlayHeight = $derived(
+		Math.max(
+			isMobile ? 62 : 72,
+			(isMobile ? 72 : viewportWidth >= 1180 ? 16 : 88) + mapControlsHeight
+		)
+	);
+	const planningDateLabel = $derived(
+		new Date(`${scenario.assumptions.date}T00:00:00Z`).toLocaleDateString('en-GB', {
+			day: 'numeric',
+			month: 'short',
+			year: 'numeric',
+			timeZone: 'UTC'
+		})
+	);
 	let settingsTab = $state('journey');
-	let areasExpanded = $state(true);
+	let areasExpanded = $state(false);
 	let sourceSearch = $state('');
 	const settingsTabs = [
 		{ id: 'journey', label: 'Journey' },
@@ -332,8 +380,13 @@
 	let connectionReason = $state('Choose two or more stops in the order the bus should visit them.');
 	let keepStopConnections = $state(true);
 	let moveHeadway = $state(15);
+	const transportEditing = $derived(
+		context === 'build' || context === 'connect' || context === 'service'
+	);
 	const mobileBottomInset = $derived(
-		76 + (context || operationsOpen || playbackOpen ? mobileSheetHeight : 0)
+		outcomeHeight +
+			32 +
+			(context === 'area' || operationsOpen || playbackOpen ? mobileSheetHeight : 0)
 	);
 	let placementReason = $state('Move the pointer to a street to preview a connection.');
 	let placementTimer: ReturnType<typeof setTimeout> | undefined;
@@ -468,18 +521,20 @@
 		{ id: 'access', label: 'Journey times' },
 		{ id: 'impact', label: 'What changed' }
 	];
-	const viewExplanation = $derived(
+	const viewExplanation = $derived.by(() =>
 		view === 'people'
 			? 'People: where residents live'
 			: view === 'access'
 				? 'Access: how long it takes to reach your destination'
-				: 'Impact: changes from the current network to your proposal'
+				: `Impact: ${impactCumulative ? 'whole proposal vs current network' : 'this change vs your previous plan'}`
 	);
 	const hasProposal = $derived(
 		scenario.actions.length > 0 || !!scenario.assumptions.disruptions?.length
 	);
 	// Match the published map, including its recalculation animation, instead of announcing an early result.
-	const journeyChanges = $derived(summarizeJourneyChanges(mapShown?.origins ?? []));
+	const journeyChanges = $derived.by(() =>
+		summarizeJourneyChanges(impactMapAnalysis?.origins ?? [])
+	);
 	const changedExamples = $derived(journeyChanges.improvedOrigins.slice(0, 3));
 	const hasJourneyChanges = $derived(
 		journeyChanges.improvedPopulation > 0 || journeyChanges.worsenedPopulation > 0
@@ -493,19 +548,29 @@
 		{
 			title: '2. Try an investment',
 			detail:
-				'Enter Edit map. Add a bus, drag a stop, or adjust the frequency. Results update while you edit; Undo restores the last change.'
+				'Choose Build to propose a bus connection, or select a service to adjust it. Results update as you edit; Undo restores the last change.'
 		},
 		{
 			title: '3. Read the tradeoff',
 			detail:
-				'The four results show who reaches care, journey time, capital and annual cost, and conditional emissions. Open the brief to share it.'
+				'Review who benefits, who is worse off and what remains unknown. Open Details for assumptions; exports are under Map tools.'
 		}
 	];
 	const shown = $derived(preview ?? analysis);
+	const unpricedChange = $derived(
+		scenario.actions.some((action) => action.kind === 'shift-timetable') ||
+			!!scenario.assumptions.disruptions?.length
+	);
 	const costUnavailable = $derived(
-		!!shown && (shown.costs.capitalMvr == null || shown.costs.annualOperatingMvr == null)
+		unpricedChange ||
+			(!!shown && (shown.costs.capitalMvr == null || shown.costs.annualOperatingMvr == null))
 	);
 	const costUnavailableReasons = $derived([
+		...(unpricedChange
+			? [
+					'Costs of implementing timetable changes or road interventions are not estimated. Operator and engineering review is required.'
+				]
+			: []),
 		...new Set(
 			(shown?.costs.unavailableReasons ?? []).map((reason) => reason.trim()).filter(Boolean)
 		)
@@ -516,7 +581,11 @@
 		)
 	]);
 	const selectedOrigin = $derived(baseline.origins.find((origin) => origin.id === selectedId));
-	const selectedResult = $derived(shown?.origins.find((origin) => origin.originId === selectedId));
+	const selectedResult = $derived.by(() =>
+		analysisFailed
+			? undefined
+			: impactMapAnalysis?.origins.find((origin) => origin.originId === selectedId)
+	);
 	const focusJourney = $derived(context === 'area' || context === 'build' ? selectedResult : null);
 	const priorities = $derived(
 		priorityAreas(baseline, analysis, scenario.assumptions.targetMinutes)
@@ -578,6 +647,87 @@
 				(pattern) => pattern.mode === 'ferry' && pattern.stopIds.includes(selectedStopId)
 			)
 	);
+	const currentReceipt = $derived(
+		editReceipt?.actions === scenario.actions && editReceipt.assumptions === scenario.assumptions
+			? editReceipt
+			: null
+	);
+	const editingPreview = $derived(!!draft || !!liveActions);
+	const impactBefore = $derived(
+		wholeProposalImpact ? null : editingPreview ? analysis : (currentReceipt?.before ?? null)
+	);
+	const comparisonReady = $derived(
+		mapShown &&
+			!busy &&
+			analyzedActions === scenario.actions &&
+			analyzedAssumptions === scenario.assumptions &&
+			mapShown === shown
+	);
+	const editComparisons = $derived(
+		comparisonReady && impactBefore && mapShown ? compareEditOrigins(impactBefore, mapShown) : null
+	);
+	const incompatibleComparison = $derived(!!comparisonReady && !!impactBefore && !editComparisons);
+	const impactCumulative = $derived(!impactBefore || incompatibleComparison);
+	const editImpact = $derived(
+		comparisonReady && mapShown
+			? summarizeJourneyChanges(editComparisons ?? mapShown.origins)
+			: null
+	);
+	const impactLabel = $derived(
+		impactCumulative
+			? 'Proposal vs current network'
+			: editingPreview
+				? 'Preview of this change'
+				: (currentReceipt?.label ?? 'Proposal vs current network')
+	);
+	const impactMapAnalysis = $derived(
+		view === 'impact' && mapShown && editComparisons
+			? { ...mapShown, origins: editComparisons }
+			: mapShown
+	);
+	const awaitingService = $derived(
+		context === 'service' &&
+			editableBusStop &&
+			!selectedStop?.disabled &&
+			stopConnections.length === 0 &&
+			!busy
+	);
+	const impactExamples = $derived(editImpact ? editImpact.improvedOrigins.slice(0, 3) : []);
+	function recordEdit(label: string, mutate: () => void) {
+		const before =
+			analyzedActions === scenario.actions && analyzedAssumptions === scenario.assumptions
+				? analysis
+				: null;
+		mutate();
+		editReceipt = { before, actions: scenario.actions, assumptions: scenario.assumptions, label };
+		impactExamplesOpen = false;
+		wholeProposalImpact = false;
+	}
+	function beginRouteEdit() {
+		closeOperations();
+		playbackOpen = false;
+		workflowOpen = false;
+		cancelDraft();
+		context = 'service';
+		editMode = true;
+		transportExpanded = true;
+		selectedStopId = '';
+		choosePattern(
+			activePatterns.find((pattern) => pattern.id === patternId)?.id ?? activePatterns[0]?.id ?? ''
+		);
+		const first = analysis?.world.stops.find((stop) => stop.id === selectedPattern?.stopIds[0]);
+		if (first) focusCoordinate = coordinate(first);
+	}
+	function showAffectedAreas() {
+		view = 'impact';
+		impactExamplesOpen = !impactExamplesOpen;
+	}
+	function retryAnalysis() {
+		initialized = false;
+		void tick().then(() => {
+			initialized = true;
+		});
+	}
 	const connectionStops = $derived([
 		...visibleStops(baseline, analysis, includeUntimedStops).filter(
 			(stop) =>
@@ -619,12 +769,10 @@
 	});
 	const connectionPreviewSummary = $derived(
 		context === 'connect' && draft
-			? `${number(connectionPreview.features.reduce((sum, feature) => sum + ((draft?.kind === 'add-route' ? [draft.pattern, ...(draft.returnPattern ? [draft.returnPattern] : [])] : draft?.kind === 'replace-route' ? draft.patterns : []).find((pattern) => pattern.id === feature.properties?.id)?.distanceM ?? 0), 0) / 1000, 1)} km across both directions · preview shown above`
+			? `${number(connectionPreview.features.reduce((sum, feature) => sum + ((draft?.kind === 'add-route' ? [draft.pattern, ...(draft.returnPattern ? [draft.returnPattern] : [])] : draft?.kind === 'replace-route' ? draft.patterns : []).find((pattern) => pattern.id === feature.properties?.id)?.distanceM ?? 0), 0) / 1000, 1)} km across both directions · preview shown on the map`
 			: ''
 	);
 	const hasEditableService = $derived(!!selectedStop || !!selectedPattern);
-	const buildTarget = $derived(activePatterns.find((pattern) => pattern.id === coveragePatternId));
-	const extendsExisting = $derived(context === 'build' && buildTarget?.timing.kind === 'frequency');
 	const servicePending = $derived(
 		!!patternId && !activePatterns.some((pattern) => pattern.id === patternId)
 	);
@@ -652,7 +800,7 @@
 	const areas = $derived(
 		honeycombAreas(
 			baseline,
-			mapShown,
+			impactMapAnalysis,
 			scenario.assumptions.populationYear,
 			scenario.assumptions.targetMinutes
 		)
@@ -763,6 +911,16 @@
 		scenario.assumptions.goal === 'healthcare'
 			? `${scenario.assumptions.destinationRequirements?.healthcareService ?? 'general'} healthcare`
 			: `${scenario.assumptions.destinationRequirements?.schoolLevel ?? 'all levels'} schools`
+	);
+	const requirementsFiltered = $derived(
+		(scenario.assumptions.goal === 'healthcare' &&
+			!!scenario.assumptions.destinationRequirements?.healthcareService &&
+			scenario.assumptions.destinationRequirements.healthcareService !== 'general') ||
+			(scenario.assumptions.goal === 'education' &&
+				!!scenario.assumptions.destinationRequirements?.schoolLevel) ||
+			scenario.assumptions.destinationRequirements?.publicAccess === 'public' ||
+			!!scenario.assumptions.destinationRequirements?.requireOpenAtDeparture ||
+			!!scenario.assumptions.walkingRequirements?.requireAuditedWheelchair
 	);
 	const policyDelivery = $derived(
 		scenario.assumptions.policyDelivery ?? {
@@ -968,6 +1126,10 @@
 				return `Extend ${route} to ${action.stop.name}: ${number((action.distanceM + (action.returnDistanceM ?? 0)) / 1000, 1)} additional round-trip km.`;
 			case 'replace-route':
 				return `Reconnect ${route}: ${action.patterns.length} directions routed on roads with proposed service timing.`;
+			case 'shift-timetable':
+				return action.minutes === 0
+					? `${route}: retain current departure times.`
+					: `${route}: departures ${Math.abs(action.minutes)} minutes ${action.minutes < 0 ? 'earlier' : 'later'}; running time and stop dwell are unchanged.`;
 			case 'set-frequency':
 				return `${route}: departures every ${action.headwayMinutes} minutes.`;
 			case 'set-hours':
@@ -1037,14 +1199,18 @@
 		const mobileScreen = window.matchMedia('(max-width: 680px)');
 		const syncMobile = () => {
 			isMobile = mobileScreen.matches;
+			workflowOpen = false;
+			legendOpen = !isMobile;
 			if (!isMobile && drawer?.startsWith('mobile-')) closeOverlay();
 		};
 		syncMobile();
 		mobileScreen.addEventListener('change', syncMobile);
 		const toolbarObserver = new ResizeObserver(() => {
 			mapControlsHeight = Math.ceil(mapToolbar.getBoundingClientRect().height);
+			outcomeHeight = Math.ceil(outcomeDock.getBoundingClientRect().height);
 		});
 		toolbarObserver.observe(mapToolbar);
+		toolbarObserver.observe(outcomeDock);
 		const collapseSuggestions = () => {
 			if (narrowScreen.matches) {
 				areasExpanded = false;
@@ -1114,6 +1280,7 @@
 		const candidateActions = liveActions;
 		const id = ++requestId;
 		busy = true;
+		analysisFailed = false;
 		const start = performance.now();
 		untrack(() => {
 			const seeds = lastWaveActions
@@ -1150,6 +1317,8 @@
 				)
 					return;
 				analysis = result.analysis;
+				analyzedActions = actions;
+				analyzedAssumptions = assumptions;
 				preview = result.preview;
 				if (wave?.id === id) {
 					pendingMapResult = { id, result: result.preview ?? result.analysis };
@@ -1188,6 +1357,7 @@
 				if (!saved.ok) notice = saved.reason;
 			} catch (error) {
 				if (id === requestId) {
+					analysisFailed = true;
 					pendingMapResult = null;
 					if (wave?.id === id) wave = { ...wave, completedAt: performance.now(), outcome: 'error' };
 					else busy = false;
@@ -1206,6 +1376,7 @@
 	function selectOrigin(id: string, focus = false, cellId = '') {
 		closeOperations();
 		playbackOpen = false;
+		workflowOpen = false;
 		if (drawer === 'mobile-areas') closeOverlay();
 		mobileDetailExpanded = false;
 		cancelDraft();
@@ -1272,8 +1443,11 @@
 		addBus(position);
 	}
 	function selectStop(id: string, resetDraft = true) {
+		transportExpanded = true;
+		legendOpen = false;
 		closeOperations();
 		playbackOpen = false;
+		workflowOpen = false;
 		if (resetDraft) cancelDraft();
 		mobileDetailExpanded = false;
 		context = 'service';
@@ -1288,8 +1462,11 @@
 		if (pattern) choosePattern(pattern.id);
 	}
 	function selectRoute(id: string) {
+		transportExpanded = true;
+		legendOpen = false;
 		closeOperations();
 		playbackOpen = false;
+		workflowOpen = false;
 		mobileDetailExpanded = true;
 		cancelDraft();
 		selectedStopId = '';
@@ -1309,9 +1486,7 @@
 		if (isMobile && context) {
 			focusCoordinate = null;
 			void tick().then(() =>
-				document
-					.querySelector<HTMLButtonElement>('.edit-mode-button')
-					?.focus({ preventScroll: true })
+				document.querySelector<HTMLElement>('.workflow-toggle')?.focus({ preventScroll: true })
 			);
 		}
 		cancelDraft();
@@ -1320,8 +1495,11 @@
 		selectedStopId = '';
 	}
 	function beginBuild(mode: BuildMode = 'destination') {
+		transportExpanded = true;
+		legendOpen = false;
 		closeOperations();
 		playbackOpen = false;
+		workflowOpen = false;
 		mobileDetailExpanded = false;
 		cancelDraft();
 		context = 'build';
@@ -1329,7 +1507,7 @@
 		areasExpanded = false;
 		selectedStopId = '';
 		setBuildMode(mode);
-		if (selectedOrigin) focusCoordinate = coordinate(selectedOrigin);
+		if (mode === 'destination' && selectedOrigin) focusCoordinate = coordinate(selectedOrigin);
 	}
 	function setBuildMode(mode: BuildMode) {
 		cancelDraft();
@@ -1386,8 +1564,11 @@
 		);
 	}
 	function beginConnection(stopId = '', mode: 'new' | 'insert' = 'new') {
+		transportExpanded = true;
+		legendOpen = false;
 		closeOperations();
 		playbackOpen = false;
+		workflowOpen = false;
 		cancelDraft();
 		context = 'connect';
 		editMode = true;
@@ -1487,10 +1668,13 @@
 		const action = draft;
 		const stopId = connectionStopIds[0] ?? '';
 		cancelDraft();
-		scenario.addAction(action);
+		recordEdit(action.kind === 'replace-route' ? 'Route updated' : 'Route added', () =>
+			scenario.addAction(action)
+		);
 		revealProposalChanges();
 		busy = true;
 		context = 'service';
+		transportExpanded = false;
 		selectedStopId = stopId;
 		patternId =
 			action.kind === 'add-route'
@@ -1563,7 +1747,9 @@
 			return;
 		}
 		cancelDraft();
-		scenario.addAction(proposal.action);
+		recordEdit(proposal.action.kind === 'add-stop' ? 'Stop placed' : 'Connection added', () =>
+			scenario.addAction(proposal.action)
+		);
 		revealProposalChanges();
 		busy = true;
 		editMode = true;
@@ -1575,6 +1761,7 @@
 			patternId = proposal.action.patternId;
 			selectedStopId = proposal.action.stop.id;
 		} else if (proposal.action.kind === 'add-stop') {
+			transportExpanded = false;
 			patternId = '';
 			selectedStopId = proposal.action.stop.id;
 			notice = 'Stop placed. Add a connection to give it bus service.';
@@ -1613,7 +1800,10 @@
 		if (!selectedPattern) return;
 		cancelDraft();
 		fleet = value;
-		scenario.addAction({ kind: 'set-fleet', patternId: selectedPattern.id, fleet: value });
+		const id = selectedPattern.id;
+		recordEdit('Fleet changed', () =>
+			scenario.addAction({ kind: 'set-fleet', patternId: id, fleet: value })
+		);
 		busy = true;
 	}
 	function startStopMove(id: string) {
@@ -1652,7 +1842,7 @@
 			notice = next.reason;
 			return null;
 		}
-		scenario.replaceActions(next.actions);
+		recordEdit('Stop moved', () => scenario.replaceActions(next.actions));
 		revealProposalChanges();
 		busy = true;
 		selectedStopId = id;
@@ -1665,7 +1855,10 @@
 	function commit() {
 		if (!draft) return;
 		busy = true;
-		scenario.addAction(draft);
+		const action = draft;
+		recordEdit(action.kind === 'set-frequency' ? 'Bus frequency changed' : 'Network changed', () =>
+			scenario.addAction(action)
+		);
 		revealProposalChanges();
 		draft = null;
 		preview = null;
@@ -1674,7 +1867,7 @@
 	}
 	function revealProposalChanges() {
 		view = 'impact';
-		areasExpanded = true;
+		areasExpanded = false;
 		tour = -1;
 	}
 	function cancelDraft(invalidateMapEdit = true) {
@@ -1696,13 +1889,16 @@
 		connectionNewStops = [];
 	}
 	function history(direction: 'undo' | 'redo') {
+		if (!(direction === 'undo' ? scenario.canUndo : scenario.canRedo)) return;
 		if (gesture === 'stop') {
 			notice = 'Finish or cancel the stop move before using Undo or Redo.';
 			return;
 		}
 		cancelDraft();
 		if (direction === 'undo' ? scenario.canUndo : scenario.canRedo) busy = true;
-		scenario[direction]();
+		recordEdit(direction === 'undo' ? 'Change undone' : 'Change restored', () =>
+			scenario[direction]()
+		);
 		notice = '';
 		syncPrivateInputs();
 	}
@@ -1944,6 +2140,87 @@
 		overlayDialog?.close();
 		drawer = null;
 	}
+	export function openMenu() {
+		drawer = 'mobile-menu';
+	}
+	export function showNotices() {
+		openOperations();
+	}
+	export function focusLocation(selection: MapSelection) {
+		if (selection.overview) {
+			closeOverlay();
+			closeOperations();
+			context = null;
+			areasExpanded = false;
+			overviewRequest++;
+			return;
+		}
+		if (selection.originId && baseline.origins.some((origin) => origin.id === selection.originId)) {
+			selectOrigin(selection.originId, true);
+			return;
+		}
+		if (selection.roadEdgeId) {
+			const edge = baseline.network.edges.find((item) => item.id === selection.roadEdgeId);
+			const node = edge && baseline.network.nodes.find((item) => item.id === edge.from);
+			if (node) {
+				openOperations();
+				selectedRoads = [selection.roadEdgeId];
+				focusCoordinate = [node.lon, node.lat];
+				return;
+			}
+		}
+		if (selection.islandId) {
+			const origins = baseline.origins.filter((origin) => origin.islandId === selection.islandId);
+			if (origins.length) {
+				closeOverlay();
+				closeOperations();
+				context = null;
+				areasExpanded = false;
+				focusCoordinate = [
+					origins.reduce((sum, item) => sum + item.lon, 0) / origins.length,
+					origins.reduce((sum, item) => sum + item.lat, 0) / origins.length
+				];
+			}
+		}
+	}
+	export function applyContext(handover: PolicyMapContext) {
+		const result = scenario.importJson(
+			JSON.stringify({
+				schemaVersion: 1,
+				datasetVersion: baseline.version,
+				modelVersion: PLANNING_MODEL_VERSION,
+				actions: handover.actions,
+				assumptions: handover.assumptions
+			})
+		);
+		if (!result.ok) {
+			notice = result.reason;
+			return;
+		}
+		cancelDraft();
+		closeOperations();
+		playbackOpen = false;
+		closeOverlay();
+		syncPrivateInputs();
+		focusLocation({ originId: handover.originId });
+		notice =
+			'Option opened. The map compares all proposal changes, including assumed delays, with the unchanged network. Undo restores your previous proposal.';
+	}
+	$effect(() => {
+		if (!active) {
+			closeOverlay();
+			playbackOpen = false;
+		}
+	});
+	$effect(() => {
+		if (!initialized || !onContextChange) return;
+		const context = {
+			actions: scenario.actions,
+			assumptions: scenario.assumptions,
+			originId: selectedId
+		};
+		untrack(() => onContextChange?.(JSON.parse(JSON.stringify(context))));
+	});
 	$effect(() => {
 		const currentDrawer = drawer;
 		const dialog = overlayDialog;
@@ -1958,6 +2235,7 @@
 			});
 	});
 	function keydown(event: KeyboardEvent) {
+		if (!active) return;
 		if (event.defaultPrevented) return;
 		if (drawer) {
 			// Keep Tab inside the dialog, including native disclosure summaries.
@@ -2062,122 +2340,179 @@
 {/snippet}
 
 {#snippet policyResults()}
-	<div class="result access-result">
-		<span class="result-label"
-			>NEWLY WITHIN {scenario.assumptions.targetMinutes} MIN
-			<span class="result-chip"
-				>{busy
-					? 'Calculating'
-					: draft || liveActions
-						? 'Preview'
-						: gesture
-							? 'Live'
-							: scenario.actions.length
-								? 'Proposal'
-								: 'Baseline'}</span
-			></span
-		><strong
-			>{shown ? `+${number(shown.summary.newlyReachedResidents)}` : 'Calculating…'}<span>
-				people</span
-			></strong
-		>
-		<p>
-			{number(shown?.summary.baselineReachableResidents)} within target before
-			{#if shown?.summary.unknownResidents}<button onclick={() => (drawer = 'evidence')}
-					>{number(shown.summary.unknownResidents)} unknown</button
-				>{/if}
-		</p>
-	</div>
-	<div class="result">
-		<span class="result-label"
-			>JOURNEY CHANGE <span class="result-context"
-				>{focusJourney ? 'Selected area' : 'Already within target'}</span
-			></span
-		><strong
-			>{focusJourney
-				? `${formatJourneyTime(focusJourney.before).replace(' min', '')} → ${formatJourneyTime(focusJourney.after).replace(' min', '')}`
-				: shown?.summary.minutesSavedForAlreadyReachable != null
-					? minuteChange(shown.summary.minutesSavedForAlreadyReachable)
-					: 'Unavailable'}<span
-				>{focusJourney
-					? focusJourney.before.minutes !== null || focusJourney.after.minutes !== null
-						? ' min'
-						: ''
-					: shown?.summary.minutesSavedForAlreadyReachable != null
-						? shown.summary.minutesSavedForAlreadyReachable < 0
-							? ' min slower'
-							: ' min saved'
-						: ''}</span
-			></strong
-		>
-		<p>
-			{focusJourney
-				? focusJourney.after.minutes == null
-					? 'A journey could not be established with these inputs'
-					: 'Before → after · walk, wait and service time'
-				: 'Population-weighted average'}
-			{#if shown?.summary.lostAccessResidents}<button onclick={() => (drawer = 'mobile-results')}
-					>{number(shown.summary.lostAccessResidents)} lose access</button
-				>{/if}
-		</p>
-	</div>
-	<div class="result">
-		<span class="result-label"
-			>INVESTMENT <button
-				class="assumption-link"
-				onclick={() => (costUnavailable ? (drawer = 'evidence') : openSettings('costs'))}
-				>{costUnavailable ? 'Details' : 'Estimate'} <Info size={11} /></button
-			></span
-		><strong
-			>{!scenario.actions.length && !draft && !liveActions
-				? 'Choose an investment'
-				: money(shown?.costs.capitalMvr?.central)}<span
-				>{scenario.actions.length || draft || liveActions ? ' one-time' : ''}</span
-			></strong
-		>
-		<p>
-			{!scenario.actions.length && !draft && !liveActions
-				? 'Capital and annual operations shown separately'
-				: `${money(shown?.costs.annualOperatingMvr?.central)} / year change`}
-		</p>
-	</div>
-	<div class="result carbon-result" class:carbon-increase={(shown?.carbon.central ?? 0) > 0}>
-		<span class="result-label"
-			>EMISSIONS {#if shown?.carbon.central == null && shown}<button
-					class="assumption-link"
-					onclick={() => (drawer = 'evidence')}>Why unavailable <Info size={11} /></button
-				>{:else}<span class="result-context">Estimate</span>{/if}</span
-		><strong
-			>{!scenario.actions.length && !draft && !liveActions
-				? 'No investment yet'
-				: shown?.carbon.central == null
-					? 'Unavailable'
-					: `${shown.carbon.central > 0 ? '+' : ''}${number(shown.carbon.central / 1000, 1)}`}<span
-				>{(scenario.actions.length || draft || liveActions) && shown?.carbon.central != null
-					? ' t CO₂e / yr'
-					: ''}</span
-			></strong
-		>
-		<p>
-			{!scenario.actions.length && !draft && !liveActions
-				? 'Road event effects shown in disruption tools'
-				: shown?.carbon.central == null
-					? 'Missing inputs'
-					: shown.carbon.central > 0
-						? 'Increase under these assumptions'
-						: shown.carbon.central < 0
-							? 'Reduction under these assumptions'
-							: 'No change'}
-			{#if shown?.carbon.central != null}<button
-					class="icon-button"
-					aria-label="Carbon assumptions"
-					onclick={() => openSettings('carbon')}><Info size={13} /></button
-				>{/if}
-		</p>
-	</div>
+	{#if analysisFailed}<div class="result" role="status">
+			<strong>Results unavailable</strong>
+			<p>The latest calculation failed. Retry before assessing this proposal.</p>
+			<button class="secondary-button" onclick={retryAnalysis}>Try again</button>
+		</div>{:else}
+		<div class="result access-result">
+			<span class="result-label"
+				>{hasProposal || draft || liveActions ? 'Newly within' : 'Residents within'}
+				{scenario.assumptions.targetMinutes} min
+				<span class="result-chip"
+					>{busy
+						? 'Calculating'
+						: draft || liveActions
+							? 'Preview'
+							: gesture
+								? 'Live'
+								: scenario.actions.length
+									? 'Proposal'
+									: 'Baseline'}</span
+				></span
+			><strong
+				>{shown && !busy
+					? hasProposal || draft || liveActions
+						? `+${number(shown.summary.newlyReachedResidents)}`
+						: number(shown.summary.scenarioReachableResidents)
+					: 'Calculating…'}<span> people</span></strong
+			>
+			<p>
+				{#if busy || !shown}Updating results for the selected inputs…{:else if !hasProposal && !draft && !liveActions}of
+					{number(shown.summary.population)} modeled residents{:else}{number(
+						shown?.summary.baselineReachableResidents
+					)} within target before{/if}
+				{#if !busy && (hasProposal || draft || liveActions) && shown?.summary.unknownResidents}<button
+						onclick={() => (drawer = 'evidence')}
+						>{number(shown.summary.unknownResidents)} unknown</button
+					>{/if}
+			</p>
+		</div>
+		{#if !hasProposal && !draft && !liveActions && !focusJourney}
+			<div class="result">
+				<span class="result-label">Missing journey evidence</span>
+				<strong
+					>{shown && !busy ? number(shown.summary.unknownResidents) : 'Calculating…'}<span
+						>{shown && !busy ? ' people' : ''}</span
+					></strong
+				>
+				<p>
+					Residents whose journeys cannot be assessed <button onclick={() => (drawer = 'evidence')}
+						>Review gaps</button
+					>
+				</p>
+			</div>
+		{:else}
+			<div class="result">
+				<span class="result-label"
+					>Journey change <span class="result-context"
+						>{focusJourney ? 'Selected area' : 'Already within target'}</span
+					></span
+				><strong
+					>{busy
+						? 'Calculating…'
+						: focusJourney
+							? `${formatJourneyTime(focusJourney.before).replace(' min', '')} → ${formatJourneyTime(focusJourney.after).replace(' min', '')}`
+							: shown?.summary.minutesSavedForAlreadyReachable != null
+								? minuteChange(shown.summary.minutesSavedForAlreadyReachable)
+								: 'Unavailable'}<span
+						>{busy
+							? ''
+							: focusJourney
+								? focusJourney.before.minutes !== null || focusJourney.after.minutes !== null
+									? ' min'
+									: ''
+								: shown?.summary.minutesSavedForAlreadyReachable != null
+									? shown.summary.minutesSavedForAlreadyReachable < 0
+										? ' min slower'
+										: ' min saved'
+									: ''}</span
+					></strong
+				>
+				<p>
+					{focusJourney
+						? focusJourney.after.minutes == null
+							? 'A journey could not be established with these inputs'
+							: 'Before → after · walk, wait and service time'
+						: 'Population-weighted average'}
+					{#if !busy && shown?.summary.lostAccessResidents}<button
+							onclick={() => (drawer = 'mobile-results')}
+							>{number(shown.summary.lostAccessResidents)} lose access</button
+						>{/if}
+				</p>
+			</div>
+		{/if}
+		{#if hasProposal || draft || liveActions}
+			<div class="result investment-result">
+				<span class="result-label"
+					>Investment <button
+						class="assumption-link"
+						onclick={() => (costUnavailable ? (drawer = 'evidence') : openSettings('costs'))}
+						>{costUnavailable ? 'Details' : 'Estimate'} <Info size={11} /></button
+					></span
+				><strong
+					>{busy
+						? 'Calculating…'
+						: unpricedChange
+							? 'Needs review'
+							: !scenario.actions.length && !draft && !liveActions
+								? 'Choose an investment'
+								: money(shown?.costs.capitalMvr?.central)}<span
+						>{!busy && !unpricedChange && (scenario.actions.length || draft || liveActions)
+							? ' one-time'
+							: ''}</span
+					></strong
+				>
+				<p>
+					{busy
+						? 'Updating results for the selected inputs…'
+						: unpricedChange
+							? 'Timing or road intervention costs are not estimated'
+							: !scenario.actions.length && !draft && !liveActions
+								? 'Capital and annual operations shown separately'
+								: `${money(shown?.costs.annualOperatingMvr?.central)} / year change`}
+				</p>
+			</div>
+		{/if}
+		{#if drawer === 'mobile-results' && (scenario.actions.length || draft || liveActions)}
+			<div
+				class="result carbon-result"
+				class:carbon-increase={!busy && (shown?.carbon.central ?? 0) > 0}
+			>
+				<span class="result-label"
+					>Emissions {#if !busy && shown?.carbon.central == null && shown}<button
+							class="assumption-link"
+							onclick={() => (drawer = 'evidence')}>Why unavailable <Info size={11} /></button
+						>{:else}<span class="result-context">Estimate</span>{/if}</span
+				><strong
+					>{busy
+						? 'Calculating…'
+						: !scenario.actions.length && !draft && !liveActions
+							? 'No investment yet'
+							: shown?.carbon.central == null
+								? 'Unavailable'
+								: `${shown.carbon.central > 0 ? '+' : ''}${number(shown.carbon.central / 1000, 1)}`}<span
+						>{!busy &&
+						(scenario.actions.length || draft || liveActions) &&
+						shown?.carbon.central != null
+							? ' t CO₂e / yr'
+							: ''}</span
+					></strong
+				>
+				<p>
+					{busy
+						? 'Updating results for the selected inputs…'
+						: !scenario.actions.length && !draft && !liveActions
+							? 'Road event effects shown in disruption tools'
+							: shown?.carbon.central == null
+								? 'Missing inputs'
+								: shown.carbon.central > 0
+									? 'Increase under these assumptions'
+									: shown.carbon.central < 0
+										? 'Reduction under these assumptions'
+										: 'No change'}
+					{#if !busy && shown?.carbon.central != null}<button
+							class="icon-button"
+							aria-label="Carbon assumptions"
+							onclick={() => openSettings('carbon')}><Info size={13} /></button
+						>{/if}
+				</p>
+			</div>
+		{/if}
+	{/if}
 {/snippet}
 {#snippet priorityCards()}
-	<h1>Where should we invest?</h1>
+	<h1>Areas to investigate</h1>
 
 	{#each priorities as area, i (area.id)}<button
 			class="priority-card"
@@ -2252,14 +2587,17 @@
 		<span class="eyebrow"
 			>YOUR PROPOSAL · {scenario.assumptions.goal === 'education' ? 'SCHOOLS' : 'HEALTHCARE'}</span
 		>
-		{#if busy}
+		{#if analysisFailed}<p class="change-empty" role="status">
+				Results unavailable. Retry the calculation before comparing journeys.
+			</p>
+		{:else if busy}
 			<p class="change-empty" role="status">
 				Recalculating journeys. Highlights appear when the new routes are ready.
 			</p>
 		{:else if !hasProposal}
 			<h2>What would improve?</h2>
 			<p class="change-empty">
-				Add a bus connection, school or clinic to compare with the current network.
+				Add a bus route or connect a new stop to compare journeys with the current network.
 			</p>
 		{:else}
 			<h2>
@@ -2301,8 +2639,9 @@
 					is incomplete.
 				</p>{/if}
 			<p class="change-footnote">
-				Compared with the current network. Population distribution and proposed services are
-				modeled; purple outlines mean partial or mixed changes.
+				Compared with {impactCumulative ? 'the current network' : 'your previous plan'}. Population
+				distribution and proposed services are modeled; purple outlines mean partial or mixed
+				changes.
 			</p>
 		{/if}
 	</div>
@@ -2343,6 +2682,9 @@
 				comparison={selectedResult ?? null}
 				pending={busy}
 				example={!!selectedHex}
+				unavailable={analysisFailed}
+				beforeLabel={view === 'impact' && !impactCumulative ? 'Previous plan' : 'Current network'}
+				afterLabel={view === 'impact' && !impactCumulative ? 'After this change' : 'With proposal'}
 			/>
 			<details class="edit-journey">
 				<summary
@@ -2426,413 +2768,245 @@
 							})}>Restore spatial weights</button
 					>
 				</details>{/if}
-		{:else if context === 'connect'}
-			<ConnectionEditor
-				stops={connectionStops}
-				selectedStops={orderedConnectionStops}
-				patterns={activePatterns}
-				mode={connectionMode}
-				patternId={connectionPatternId}
-				afterStopId={connectionAfterId}
-				{headway}
-				{fleet}
-				reason={connectionReason}
-				valid={!!draft}
-				{busy}
-				previewSummary={connectionPreviewSummary}
-				onmodechange={(mode) => {
-					connectionMode = mode;
-					if (mode === 'insert') connectionStopIds = connectionStopIds.slice(0, 1);
-					connectionNewStops = connectionNewStops.filter((stop) =>
-						connectionStopIds.includes(stop.id)
-					);
-					connectionPatternId = suggestedInsertionPattern(connectionStopIds[0] ?? '');
-					connectionAfterId =
-						activePatterns.find((pattern) => pattern.id === connectionPatternId)?.stopIds.at(-1) ??
-						'';
-					refreshConnection();
-				}}
-				onpatternchange={(id) => {
-					connectionPatternId = id;
-					connectionAfterId =
-						activePatterns.find((pattern) => pattern.id === id)?.stopIds.at(-1) ?? '';
-					refreshConnection();
-				}}
-				onafterchange={(id) => {
-					connectionAfterId = id;
-					refreshConnection();
-				}}
-				onheadwaychange={(value) => {
-					headway = value;
-					refreshConnection();
-				}}
-				onfleetchange={(value) => {
-					fleet = value;
-					refreshConnection();
-				}}
-				onstopadd={pickConnectionStop}
-				onstopremove={removeConnectionStop}
-				onstopreorder={reorderConnectionStop}
-				onapply={applyConnection}
-				oncancel={dismissContext}
-			/>
-		{:else}
-			<div class="object-heading">
-				<TransportGraphic
-					kind={context === 'build'
-						? buildMode === 'clinic' || buildMode === 'school'
-							? buildMode
-							: 'shelter'
-						: selectedStop
-							? 'shelter'
-							: 'bus'}
-					state={context === 'build'
-						? 'draft'
-						: (selectedStopMarker?.investmentState ?? 'existing')}
-					size={64}
-				/>
-				<div>
-					<h2>
-						{context === 'build'
-							? buildMode === 'clinic' || buildMode === 'school'
-								? `Propose a ${buildMode}`
-								: buildMode === 'stop'
-									? 'Place a bus stop'
-									: 'New bus connection'
-							: (selectedStop?.name ?? selectedPattern?.name ?? 'Transport service')}
-					</h2>
-					{#if context === 'build' || selectedStopMarker}<span
-							class="asset-status"
-							class:proposed={context === 'build' ||
-								['proposed', 'draft'].includes(String(selectedStopMarker?.investmentState))}
-							class:moved={selectedStopMarker?.investmentState === 'moved'}
-							class:paused={selectedStopMarker?.investmentState === 'paused'}
-							>{context === 'build'
-								? '+ Proposed · not built'
-								: selectedStopMarker?.statusLabel}</span
-						>{/if}
-					<p>
-						{context === 'build'
-							? buildMode === 'clinic' || buildMode === 'school'
-								? 'Try a future destination near a walking path.'
-								: buildMode === 'stop'
-									? 'Place it on a road, then choose where the bus goes.'
-									: `Connect this area to ${scenario.assumptions.goal === 'healthcare' ? 'care' : 'school'}.`
-							: selectedStop
-								? selectedStop.mode === 'ferry'
-									? 'Ferry terminal'
-									: connectedRouteCount
-										? `${connectedRouteCount} connected ${connectedRouteCount === 1 ? 'route' : 'routes'}`
-										: 'No active bus connection'
-								: (selectedPattern?.name ?? 'Select a service')}
-					</p>
-				</div>
-			</div>
-			{#if context === 'build'}
-				<div class="build-mode-toggle" role="group" aria-label="What to build">
-					<button
-						aria-pressed={buildMode === 'destination'}
-						onclick={() => setBuildMode('destination')}>Auto-connect</button
-					>
-					<button aria-pressed={buildMode === 'stop'} onclick={() => setBuildMode('stop')}
-						>Stop first</button
-					>
-					<button aria-pressed={buildMode === 'clinic'} onclick={() => setBuildMode('clinic')}
-						>Healthcare</button
-					>
-					<button aria-pressed={buildMode === 'school'} onclick={() => setBuildMode('school')}
-						>School</button
-					>
-				</div>
-				{#if buildMode === 'clinic' || buildMode === 'school'}<p class="edit-hint">
-						Access assumes the proposed {buildMode} opens on the planning date. Capacity, hours, facility
-						budgets and emissions are not supplied.
-					</p>{/if}
-			{/if}
-			{#if selectedStop && editableBusStop && context === 'service'}
-				<div class="stop-action-row">
-					<button
-						class="secondary-button"
-						disabled={selectedStop.disabled}
-						onclick={() => beginStopMove(selectedStopId)}
-						>Move stop <ArrowUpRight size={14} /></button
-					>
-					<button
-						class="primary-button"
-						disabled={selectedStop.disabled}
-						onclick={() => beginConnection(selectedStopId)}
-						>Connect stop <BusFront size={15} /></button
-					>
-				</div>
-				<p class="edit-hint">Drag to move, or choose Move stop and tap a new road.</p>
-				{#if stopConnections.length}
-					<div class="stop-connections" aria-label="Connected bus routes">
-						<span>Connected routes</span>
-						{#each stopConnections as pattern (pattern.id)}<button
-								onclick={() => selectRoute(pattern.id)}
-								><span
-									>{pattern.name}<small
-										>To {analysis?.world.stops.find((stop) => stop.id === pattern.stopIds.at(-1))
-											?.name ?? 'route end'}</small
-									></span
-								><ChevronRight size={14} /></button
-							>{/each}
-					</div>
-				{:else}<p class="edit-hint">
-						No active bus connection. Connect this stop to start testing service.
-					</p>{/if}
-				{#if keepStopConnections && stopConnections.some((pattern) => pattern.timing.kind === 'scheduled')}
-					<p class="edit-hint">
-						Moving keeps these routes with proposed buses every {moveHeadway} min. Review timing below.
-					</p>
-				{/if}
-				<details class="more-edit-options">
-					<summary>When I move this stop</summary>
-					<label class="move-connection-option"
-						><input type="checkbox" bind:checked={keepStopConnections} />Keep bus connections</label
-					>
-					<p class="edit-hint">
-						Routes follow permitted roads. Published departures become proposed frequency service;
-						existing frequency is retained.
-					</p>
-					{#if keepStopConnections && stopConnections.some((pattern) => pattern.timing.kind === 'scheduled')}
-						<label class="move-headway-option"
-							>Proposed buses every <input
-								type="number"
-								min="1"
-								max="240"
-								bind:value={moveHeadway}
-							/> min</label
-						>
-					{/if}
-				</details>
-			{/if}
-			{#if extendsExisting && buildMode === 'destination'}<p class="edit-hint">
-					Extends {buildTarget?.name}. Uses this route’s frequency and fleet; edit them after
-					placing the stop.
-				</p>{:else if (context === 'build' && buildMode === 'destination') || (context === 'service' && !selectedStop && selectedPattern?.timing.kind === 'frequency')}
-				<div class="frequency-label">
-					<label for="live-frequency">A bus every</label><strong>{headway}<span> min</span></strong>
-				</div>
-				<input
-					id="live-frequency"
-					class="frequency-slider"
-					aria-label="Minutes between buses"
-					type="range"
-					min="1"
-					max={Math.max(30, headway)}
-					step="1"
-					value={headway}
-					oninput={(e) => previewFrequency(Number(e.currentTarget.value))}
-					onchange={commitFrequency}
-				/>
-				<div class="slider-labels"><span>More often</span><span>Less often</span></div>
-			{:else if context === 'service' && selectedPattern && !selectedStop}<button
-					class="coverage-badge"
-					onclick={() => (drawer = 'services')}
-					><Info size={13} />Published timetable · view departures</button
-				>{/if}
-			{#if !extendsExisting && ((context === 'build' && buildMode === 'destination') || (context === 'service' && selectedPattern && !selectedStop))}<div
-					class="fleet-toggle"
-					aria-label="Bus fleet"
-				>
-					<button
-						class:active={fleet === 'diesel'}
-						aria-pressed={fleet === 'diesel'}
-						onclick={() => changeFleet('diesel')}>Diesel</button
-					><button
-						class:active={fleet === 'electric'}
-						aria-pressed={fleet === 'electric'}
-						onclick={() => changeFleet('electric')}><Leaf size={14} />Electric</button
-					>
-				</div>{/if}
-			{#if context === 'build'}<p class="placement-status" class:valid={!!draft}>
-					{placementReason}
-				</p>
-				{#if buildMode === 'destination'}<details class="more-edit-options">
-						<summary>Connect to an existing route</summary>
-						<RoutePicker
-							value={coveragePatternId}
-							items={activePatterns.map((pattern) => ({
-								value: pattern.id,
-								label: `${pattern.timing.kind === 'frequency' ? 'Extend' : 'Feeder to'} ${pattern.name} · toward ${analysis?.world.stops.find((stop) => stop.id === pattern.stopIds.at(-1))?.name ?? 'last stop'}`
-							}))}
-							onchange={(value) => {
-								coveragePatternId = value;
-								if (placementPoint) previewPlacement(placementPoint);
-							}}
-						/>
-					</details>{/if}
-			{/if}
-			{#if context === 'service'}<button
-					class="quiet-button object-details"
-					onclick={() => (drawer = 'services')}>Service details <ChevronRight size={14} /></button
-				>{/if}
 		{/if}
 	</div>
 {/snippet}
 
-<svelte:window onkeydown={keydown} />
-<div class="policy-atlas" style:--mobile-sheet-bottom="76px" style:--mobile-sheet-top="300px">
-	<header class="atlas-header">
-		<a class="brand" href="/" aria-label="Mobility Sandbox MV home"
-			><span class="brand-symbol"
-				><svg viewBox="0 0 32 32" aria-hidden="true"
-					><path d="M5 23Q12 8 18 18T28 9" /><circle cx="5" cy="23" r="3" /><circle
-						cx="28"
-						cy="9"
-						r="3"
-					/></svg
-				></span
-			><span>Mobility Sandbox <b>MV</b><small>A better-connected Maldives</small></span></a
-		>
-		<div class="header-location">
-			{#if snapshotStale}<button class="assumption-link" onclick={() => (drawer = 'evidence')}
-					>Last validated snapshot · review dates in Evidence</button
-				>{:else}<span class="live-dot"></span>GREATER MALÉ{/if}
-		</div>
-		<button
-			class="coverage-badge header-coverage"
-			onclick={() => (drawer = 'evidence')}
-			title="The dated public snapshot does not include complete daily service."
-			><Info size={13} />Partial timetable</button
-		>
-		<button
-			class="mobile-menu-button"
-			aria-label="Open menu"
-			onclick={() => (drawer = 'mobile-menu')}><Menu size={21} /></button
-		>
-		<div class="header-actions">
-			<button
-				class="quiet-button tour-button"
-				onclick={() => {
-					tour = tour < 0 ? 0 : -1;
-					if (tour === 0) areasExpanded = true;
-				}}>Tour</button
-			><button class="quiet-button" onclick={() => (drawer = 'evidence')}
-				><Layers size={16} /> Evidence</button
-			><button class="quiet-button" onclick={() => openSettings()}
-				><Settings2 size={16} />Settings</button
-			>
-			<button class="quiet-button" onclick={compareAlternatives} disabled={busy || !selectedId}
-				>Compare</button
-			>
-			<button class="brief-button" onclick={openBrief} disabled={busy || !analysis}
-				><FileText size={16} /> Policy brief <ArrowUpRight size={15} /></button
-			>
-		</div>
-	</header>
-	<nav class="task-strip" aria-label="Planning task">
-		<DiscreteTabs
-			label="Planning task"
-			value={operationsOpen ? 'disruption' : drawer === 'compare' ? 'compare' : 'access'}
-			items={[
-				{ id: 'access', label: isMobile ? 'Access' : 'Explore access' },
-				{ id: 'disruption', label: isMobile ? 'Disruption' : 'Test disruption' },
-				{ id: 'compare', label: isMobile ? 'Compare' : 'Compare investment' }
-			]}
-			onchange={chooseTask}
+{#snippet transportBody()}
+	{#if context === 'connect'}
+		<ConnectionEditor
+			dock
+			stops={connectionStops}
+			selectedStops={orderedConnectionStops}
+			patterns={activePatterns}
+			mode={connectionMode}
+			patternId={connectionPatternId}
+			afterStopId={connectionAfterId}
+			{headway}
+			{fleet}
+			reason={connectionReason}
+			valid={!!draft}
+			{busy}
+			previewSummary={connectionPreviewSummary}
+			onmodechange={(mode) => {
+				connectionMode = mode;
+				if (mode === 'insert') connectionStopIds = connectionStopIds.slice(0, 1);
+				connectionNewStops = connectionNewStops.filter((stop) =>
+					connectionStopIds.includes(stop.id)
+				);
+				connectionPatternId = suggestedInsertionPattern(connectionStopIds[0] ?? '');
+				connectionAfterId =
+					activePatterns.find((pattern) => pattern.id === connectionPatternId)?.stopIds.at(-1) ??
+					'';
+				refreshConnection();
+			}}
+			onpatternchange={(id) => {
+				connectionPatternId = id;
+				connectionAfterId =
+					activePatterns.find((pattern) => pattern.id === id)?.stopIds.at(-1) ?? '';
+				refreshConnection();
+			}}
+			onafterchange={(id) => {
+				connectionAfterId = id;
+				refreshConnection();
+			}}
+			onheadwaychange={(value) => {
+				headway = value;
+				refreshConnection();
+			}}
+			onfleetchange={(value) => {
+				fleet = value;
+				refreshConnection();
+			}}
+			onstopadd={pickConnectionStop}
+			onstopremove={removeConnectionStop}
+			onstopreorder={reorderConnectionStop}
+			onapply={applyConnection}
+			oncancel={dismissContext}
 		/>
-		<span class="task-note">Public data · scenario estimates</span>
-	</nav>
-	<button
-		class="mobile-results-trigger"
-		aria-label="Open policy results and assumptions"
-		aria-haspopup="dialog"
-		aria-expanded={drawer === 'mobile-results'}
-		onclick={() => (drawer = 'mobile-results')}
-	>
-		<span
-			class="mobile-result-grid"
-			aria-live={gesture || placing ? 'off' : 'polite'}
-			aria-busy={busy}
-		>
-			<span
-				><small>Access</small><strong
-					>{shown ? `+${number(shown.summary.newlyReachedResidents)}` : '…'}</strong
-				><em>newly within {scenario.assumptions.targetMinutes} min</em></span
+	{:else if context === 'build'}
+		<div class="placement-workshop">
+			<div class="placement-icon"><MapPinPlus size={23} strokeWidth={1.6} /></div>
+			<div>
+				<strong
+					>{buildMode === 'stop'
+						? 'Choose a road for your bus stop'
+						: 'Connect this area to a destination'}</strong
+				>
+				<p class:placement-valid={!!draft}>{placementReason}</p>
+				<small>Snaps to a permitted road · Click or tap to place · Esc to cancel</small>
+			</div>
+			{#if buildMode === 'destination'}<button
+					class="dock-secondary"
+					onclick={() => setBuildMode('stop')}>Place a stop only</button
+				>{/if}
+		</div>
+	{:else if context === 'service' && selectedStop}
+		<div class="stop-workshop">
+			<div class="workshop-description">
+				<strong>{selectedStop.name}</strong>
+				<p>
+					{selectedStopMarker?.statusLabel ?? 'Bus stop'} · {connectedRouteCount} connected {connectedRouteCount ===
+					1
+						? 'route'
+						: 'routes'}
+				</p>
+				{#if !editableBusStop}<small>Ferry terminals can be inspected in Service details.</small
+					>{:else}<small
+						>{movingStopId
+							? 'Tap a new road to finish the move.'
+							: 'Drag the stop, or choose Move stop and tap a road.'}</small
+					>{/if}
+			</div>
+			{#if editableBusStop}
+				<div class="workshop-stop-actions">
+					<button
+						class="dock-secondary"
+						disabled={selectedStop.disabled || busy}
+						onclick={() => beginStopMove(selectedStopId)}
+						><SquareMousePointer size={16} />Move stop</button
+					>
+					<button
+						class="dock-secondary"
+						disabled={selectedStop.disabled || busy}
+						onclick={() => beginConnection(selectedStopId, 'insert')}
+						><Route size={16} />Add to a route</button
+					>
+					<button
+						class="dock-secondary"
+						disabled={selectedStop.disabled || busy}
+						onclick={() => beginConnection(selectedStopId)}>Start a route</button
+					>
+				</div>
+				{#if stopConnections.length}
+					<div class="workshop-connected">
+						<span>Connected routes</span>
+						{#each stopConnections as pattern (pattern.id)}<button
+								onclick={() => selectRoute(pattern.id)}
+								>{pattern.name}<small
+									>To {analysis?.world.stops.find((stop) => stop.id === pattern.stopIds.at(-1))
+										?.name ?? 'route end'}</small
+								><ChevronRight size={14} /></button
+							>{/each}
+					</div>
+					<details class="workshop-move-settings">
+						<summary>Route timing when this stop moves <ChevronDown size={14} /></summary>
+						<label
+							><input type="checkbox" bind:checked={keepStopConnections} />Keep bus connections</label
+						>
+						<p>
+							Connected routes follow permitted roads. Captured departures become proposed service;
+							existing frequency is retained.
+						</p>
+						{#if keepStopConnections && stopConnections.some((pattern) => pattern.timing.kind === 'scheduled')}<label
+								>Proposed buses every <input
+									type="number"
+									min="1"
+									max="240"
+									bind:value={moveHeadway}
+								/> min · 07:00–19:00 MVT</label
+							>{/if}
+					</details>
+					{#if keepStopConnections && stopConnections.some((pattern) => pattern.timing.kind === 'scheduled')}<p
+							class="workshop-timing-note"
+						>
+							<Info size={14} />Moving this stop replaces captured departures with proposed buses
+							every {moveHeadway} min, 07:00–19:00 MVT.
+						</p>{/if}
+				{/if}
+			{/if}
+			<button class="workshop-link" onclick={() => (drawer = 'services')}
+				>Service details <ChevronRight size={14} /></button
 			>
-			<span
-				><small>Journey</small><strong
-					>{focusJourney
-						? focusJourney.after.minutes == null
-							? '—'
-							: `${number(focusJourney.after.minutes)} min`
-						: shown?.summary.minutesSavedForAlreadyReachable == null
-							? '—'
-							: minuteChange(shown.summary.minutesSavedForAlreadyReachable)}</strong
-				><em
-					>{focusJourney
-						? focusJourney.before.minutes == null
-							? 'Before unknown'
-							: `${number(focusJourney.before.minutes)} min before`
-						: shown?.summary.minutesSavedForAlreadyReachable == null
-							? 'Unavailable'
-							: shown.summary.minutesSavedForAlreadyReachable < 0
-								? 'min slower'
-								: 'min saved'}</em
-				></span
-			>
-			<span
-				><small>Cost</small><strong
-					>{shown?.costs.capitalMvr?.central == null
-						? '—'
-						: money(shown.costs.capitalMvr.central).replace('MVR ', '')}</strong
-				><em>{shown?.costs.capitalMvr?.central == null ? 'Unavailable' : 'MVR one-time'}</em></span
-			>
-			<span class:carbon-increase={(shown?.carbon.central ?? 0) > 0}
-				><small>Carbon</small><strong
-					>{shown?.carbon.central == null
-						? '—'
-						: `${shown.carbon.central > 0 ? '+' : ''}${number(shown.carbon.central / 1000, 1)}`}</strong
-				><em>{shown?.carbon.central == null ? 'Unavailable' : 't CO₂e / yr'}</em></span
-			>
-		</span>
-		<span class="mobile-results-caption"
-			><span
-				>{draft || liveActions
-					? 'Live preview'
-					: scenario.actions.length
-						? 'Proposal'
-						: 'Current network'} · estimates</span
-			><span>Details <ChevronRight size={12} /></span></span
-		>
-	</button>
-	<section
-		class="results-bar"
-		aria-label="Policy results"
-		aria-live={gesture || placing ? 'off' : 'polite'}
-		aria-busy={busy}
-	>
-		{@render policyResults()}
-	</section>
-	<div
-		class="planning-context"
-		class:outside={coverage.status === 'outside-snapshot' || coverage.status === 'unavailable'}
-	>
-		<button
-			onclick={() => openSettings('journey')}
-			aria-label="Change planning date and departure time"
-			>{scenario.assumptions.date} · {timeLabel(scenario.assumptions.departureMinutes)} MVT <ChevronDown
-				size={13}
-			/></button
-		>
-		<button onclick={() => (drawer = 'evidence')}><Info size={13} />{coverage.label}</button>
-		{#if (scenario.assumptions.goal === 'healthcare' && scenario.assumptions.destinationRequirements?.healthcareService && scenario.assumptions.destinationRequirements.healthcareService !== 'general') || (scenario.assumptions.goal === 'education' && scenario.assumptions.destinationRequirements?.schoolLevel) || scenario.assumptions.destinationRequirements?.publicAccess === 'public' || scenario.assumptions.destinationRequirements?.requireOpenAtDeparture || scenario.assumptions.walkingRequirements?.requireAuditedWheelchair}
-			<button
-				onclick={() => openSettings('journey')}
-				aria-label="Review destination and walking requirements"
-				>{destinationScope}{scenario.assumptions.walkingRequirements?.requireAuditedWheelchair
-					? ' · audited routes'
-					: ''} · filtered</button
-			>
-		{/if}
-		{#if coverage.status === 'outside-snapshot'}<button
-				class="supported-time"
-				onclick={() => patchAssumptions(supportedSnapshotSettings(baseline))}
-				>Use supported time</button
-			>{:else}<span>Missing service can affect benefits</span>{/if}
-	</div>
+		</div>
+	{:else if context === 'service'}
+		<div class="route-workshop">
+			<div class="route-workshop-main">
+				<span class="workshop-label">Choose a bus route, or select one on the map</span>
+				<RoutePicker
+					value={patternId}
+					items={activePatterns.map((pattern) => ({
+						value: pattern.id,
+						label: `${pattern.name} · to ${analysis?.world.stops.find((stop) => stop.id === pattern.stopIds.at(-1))?.name ?? 'route end'}`
+					}))}
+					onchange={selectRoute}
+					allowEmpty={false}
+					emptyLabel="Choose a route"
+					label="Route to edit"
+				/>
+				{#if selectedPattern}<div class="route-workshop-actions">
+						<button
+							class="dock-secondary"
+							disabled={busy}
+							onclick={() => {
+								beginConnection('', 'insert');
+								connectionPatternId = selectedPattern!.id;
+								connectionAfterId = selectedPattern!.stopIds.at(-1) ?? '';
+								refreshConnection();
+							}}><MapPinPlus size={16} />Add a stop to this route</button
+						><button class="workshop-link" onclick={() => (drawer = 'services')}
+							>Timetable & details <ChevronRight size={14} /></button
+						>
+					</div>{:else}<p class="workshop-timing-note">
+						No bus routes are available in this data snapshot. Draw a new route to test a service.
+					</p>{/if}
+			</div>
+			{#if selectedPattern?.timing.kind === 'frequency'}
+				<div class="route-frequency">
+					<div class="frequency-label">
+						<label for="live-frequency">A bus every</label><strong
+							>{headway}<span> min</span></strong
+						>
+					</div>
+					<input
+						id="live-frequency"
+						class="frequency-slider"
+						aria-label="Minutes between buses"
+						type="range"
+						min="1"
+						max={Math.max(60, headway)}
+						step="1"
+						value={headway}
+						oninput={(e) => previewFrequency(Number(e.currentTarget.value))}
+						onchange={commitFrequency}
+					/>
+					<div class="slider-labels"><span>More often</span><span>Less often</span></div>
+					<small>Live preview · release to apply</small>
+				</div>
+			{:else if selectedPattern}<div class="route-published">
+					<Info size={17} />
+					<div>
+						<strong>Published timetable</strong>
+						<p>View departures in details. Adding a stop creates an explicitly assumed service.</p>
+					</div>
+				</div>{/if}
+			{#if selectedPattern}<div class="route-fleet">
+					<span class="workshop-label">Bus fleet</span>
+					<div class="fleet-toggle" role="group" aria-label="Bus fleet">
+						<button
+							class:active={fleet === 'diesel'}
+							aria-pressed={fleet === 'diesel'}
+							disabled={busy}
+							onclick={() => changeFleet('diesel')}>Diesel</button
+						><button
+							class:active={fleet === 'electric'}
+							aria-pressed={fleet === 'electric'}
+							disabled={busy}
+							onclick={() => changeFleet('electric')}><Leaf size={14} />Electric</button
+						>
+					</div>
+				</div>{/if}
+		</div>
+	{/if}
+{/snippet}
+
+<svelte:window onkeydown={keydown} bind:innerWidth={viewportWidth} />
+<div
+	class="policy-atlas"
+	class:embedded
+	style:--mobile-sheet-bottom={`${outcomeHeight + 32}px`}
+	style:--mobile-sheet-top={`${Math.min(mapOverlayHeight + 8, 180)}px`}
+>
 	<div class="workspace">
 		<main
 			class="map-stage"
@@ -2842,9 +3016,347 @@
 			class:has-operations={operationsOpen || playbackOpen}
 			class:satellite={basemap === 'satellite'}
 		>
+			<details
+				class="map-workbench"
+				bind:this={mapToolbar}
+				bind:open={workflowOpen}
+				ontoggle={(event) => {
+					if (event.currentTarget.open) legendOpen = false;
+				}}
+			>
+				<summary class="workflow-toggle">
+					<MousePointer2 size={18} strokeWidth={1.7} />
+					<span
+						><strong>{operationsOpen ? 'Test a disruption' : 'Explore access'}</strong><small
+							>{scenario.assumptions.goal === 'healthcare' ? 'Healthcare' : 'Schools'} · {scenario
+								.assumptions.targetMinutes} min target{requirementsFiltered
+								? ' · filtered'
+								: ''}</small
+						><small class="workflow-context"
+							>{planningDateLabel} · {timeLabel(scenario.assumptions.departureMinutes)} MVT · {coverage.status ===
+							'outside-snapshot'
+								? 'Outside source period'
+								: coverage.status === 'unavailable'
+									? 'Service data unavailable'
+									: 'Partial public data'}</small
+						></span
+					>
+					<ChevronDown size={17} />
+				</summary>
+				<div class="workbench-body">
+					{#if tour >= 0}<section class="tour-card" aria-label="Guided walkthrough">
+							<div>
+								<span class="eyebrow">Map walkthrough</span><button
+									class="icon-button"
+									aria-label="Close tour"
+									onclick={() => (tour = -1)}><X size={16} /></button
+								>
+							</div>
+							<strong>{tourSteps[tour].title}</strong>
+							<p>{tourSteps[tour].detail}</p>
+							<button onclick={() => (tour = tour === 2 ? -1 : tour + 1)}
+								>{tour === 2 ? 'Finish tour' : 'Next step'} <ChevronRight size={15} /></button
+							>
+						</section>{/if}
+					<nav class="workflow-actions" aria-label="Planning task">
+						<button
+							class:chosen={!operationsOpen}
+							aria-pressed={!operationsOpen}
+							onclick={() => chooseTask('access')}>Access</button
+						>
+						<button
+							class:chosen={operationsOpen}
+							aria-pressed={operationsOpen}
+							onclick={() => {
+								chooseTask('disruption');
+								if (isMobile) workflowOpen = false;
+							}}>Disruption</button
+						>
+						<button
+							class="investment-action"
+							onclick={() => chooseTask('compare')}
+							disabled={busy || !selectedId}
+							title={selectedId ? 'Compare investment options' : 'Select an area on the map first'}
+							>Investments <ArrowUpRight size={13} /></button
+						>
+					</nav>
+					<div class="workbench-field">
+						<span class="control-caption">Access to</span>
+						<DestinationPicker
+							value={scenario.assumptions.goal}
+							onchange={(goal) => patchAssumptions({ goal })}
+						/>
+					</div>
+					<button
+						class="planning-time"
+						onclick={() => openSettings('journey')}
+						aria-label="Change planning date and departure time"
+					>
+						<span
+							><small>Departure · Maldives time</small><strong
+								>{scenario.assumptions.date} · {timeLabel(
+									scenario.assumptions.departureMinutes
+								)}</strong
+							></span
+						><ChevronRight size={15} />
+					</button>
+					<div class="workbench-field">
+						<span class="control-caption">Show on the map</span>
+						<div class="map-display-choices" role="group" aria-label="Map data">
+							{#each views as choice (choice.id)}<button
+									class:chosen={view === choice.id}
+									aria-pressed={view === choice.id}
+									onclick={() => (view = choice.id)}>{choice.label}</button
+								>{/each}
+						</div>
+					</div>
+					<div
+						class="coverage-context"
+						class:outside={coverage.status === 'outside-snapshot' ||
+							coverage.status === 'unavailable'}
+					>
+						<button onclick={() => (drawer = 'evidence')}
+							><Info size={14} />{snapshotStale
+								? 'Dated public snapshot'
+								: coverage.label}<ChevronRight size={13} /></button
+						>
+						<small>Scenario estimates · missing service can affect results</small>
+						{#if coverage.status === 'outside-snapshot'}<button
+								class="supported-time"
+								onclick={() => patchAssumptions(supportedSnapshotSettings(baseline))}
+								>Use supported time</button
+							>{/if}
+						{#if requirementsFiltered}
+							<button
+								onclick={() => openSettings('journey')}
+								aria-label="Review destination and walking requirements"
+								>{destinationScope}{scenario.assumptions.walkingRequirements
+									?.requireAuditedWheelchair
+									? ' · audited routes'
+									: ''} · filtered</button
+							>
+						{/if}
+					</div>
+					<div class="workbench-tools" role="group" aria-label="Edit the map">
+						<button onclick={() => (drawer = 'services')}><Layers size={16} />Services</button>
+						<button
+							class:chosen={playbackOpen}
+							aria-pressed={playbackOpen}
+							onclick={() => {
+								togglePlayback();
+								if (isMobile) workflowOpen = false;
+							}}><BusFront size={16} />Playback</button
+						>
+					</div>
+					{#if context === null && !operationsOpen && !playbackOpen}<p class="map-start-hint">
+							Select an area to inspect its journeys or test an investment.
+						</p>{/if}
+					{#if scenario.canUndo || scenario.canRedo || hasProposal}
+						<div class="proposal-history">
+							<button
+								disabled={!scenario.canUndo || gesture === 'stop'}
+								onclick={() => history('undo')}
+								aria-label="Undo change"><RotateCcw size={15} />Undo</button
+							>
+							<button
+								disabled={!scenario.canRedo || gesture === 'stop'}
+								onclick={() => history('redo')}
+								aria-label="Redo change"><RotateCw size={15} />Redo</button
+							>
+							<button
+								disabled={!initialized || busy}
+								onclick={resetToDefault}
+								aria-label="Reset to default"><ListRestart size={15} />Reset</button
+							>
+							<button onclick={() => openSettings('proposal')} aria-label="Proposal options"
+								><Ellipsis size={17} /></button
+							>
+						</div>
+					{/if}
+					<details class="suggested-areas" bind:open={areasExpanded}>
+						<summary
+							><span
+								>{hasProposal || view === 'impact'
+									? 'Journey changes'
+									: 'Areas to investigate'}</span
+							><span
+								>{hasProposal || view === 'impact'
+									? changedExamples.length
+									: priorities.length}</span
+							><ChevronDown size={14} /></summary
+						>
+						<div class="suggested-area-list">
+							{#if hasProposal || view === 'impact'}{@render changesCards()}{:else}{@render priorityCards()}{/if}
+						</div>
+					</details>
+				</div>
+			</details>
+			<div
+				class="outcome-dock planning-dock"
+				class:split-preview={context === 'connect' && editingPreview && transportExpanded}
+				bind:this={outcomeDock}
+			>
+				{#if transportEditing}
+					<div class="dock-heading">
+						<div>
+							<span class="dock-state-dot" class:placing></span><strong
+								>{context === 'build'
+									? buildMode === 'stop'
+										? 'Add a bus stop'
+										: 'Add a bus connection'
+									: context === 'connect'
+										? connectionMode === 'new'
+											? 'Draw a bus route'
+											: 'Add a stop to a route'
+										: selectedStopId
+											? 'Bus stop'
+											: 'Edit a bus route'}</strong
+							><span class="dock-heading-hint"
+								>{editingPreview ? 'Draft · not applied' : 'Planning scenario'}</span
+							>
+						</div>
+						<div>
+							<button
+								class="dock-icon"
+								aria-label={transportExpanded ? 'Collapse planning panel' : 'Expand planning panel'}
+								aria-expanded={transportExpanded}
+								onclick={() => (transportExpanded = !transportExpanded)}
+								><ChevronDown size={17} class={transportExpanded ? '' : 'flipped'} /></button
+							><button class="dock-icon" aria-label="Close planning tool" onclick={dismissContext}
+								><X size={17} /></button
+							>
+						</div>
+					</div>
+					{#if transportExpanded}<div class="transport-editor" data-testid="transport-editor">
+							{@render transportBody()}
+						</div>{/if}
+				{/if}
+				{#if (hasProposal || editingPreview || currentReceipt || awaitingService) && !(context === 'build' && buildMode === 'stop')}
+					{#if !awaitingService && (currentReceipt?.before || editingPreview)}<div
+							class="impact-scope"
+						>
+							<span>Journey impact</span>
+							<div role="group" aria-label="Impact comparison">
+								<button
+									class:active={!impactCumulative}
+									aria-pressed={!impactCumulative}
+									disabled={incompatibleComparison}
+									onclick={() => {
+										wholeProposalImpact = false;
+										impactExamplesOpen = false;
+									}}>This change</button
+								><button
+									class:active={impactCumulative}
+									aria-pressed={impactCumulative}
+									onclick={() => {
+										wholeProposalImpact = true;
+										impactExamplesOpen = false;
+									}}>Whole proposal</button
+								>
+							</div>
+						</div>{/if}
+					{#if incompatibleComparison}<p class="impact-scope-note">
+							Journey settings changed. Showing the whole proposal against the current network.
+						</p>{/if}
+					<EditImpactReceipt
+						compact={context === 'connect' && editingPreview && transportExpanded}
+						totals={editImpact}
+						label={impactLabel}
+						{busy}
+						unavailable={analysisFailed}
+						onretry={retryAnalysis}
+						announce={!editingPreview}
+						preview={editingPreview && !impactCumulative}
+						{awaitingService}
+						cumulative={impactCumulative}
+						onshowareas={showAffectedAreas}
+						ondetails={() => (drawer = 'mobile-results')}
+						onconnect={(mode) => beginConnection(selectedStopId, mode)}
+					/>
+				{:else if !transportEditing || context === 'service'}
+					<CompactPolicySummary
+						analysis={mapShown}
+						selectedJourney={focusJourney}
+						targetMinutes={scenario.assumptions.targetMinutes}
+						{hasProposal}
+						{unpricedChange}
+						preview={editingPreview}
+						{busy}
+						expanded={drawer === 'mobile-results'}
+						announce={!gesture && !placing}
+						ondetails={() => (drawer = 'mobile-results')}
+					/>
+				{/if}
+				{#if impactExamplesOpen && !busy && editImpact}<div class="dock-journeys">
+						<div>
+							<strong>Journey examples</strong><span
+								>Before → after · {impactCumulative
+									? 'current network vs proposal'
+									: 'previous plan vs this change'}</span
+							>
+						</div>
+						{#each impactExamples as result (result.originId)}<button
+								disabled={editingPreview}
+								onclick={() => selectOrigin(result.originId, true)}
+								><span
+									>{islandName(baseline, result.islandId)}<small
+										>{number(result.population)} residents represented</small
+									></span
+								><strong
+									>{formatJourneyTime(result.before)} <span>→</span>
+									{formatJourneyTime(result.after)}</strong
+								><ArrowUpRight size={14} /></button
+							>{:else}<p>No supported journey improvements in this change.</p>{/each}
+					</div>{/if}
+				<nav class="build-palette" aria-label="Bus planning tools">
+					<div class="build-tools">
+						<button
+							class:chosen={context === 'build'}
+							aria-pressed={context === 'build'}
+							disabled={!initialized || (busy && !placing)}
+							onclick={() => beginBuild('stop')}
+							><MapPinPlus size={20} strokeWidth={1.7} /><span>Add stop</span></button
+						><button
+							class:chosen={context === 'connect'}
+							aria-pressed={context === 'connect'}
+							disabled={!initialized || busy}
+							onclick={() => beginConnection()}
+							><Route size={20} strokeWidth={1.7} /><span>Draw route</span></button
+						><button
+							class:chosen={context === 'service' && !selectedStopId}
+							aria-pressed={context === 'service' && !selectedStopId}
+							disabled={!initialized || busy}
+							onclick={beginRouteEdit}
+							><Settings2 size={20} strokeWidth={1.7} /><span>Edit route</span></button
+						>
+					</div>
+					<div class="build-history">
+						<button
+							disabled={!scenario.canUndo || busy || gesture === 'stop'}
+							onclick={() => history('undo')}
+							aria-label="Undo change"
+							title="Undo · Ctrl+Z"><RotateCcw size={18} /><span>Undo</span></button
+						><button
+							disabled={!scenario.canRedo || busy || gesture === 'stop'}
+							onclick={() => history('redo')}
+							aria-label="Redo change"
+							title="Redo · Ctrl+Shift+Z"><RotateCw size={18} /><span>Redo</span></button
+						><button
+							class="dock-options"
+							onclick={() => openSettings('proposal')}
+							aria-label="Proposal options"
+							title="Proposal options"><Ellipsis size={20} /></button
+						>
+					</div>
+				</nav>
+			</div>
+			{#if forecastSummary && context === null && !operationsOpen && !playbackOpen}
+				<div class="map-outlook">{@render forecastSummary()}</div>
+			{/if}
 			<AtlasMap
 				controlsHeight={mapOverlayHeight}
 				{mobileBottomInset}
+				planningDockActive={transportEditing}
 				{land}
 				{buildings}
 				{streets}
@@ -2924,182 +3436,59 @@
 							? 'Recalculating access…'
 							: 'Updating map…'}
 				</div>{/if}
-			{#if isMobile}
-				<div class="mobile-map-controls">
-					<div class="mobile-map-row">
-						<button
-							class="mobile-goal"
-							onclick={() => (drawer = 'mobile-map')}
-							aria-label="Change access destination and map layers"
-							><span
-								>{scenario.assumptions.goal === 'healthcare' ? 'Healthcare' : 'Schools'}<small
-									>{scenario.assumptions.targetMinutes} min · {view === 'people'
-										? 'People'
-										: view === 'impact'
-											? 'What changed'
-											: 'Journey times'}</small
-								></span
-							><ChevronDown size={16} /></button
-						>
-						<button
-							class="mobile-map-icon"
-							aria-label="Map layers and appearance"
-							onclick={() => (drawer = 'mobile-map')}><Layers size={19} /></button
-						>
-						<button
-							class="mobile-map-icon"
-							aria-label="Show map overview"
-							onclick={() => {
-								focusCoordinate = null;
-								overviewRequest += 1;
-							}}><LocateFixed size={19} /></button
-						>
-					</div>
-					<button class="mobile-areas-button" onclick={() => (drawer = 'mobile-areas')}
-						>{hasProposal ? 'See journey changes' : 'Where should we invest?'}
-						<span
-							>{hasProposal ? number(journeyChanges.improvedPopulation) : priorities.length}</span
-						><ChevronRight size={14} /></button
-					>
-				</div>
-			{/if}
-			<div class="map-topbar" bind:this={mapToolbar}>
-				<div class="map-view-stack">
-					<div class="map-view-controls">
-						<DiscreteTabs
-							items={views}
-							value={view}
-							onchange={(next) => (view = next)}
-						/><DestinationPicker
-							value={scenario.assumptions.goal}
-							onchange={(goal) => patchAssumptions({ goal })}
-						/>
-					</div>
-					<p class="map-view-explanation">{viewExplanation}</p>
-				</div>
-				<div class="map-options">
-					{#if transportContext?.followme.enabled || transportContext?.mpl.enabled || transportContext?.aviation.enabled}
-						<button
-							class="sea-air-button"
-							onclick={() => {
-								transportTab = 'boats';
-								drawer = 'transport';
-							}}><TransportGraphic kind="speedboat" size={24} /> Sea & air</button
-						>
-					{/if}
-					<button
-						onclick={() => {
-							focusCoordinate = null;
-							overviewRequest += 1;
-						}}>Overview</button
-					>
-					<button
-						class:active={perspective}
-						onclick={() => (perspective = !perspective)}
-						aria-pressed={perspective}>Perspective</button
-					>
-					<details class="basemap-picker">
-						<summary
-							><Layers size={15} />{basemap === 'atlas'
-								? 'Atlas'
-								: basemap === 'streets'
-									? 'Streets'
-									: 'Satellite'}<ChevronRight size={13} /></summary
-						>
-						<div class="basemap-menu">
-							<span class="eyebrow">MAP APPEARANCE</span
-							>{#each [{ id: 'atlas', label: 'Policy atlas', note: 'Calm · available offline' }, { id: 'streets', label: 'Street map', note: 'Street names · online' }, { id: 'satellite', label: 'Satellite', note: imageryDetail }] as option (option.id)}<button
-									aria-pressed={basemap === option.id}
-									onclick={(event) => {
-										basemap = option.id as BasemapMode;
-										event.currentTarget.closest('details')?.removeAttribute('open');
-									}}
-									><span><strong>{option.label}</strong><small>{option.note}</small></span
-									>{#if basemap === option.id}<Check size={15} />{/if}</button
-								>{/each}
-							{@render opacityControl('desktop-hexagon-opacity')}
-							<AnnualImageryPicker
-								evidence={operations?.earthObservation}
-								year={imageryYear}
-								onselect={selectImagery}
-							/>
-							<p class="imagery-license">
-								<a href={imageryLicenseUrl} target="_blank" rel="noopener noreferrer"
-									>{imageryLicenseNotice}</a
-								>
-							</p>
-						</div>
-					</details>
-				</div>
-			</div>
-			<details class="priority-panel" bind:open={areasExpanded}>
-				<summary
-					><span>{hasProposal || view === 'impact' ? 'Journey changes' : 'Suggested areas'}</span
-					><span class="small-pill"
-						>{hasProposal || view === 'impact' ? changedExamples.length : priorities.length}</span
-					><ChevronRight size={15} /></summary
-				>
-				<div class="priority-content">
-					{#if hasProposal || view === 'impact'}{@render changesCards()}{:else}{@render priorityCards()}{/if}
-				</div>
-			</details>
-			{#if tour >= 0}<section class="tour-card" aria-label="Guided walkthrough">
-					<div>
-						<span class="eyebrow">A DECISION IN ONE MINUTE</span><button
-							class="icon-button"
-							aria-label="Close tour"
-							onclick={() => (tour = -1)}><X size={16} /></button
-						>
-					</div>
-					<strong>{tourSteps[tour].title}</strong>
-					<p>{tourSteps[tour].detail}</p>
-					<button onclick={() => (tour = tour === 2 ? -1 : tour + 1)}
-						>{tour === 2 ? 'Finish tour' : 'Next step'} <ChevronRight size={15} /></button
-					>
-				</section>{/if}
 			{#if placing && movingStopId}<div class="placement-prompt">
 					Choose a street · click, or pan the target and press Enter
 					<button onclick={() => cancelDraft()}>Cancel</button>
 				</div>{/if}
-			<div
-				class="map-key"
-				role="group"
+			<details
+				class="atlas-legend"
+				bind:open={legendOpen}
+				ontoggle={(event) => {
+					if (event.currentTarget.open) workflowOpen = false;
+				}}
 				aria-label={view === 'access' ? 'Journey time bands' : 'Map legend'}
 			>
-				{#if basemap === 'satellite'}<span class="imagery-caption">{imageryDetail}</span>{/if}
-				{#if view === 'access'}
-					<span class="time-key-title"
-						>Time to {scenario.assumptions.goal === 'education' ? 'school' : 'care'}</span
-					>
-					{#each journeyLegend as band (band.id)}
-						<span><i style:background={band.color}></i>{band.label}</span>
-					{/each}
-					{#if hasJourneyChanges}<button
-							class="change-outline-key"
-							onclick={() => (view = 'impact')}><i></i>Outlined = changed</button
-						>{/if}
-				{:else}
-					{#if view === 'people'}<span><i class="reachable-key"></i>People · estimated</span>
+				<summary>Map key <ChevronDown size={14} /></summary>
+				<div class="legend-lines">
+					{#if basemap === 'satellite'}<span class="imagery-caption">{imageryDetail}</span>{/if}
+					{#if view === 'access'}
+						<span class="time-key-title"
+							>Time to {scenario.assumptions.goal === 'education' ? 'school' : 'care'}</span
+						>
+						{#each journeyLegend as band (band.id)}
+							<span><i style:background={band.color}></i>{band.label}</span>
+						{/each}
+						{#if hasJourneyChanges}<button
+								class="change-outline-key"
+								onclick={() => (view = 'impact')}><i></i>Outlined = changed</button
+							>{/if}
 					{:else}
-						<span class="time-key-title">Before → proposal</span>
-						<span><i class="faster-key"></i>Faster</span><span
-							><i class="new-route-key"></i>New route possible</span
-						>
-						<span><i class="slower-key"></i>Worse / lost route</span><span
-							><i class="unchanged-key"></i>Unchanged</span
-						>
-						<span><i class="mixed-key"></i>Partial / mixed</span><span
-							><i class="unknown-key"></i>Incomplete data</span
-						>
+						{#if view === 'people'}<span><i class="reachable-key"></i>People · estimated</span>
+						{:else}
+							<span class="time-key-title"
+								>{impactCumulative
+									? 'Current network → proposal'
+									: 'Previous plan → this change'}</span
+							>
+							<span><i class="faster-key"></i>Faster</span><span
+								><i class="new-route-key"></i>New route possible</span
+							>
+							<span><i class="slower-key"></i>Worse / lost route</span><span
+								><i class="unchanged-key"></i>Unchanged</span
+							>
+							<span><i class="mixed-key"></i>Partial / mixed</span><span
+								><i class="unknown-key"></i>Incomplete data</span
+							>
+						{/if}
 					{/if}
-				{/if}
-				<button onclick={() => (drawer = 'evidence')} class="stop-key-button"
-					><i class="stop-key"></i>Existing assets</button
-				>
-				{#if hasProposedAssets || context === 'build'}<span class="proposal-key"
-						><b aria-hidden="true">+</b>Proposed · not built</span
-					>{/if}
-			</div>
+					<button onclick={() => (drawer = 'evidence')} class="stop-key-button"
+						><i class="stop-key"></i>Existing assets</button
+					>
+					{#if hasProposedAssets || context === 'build'}<span class="proposal-key"
+							><b aria-hidden="true">+</b>Proposed · not built</span
+						>{/if}
+				</div>
+			</details>
 
 			{#if playbackOpen}
 				{#if isMobile}<MobileSheet
@@ -3150,7 +3539,7 @@
 							onclose={closeOperations}
 						/>
 					</aside>{/if}
-			{:else if context}
+			{:else if context === 'area'}
 				{#if isMobile}
 					<MobileSheet
 						title={mobileContextTitle}
@@ -3191,68 +3580,6 @@
 					</aside>
 				{/if}
 			{/if}
-			<div class="edit-dock" aria-label="Map tools">
-				<button
-					class="edit-mode-button"
-					class:active={!editMode}
-					aria-pressed={!editMode}
-					onclick={() => {
-						closeOperations();
-						playbackOpen = false;
-						dismissContext();
-					}}><MousePointer2 size={17} />Explore</button
-				>
-				<button
-					class="dock-tool"
-					class:active={context === 'build'}
-					aria-pressed={context === 'build'}
-					aria-label="Build stops, healthcare or schools"
-					onclick={() => beginBuild()}
-					disabled={!selectedId}><TransportGraphic kind="bus" size={31} />Build</button
-				>
-				<button class="dock-tool" onclick={() => (drawer = 'services')}
-					><TransportGraphic kind="shelter" size={31} />Services</button
-				>
-				{#if !isMobile}<button
-						class="dock-tool playback-toggle"
-						class:active={playbackOpen}
-						aria-pressed={playbackOpen}
-						onclick={togglePlayback}><BusFront size={19} />Playback</button
-					>{/if}<span class="dock-divider"></span>
-				<div class="history-buttons">
-					<button
-						class="icon-button"
-						disabled={!scenario.canUndo || gesture === 'stop'}
-						onclick={() => history('undo')}
-						aria-label="Undo change"><RotateCcw size={17} /></button
-					><button
-						class="icon-button"
-						disabled={!scenario.canRedo || gesture === 'stop'}
-						onclick={() => history('redo')}
-						aria-label="Redo change"><RotateCw size={17} /></button
-					><button
-						class="reset-button"
-						disabled={!initialized || busy}
-						onclick={resetToDefault}
-						aria-label="Reset to default"
-						title="Restore the starting proposal, planning settings and map view"
-						><ListRestart size={17} />Reset</button
-					><button
-						class="icon-button"
-						onclick={() => openSettings('proposal')}
-						aria-label="Proposal options"><Ellipsis size={19} /></button
-					>
-				</div>
-				<span class="live-status" class:updating={busy}
-					><span class="live-dot"></span>{busy
-						? 'Updating'
-						: draft
-							? 'Preview'
-							: savedOnDevice
-								? 'Saved'
-								: 'Ready'}</span
-				>
-			</div>
 		</main>
 	</div>
 	<input
@@ -3281,7 +3608,7 @@
 			class:mobile-drawer={drawer.startsWith('mobile-')}
 			aria-label={drawer.startsWith('mobile-')
 				? drawer === 'mobile-menu'
-					? 'Sandbox menu'
+					? 'Map tools'
 					: drawer === 'mobile-map'
 						? 'Map options'
 						: drawer === 'mobile-areas'
@@ -3318,17 +3645,19 @@
 				<div class="mobile-drawer-content">
 					<div class="drawer-heading">
 						<div>
-							<span class="eyebrow">MOBILITY SANDBOX</span>
+							<span class="eyebrow">MAP WORKSPACE</span>
 							<h2>
 								{drawer === 'mobile-menu'
-									? 'Your workspace'
+									? 'Map tools'
 									: drawer === 'mobile-map'
 										? 'Make the map yours'
 										: drawer === 'mobile-areas'
 											? hasProposal
 												? 'See what improved'
 												: 'Find an access gap'
-											: 'What changes?'}
+											: hasProposal || draft || liveActions
+												? 'Scenario results'
+												: 'Current access'}
 							</h2>
 						</div>
 						<button class="icon-button" aria-label="Close drawer" onclick={closeOverlay}
@@ -3338,6 +3667,38 @@
 					<div class="mobile-drawer-body">
 						{#if drawer === 'mobile-menu'}
 							<div class="mobile-menu-list">
+								<button onclick={() => (drawer = 'mobile-map')}
+									><Layers size={20} /><span
+										><strong>Map appearance</strong><small
+											>Layers, imagery, colors and perspective</small
+										></span
+									><ChevronRight size={17} /></button
+								>
+								<button
+									onclick={() => {
+										focusCoordinate = null;
+										overviewRequest += 1;
+										closeOverlay();
+									}}
+									><LocateFixed size={20} /><span
+										><strong>Show map overview</strong><small
+											>Fit the loaded islands and network</small
+										></span
+									><ChevronRight size={17} /></button
+								>
+								<button
+									onclick={() => {
+										closeOverlay();
+										tour = 0;
+										workflowOpen = true;
+										areasExpanded = true;
+									}}
+									><Info size={20} /><span
+										><strong>Map tour</strong><small
+											>Explore an area, test a proposal and inspect results</small
+										></span
+									><ChevronRight size={17} /></button
+								>
 								<button
 									onclick={() => {
 										closeOverlay();
@@ -3385,7 +3746,13 @@
 								>
 								<button onclick={() => openSettings('proposal')}
 									><Ellipsis size={20} /><span
-										><strong>Your proposal</strong><small>Save, import or export</small></span
+										><strong>Your proposal</strong><small
+											>{busy
+												? 'Recalculating before saving'
+												: savedOnDevice
+													? 'Saved on this device · import or export'
+													: 'Save, import or export'}</small
+										></span
 									><ChevronRight size={17} /></button
 								>
 								<button onclick={resetToDefault} disabled={!initialized || busy}
@@ -3496,12 +3863,19 @@
 							</div>
 						{:else}
 							<p class="mobile-drawer-intro">
-								Your proposal, compared with the current network. Costs and emissions depend on your
-								assumptions.
+								{#if hasProposal || draft || liveActions}Your proposal, compared with the current
+									network. Costs and emissions depend on your assumptions.
+								{:else}Modelled access to {scenario.assumptions.goal === 'healthcare'
+										? 'healthcare'
+										: 'schools'} within {scenario.assumptions.targetMinutes} minutes. Journeys include
+									walking, waiting and riding.{/if}
+							</p>
+							<p class="result-assumptions">
+								{planningDateLabel} · {timeLabel(scenario.assumptions.departureMinutes)} MVT · {coverage.label}
 							</p>
 							<div class="mobile-detailed-results">{@render policyResults()}</div>
-							<button class="secondary-button full-width" onclick={() => openSettings('carbon')}
-								>Review carbon assumptions <ArrowUpRight size={15} /></button
+							<button class="secondary-button full-width" onclick={() => openSettings('journey')}
+								>Review journey assumptions <ArrowUpRight size={15} /></button
 							>
 						{/if}
 					</div>
@@ -3539,14 +3913,22 @@
 							{
 								label: 'Additional capital',
 								before: 'MVR 0',
-								after: money(analysis?.costs.capitalMvr?.central),
-								detail: `Illustrative low–high range: ${money(analysis?.costs.capitalMvr?.low)}–${money(analysis?.costs.capitalMvr?.high)}. Local prices require verification.`
+								after: unpricedChange
+									? 'Not yet costed'
+									: money(analysis?.costs.capitalMvr?.central),
+								detail: unpricedChange
+									? 'Timetable and road implementation costs require operator and engineering review.'
+									: `Illustrative low–high range: ${money(analysis?.costs.capitalMvr?.low)}–${money(analysis?.costs.capitalMvr?.high)}. Local prices require verification.`
 							},
 							{
 								label: 'Annual operating change',
 								before: 'MVR 0',
-								after: money(analysis?.costs.annualOperatingMvr?.central),
-								detail: `Illustrative low–high range: ${money(analysis?.costs.annualOperatingMvr?.low)}–${money(analysis?.costs.annualOperatingMvr?.high)}. Local rates require verification.`
+								after: unpricedChange
+									? 'Not yet costed'
+									: money(analysis?.costs.annualOperatingMvr?.central),
+								detail: unpricedChange
+									? 'Timetable and road implementation costs are unestablished; MVR 0 is not a feasibility finding.'
+									: `Illustrative low–high range: ${money(analysis?.costs.annualOperatingMvr?.low)}–${money(analysis?.costs.annualOperatingMvr?.high)}. Local rates require verification.`
 							},
 							{
 								label: 'Annual emissions change',
@@ -3724,7 +4106,7 @@
 					<div class="alternative-grid">
 						{#if !comparisons.length}<p>
 								{comparisonDone
-									? 'No affordable option with a measured benefit was found. Adjust the limits, try another area, or collect better service data.'
+									? 'No affordable option with a modeled benefit was found. Adjust the limits, try another area, or collect better service data.'
 									: busy
 										? 'Searching affordable alternatives on the same network…'
 										: 'Limits changed. Recalculate to find options that fit.'}
@@ -3823,7 +4205,16 @@
 							stops={reviewedStops}
 							onaction={(action) => {
 								cancelDraft();
-								scenario.addAction(action);
+								recordEdit(
+									action.kind === 'disable-stop' || action.kind === 'enable-stop'
+										? 'Stop availability changed'
+										: action.kind === 'set-hours'
+											? 'Operating hours changed'
+											: 'Service updated',
+									() => scenario.addAction(action)
+								);
+								revealProposalChanges();
+								busy = true;
 							}}
 							onmove={(stopId) => {
 								closeOverlay();
@@ -4557,19 +4948,16 @@
 </div>
 
 <style>
-	.task-strip {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		padding: 8px 24px;
-		background: #f9fbf5;
-		border-bottom: 1px solid #dfe8dd;
-		flex-shrink: 0;
+	.policy-atlas.embedded {
+		height: 100% !important;
+		min-height: 0;
 	}
-	.task-note {
-		font-size: 11px;
-		color: #81927c;
+	@media (max-width: 680px) {
+		.policy-atlas.embedded :global(.maplibregl-ctrl-bottom-left) {
+			top: auto;
+			bottom: calc(var(--mobile-map-bottom, 76px) + 8px);
+			max-width: calc(100% - 78px);
+		}
 	}
 	.operations-holder {
 		overflow-y: auto;
@@ -4586,72 +4974,6 @@
 	}
 	.playback-content :global(.service-playback) {
 		margin-top: 12px;
-	}
-	.map-stage.has-operations .priority-panel,
-	.map-stage.has-operations .map-key {
-		display: none;
-	}
-	@media (max-width: 680px) {
-		.task-strip {
-			padding: 6px 12px;
-		}
-		.task-note {
-			display: none;
-		}
-		.task-strip :global(.discrete-tabs) {
-			width: 100%;
-			flex-wrap: nowrap;
-			gap: 5px;
-		}
-		.task-strip :global(.discrete-tabs button) {
-			flex: 1;
-			font-size: 12px;
-			min-height: 36px;
-			padding: 7px 9px;
-		}
-	}
-	@media print {
-		.task-strip {
-			display: none;
-		}
-	}
-	.planning-context {
-		display: flex;
-		flex: 0 0 auto;
-		align-items: center;
-		gap: 14px;
-		padding: 4px 24px;
-		min-height: 30px;
-		background: #f3f6ef;
-		border-bottom: 1px solid #dce5d8;
-		color: #73866b;
-		font-size: 11px;
-	}
-	.planning-context button {
-		display: inline-flex;
-		align-items: center;
-		gap: 5px;
-		color: #58754e;
-		border: 0;
-		background: transparent;
-		padding: 4px 0;
-		min-height: 26px;
-		font: inherit;
-		cursor: pointer;
-		white-space: nowrap;
-	}
-	.planning-context.outside {
-		background: #fff3df;
-		color: #987435;
-	}
-	.planning-context.outside button {
-		color: #91692b;
-	}
-	.planning-context .supported-time {
-		margin-left: auto;
-		font-weight: 650;
-		text-decoration: underline;
-		text-underline-offset: 3px;
 	}
 	.data-investigation {
 		display: flex;
@@ -4710,148 +5032,16 @@
 		border-left: 2px solid #9eb784;
 		padding-left: 10px;
 	}
-	@media (max-width: 760px) {
-		.planning-context {
-			padding: 3px 12px;
-			gap: 10px;
-			font-size: 10px;
-			min-height: 30px;
-			flex-wrap: wrap;
-		}
-		.planning-context > span {
-			display: none;
-		}
-		.planning-context button {
-			min-height: 28px;
-			white-space: normal;
-			text-align: left;
-		}
-		.planning-context .supported-time {
-			margin-left: 0;
-		}
-	}
 	.atlas-dialog.transport-dialog {
 		--transport-panel-height: calc(100dvh - 48px);
 		width: min(920px, calc(100vw - 32px));
 		overflow: hidden;
-	}
-	.map-options .sea-air-button {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		white-space: nowrap;
-	}
-	.map-view-controls {
-		display: flex;
-		align-items: center;
-		gap: 12px;
 	}
 	.context-heading {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		padding: 12px 16px 0;
-	}
-	.object-heading {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		margin: 4px 0 14px;
-	}
-	.object-heading > div {
-		min-width: 0;
-		overflow-wrap: anywhere;
-	}
-	.object-heading h2 {
-		font-size: 18px;
-		margin: 0 0 5px;
-	}
-	.object-heading p {
-		margin: 0;
-		color: #71868a;
-		font-size: 13px;
-		line-height: 1.45;
-	}
-	.object-details {
-		width: 100%;
-		justify-content: center;
-		margin-top: 8px;
-	}
-	.placement-status {
-		font-size: 13px;
-		line-height: 1.5;
-		padding: 11px;
-		border-radius: 8px;
-		color: #927133;
-		background: #fbf6e9;
-	}
-	.placement-status.valid {
-		color: #147761;
-		background: #edf7f1;
-	}
-	.basemap-picker {
-		position: relative;
-	}
-	.basemap-picker > summary {
-		display: flex;
-		align-items: center;
-		gap: 7px;
-		cursor: pointer;
-		list-style: none;
-		font-size: 13px;
-		padding: 9px;
-		color: #537076;
-		border-radius: 6px;
-	}
-	.basemap-picker > summary::-webkit-details-marker {
-		display: none;
-	}
-	.basemap-picker[open] > summary {
-		background: #e8f2ec;
-	}
-	.basemap-menu {
-		position: absolute;
-		right: 0;
-		top: calc(100% + 9px);
-		width: 220px;
-		max-width: calc(100vw - 24px);
-		max-height: min(400px, calc(100dvh - 48px));
-		overflow-y: auto;
-		padding: 12px;
-		border: 1px solid #d9e4df;
-		border-radius: 12px;
-		background: #fff;
-		box-shadow: 0 12px 32px #26483a22;
-		z-index: 6;
-	}
-	.basemap-menu > span {
-		display: block;
-		margin: 0 6px 8px;
-	}
-	.map-options .basemap-menu button {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		width: 100%;
-		text-align: left;
-		padding: 9px 7px;
-	}
-	.basemap-menu strong,
-	.basemap-menu small {
-		display: block;
-	}
-	.basemap-menu strong {
-		font-size: 14px;
-		font-weight: 600;
-	}
-	.basemap-menu small {
-		margin-top: 4px;
-		color: #788c8b;
-		font-size: 12px;
-	}
-	.basemap-menu button[aria-pressed='true'] {
-		color: #18735c;
-		background: #eaf5ee;
 	}
 	.overlay-opacity-control {
 		margin-top: 12px;
@@ -4891,11 +5081,6 @@
 		color: #234e5a;
 		font-weight: 600;
 	}
-	.map-stage.has-selection .map-key {
-		left: 24px;
-		right: auto;
-		max-width: calc(100% - 440px);
-	}
 	@keyframes selection-enter {
 		from {
 			opacity: 0;
@@ -4905,72 +5090,6 @@
 			opacity: 1;
 			transform: translateY(0);
 		}
-	}
-	.edit-dock {
-		position: absolute;
-		bottom: 36px;
-		left: 50%;
-		transform: translateX(-50%);
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		white-space: nowrap;
-		max-width: calc(100% - 100px);
-		padding: 7px;
-		border: 1px solid #c7ddda;
-		border-radius: 14px;
-		background: #ffffffed;
-		box-shadow: 0 8px 28px #254b631c;
-		z-index: 3;
-	}
-	.edit-mode-button,
-	.dock-tool {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 7px;
-		border: 0;
-		padding: 11px 13px;
-		border-radius: 9px;
-		background: #edf5f2;
-		color: #256960;
-		font-size: 14px;
-		font-weight: 600;
-	}
-	.edit-mode-button.active {
-		background: #087f7c;
-		color: #fff;
-	}
-	.dock-tool {
-		padding: 4px 9px;
-		background: transparent;
-	}
-	.dock-tool:hover {
-		background: #edf5f2;
-	}
-	.dock-tool.active {
-		background: #e2f2ec;
-		color: #126651;
-		box-shadow: inset 0 0 0 1px #a8cdbf;
-	}
-	.dock-divider {
-		height: 25px;
-		width: 1px;
-		background: #d8e5df;
-	}
-	.live-status {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-		font-size: 12px;
-		color: #167f70;
-		padding-right: 8px;
-	}
-	.live-status.updating {
-		color: #9c742b;
-	}
-	.live-status.updating .live-dot {
-		background: #bb8939;
 	}
 	.population-estimate {
 		display: inline-flex;
@@ -5001,25 +5120,6 @@
 	}
 	.access-status.access-gap {
 		color: #996d32;
-	}
-	.coverage-badge {
-		display: inline-flex;
-		align-items: center;
-		gap: 5px;
-		padding: 6px 8px;
-		border: 1px solid #e9dfc5;
-		border-radius: 6px;
-		background: #faf7ed;
-		color: #947331;
-		font-size: 12px;
-	}
-	.header-coverage {
-		margin-left: auto;
-	}
-	.edit-hint {
-		font-size: 13px;
-		color: #6e8687;
-		margin: 0 0 16px;
 	}
 	.edit-journey {
 		border-top: 1px solid var(--line);
@@ -5074,36 +5174,12 @@
 		font-size: 12px;
 		margin-bottom: 12px;
 	}
-	.more-edit-options {
-		font-size: 13px;
-		color: #6e8885;
-		margin-top: 10px;
-	}
-	.more-edit-options summary {
-		cursor: pointer;
-		padding: 5px 0;
-	}
-	.more-edit-options[open] > summary {
-		margin-bottom: 14px;
-	}
-	@media (max-width: 680px) {
-		.header-coverage {
-			display: none;
-		}
-		.edit-dock {
-			left: 18px;
-			right: 55px;
-			transform: none;
-			max-width: none;
-			gap: 6px;
-		}
-	}
 	.previous-proposal {
 		flex-shrink: 0;
 		padding: 6px 8px;
 		background: white;
 		border: 1px solid #bdd1ce;
-		border-radius: 5px;
+		border-radius: var(--surface-radius-pill);
 		color: #086f6d;
 		font-size: 12px;
 	}
@@ -5123,7 +5199,7 @@
 	.facility-audit {
 		margin: 18px 0;
 		border: 1px solid #dbe4de;
-		border-radius: 10px;
+		border-radius: var(--surface-radius-inner);
 		padding: 12px;
 	}
 	.facility-audit summary {
@@ -5163,16 +5239,6 @@
 		margin: 5px 10px 0 0;
 		color: #087c79;
 		font-size: 12px;
-	}
-	.map-key .stop-key {
-		background: #5285aa;
-		border-radius: 50%;
-		border: 1px solid white;
-	}
-	.map-key .stop-key-button {
-		display: inline-flex;
-		align-items: center;
-		gap: 5px;
 	}
 	.population-table {
 		border-collapse: collapse;
@@ -5230,95 +5296,14 @@
 		outline: 3px solid #15959080;
 		outline-offset: 3px;
 	}
-	.atlas-header {
-		min-height: 64px;
-		flex-shrink: 0;
-		padding: 0 26px;
-		display: flex;
-		align-items: center;
-		gap: 24px;
-		background: #fff;
-		border-bottom: 1px solid var(--line);
-		z-index: 5;
-	}
-	.brand {
-		display: flex;
-		align-items: center;
-		gap: 11px;
-		text-decoration: none;
-		color: var(--ink);
-		font-size: 19px;
-		font-weight: 650;
-		letter-spacing: -0.6px;
-		line-height: 1.3;
-	}
-	.brand b {
-		color: #087f7c;
-		font-weight: 700;
-	}
-	.brand small {
-		display: block;
-		color: var(--muted);
-		font-size: 13px;
-		letter-spacing: 0.2px;
-		font-weight: 450;
-		margin-top: 2px;
-	}
-	.brand-symbol {
-		display: grid;
-		place-items: center;
-		width: 36px;
-		height: 36px;
-		border-radius: 10px;
-		background: #edf7f3;
-	}
-	.brand-symbol svg {
-		width: 27px;
-		fill: #0b8580;
-	}
-	.brand-symbol path {
-		fill: none;
-		stroke: #0b8580;
-		stroke-width: 3;
-		stroke-linecap: round;
-	}
-	.header-location {
-		margin-left: 24px;
-		min-width: 0;
-		max-width: 260px;
-		overflow-wrap: anywhere;
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 12px;
-		letter-spacing: 1.2px;
-		font-weight: 650;
-		color: #6b848a;
-	}
-	.live-dot {
-		display: inline-block;
-		width: 6px;
-		height: 6px;
-		background: #238e80;
-		border-radius: 50%;
-		flex-shrink: 0;
-	}
-	.header-actions {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		margin-left: 0;
-		min-width: 0;
-	}
 	.quiet-button,
-	.brief-button,
 	.primary-button,
 	.secondary-button {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		gap: 8px;
-		border-radius: 8px;
+		border-radius: var(--surface-radius-pill);
 		border: 0;
 		padding: 10px 12px;
 		font-size: 12px;
@@ -5327,11 +5312,6 @@
 	.quiet-button {
 		background: transparent;
 		color: #5c7985;
-	}
-	.brief-button {
-		background: #edf5f2;
-		border: 1px solid #d7e6e0;
-		color: #2d6b60;
 	}
 	.primary-button {
 		background: #0b7d7b;
@@ -5358,19 +5338,11 @@
 		border: 0;
 		background: transparent;
 		color: #67818b;
-		border-radius: 6px;
+		border-radius: var(--surface-radius-pill);
 	}
 	.icon-button:hover,
 	.quiet-button:hover {
 		background: #eff4f2;
-	}
-	.results-bar {
-		display: grid;
-		grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.95fr) minmax(0, 1.1fr) minmax(0, 1fr);
-		background: #fff;
-		border-bottom: 1px solid var(--line);
-		min-height: 96px;
-		z-index: 3;
 	}
 	.result {
 		padding: 12px 26px;
@@ -5466,46 +5438,6 @@
 	.carbon-increase strong {
 		color: #a37430;
 	}
-	.workspace {
-		flex: 1;
-		min-height: 0;
-		display: flex;
-	}
-	.map-stage {
-		--map-controls-top: 20px;
-		--map-overlay-top: calc(var(--map-controls-top) + var(--map-controls-height) + 14px);
-		position: relative;
-		flex: 1;
-		min-width: 0;
-		overflow: hidden;
-	}
-	.map-topbar {
-		position: absolute;
-		top: var(--map-controls-top);
-		left: 24px;
-		right: 24px;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		z-index: 2;
-	}
-	.map-topbar:has(.basemap-picker[open]) {
-		z-index: 6;
-	}
-	.map-view-stack {
-		min-width: 0;
-	}
-	.map-view-explanation {
-		margin: 5px 0 0;
-		width: fit-content;
-		max-width: 100%;
-		padding: 4px 9px;
-		border-radius: 6px;
-		background: #fffffff2;
-		color: #47676c;
-		font-size: 12px;
-		line-height: 1.4;
-	}
 	.changes-content {
 		padding: 13px;
 		border: 1px solid #cfdfdb;
@@ -5588,69 +5520,6 @@
 	.mobile-priority-cards .changes-content {
 		max-height: none;
 	}
-	.map-options {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-		padding: 4px;
-		background: #ffffffea;
-		border: 1px solid #d3e5e2;
-		border-radius: 9px;
-		box-shadow: 0 4px 15px #3e70840c;
-		flex-shrink: 0;
-	}
-	.map-options > button:not(.icon-button) {
-		padding: 6px 10px;
-		border: 0;
-		background: transparent;
-		color: #69868d;
-		font-size: 13px;
-		border-radius: 5px;
-	}
-	.map-options > button.active {
-		color: #117d78;
-		background: #e7f3ee;
-	}
-	.priority-panel {
-		position: absolute;
-		top: var(--map-overlay-top);
-		left: 25px;
-		width: 240px;
-		z-index: 2;
-	}
-	.priority-panel:not([open]) {
-		width: 188px;
-	}
-	.priority-panel > summary {
-		list-style: none;
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 11px 13px;
-		border: 1px solid #c5dcdb;
-		border-radius: 10px;
-		background: #fffffff2;
-		box-shadow: 0 4px 14px #2146500d;
-		cursor: pointer;
-		font-size: 14px;
-		font-weight: 600;
-	}
-	.priority-panel > summary::-webkit-details-marker {
-		display: none;
-	}
-	.priority-panel > summary :global(svg) {
-		margin-left: auto;
-	}
-	.priority-panel[open] > summary :global(svg) {
-		transform: rotate(90deg);
-	}
-	.priority-content {
-		padding-top: 8px;
-	}
-	.map-stage.satellite .priority-content h1 {
-		color: #fff;
-		text-shadow: 0 1px 6px #102b38;
-	}
 	.eyebrow {
 		font-size: 12px;
 		font-weight: 700;
@@ -5664,15 +5533,6 @@
 		letter-spacing: -1.1px;
 		font-weight: 600;
 		max-width: 260px;
-	}
-	.small-pill {
-		padding: 3px 6px;
-		font-size: 12px;
-		color: #6e9389;
-		background: #edf5ed;
-		border-radius: 4px;
-		font-weight: 600;
-		letter-spacing: 0.1px;
 	}
 	.priority-card {
 		display: flex;
@@ -5729,30 +5589,6 @@
 		color: var(--muted);
 		font-size: 12px;
 	}
-	.map-key {
-		position: absolute;
-		right: 14px;
-		bottom: 104px;
-		background: #fffffff0;
-		border: 1px solid #d7e6e2;
-		padding: 8px 10px;
-		border-radius: 7px;
-		display: flex;
-		flex-wrap: wrap;
-		gap: 10px;
-		align-items: center;
-		font-size: 12px;
-		color: #607e87;
-	}
-	.map-key > span {
-		display: flex;
-		align-items: center;
-		gap: 4px;
-	}
-	.map-key .proposal-key {
-		color: #965108;
-		font-weight: 600;
-	}
 	.proposal-key b {
 		display: inline-flex;
 		align-items: center;
@@ -5764,35 +5600,6 @@
 		background: #fff1d5;
 		font-size: 13px;
 		line-height: 1;
-	}
-	.asset-status {
-		display: inline-flex;
-		margin-top: 5px;
-		padding: 3px 6px;
-		border-radius: 5px;
-		background: #e9f5f3;
-		color: #166c72;
-		font-size: 11px;
-		line-height: 1.4;
-		font-weight: 650;
-	}
-	.asset-status.proposed {
-		background: #fff1d5;
-		color: #965108;
-	}
-	.asset-status.moved {
-		background: #f0eafa;
-		color: #6950a5;
-	}
-	.asset-status.paused {
-		background: #edf0f1;
-		color: #5d6e76;
-	}
-	.map-key i {
-		width: 7px;
-		height: 7px;
-		display: inline-block;
-		border-radius: 2px;
 	}
 	.reachable-key {
 		background: #78baa5;
@@ -5823,20 +5630,6 @@
 		font-size: 12px;
 		line-height: 1.5;
 		color: var(--muted);
-	}
-	.map-key button {
-		border: 0;
-		padding: 0;
-		color: #79939a;
-		background: transparent;
-		font-size: 12px;
-	}
-	.map-key .change-outline-key {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-		color: #16886c;
-		font-weight: 600;
 	}
 	.change-outline-key i {
 		border: 1.5px solid #16886c;
@@ -5936,7 +5729,7 @@
 		display: flex;
 		gap: 5px;
 		background: #f1f5ef;
-		border-radius: 7px;
+		border-radius: var(--surface-radius-pill);
 		padding: 4px;
 		margin: 9px 0;
 	}
@@ -5948,7 +5741,7 @@
 		gap: 4px;
 		align-items: center;
 		justify-content: center;
-		border-radius: 5px;
+		border-radius: var(--surface-radius-pill);
 		padding: 7px;
 		font-size: 13px;
 		font-weight: 550;
@@ -5968,7 +5761,7 @@
 		padding: 13px 12px;
 		background: #f3f7ee;
 		border: 1px solid #e3eada;
-		border-radius: 9px;
+		border-radius: var(--surface-radius-inner);
 	}
 	.break-even-icon {
 		padding-top: 3px;
@@ -5995,46 +5788,24 @@
 		margin: 0;
 		border-bottom: 1px solid #e8ede7;
 	}
-	.history-buttons {
-		margin-left: auto;
-		display: flex;
-		align-items: center;
-	}
-	.reset-button {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 5px;
-		min-height: 32px;
-		padding: 0 8px;
-		border: 0;
-		border-radius: 6px;
-		background: transparent;
-		color: #67818b;
-		font-size: 12px;
-		font-weight: 600;
-	}
-	.reset-button:hover {
-		background: #eff4f2;
-	}
 	.notice {
 		position: fixed;
-		bottom: 100px;
+		top: 88px;
+		bottom: auto;
 		left: 50%;
 		transform: translateX(-50%);
 		z-index: 15;
 		display: flex;
 		align-items: center;
 		gap: 16px;
-		max-width: 650px;
 		background: #173e49;
 		color: #fff;
-		box-shadow: 0 10px 40px #173e4930;
-		border-radius: 10px;
+		box-shadow: var(--surface-shadow-raised);
+		border-radius: var(--surface-radius);
 		padding: 10px 15px;
 		font-size: 12px;
 		width: max-content;
-		max-width: min(650px, calc(100vw - 24px));
+		max-width: min(480px, calc(100vw - 24px));
 		flex-wrap: wrap;
 		overflow-wrap: anywhere;
 	}
@@ -6044,21 +5815,18 @@
 	}
 	.notice .icon-button {
 		color: #c3dcdb;
+		width: 44px;
+		height: 44px;
 	}
 	.hidden-upload {
 		display: none;
 	}
 	.tour-card {
-		position: absolute;
-		z-index: 5;
-		top: var(--map-overlay-top);
-		left: 290px;
-		width: 260px;
-		border-radius: 14px;
-		padding: 16px;
-		background: #fffef8;
-		border: 1px solid #d9ddc7;
-		box-shadow: 0 15px 45px #294e641f;
+		margin-bottom: 12px;
+		padding: 12px;
+		border-radius: var(--surface-radius-inner);
+		background: #f3f5f5;
+		border: 1px solid #dce1e3;
 	}
 	.tour-card > div {
 		display: flex;
@@ -6066,14 +5834,14 @@
 		align-items: center;
 	}
 	.tour-card strong {
-		font-size: 16px;
+		font-size: 14px;
 		display: block;
 		margin: 9px 0;
 	}
 	.tour-card p {
 		font-size: 12px;
 		line-height: 1.6;
-		color: #7a8b7b;
+		color: #60717a;
 	}
 	.tour-card > button {
 		background: transparent;
@@ -6095,14 +5863,14 @@
 		padding: 12px;
 		background: #173e49;
 		color: #fff;
-		border-radius: 8px;
+		border-radius: var(--surface-radius);
 		font-size: 13px;
 		z-index: 6;
 	}
 	.placement-prompt button {
 		padding: 3px 8px;
 		border: 1px solid #7aa9aa;
-		border-radius: 4px;
+		border-radius: var(--surface-radius-pill);
 		background: transparent;
 		color: #fff;
 		margin-left: 12px;
@@ -6115,13 +5883,13 @@
 		margin: auto;
 		padding: 0;
 		border: 1px solid #d5e2dc;
-		border-radius: 16px;
-		background: #fffcf7;
+		border-radius: var(--surface-radius);
+		background: #fff;
 		color: var(--ink);
 		overflow: auto;
 		overscroll-behavior: contain;
 		scrollbar-width: thin;
-		box-shadow: 0 24px 80px #21465030;
+		box-shadow: var(--surface-shadow-raised);
 		user-select: text;
 		overflow-wrap: anywhere;
 	}
@@ -6143,12 +5911,21 @@
 		}
 	}
 	.atlas-dialog.sheet {
-		width: min(560px, 100vw);
-		height: 100dvh;
-		max-height: 100dvh;
-		margin: 0 0 0 auto;
-		border: 0;
-		border-radius: 0;
+		width: min(560px, calc(100vw - 40px));
+		height: calc(100dvh - 40px);
+		max-height: calc(100dvh - 40px);
+		margin: 20px 20px 20px auto;
+		overflow: hidden;
+	}
+	.atlas-dialog.sheet .evidence-drawer {
+		height: 100%;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		scrollbar-width: thin;
+	}
+	.atlas-dialog.sheet .drawer-heading {
+		/* Cover the scroll container's top padding while the heading stays fixed. */
+		box-shadow: 0 -28px 0 #fff;
 	}
 	.atlas-dialog.wide {
 		width: min(1030px, calc(100vw - 48px));
@@ -6157,7 +5934,7 @@
 		width: min(850px, calc(100vw - 48px));
 	}
 	.evidence-drawer {
-		background: #fffcf7;
+		background: #fff;
 		padding: 24px 28px;
 	}
 	.service-modal {
@@ -6172,7 +5949,7 @@
 		position: sticky;
 		top: 0;
 		z-index: 2;
-		background: #fffcf7;
+		background: #fff;
 		padding: 8px 0 14px;
 	}
 	.drawer-heading > div {
@@ -6197,7 +5974,7 @@
 	}
 	.evidence-group {
 		border: 1px solid #dce6df;
-		border-radius: 10px;
+		border-radius: var(--surface-radius-inner);
 		padding: 0 15px;
 		margin: 14px 0;
 	}
@@ -6227,7 +6004,7 @@
 		min-height: 42px;
 		padding: 10px 12px;
 		border: 1px solid #d5e2dc;
-		border-radius: 7px;
+		border-radius: var(--surface-radius-field);
 		background: white;
 		font-size: 14px;
 		color: #234d57;
@@ -6252,7 +6029,7 @@
 	}
 	.evidence-explanation {
 		padding: 15px;
-		border-radius: 10px;
+		border-radius: var(--surface-radius-inner);
 		background: #f0f4e9;
 		margin-top: 20px;
 	}
@@ -6355,7 +6132,7 @@
 		width: 100%;
 		background: #fff;
 		border: 1px solid #d8e3cf;
-		border-radius: 7px;
+		border-radius: var(--surface-radius-field);
 		padding: 9px;
 		font-size: 14px;
 		color: #31565b;
@@ -6405,7 +6182,7 @@
 		min-width: 0;
 		background: #fff;
 		border: 1px solid #e2e7d9;
-		border-radius: 5px;
+		border-radius: var(--surface-radius-field);
 		padding: 7px 5px;
 		font-size: 14px;
 		color: #31575b;
@@ -6532,17 +6309,8 @@
 		}
 	}
 	@media (min-width: 1600px) {
-		.tour-card {
-			left: 315px;
-		}
-		.map-stage.has-selection .map-key {
-			max-width: calc(100% - 470px);
-		}
 		.decision-panel {
 			width: 390px;
-		}
-		.priority-panel {
-			width: 265px;
 		}
 		.priority-card {
 			padding: 16px 12px;
@@ -6558,41 +6326,11 @@
 		font-size: 14px;
 	}
 	@media (max-height: 800px) {
-		.priority-panel h1 {
-			font-size: 23px;
-		}
 		.priority-card {
 			padding: 8px 10px;
 		}
-		.map-key {
-			bottom: 104px;
-		}
 	}
 	@media (max-width: 1150px) {
-		.tour-card {
-			left: 260px;
-		}
-		.header-coverage {
-			display: none;
-		}
-		.header-actions {
-			margin-left: auto;
-		}
-		.map-topbar {
-			align-items: flex-start;
-			flex-direction: column;
-			gap: 8px;
-		}
-		.map-view-controls {
-			flex-wrap: wrap;
-			max-width: 100%;
-		}
-		.map-options {
-			align-self: flex-end;
-		}
-		.header-location {
-			display: none;
-		}
 		.decision-panel {
 			width: 335px;
 		}
@@ -6602,35 +6340,13 @@
 		.result strong {
 			font-size: 23px;
 		}
-		.priority-panel {
-			width: 215px;
-			left: 18px;
-		}
 	}
 	@media (max-width: 900px) {
-		.tour-card {
-			display: none;
-		}
-		.atlas-header {
-			padding: 0 16px;
-		}
-		.tour-button {
-			display: none;
-		}
-		.header-actions {
-			gap: 4px;
-		}
-		.brand {
-			font-size: 15px;
-		}
 		.result-context {
 			display: none;
 		}
 		.result {
 			padding: 12px;
-		}
-		.results-bar {
-			min-height: 99px;
 		}
 		.result strong {
 			font-size: 20px;
@@ -6652,14 +6368,6 @@
 			font-size: 12px;
 			padding: 6px;
 		}
-		.priority-panel {
-			width: 200px;
-		}
-		.map-key {
-			bottom: 104px;
-			left: 18px;
-			right: auto;
-		}
 		.tour-card {
 			width: 220px;
 		}
@@ -6673,42 +6381,6 @@
 			overflow-x: hidden;
 			height: 100dvh;
 		}
-		.atlas-header {
-			min-height: 62px;
-			flex-wrap: wrap;
-			gap: 12px;
-			padding: 12px 16px;
-		}
-		.brand small {
-			font-size: 12px;
-		}
-		.header-actions .quiet-button {
-			display: inline-flex;
-			font-size: 12px;
-			padding: 7px 6px;
-		}
-		.header-actions .tour-button {
-			display: none;
-		}
-		.header-actions {
-			width: 100%;
-			display: grid;
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-			gap: 4px;
-		}
-		.header-actions > button {
-			min-width: 0;
-			min-height: 44px;
-			gap: 4px;
-			padding: 6px 4px;
-			line-height: 1.3;
-		}
-		.header-actions > button :global(svg) {
-			flex-shrink: 0;
-		}
-		.header-actions .brief-button :global(svg:last-child) {
-			display: none;
-		}
 		.atlas-dialog,
 		.atlas-dialog.wide,
 		.atlas-dialog.document,
@@ -6720,15 +6392,14 @@
 			--transport-panel-height: calc(100dvh - 24px);
 		}
 		.atlas-dialog.sheet {
-			width: 100vw;
-			max-height: 100dvh;
+			width: calc(100vw - 20px);
+			height: calc(100dvh - 20px);
+			max-height: calc(100dvh - 20px);
+			margin: 10px 10px 10px auto;
 		}
 		.settings-grid,
 		.settings-grid.journey-basics {
 			grid-template-columns: 1fr;
-		}
-		.live-status {
-			display: none;
 		}
 		.range-heading,
 		.range-row {
@@ -6749,14 +6420,6 @@
 			flex-direction: column;
 			gap: 12px;
 		}
-		.brief-button {
-			padding: 8px;
-			font-size: 12px;
-		}
-		.results-bar {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			flex-shrink: 0;
-		}
 		.result {
 			min-height: 82px;
 		}
@@ -6767,23 +6430,6 @@
 		.result:nth-child(4) {
 			border-top: 1px solid #e4eae4;
 		}
-		.workspace {
-			flex-direction: column;
-			flex: none;
-		}
-		.map-stage {
-			--map-controls-top: 12px;
-			min-height: 680px;
-			height: clamp(680px, 85dvh, 780px);
-			flex: none;
-		}
-		.map-topbar {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 10px;
-			left: 12px;
-			right: 12px;
-		}
 		.decision-panel {
 			width: calc(100% - 24px);
 			right: 12px;
@@ -6791,89 +6437,6 @@
 		}
 		.panel-scroll {
 			overflow: auto;
-		}
-		.priority-panel {
-			left: 12px;
-			width: min(260px, calc(100% - 24px));
-		}
-		.priority-content {
-			max-height: 170px;
-			overflow: auto;
-		}
-		.priority-panel h1 {
-			font-size: 18px;
-			letter-spacing: -0.5px;
-		}
-		.map-stage.has-selection .priority-panel {
-			display: none;
-		}
-		.map-stage.has-selection .map-key {
-			display: none;
-		}
-		.map-key {
-			bottom: 220px;
-			left: 12px;
-			max-width: calc(100% - 24px);
-			gap: 6px 10px;
-			padding: 8px 10px;
-		}
-		.edit-dock {
-			bottom: max(90px, env(safe-area-inset-bottom));
-			left: 12px;
-			right: 12px;
-			display: grid;
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-			gap: 4px;
-		}
-		.edit-dock .edit-mode-button,
-		.edit-dock .dock-tool {
-			min-width: 0;
-			min-height: 48px;
-			padding: 5px;
-			font-size: 12px;
-			gap: 4px;
-		}
-		.edit-dock .dock-divider {
-			display: none;
-		}
-		.edit-dock .history-buttons {
-			grid-column: 1 / -1;
-			margin: 0;
-			justify-content: center;
-			gap: 12px;
-		}
-		.edit-dock .icon-button {
-			width: 44px;
-			height: 44px;
-		}
-		.map-view-controls {
-			width: 100%;
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 8px;
-		}
-		.map-options {
-			align-self: stretch;
-			max-width: 100%;
-			gap: 2px;
-		}
-		.map-options > button:not(.icon-button),
-		.basemap-picker > summary {
-			padding: 6px 4px;
-			font-size: 12px;
-			min-height: 44px;
-			justify-content: center;
-		}
-		.map-options > button {
-			flex: 1 1 0;
-			min-width: 0;
-		}
-		.map-options .basemap-picker {
-			flex: 1 1 0;
-			min-width: 0;
-		}
-		.map-stage.editing .map-key {
-			bottom: 220px;
 		}
 		.tour-card {
 			left: 12px;
@@ -6889,9 +6452,6 @@
 		}
 		.compare-modal {
 			padding: 20px;
-		}
-		.results-bar .result strong > span {
-			display: inline-block;
 		}
 		.notice {
 			width: 90%;
@@ -6919,31 +6479,11 @@
 		.fleet-toggle button,
 		.primary-button,
 		.secondary-button,
-		.edit-journey > summary,
-		.more-edit-options > summary {
+		.edit-journey > summary {
 			min-height: 44px;
 		}
 	}
-	@media (max-width: 480px) {
-		.map-options {
-			display: grid;
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
 	@media (max-width: 380px) {
-		.atlas-header {
-			padding: 10px 12px;
-		}
-		.header-actions > button :global(svg) {
-			display: none;
-		}
-		.edit-dock .edit-mode-button,
-		.edit-dock .dock-tool {
-			flex-direction: column;
-		}
-		.results-bar .result {
-			padding: 12px 10px;
-		}
 		.result-label {
 			font-size: 11px;
 			letter-spacing: 0.7px;
@@ -6960,32 +6500,12 @@
 		.policy-atlas {
 			overflow: hidden;
 		}
-		.workspace {
-			flex: 1;
-		}
-		.map-stage {
-			height: auto;
-			min-height: 0;
-		}
-		.results-bar {
-			min-height: 0;
-		}
 		.result {
 			padding: 8px 12px;
 		}
 		.result-chip {
 			display: none;
 		}
-		.atlas-header,
-		.results-bar {
-			flex-shrink: 0;
-		}
-	}
-
-	/* Phone navigation exposes only the controls needed for the current task. */
-	.mobile-menu-button,
-	.mobile-results-trigger {
-		display: none;
 	}
 	.mobile-drawer-content {
 		display: flex;
@@ -7183,19 +6703,31 @@
 	}
 	.mobile-detailed-results {
 		display: grid;
-		grid-template-columns: 1fr;
-		margin: 0 -6px 20px;
+		grid-template-columns: minmax(0, 1fr);
+		margin: 0 0 20px;
 	}
 	.mobile-detailed-results .result {
 		border-bottom: 1px solid #e1e7df;
-		padding: 16px 6px;
-		min-height: 100px;
+		padding: 18px 0;
+		min-height: 0;
+		color: #263a40;
+	}
+	.mobile-detailed-results .result-label {
+		letter-spacing: 0;
+		font-weight: 550;
+		color: #60717a;
+	}
+	.result-assumptions {
+		font-size: 12px;
+		line-height: 1.5;
+		color: #657570;
+		margin: 0 0 6px;
 	}
 	.mobile-detailed-results .result + .result::before {
 		display: none;
 	}
 	.mobile-detailed-results .result strong {
-		font-size: 30px;
+		font-size: 27px;
 	}
 	.mobile-detailed-results .result strong > span {
 		font-size: 13px;
@@ -7206,237 +6738,6 @@
 			height: 100dvh;
 			min-height: 0;
 			overflow: hidden;
-		}
-		.atlas-header {
-			flex-wrap: nowrap;
-			min-height: 58px;
-			height: 58px;
-			padding: 7px 12px;
-			gap: 10px;
-			flex-shrink: 0;
-		}
-		.brand {
-			flex: 1;
-			min-width: 0;
-		}
-		.brand-symbol {
-			width: 30px;
-			height: 30px;
-			flex: 0 0 30px;
-		}
-		.brand > span:last-child {
-			font-size: 14px;
-			white-space: nowrap;
-		}
-		.brand small {
-			font-size: 10px;
-		}
-		.header-actions,
-		.header-coverage,
-		.header-location {
-			display: none;
-		}
-		.mobile-menu-button {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			width: 44px;
-			height: 44px;
-			flex: 0 0 44px;
-			border: 1px solid #e0e7de;
-			background: #fff;
-			border-radius: 12px;
-			color: var(--ink);
-		}
-		.policy-atlas > .results-bar {
-			display: none;
-		}
-		.mobile-results-trigger {
-			display: block;
-			width: 100%;
-			flex-shrink: 0;
-			border: 0;
-			border-bottom: 1px solid #e0e8df;
-			padding: 10px 12px 7px;
-			background: #fffcf7;
-			color: var(--ink);
-			text-align: left;
-			cursor: pointer;
-		}
-		.mobile-result-grid {
-			display: grid;
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-			gap: 7px;
-		}
-		.mobile-result-grid > span {
-			display: grid;
-			gap: 2px;
-			min-width: 0;
-			font-variant-numeric: tabular-nums;
-		}
-		.mobile-result-grid small {
-			font-size: 10px;
-			font-weight: 600;
-			color: #637984;
-			text-transform: uppercase;
-			letter-spacing: 0.45px;
-		}
-		.mobile-result-grid strong {
-			font-size: clamp(16px, 4.7vw, 20px);
-			line-height: 1.2;
-			font-weight: 650;
-			letter-spacing: -0.6px;
-		}
-		.mobile-result-grid em {
-			font-style: normal;
-			font-size: 9px;
-			line-height: 1.5;
-			color: #637984;
-			white-space: nowrap;
-		}
-		.mobile-result-grid .carbon-increase strong {
-			color: #a25335;
-		}
-		.mobile-results-caption {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			gap: 6px;
-			padding-top: 7px;
-			font-size: 10px;
-			color: #637984;
-		}
-		.mobile-results-caption > span:last-child {
-			display: flex;
-			gap: 2px;
-			align-items: center;
-			color: #077f7d;
-		}
-		.workspace {
-			flex: 1;
-			min-height: 0;
-		}
-		.map-stage {
-			flex: 1;
-			height: auto;
-			min-height: 0;
-		}
-		.map-topbar,
-		.priority-panel,
-		.map-key,
-		.tour-card {
-			display: none;
-		}
-		.mobile-map-controls {
-			position: absolute;
-			z-index: 6;
-			top: 12px;
-			left: 12px;
-			right: 12px;
-			pointer-events: none;
-		}
-		.mobile-map-row {
-			display: flex;
-			align-items: stretch;
-			gap: 7px;
-		}
-		.mobile-map-controls button {
-			pointer-events: auto;
-			box-shadow: 0 2px 8px rgb(27 62 73 / 8%);
-		}
-		.mobile-goal {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			flex: 1;
-			min-width: 0;
-			min-height: 46px;
-			max-width: 220px;
-			padding: 8px 12px;
-			background: #fffcf7;
-			border: 1px solid #d9e4d9;
-			border-radius: 12px;
-			text-align: left;
-			color: var(--ink);
-			font-size: 14px;
-			font-weight: 600;
-		}
-		.mobile-goal small {
-			display: block;
-			font-size: 10px;
-			margin-top: 2px;
-			font-weight: 400;
-			color: #637984;
-		}
-		.mobile-map-icon {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			flex: 0 0 44px;
-			width: 44px;
-			min-height: 46px;
-			background: #fffcf7;
-			border: 1px solid #d9e4d9;
-			border-radius: 12px;
-			color: var(--ink);
-		}
-		.mobile-areas-button {
-			display: flex;
-			align-items: center;
-			gap: 7px;
-			min-height: 44px;
-			padding: 6px 10px;
-			margin-top: 7px;
-			border: 1px solid #d9e4d9;
-			border-radius: 20px;
-			background: #fffcf7;
-			color: #315b68;
-			font-size: 11px;
-		}
-		.mobile-areas-button > span {
-			display: grid;
-			place-items: center;
-			width: 18px;
-			height: 18px;
-			background: #e7f1e9;
-			border-radius: 50%;
-			color: #077f7d;
-			font-size: 10px;
-		}
-		.edit-dock {
-			position: absolute;
-			bottom: 0;
-			left: 0;
-			right: 0;
-			transform: none;
-			width: 100%;
-			max-width: none;
-			border-radius: 18px 18px 0 0;
-			border: 0;
-			border-top: 1px solid #dce6da;
-			box-shadow: 0 -3px 15px rgb(27 62 73 / 7%);
-			padding: 7px max(12px, env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom));
-			gap: 8px;
-			min-height: 68px;
-			box-sizing: border-box;
-		}
-		.edit-dock .edit-mode-button,
-		.edit-dock .dock-tool {
-			flex-direction: column;
-			min-height: 54px;
-			padding: 5px;
-			gap: 3px;
-			font-size: 11px;
-			border-radius: 11px;
-		}
-		.edit-dock .history-buttons,
-		.edit-dock .dock-divider,
-		.edit-dock .live-status {
-			display: none;
-		}
-		.edit-dock :global(.transport-graphic) {
-			width: 25px !important;
-			height: 25px !important;
 		}
 		.panel-scroll {
 			padding: 16px 0 0;
@@ -7469,13 +6770,13 @@
 		.atlas-dialog.document,
 		.atlas-dialog.transport-dialog {
 			position: fixed;
-			inset: auto 0 0;
+			inset: auto 10px max(10px, env(safe-area-inset-bottom));
 			margin: 0;
-			width: 100%;
-			max-width: 100%;
+			width: calc(100% - 20px);
+			max-width: calc(100% - 20px);
 			max-height: min(86dvh, calc(100dvh - 40px));
-			border-radius: 22px 22px 0 0;
-			padding-bottom: env(safe-area-inset-bottom);
+			border-radius: var(--surface-radius-mobile);
+			padding-bottom: 0;
 			overscroll-behavior: contain;
 		}
 		.atlas-dialog[open] {
@@ -7518,30 +6819,6 @@
 			font-size: 11px;
 		}
 	}
-	.build-mode-toggle {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		padding: 4px;
-		gap: 4px;
-		border-radius: 12px;
-		background: #eff3ed;
-		margin-bottom: 18px;
-	}
-	.build-mode-toggle button {
-		flex: 1;
-		min-height: 44px;
-		border: 0;
-		border-radius: 9px;
-		background: transparent;
-		color: #52665b;
-		font-size: 14px;
-		cursor: pointer;
-	}
-	.build-mode-toggle button[aria-pressed='true'] {
-		background: #fffefa;
-		color: #087f80;
-		box-shadow: 0 1px 4px #263e3412;
-	}
 	.wave-status {
 		position: absolute;
 		z-index: 7;
@@ -7566,105 +6843,6 @@
 		height: 6px;
 		border-radius: 50%;
 		background: #598fac;
-	}
-	.stop-action-row {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 8px;
-		margin-bottom: 12px;
-	}
-	.stop-action-row button {
-		min-height: 44px;
-		justify-content: center;
-		padding-inline: 10px;
-	}
-	.stop-connections {
-		display: grid;
-		gap: 6px;
-		margin-block: 16px;
-	}
-	.stop-connections > span {
-		font-size: 12px;
-		color: #738176;
-	}
-	.stop-connections button {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 8px;
-		min-height: 44px;
-		border: 1px solid #e1e7df;
-		border-radius: 10px;
-		padding: 10px 12px;
-		background: #f7f9f3;
-		color: #294d46;
-		text-align: left;
-		font-size: 13px;
-		cursor: pointer;
-	}
-	.stop-connections button > span {
-		min-width: 0;
-	}
-	.stop-connections small {
-		display: block;
-		margin-top: 3px;
-		font-size: 11px;
-		color: #738176;
-	}
-	.move-connection-option {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		min-height: 44px;
-		font-size: 14px;
-	}
-	.move-connection-option input {
-		width: 20px;
-		height: 20px;
-		accent-color: #087f80;
-	}
-	.move-headway-option {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 13px;
-		margin-top: 8px;
-	}
-	.move-headway-option input {
-		width: 64px;
-		min-height: 44px;
-		border: 1px solid #d7e0d8;
-		border-radius: 9px;
-		background: #fffefa;
-		text-align: center;
-		font-size: 16px;
-	}
-	@media (max-width: 680px) and (max-height: 500px) {
-		.policy-atlas {
-			--mobile-sheet-top: 128px !important;
-		}
-		.atlas-header {
-			height: 50px;
-			min-height: 50px;
-		}
-		.brand small,
-		.mobile-results-caption {
-			display: none;
-		}
-		.mobile-results-trigger {
-			padding-block: 6px;
-		}
-		.mobile-result-grid strong {
-			font-size: 18px;
-		}
-		.mobile-map-controls {
-			top: 8px;
-		}
-	}
-	@media (min-width: 480px) and (max-width: 680px) and (max-height: 500px) {
-		.mobile-map-controls {
-			right: 52%;
-		}
 	}
 	@keyframes mobile-drawer-in {
 		from {
@@ -7696,9 +6874,6 @@
 		.policy-atlas {
 			display: block;
 		}
-		.atlas-header,
-		.results-bar,
-		.mobile-results-trigger,
 		.workspace,
 		.notice {
 			display: none;
@@ -7725,6 +6900,1194 @@
 			width: auto;
 			max-height: none;
 			overflow: visible;
+		}
+	}
+
+	.workspace {
+		position: relative;
+		flex: 1;
+		min-height: 0;
+		display: flex;
+	}
+	.map-stage {
+		--map-overlay-top: 88px;
+		--map-workbench-top: max(16px, env(safe-area-inset-top));
+		position: relative;
+		flex: 1;
+		min-width: 0;
+		min-height: 0;
+		overflow: hidden;
+	}
+	.map-workbench {
+		position: absolute;
+		left: 20px;
+		top: var(--map-workbench-top);
+		z-index: 8;
+		width: 312px;
+		max-width: calc(100% - 40px);
+		border: 1px solid #dce1e3;
+		border-radius: var(--surface-radius);
+		overflow: hidden;
+		background: #fff;
+		box-shadow: var(--surface-shadow);
+		color: #223740;
+	}
+	.workflow-toggle {
+		list-style: none;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 14px 16px;
+		border-radius: inherit;
+		cursor: pointer;
+	}
+	.workflow-toggle::-webkit-details-marker,
+	.suggested-areas > summary::-webkit-details-marker,
+	.atlas-legend > summary::-webkit-details-marker {
+		display: none;
+	}
+	.workflow-toggle:focus-visible {
+		outline-offset: -4px;
+	}
+	.workflow-toggle > span {
+		flex: 1;
+		min-width: 0;
+	}
+	.workflow-toggle strong {
+		display: block;
+		font-size: 14px;
+		font-weight: 650;
+		line-height: 1.3;
+	}
+	.workflow-toggle small {
+		display: block;
+		margin-top: 4px;
+		font-size: 11px;
+		color: #60717a;
+	}
+	.workflow-toggle .workflow-context {
+		font-size: 10px;
+		color: #60717a;
+	}
+	.workflow-toggle > :global(svg) {
+		flex-shrink: 0;
+	}
+	.map-workbench[open] .workflow-toggle > :global(svg:last-child) {
+		transform: rotate(180deg);
+	}
+	.workbench-body {
+		padding: 0 14px 12px;
+		max-height: min(420px, calc(100dvh - 372px));
+		overflow-y: auto;
+		scrollbar-width: thin;
+		overscroll-behavior: contain;
+	}
+	.workflow-actions {
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		padding: 3px;
+		border-radius: var(--surface-radius-pill);
+		background: #f0f3f4;
+	}
+	.workflow-actions button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 3px;
+		flex: 1;
+		min-width: 0;
+		min-height: 34px;
+		border: 0;
+		border-radius: var(--surface-radius-pill);
+		padding: 6px 8px;
+		background: transparent;
+		color: #60717a;
+		font-size: 12px;
+	}
+	.workflow-actions button.chosen {
+		background: #fff;
+		color: #203640;
+		font-weight: 650;
+		box-shadow: 0 1px 3px rgb(29 46 54 / 9%);
+	}
+	.workflow-actions .investment-action {
+		color: #375760;
+	}
+	.workbench-field {
+		margin-top: 14px;
+	}
+	.control-caption {
+		display: block;
+		margin-bottom: 6px;
+		color: #667781;
+		font-size: 11px;
+	}
+	.workbench-field :global(.destination-group) {
+		border-radius: var(--surface-radius-pill);
+		background: #fff;
+		border-color: #dce3e6;
+		height: 38px;
+	}
+	.workbench-field :global(.destination-option) {
+		font-size: 12px;
+		border-radius: var(--surface-radius-pill);
+		height: 30px;
+	}
+	.workbench-field :global(.destination-option[data-state='on']) {
+		background: #edf3f4;
+		color: #264b58;
+		box-shadow: none;
+	}
+	.workbench-field :global(.destination-option[data-state='off']) {
+		color: #73828a;
+	}
+	.planning-time {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		width: 100%;
+		margin-top: 12px;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		text-align: left;
+		color: #34515e;
+		min-height: 38px;
+	}
+	.planning-time small {
+		display: block;
+		margin-bottom: 4px;
+		color: #667781;
+		font-size: 11px;
+	}
+	.planning-time strong {
+		font-size: 12px;
+		font-weight: 550;
+	}
+	.map-display-choices {
+		display: flex;
+		gap: 4px;
+		width: 100%;
+		padding: 4px;
+		background: #f1f5f6;
+		border-radius: var(--surface-radius-pill);
+	}
+	.map-display-choices button {
+		flex: 1;
+		min-height: 35px;
+		min-width: 0;
+		padding: 4px;
+		color: #6a7c85;
+		background: transparent;
+		border: 0;
+		border-radius: var(--surface-radius-pill);
+		font-size: 11px;
+	}
+	.map-display-choices button.chosen {
+		color: #244e5d;
+		background: #fff;
+		box-shadow: 0 1px 3px #102e3412;
+		font-weight: 650;
+	}
+	.coverage-context {
+		margin: 10px 0;
+		font-size: 11px;
+		color: #60717a;
+	}
+	.coverage-context button {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		width: 100%;
+		border: 0;
+		padding: 4px 0;
+		background: transparent;
+		text-align: left;
+		color: #576e77;
+		font-size: 11px;
+	}
+	.coverage-context button > :global(svg:last-child) {
+		margin-left: auto;
+	}
+	.coverage-context small {
+		display: block;
+		font-size: 10px;
+		line-height: 1.5;
+	}
+	.coverage-context.outside,
+	.coverage-context.outside button {
+		color: #9a6935;
+	}
+	.coverage-context .supported-time {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	.workbench-tools {
+		display: flex;
+		gap: 2px;
+		border-top: 1px solid #e2e7e9;
+		padding-top: 8px;
+	}
+	.workbench-tools button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 5px;
+		flex: 1;
+		min-height: 36px;
+		padding: 5px 2px;
+		border: 0;
+		border-radius: var(--surface-radius-pill);
+		background: transparent;
+		color: #536b77;
+		font-size: 11px;
+	}
+	.workbench-tools button.chosen {
+		color: #244e5d;
+		background: #edf3f4;
+	}
+	.map-start-hint {
+		margin: 6px 0 8px;
+		color: #60717a;
+		font-size: 10px;
+		line-height: 1.55;
+	}
+	.proposal-history {
+		display: flex;
+		gap: 2px;
+		margin: 2px 0 6px;
+	}
+	.proposal-history button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		min-height: 32px;
+		flex: 1;
+		min-width: 0;
+		padding: 4px;
+		color: #647780;
+		border: 0;
+		background: transparent;
+		font-size: 10px;
+	}
+	.suggested-areas {
+		border-top: 1px solid #e2e7e9;
+		margin-top: 8px;
+	}
+	.suggested-areas > summary {
+		list-style: none;
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		min-height: 38px;
+		color: #4f6672;
+		font-size: 11px;
+		cursor: pointer;
+	}
+	.suggested-areas > summary > span:nth-child(2) {
+		margin-left: auto;
+		color: #87949b;
+		font-variant-numeric: tabular-nums;
+	}
+	.suggested-area-list {
+		max-height: 260px;
+		overflow-y: auto;
+		padding-top: 4px;
+	}
+	.suggested-area-list :global(h1) {
+		display: none;
+	}
+	.suggested-area-list .priority-card {
+		border: 0;
+		border-bottom: 1px solid #e6ebed;
+		border-radius: 0;
+		background: #fff;
+		box-shadow: none;
+		padding: 12px 0;
+		margin: 0;
+	}
+	.suggested-area-list .changes-content {
+		padding: 0;
+		border: 0;
+		background: #fff;
+		border-radius: 0;
+		max-height: none;
+	}
+	.outcome-dock {
+		position: absolute;
+		z-index: 9;
+		bottom: 24px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: min(1040px, calc(100% - 48px));
+	}
+	.planning-dock {
+		overflow: hidden;
+		border: 1px solid #dce2e5;
+		border-radius: var(--surface-radius);
+		background: #fff;
+		box-shadow: var(--surface-shadow-raised);
+		color: #233d48;
+	}
+	.planning-dock :global(.compact-summary) {
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+	}
+	@media (min-width: 1151px) {
+		.planning-dock.split-preview {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) 320px;
+			grid-template-areas: 'heading heading' 'editor scope' 'editor impact' 'journeys journeys' 'tools tools';
+		}
+		.split-preview .dock-heading {
+			grid-area: heading;
+		}
+		.split-preview .transport-editor {
+			grid-area: editor;
+			border-right: 1px solid #e4eaed;
+		}
+		.split-preview .impact-scope {
+			grid-area: scope;
+			padding: 0 12px;
+			gap: 8px;
+		}
+		.split-preview .impact-scope button {
+			padding: 0 8px;
+		}
+		.split-preview :global(.impact-receipt) {
+			grid-area: impact;
+		}
+		.split-preview .dock-journeys {
+			grid-area: journeys;
+		}
+		.split-preview .build-palette {
+			grid-area: tools;
+		}
+	}
+	.dock-heading,
+	.dock-heading > div {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+	.dock-heading {
+		justify-content: space-between;
+		min-height: 44px;
+		padding: 0 12px 0 20px;
+		border-bottom: 1px solid #e6ebed;
+		font-size: 13px;
+	}
+	.dock-heading-hint {
+		color: #76868d;
+		font-size: 11px;
+	}
+	.dock-state-dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: #008f87;
+	}
+	.dock-state-dot.placing {
+		background: #b37928;
+	}
+	.dock-icon {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border: 0;
+		border-radius: var(--surface-radius-pill);
+		background: transparent;
+		color: #647983;
+		cursor: pointer;
+	}
+	.dock-icon :global(.flipped) {
+		transform: rotate(180deg);
+	}
+	.transport-editor {
+		max-height: min(210px, calc(100dvh - 320px));
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		scrollbar-width: thin;
+	}
+	.transport-editor :global(.connection-editor) {
+		padding: 8px 20px 0;
+	}
+	.placement-workshop {
+		display: flex;
+		align-items: center;
+		gap: 15px;
+		padding: 16px 20px;
+	}
+	.placement-workshop strong {
+		font-size: 14px;
+		font-weight: 600;
+	}
+	.placement-icon {
+		display: grid;
+		place-items: center;
+		flex-shrink: 0;
+		width: 44px;
+		height: 44px;
+		border: 1px solid #dce5e6;
+		border-radius: 10px;
+		background: #f3f8f7;
+		color: #007d77;
+	}
+	.placement-workshop p {
+		font-size: 12px;
+		color: #667a85;
+		margin: 5px 0;
+	}
+	.placement-workshop p.placement-valid {
+		color: #007d77;
+	}
+	.placement-workshop small,
+	.workshop-description small {
+		color: #798b92;
+		font-size: 11px;
+	}
+	.placement-workshop .dock-secondary {
+		margin-left: auto;
+	}
+	.dock-secondary {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 7px;
+		min-height: 44px;
+		padding: 0 14px;
+		border: 1px solid #d9e2e5;
+		border-radius: var(--surface-radius-pill);
+		background: #fff;
+		color: #345361;
+		font: inherit;
+		font-size: 12px;
+		font-weight: 550;
+		cursor: pointer;
+	}
+	.dock-secondary:hover {
+		background: #f3f7f8;
+		border-color: #b7cccf;
+	}
+	.workshop-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		min-height: 44px;
+		background: transparent;
+		border: 0;
+		color: #007d77;
+		font-size: 12px;
+		cursor: pointer;
+	}
+	.stop-workshop {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: 12px 24px;
+		padding: 16px 20px;
+	}
+	.workshop-description strong {
+		font-size: 15px;
+		font-weight: 600;
+	}
+	.workshop-description p {
+		margin: 6px 0;
+		font-size: 12px;
+		color: #677e87;
+	}
+	.workshop-stop-actions {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+	.workshop-connected {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 8px;
+		grid-column: 1 / -1;
+	}
+	.workshop-connected > span {
+		font-size: 11px;
+		color: #6f828c;
+		margin-right: 4px;
+	}
+	.workshop-connected button {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		min-height: 44px;
+		background: #f5f8f9;
+		border: 1px solid #e0e7ea;
+		border-radius: var(--surface-radius-pill);
+		padding: 6px 12px;
+		color: #365664;
+		font-size: 12px;
+		cursor: pointer;
+	}
+	.workshop-connected small {
+		font-size: 10px;
+		color: #6f828c;
+	}
+	.workshop-move-settings {
+		font-size: 12px;
+		color: #5e737d;
+	}
+	.workshop-move-settings summary {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		min-height: 44px;
+		cursor: pointer;
+		list-style: none;
+	}
+	.workshop-move-settings label {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		min-height: 36px;
+	}
+	.workshop-move-settings input[type='number'] {
+		width: 60px;
+		padding: 8px;
+		border: 1px solid #d6e0e3;
+		border-radius: 6px;
+	}
+	.workshop-move-settings p {
+		font-size: 11px;
+		line-height: 1.5;
+		max-width: 540px;
+	}
+	.workshop-timing-note {
+		grid-column: 1 / -1;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin: 0;
+		font-size: 11px;
+		line-height: 1.5;
+		color: #8e642c;
+	}
+	.route-workshop {
+		display: grid;
+		grid-template-columns: minmax(250px, 1.5fr) minmax(180px, 1fr) auto;
+		gap: 22px;
+		align-items: center;
+		padding: 16px 20px;
+	}
+	.workshop-label {
+		display: block;
+		color: #71858f;
+		font-size: 11px;
+		margin-bottom: 8px;
+	}
+	.route-workshop :global(.route-picker-trigger) {
+		min-height: 44px;
+		border-color: #d9e2e5;
+		border-radius: 8px;
+		color: #345361;
+		background: #fff;
+		font-size: 12px;
+	}
+	.route-workshop-actions {
+		display: flex;
+		gap: 10px;
+		align-items: center;
+		margin-top: 8px;
+	}
+	.route-workshop-actions .dock-secondary {
+		font-size: 11px;
+		padding: 0 10px;
+	}
+	.route-frequency {
+		padding: 0 8px;
+	}
+	.route-frequency .frequency-label {
+		font-size: 12px;
+		margin: 0 0 8px;
+	}
+	.route-frequency .frequency-label strong {
+		font-size: 22px;
+	}
+	.route-frequency .frequency-slider {
+		margin: 0;
+		width: 100%;
+	}
+	.route-frequency .slider-labels {
+		font-size: 10px;
+	}
+	.route-frequency > small {
+		font-size: 10px;
+		color: #829198;
+	}
+	.route-fleet .fleet-toggle {
+		margin: 0;
+	}
+	.route-fleet .fleet-toggle button {
+		min-height: 44px;
+		font-size: 12px;
+	}
+	.route-published {
+		display: flex;
+		gap: 10px;
+		color: #6d808b;
+		font-size: 11px;
+		line-height: 1.5;
+	}
+	.route-published > :global(svg) {
+		flex-shrink: 0;
+		margin-top: 2px;
+	}
+	.route-published strong {
+		font-size: 12px;
+		font-weight: 550;
+		color: #44626f;
+	}
+	.route-published p {
+		margin: 4px 0 0;
+	}
+	.build-palette {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 16px;
+		padding: 8px 12px;
+		border-top: 1px solid #e3e9ec;
+		background: #fff;
+	}
+	.build-tools,
+	.build-history {
+		display: flex;
+		gap: 4px;
+		align-items: center;
+	}
+	.build-palette button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 9px;
+		border: 0;
+		border-radius: var(--surface-radius-pill);
+		background: transparent;
+		color: #627a87;
+		min-height: 48px;
+		padding: 0 18px;
+		font: inherit;
+		font-size: 12px;
+		font-weight: 550;
+		cursor: pointer;
+		transition:
+			background-color 150ms ease,
+			color 150ms ease,
+			transform 150ms ease;
+	}
+	.build-palette button:hover {
+		color: #1d4c59;
+		background: #f1f6f7;
+	}
+	.build-palette button.chosen {
+		color: #fff;
+		background: #1e555d;
+	}
+	.build-palette button:active,
+	.dock-secondary:active {
+		transform: scale(0.97);
+	}
+	.build-palette button:disabled,
+	.dock-secondary:disabled {
+		opacity: 0.4;
+		cursor: default;
+	}
+	.build-history {
+		border-left: 1px solid #e4e9ec;
+		padding-left: 12px;
+	}
+	.build-history button {
+		padding: 0 12px;
+	}
+	.build-palette .dock-options {
+		width: 44px;
+		padding: 0;
+	}
+	.planning-dock button:focus-visible,
+	.planning-dock summary:focus-visible {
+		outline: 2px solid #008b83;
+		outline-offset: -3px;
+	}
+	.dock-journeys {
+		padding: 10px 20px;
+		border-top: 1px solid #e4eaec;
+	}
+	.dock-journeys > div {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		font-size: 11px;
+		color: #6c828d;
+		margin-bottom: 4px;
+	}
+	.dock-journeys > div strong {
+		color: #34525f;
+	}
+	.dock-journeys button {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		min-height: 44px;
+		padding: 8px 0;
+		border: 0;
+		border-top: 1px solid #edf1f3;
+		background: #fff;
+		color: #365663;
+		font-size: 12px;
+		text-align: left;
+		cursor: pointer;
+	}
+	.dock-journeys button > span {
+		margin-right: auto;
+	}
+	.dock-journeys button small {
+		display: block;
+		color: #7a8e97;
+		font-size: 10px;
+		margin-top: 3px;
+	}
+	.dock-journeys button strong {
+		font-size: 12px;
+		font-weight: 550;
+	}
+	.dock-journeys button strong span {
+		padding: 0 8px;
+		color: #8a9ca4;
+	}
+	.dock-journeys p {
+		font-size: 12px;
+		color: #70848e;
+	}
+	.atlas-legend {
+		position: absolute;
+		left: 20px;
+		bottom: calc(var(--mobile-sheet-bottom) + 8px);
+		z-index: 5;
+		width: 200px;
+		max-width: calc(100% - 40px);
+		padding: 12px 14px;
+		background: #fff;
+		border: 1px solid #dce1e3;
+		border-radius: var(--surface-radius);
+		box-shadow: var(--surface-shadow);
+		color: #60717a;
+		font-size: 11px;
+	}
+	.impact-scope-note {
+		margin: 0;
+		padding: 8px 20px;
+		color: #6d808b;
+		font-size: 12px;
+		line-height: 1.5;
+		border-bottom: 1px solid #e4eaed;
+	}
+	.atlas-legend > summary {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		cursor: pointer;
+		list-style: none;
+		font-size: 12px;
+		font-weight: 600;
+		color: #445e6b;
+	}
+	.legend-lines {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 9px 12px;
+		align-items: center;
+		padding-top: 12px;
+	}
+	.legend-lines > span {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+	}
+	.legend-lines i {
+		display: inline-block;
+		flex-shrink: 0;
+		width: 8px;
+		height: 8px;
+		border-radius: 2px;
+	}
+	.legend-lines button {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		color: #60717a;
+		background: transparent;
+		border: 0;
+		padding: 0;
+		font-size: 11px;
+	}
+	.legend-lines .time-key-title {
+		width: 100%;
+		font-size: 11px;
+	}
+	.legend-lines .proposal-key {
+		color: #8b6339;
+	}
+	.map-outlook {
+		position: absolute;
+		right: 20px;
+		top: 88px;
+		z-index: 6;
+	}
+	.decision-panel {
+		top: 88px;
+		right: 20px;
+		max-height: calc(100% - 312px);
+		border-radius: var(--surface-radius);
+		border-color: #dce1e3;
+		box-shadow: var(--surface-shadow);
+	}
+	@media (max-width: 1179px) {
+		.map-stage {
+			--map-workbench-top: 88px;
+		}
+	}
+	.map-stage :global(.maplibregl-ctrl-bottom-left) {
+		max-width: 220px;
+	}
+	@media (max-width: 1150px) and (min-width: 681px) {
+		.outcome-dock {
+			left: 20px;
+			right: 20px;
+			width: auto;
+			transform: none;
+		}
+		.atlas-legend {
+			bottom: calc(var(--mobile-sheet-bottom) + 8px);
+			width: 200px;
+		}
+		.map-outlook {
+			display: none;
+		}
+	}
+	@media (max-width: 680px) {
+		.map-stage {
+			--map-overlay-top: 72px;
+			--map-workbench-top: 72px;
+		}
+		.map-workbench {
+			left: 12px;
+			width: calc(100% - 80px);
+			max-width: none;
+			border-radius: var(--surface-radius-mobile);
+		}
+		.map-workbench[open] {
+			width: calc(100% - 24px);
+			z-index: 35;
+		}
+		.map-workbench[open] .workflow-toggle {
+			padding-right: 68px;
+		}
+		.workflow-toggle {
+			gap: 9px;
+			padding: 11px 12px;
+		}
+		.workflow-toggle strong {
+			font-size: 12px;
+		}
+		.workflow-toggle small {
+			font-size: 10px;
+			margin-top: 3px;
+		}
+		.workflow-toggle .workflow-context {
+			font-size: 9px;
+		}
+		.workbench-body {
+			max-height: min(340px, calc(100dvh - 340px));
+			padding: 0 12px 12px;
+		}
+		.workflow-actions button,
+		.workbench-tools button,
+		.proposal-history button,
+		.planning-time,
+		.map-display-choices button {
+			min-height: 44px;
+		}
+		.workbench-field :global(.destination-group) {
+			height: 48px;
+		}
+		.workbench-field :global(.destination-option) {
+			height: 40px;
+		}
+		.outcome-dock {
+			bottom: calc(24px + env(safe-area-inset-bottom));
+			left: 12px;
+			right: 12px;
+			transform: none;
+			width: auto;
+		}
+		.atlas-legend,
+		.map-outlook {
+			display: none;
+		}
+		.map-stage :global(.maplibregl-ctrl-bottom-left) {
+			top: auto;
+			bottom: 0;
+			max-width: calc(100% - 20px);
+		}
+		.notice {
+			top: 170px;
+		}
+	}
+	@media (max-height: 500px) {
+		.workbench-body {
+			max-height: calc(100dvh - 205px);
+		}
+		.atlas-legend {
+			display: none;
+		}
+	}
+	@media (min-width: 681px) and (max-height: 500px) {
+		.outcome-dock {
+			left: 352px;
+			right: 20px;
+			width: auto;
+			transform: none;
+		}
+		.map-stage.has-selection .outcome-dock {
+			left: 20px;
+			right: auto;
+			width: 312px;
+		}
+		.map-stage.has-selection .decision-panel {
+			width: calc(100% - 384px);
+			max-width: 420px;
+			max-height: calc(100% - 112px);
+		}
+		.map-stage:has(.map-workbench[open]) .outcome-dock {
+			left: 352px;
+			right: 20px;
+			width: auto;
+		}
+		.map-stage:has(.map-workbench[open]) .decision-panel {
+			visibility: hidden;
+			pointer-events: none;
+		}
+	}
+
+	@media (max-width: 680px) {
+		.outcome-dock.planning-dock {
+			bottom: calc(24px + env(safe-area-inset-bottom));
+			left: 10px;
+			right: 10px;
+			width: auto;
+			border-radius: var(--surface-radius-mobile);
+		}
+		.dock-heading {
+			padding-left: 14px;
+			gap: 6px;
+		}
+		.dock-heading > div {
+			gap: 7px;
+		}
+		.dock-heading strong {
+			font-size: 12px;
+		}
+		.dock-heading-hint {
+			display: none;
+		}
+		.transport-editor {
+			max-height: min(210px, calc(100dvh - 390px));
+		}
+		.transport-editor :global(.connection-editor) {
+			padding: 10px 14px 0;
+		}
+		.build-palette {
+			padding: 6px;
+			gap: 4px;
+		}
+		.build-tools {
+			flex: 1;
+			gap: 2px;
+		}
+		.build-tools button {
+			flex: 1;
+			flex-direction: column;
+			gap: 4px;
+			font-size: 10px;
+			padding: 5px 8px;
+			min-height: 54px;
+		}
+		.build-history {
+			gap: 0;
+			padding-left: 5px;
+		}
+		.build-history button {
+			padding: 0;
+			width: 36px;
+			min-height: 48px;
+		}
+		.build-history button span {
+			display: none;
+		}
+		.build-history .dock-options {
+			width: 30px;
+		}
+		.placement-workshop {
+			padding: 14px;
+			gap: 10px;
+		}
+		.placement-icon {
+			display: none;
+		}
+		.placement-workshop strong {
+			font-size: 13px;
+		}
+		.placement-workshop small {
+			display: block;
+			font-size: 10px;
+			line-height: 1.5;
+		}
+		.placement-workshop .dock-secondary {
+			display: none;
+		}
+		.stop-workshop {
+			grid-template-columns: 1fr;
+			padding: 14px;
+			gap: 10px;
+		}
+		.workshop-stop-actions {
+			display: flex;
+			gap: 6px;
+		}
+		.workshop-stop-actions button {
+			flex: 1;
+			font-size: 11px;
+			padding: 0 9px;
+		}
+		.workshop-connected small {
+			display: none;
+		}
+		.route-workshop {
+			grid-template-columns: 1fr;
+			padding: 14px;
+			gap: 16px;
+		}
+		.route-frequency {
+			padding: 0;
+		}
+		.route-fleet {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 12px;
+		}
+		.route-fleet .workshop-label {
+			margin-bottom: 0;
+		}
+		.route-fleet .fleet-toggle {
+			width: 190px;
+		}
+		.dock-journeys {
+			padding: 10px 14px;
+			max-height: 160px;
+			overflow-y: auto;
+		}
+		.dock-journeys > div {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 4px;
+		}
+		.dock-journeys button {
+			font-size: 11px;
+		}
+		.dock-journeys button strong {
+			font-size: 11px;
+		}
+	}
+	@media (min-width: 681px) and (max-width: 960px) {
+		.route-workshop {
+			grid-template-columns: minmax(220px, 1.5fr) 1fr;
+			gap: 18px;
+		}
+		.route-fleet {
+			grid-column: 1 / -1;
+			display: flex;
+			align-items: center;
+			gap: 15px;
+		}
+		.route-fleet .workshop-label {
+			margin: 0;
+		}
+		.route-fleet .fleet-toggle {
+			width: 210px;
+		}
+		.stop-workshop {
+			grid-template-columns: 1fr;
+		}
+	}
+	@media (max-height: 600px) and (min-width: 681px) {
+		.outcome-dock.planning-dock,
+		.map-stage.has-selection .outcome-dock.planning-dock,
+		.map-stage:has(.map-workbench[open]) .outcome-dock.planning-dock {
+			left: 20px;
+			right: 20px;
+			width: auto;
+			transform: none;
+		}
+		.transport-editor {
+			max-height: 140px;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.build-palette button {
+			transition: none;
+		}
+	}
+
+	.impact-scope {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0 20px;
+		min-height: 38px;
+		border-top: 1px solid #e3e9ec;
+		background: #f8fafb;
+		font-size: 11px;
+		color: #637b88;
+	}
+	.impact-scope > div {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
+	.impact-scope button {
+		min-height: 38px;
+		padding: 0 12px;
+		border: 0;
+		background: transparent;
+		color: #718591;
+		font-size: 11px;
+		cursor: pointer;
+	}
+	.impact-scope button.active {
+		color: #11666a;
+		box-shadow: inset 0 -2px #11666a;
+		font-weight: 600;
+	}
+	@media (max-width: 680px) {
+		.impact-scope {
+			padding: 0 14px;
+		}
+		.impact-scope button {
+			min-height: 44px;
 		}
 	}
 </style>
