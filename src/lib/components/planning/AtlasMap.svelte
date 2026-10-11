@@ -43,18 +43,30 @@
 	];
 	const impactColors: ExpressionSpecification = [
 		'match',
-		['get', 'status'],
-		'gained',
-		'#00a68c',
-		'reachable',
-		'#62b4a1',
-		'lost',
-		'#e57552',
+		['get', 'journeyChange'],
+		'faster',
+		'#16886c',
+		'new-route',
+		'#087e83',
+		'slower',
+		'#c45f48',
+		'lost-route',
+		'#c45f48',
 		'mixed',
-		'#8c91b5',
+		'#8374ad',
 		'unknown',
 		'#65717d',
-		'#e6aa51'
+		'#a0acb0'
+	];
+	// Keep actual changes visible when both journeys fall in the same time band.
+	// Partial gains remain purple rather than implying every resident benefits.
+	const changeColors: ExpressionSpecification = [
+		'case',
+		['>=', ['coalesce', ['get', 'improvedShare'], 0], 0.999999],
+		'#16886c',
+		['>=', ['coalesce', ['get', 'worsenedShare'], 0], 0.999999],
+		'#c45f48',
+		'#8374ad'
 	];
 
 	let {
@@ -199,7 +211,29 @@
 		'case',
 		['<=', ['get', 'population'], 0],
 		0,
-		['match', ['get', 'status'], 'reachable', colorOpacity * 0.375, colorOpacity]
+		[
+			'match',
+			['get', 'journeyChange'],
+			'unchanged',
+			colorOpacity * 0.15,
+			'unknown',
+			colorOpacity * 0.35,
+			colorOpacity
+		]
+	]);
+	let changeOpacity: ExpressionSpecification = $derived([
+		'case',
+		[
+			'all',
+			['>', ['get', 'population'], 0],
+			[
+				'any',
+				['>', ['get', 'improvedPopulation'], 0.000001],
+				['>', ['get', 'worsenedPopulation'], 0.000001]
+			]
+		],
+		Math.min(0.8, colorOpacity * 5),
+		0
 	]);
 	let peopleOpacity: ExpressionSpecification = $derived([
 		'interpolate',
@@ -548,6 +582,18 @@
 						'line-color': '#527c83',
 						'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.1, 15, 0.28, 18, 0.45],
 						'line-opacity': ['case', ['>', ['get', 'population'], 0], 0.05, 0]
+					}
+				});
+				m.addLayer({
+					id: 'journey-change-outlines',
+					type: 'line',
+					source: 'areas',
+					layout: { visibility: view === 'people' ? 'none' : 'visible' },
+					paint: {
+						'line-color': changeColors,
+						'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.5, 15, 1, 18, 1.4],
+						'line-opacity': changeOpacity,
+						'line-opacity-transition': { duration: 180 }
 					}
 				});
 				m.addLayer({
@@ -1790,6 +1836,12 @@
 			view === 'impact' ? impactOpacity : journeyOpacity
 		);
 		map.setLayoutProperty('access-areas', 'visibility', view === 'people' ? 'none' : 'visible');
+		map.setPaintProperty('journey-change-outlines', 'line-opacity', changeOpacity);
+		map.setLayoutProperty(
+			'journey-change-outlines',
+			'visibility',
+			view === 'people' ? 'none' : 'visible'
+		);
 		map.setPaintProperty('people-areas', 'fill-opacity', peopleOpacity);
 		map.setLayoutProperty('people-areas', 'visibility', view === 'people' ? 'visible' : 'none');
 		map.setLayoutProperty('analysis-grid', 'visibility', detailGrid ? 'visible' : 'none');

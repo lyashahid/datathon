@@ -20,6 +20,14 @@ import {
 	type JourneyTimeBand,
 	type JourneyTimeState
 } from './travelTimeBands.ts';
+import {
+	JOURNEY_CHANGE_STATES,
+	emptyJourneyChangePopulation,
+	journeyChange,
+	journeyMinutesSaved,
+	type JourneyChangeBand,
+	type JourneyChangeState
+} from './journeyChanges.ts';
 
 export type HoneycombAreaState = 'reachable' | 'gained' | 'lost' | 'gap' | 'unknown';
 export type HoneycombAreaStatus = HoneycombAreaState | 'mixed';
@@ -37,6 +45,18 @@ export interface HoneycombAreaProperties {
 	/** Time to the selected destination, independent of the policy access target. */
 	journeyTimeBand: JourneyTimeBand;
 	journeyTimePopulation: Record<JourneyTimeState, number>;
+	/** Change against the same baseline, including improvements within one time band. */
+	journeyChange: JourneyChangeBand;
+	journeyChangePopulation: Record<JourneyChangeState, number>;
+	/** Faster journeys or a newly possible route; an unknown baseline is never a gain. */
+	improvedPopulation: number;
+	improvedShare: number | null;
+	worsenedPopulation: number;
+	worsenedShare: number | null;
+	/** Population with a valid reachable duration both before and after. */
+	comparablePopulation: number;
+	/** Population-weighted change only among comparable journeys. Positive means faster. */
+	averageMinutesSaved: number | null;
 	/** Share with access within the target, including newly gained access. */
 	reachableShare: number | null;
 	/** True where at least one source origin needed point-based allocation. */
@@ -59,6 +79,8 @@ const states: HoneycombAreaState[] = ['reachable', 'gained', 'lost', 'gap', 'unk
 const timeStates = TRAVEL_TIME_BANDS.map(({ id }) => id).filter(
 	(id): id is JourneyTimeState => id !== 'mixed'
 );
+/** Numerical slivers remain in totals but must not dominate a displayed mixed classification. */
+const POPULATION_DISPLAY_EPSILON = 0.000001;
 
 function shape(value: unknown): HoneycombGeometry | null {
 	if (!value || typeof value !== 'object' || !('type' in value) || !('coordinates' in value))
@@ -224,11 +246,15 @@ export function honeycombAreas(
 				unreachable: 0,
 				unknown: 0
 			};
+			const changePopulations = emptyJourneyChangePopulation();
 			let population = 0,
+				comparablePopulation = 0,
+				weightedMinutesSaved = 0,
 				representativePopulation = -1,
 				originId: string | null = null;
 			for (const contribution of weights[index]) {
-				const modeled = results.get(contribution.origin.id)?.population;
+				const comparison = results.get(contribution.origin.id);
+				const modeled = comparison?.population;
 				const source =
 					typeof modeled === 'number' && Number.isFinite(modeled) && modeled >= 0
 						? modeled
@@ -237,8 +263,14 @@ export function honeycombAreas(
 							: contribution.origin.population2026;
 				const amount = source * contribution.weight;
 				population += amount;
-				populations[accessState(results.get(contribution.origin.id), target)] += amount;
-				timePopulations[journeyTimeBand(results.get(contribution.origin.id)?.after)] += amount;
+				populations[accessState(comparison, target)] += amount;
+				timePopulations[journeyTimeBand(comparison?.after)] += amount;
+				changePopulations[journeyChange(comparison)] += amount;
+				const minutesSaved = journeyMinutesSaved(comparison);
+				if (minutesSaved !== null) {
+					comparablePopulation += amount;
+					weightedMinutesSaved += amount * minutesSaved;
+				}
 				if (
 					amount > representativePopulation ||
 					(amount === representativePopulation && contribution.origin.id < (originId ?? ''))
@@ -249,6 +281,11 @@ export function honeycombAreas(
 			}
 			const representedStates = states.filter((state) => populations[state] > 0);
 			const representedTimeStates = timeStates.filter((state) => timePopulations[state] > 0);
+			const representedChangeStates = JOURNEY_CHANGE_STATES.filter(
+				(state) => changePopulations[state] > POPULATION_DISPLAY_EPSILON
+			);
+			const improvedPopulation = changePopulations.faster + changePopulations['new-route'];
+			const worsenedPopulation = changePopulations.slower + changePopulations['lost-route'];
 			return {
 				type: 'Feature',
 				id: cell.id,
@@ -265,6 +302,18 @@ export function honeycombAreas(
 					journeyTimeBand:
 						representedTimeStates.length > 1 ? 'mixed' : (representedTimeStates[0] ?? 'unknown'),
 					journeyTimePopulation: timePopulations,
+					journeyChange:
+						representedChangeStates.length > 1
+							? 'mixed'
+							: (representedChangeStates[0] ?? 'unknown'),
+					journeyChangePopulation: changePopulations,
+					improvedPopulation,
+					improvedShare: population > 0 ? improvedPopulation / population : null,
+					worsenedPopulation,
+					worsenedShare: population > 0 ? worsenedPopulation / population : null,
+					comparablePopulation,
+					averageMinutesSaved:
+						comparablePopulation > 0 ? weightedMinutesSaved / comparablePopulation : null,
 					reachableShare:
 						population > 0 ? (populations.reachable + populations.gained) / population : null,
 					pointAllocated: weights[index].some((weight) => weight.pointAllocated)

@@ -130,7 +130,9 @@ These commands use local snapshots without network requests. Use the [five-minut
 
 ## Policy workflow
 
-- Select a priority area or a population origin. The three primary views are People, Access and Impact.
+- Select a priority area or a population origin. **People** shows the modeled resident distribution. **Journey times (Access)** shows walk, wait and ride time to the selected destination in 5, 10, 15 and 30-minute bands. **What changed (Impact)** compares the current network with your proposal, including faster journeys that remain within the same time band.
+- Committing a connection, stop move, frequency change, school or clinic opens What changed. Green outlines mark better journeys, red marks slower or lost routes, and purple marks partial or mixed changes. These outlines also remain visible in Journey times; overlay opacity controls both fills and outlines. Unchanged areas stay faint. The map publishes changes only after its matching calculation and local wave finish.
+- The Journey changes card counts residents with shorter or newly possible journeys and offers clickable before/after examples. This is distinct from the headline count of residents newly within the access target. Selecting any area shows its Before / With proposal journey; a honeycomb's example represents one contributing origin, not every resident. Incomplete baseline evidence never counts as an improvement.
 - The map opens without a sidebar. Select an area for its people and access, or select a stop/route for that object's controls. Healthcare and Schools are keyboard-accessible Bits UI choices in the map toolbar.
 - Choose Build bus in the bottom tool tray. A shelter preview snaps to a permitted road and previews the connection and results. Click to commit; Escape or right-click cancels. Invalid placement leaves the tool active. Route extensions inherit the original route's frequency and fleet.
 - Drag a selected stop, adjust the frequency slider, or switch its fleet. Results update during editing; releasing a drag records one undoable change. Edits save automatically; there is no separate Apply step.

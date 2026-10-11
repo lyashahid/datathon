@@ -89,6 +89,80 @@ function result(
 }
 
 describe('population and access honeycomb display', () => {
+	it('highlights a faster journey even when its access status and time band stay the same', () => {
+		const data = baseline();
+		data.origins = [data.origins[0]];
+		const areas = honeycombAreas(data, { origins: [result('a', 9, 8)] }, 2026);
+		for (const cell of areas.features.filter((feature) => feature.properties.population > 0)) {
+			const p = cell.properties;
+			expect(p.status).toBe('reachable');
+			expect(p.journeyTimeBand).toBe('ten');
+			expect(p.journeyChange).toBe('faster');
+			expect(p.improvedPopulation).toBeCloseTo(p.population, 10);
+			expect(p.improvedShare).toBe(1);
+			expect(p.worsenedShare).toBe(0);
+			expect(p.comparablePopulation).toBeCloseTo(p.population, 10);
+			expect(p.averageMinutesSaved).toBeCloseTo(1, 10);
+		}
+	});
+
+	it('keeps partially improved hexagons mixed and excludes unknown comparisons from benefits', () => {
+		const areas = honeycombAreas(
+			baseline(),
+			{ origins: [result('a', 9, 8), result('b', 'unavailable', 8)] },
+			2026
+		);
+		for (const cell of areas.features.filter((feature) => feature.properties.population > 0)) {
+			const p = cell.properties;
+			expect(p.journeyChange).toBe('mixed');
+			expect(p.journeyChangePopulation.faster).toBeCloseTo(p.population * 0.75, 10);
+			expect(p.journeyChangePopulation.unknown).toBeCloseTo(p.population * 0.25, 10);
+			expect(p.improvedShare).toBeCloseTo(0.75, 10);
+			expect(p.comparablePopulation).toBeCloseTo(p.population * 0.75, 10);
+			expect(p.averageMinutesSaved).toBeCloseTo(1, 10);
+		}
+	});
+
+	it('separates a newly possible route from crossing the destination access target', () => {
+		const data = baseline();
+		data.origins = [data.origins[0]];
+		const areas = honeycombAreas(data, { origins: [result('a', 'unreachable', 40)] }, 2026);
+		for (const cell of areas.features.filter((feature) => feature.properties.population > 0)) {
+			const p = cell.properties;
+			expect(p.status).toBe('gap');
+			expect(p.journeyChange).toBe('new-route');
+			expect(p.improvedShare).toBe(1);
+			expect(p.comparablePopulation).toBe(0);
+			expect(p.averageMinutesSaved).toBeNull();
+		}
+	});
+
+	it('conserves affected residents across land-clipped hexagons without multiplying origins', () => {
+		const data = baseline();
+		const areas = honeycombAreas(
+			data,
+			{ origins: [result('a', 9, 8), result('b', 8, 'unreachable')] },
+			2026
+		);
+		const sum = (property: 'improvedPopulation' | 'worsenedPopulation' | 'comparablePopulation') =>
+			areas.features.reduce((total, cell) => total + cell.properties[property], 0);
+		expect(sum('improvedPopulation')).toBeCloseTo(300, 8);
+		expect(sum('worsenedPopulation')).toBeCloseTo(100, 8);
+		expect(sum('comparablePopulation')).toBeCloseTo(300, 8);
+		for (const cell of areas.features) {
+			const p = cell.properties;
+			expect(Object.values(p.journeyChangePopulation).reduce((a, b) => a + b, 0)).toBeCloseTo(
+				p.population,
+				10
+			);
+			if (p.population > 0) {
+				expect(p.journeyChange).toBe('mixed');
+				expect(p.improvedShare).toBeCloseTo(0.75, 10);
+				expect(p.worsenedShare).toBeCloseTo(0.25, 10);
+			}
+		}
+	});
+
 	it('shows actual journey times independently of the policy access threshold', () => {
 		const data = baseline();
 		const analysis = { origins: [result('a', 20, 8), result('b', 40, 40)] };
@@ -291,6 +365,11 @@ describe('population and access honeycomb display', () => {
 			originIds: [],
 			status: 'unknown',
 			journeyTimeBand: 'unknown',
+			journeyChange: 'unknown',
+			improvedShare: null,
+			worsenedShare: null,
+			comparablePopulation: 0,
+			averageMinutesSaved: null,
 			reachableShare: null,
 			pointAllocated: false
 		});

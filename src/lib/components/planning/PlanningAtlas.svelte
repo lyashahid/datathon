@@ -88,6 +88,12 @@
 	import { LiveAnalysisScheduler } from '#lib/planning/liveAnalysis.ts';
 	import { prepareStopMove } from '#lib/planning/liveEdits.ts';
 	import JourneyRibbon from './JourneyRibbon.svelte';
+	import JourneyComparison from './JourneyComparison.svelte';
+	import {
+		formatJourneyTime,
+		journeyChangeSummary,
+		summarizeJourneyChanges
+	} from './journeyChanges.ts';
 	import PolicyBrief from './PolicyBrief.svelte';
 	import ServiceManager from './ServiceManager.svelte';
 	import DemographicsPanel from './DemographicsPanel.svelte';
@@ -459,9 +465,25 @@
 	];
 	const views = [
 		{ id: 'people', label: 'People' },
-		{ id: 'access', label: 'Access' },
-		{ id: 'impact', label: 'Impact' }
+		{ id: 'access', label: 'Journey times' },
+		{ id: 'impact', label: 'What changed' }
 	];
+	const viewExplanation = $derived(
+		view === 'people'
+			? 'People: where residents live'
+			: view === 'access'
+				? 'Access: how long it takes to reach your destination'
+				: 'Impact: changes from the current network to your proposal'
+	);
+	const hasProposal = $derived(
+		scenario.actions.length > 0 || !!scenario.assumptions.disruptions?.length
+	);
+	// Match the published map, including its recalculation animation, instead of announcing an early result.
+	const journeyChanges = $derived(summarizeJourneyChanges(mapShown?.origins ?? []));
+	const changedExamples = $derived(journeyChanges.improvedOrigins.slice(0, 3));
+	const hasJourneyChanges = $derived(
+		journeyChanges.improvedPopulation > 0 || journeyChanges.worsenedPopulation > 0
+	);
 	const tourSteps = [
 		{
 			title: '1. Find a transport gap',
@@ -667,7 +689,6 @@
 			? `Over ${target} min from ${goal}`
 			: `${goal === 'care' ? 'Care' : 'School'} within ${target} min`;
 	});
-	const hasMixedAreas = $derived(areas.features.some((cell) => cell.properties.status === 'mixed'));
 	const journeyLegend = $derived(
 		TRAVEL_TIME_BANDS.filter(
 			(band) =>
@@ -675,11 +696,6 @@
 				areas.features.some(
 					(cell) => cell.properties.population > 0 && cell.properties.journeyTimeBand === band.id
 				)
-		)
-	);
-	const hasUnknownAreas = $derived(
-		areas.features.some(
-			(cell) => cell.properties.status === 'unknown' && cell.properties.population > 0
 		)
 	);
 	const mapRoutes = $derived(routeData(mapShown));
@@ -1472,6 +1488,7 @@
 		const stopId = connectionStopIds[0] ?? '';
 		cancelDraft();
 		scenario.addAction(action);
+		revealProposalChanges();
 		busy = true;
 		context = 'service';
 		selectedStopId = stopId;
@@ -1547,6 +1564,7 @@
 		}
 		cancelDraft();
 		scenario.addAction(proposal.action);
+		revealProposalChanges();
 		busy = true;
 		editMode = true;
 		context = 'service';
@@ -1635,6 +1653,7 @@
 			return null;
 		}
 		scenario.replaceActions(next.actions);
+		revealProposalChanges();
 		busy = true;
 		selectedStopId = id;
 		mobileDetailExpanded = true;
@@ -1647,10 +1666,16 @@
 		if (!draft) return;
 		busy = true;
 		scenario.addAction(draft);
+		revealProposalChanges();
 		draft = null;
 		preview = null;
 		mobileDetailExpanded = true;
 		if (tour === 1) tour = 2;
+	}
+	function revealProposalChanges() {
+		view = 'impact';
+		areasExpanded = true;
+		tour = -1;
 	}
 	function cancelDraft(invalidateMapEdit = true) {
 		if (invalidateMapEdit) editRevision += 1;
@@ -2039,7 +2064,8 @@
 {#snippet policyResults()}
 	<div class="result access-result">
 		<span class="result-label"
-			>ADDITIONAL PEOPLE <span class="result-chip"
+			>NEWLY WITHIN {scenario.assumptions.targetMinutes} MIN
+			<span class="result-chip"
 				>{busy
 					? 'Calculating'
 					: draft || liveActions
@@ -2052,7 +2078,7 @@
 			></span
 		><strong
 			>{shown ? `+${number(shown.summary.newlyReachedResidents)}` : 'Calculating…'}<span>
-				benefiting</span
+				people</span
 			></strong
 		>
 		<p>
@@ -2069,12 +2095,14 @@
 			></span
 		><strong
 			>{focusJourney
-				? `${focusJourney.before.minutes == null ? '—' : number(focusJourney.before.minutes)} → ${focusJourney.after.minutes == null ? '—' : number(focusJourney.after.minutes)}`
+				? `${formatJourneyTime(focusJourney.before).replace(' min', '')} → ${formatJourneyTime(focusJourney.after).replace(' min', '')}`
 				: shown?.summary.minutesSavedForAlreadyReachable != null
 					? minuteChange(shown.summary.minutesSavedForAlreadyReachable)
 					: 'Unavailable'}<span
 				>{focusJourney
-					? ' min'
+					? focusJourney.before.minutes !== null || focusJourney.after.minutes !== null
+						? ' min'
+						: ''
 					: shown?.summary.minutesSavedForAlreadyReachable != null
 						? shown.summary.minutesSavedForAlreadyReachable < 0
 							? ' min slower'
@@ -2219,6 +2247,66 @@
 		/>
 	</div>
 {/snippet}
+{#snippet changesCards()}
+	<div class="changes-content" aria-busy={busy}>
+		<span class="eyebrow"
+			>YOUR PROPOSAL · {scenario.assumptions.goal === 'education' ? 'SCHOOLS' : 'HEALTHCARE'}</span
+		>
+		{#if busy}
+			<p class="change-empty" role="status">
+				Recalculating journeys. Highlights appear when the new routes are ready.
+			</p>
+		{:else if !hasProposal}
+			<h2>What would improve?</h2>
+			<p class="change-empty">
+				Add a bus connection, school or clinic to compare with the current network.
+			</p>
+		{:else}
+			<h2>
+				<strong>{number(journeyChanges.improvedPopulation)}</strong> people with better journeys
+			</h2>
+			{#if journeyChanges.improvedPopulation > 0}
+				<p class="change-explanation">
+					Green outlines show improvements. Tap an area to compare its journey.
+				</p>
+				{#each changedExamples as result, i (result.originId)}
+					<button class="change-card" onclick={() => selectOrigin(result.originId, true)}>
+						<span class="change-card-heading"
+							><strong>{islandName(baseline, result.islandId)} · area {i + 1}</strong><ArrowUpRight
+								size={14}
+							/></span
+						>
+						<span class="change-times"
+							><span>{formatJourneyTime(result.before)}</span><span aria-label="to">→</span><strong
+								>{formatJourneyTime(result.after)}</strong
+							></span
+						>
+						<span class="change-card-detail"
+							>{journeyChangeSummary(result)} · {number(result.population)} people</span
+						>
+					</button>
+				{/each}
+			{:else}
+				<p class="change-empty">
+					No shorter or newly possible journeys for this destination yet. A stop needs an active
+					connection; a new facility must meet the destination requirements.
+				</p>
+			{/if}
+			{#if journeyChanges.worsenedPopulation > 0}<p class="change-warning">
+					{number(journeyChanges.worsenedPopulation)} people have a slower journey or lose a route. Red
+					outlines show these areas.
+				</p>{/if}
+			{#if journeyChanges.journeyChangePopulation.unknown > 0}<p class="change-footnote">
+					{number(journeyChanges.journeyChangePopulation.unknown)} people cannot be compared because evidence
+					is incomplete.
+				</p>{/if}
+			<p class="change-footnote">
+				Compared with the current network. Population distribution and proposed services are
+				modeled; purple outlines mean partial or mixed changes.
+			</p>
+		{/if}
+	</div>
+{/snippet}
 {#snippet contextBody()}
 	<div class="panel-scroll">
 		{#if context === 'area'}
@@ -2251,6 +2339,11 @@
 					<span></span>{selectedAccessLabel}
 				</div>
 			</section>
+			<JourneyComparison
+				comparison={selectedResult ?? null}
+				pending={busy}
+				example={!!selectedHex}
+			/>
 			<details class="edit-journey">
 				<summary
 					>{selectedHex ? 'See an example journey' : 'See the journey'}
@@ -2657,7 +2750,7 @@
 			<span
 				><small>Access</small><strong
 					>{shown ? `+${number(shown.summary.newlyReachedResidents)}` : '…'}</strong
-				><em>additional people</em></span
+				><em>newly within {scenario.assumptions.targetMinutes} min</em></span
 			>
 			<span
 				><small>Journey</small><strong
@@ -2843,8 +2936,8 @@
 									>{scenario.assumptions.targetMinutes} min · {view === 'people'
 										? 'People'
 										: view === 'impact'
-											? 'Impact'
-											: 'Access'}</small
+											? 'What changed'
+											: 'Journey times'}</small
 								></span
 							><ChevronDown size={16} /></button
 						>
@@ -2863,22 +2956,26 @@
 						>
 					</div>
 					<button class="mobile-areas-button" onclick={() => (drawer = 'mobile-areas')}
-						>Where should we invest? <span>{priorities.length}</span><ChevronRight
-							size={14}
-						/></button
+						>{hasProposal ? 'See journey changes' : 'Where should we invest?'}
+						<span
+							>{hasProposal ? number(journeyChanges.improvedPopulation) : priorities.length}</span
+						><ChevronRight size={14} /></button
 					>
 				</div>
 			{/if}
 			<div class="map-topbar" bind:this={mapToolbar}>
-				<div class="map-view-controls">
-					<DiscreteTabs
-						items={views}
-						value={view}
-						onchange={(next) => (view = next)}
-					/><DestinationPicker
-						value={scenario.assumptions.goal}
-						onchange={(goal) => patchAssumptions({ goal })}
-					/>
+				<div class="map-view-stack">
+					<div class="map-view-controls">
+						<DiscreteTabs
+							items={views}
+							value={view}
+							onchange={(next) => (view = next)}
+						/><DestinationPicker
+							value={scenario.assumptions.goal}
+							onchange={(goal) => patchAssumptions({ goal })}
+						/>
+					</div>
+					<p class="map-view-explanation">{viewExplanation}</p>
 				</div>
 				<div class="map-options">
 					{#if transportContext?.followme.enabled || transportContext?.mpl.enabled || transportContext?.aviation.enabled}
@@ -2937,11 +3034,13 @@
 			</div>
 			<details class="priority-panel" bind:open={areasExpanded}>
 				<summary
-					><span>Suggested areas</span><span class="small-pill">{priorities.length}</span
+					><span>{hasProposal || view === 'impact' ? 'Journey changes' : 'Suggested areas'}</span
+					><span class="small-pill"
+						>{hasProposal || view === 'impact' ? changedExamples.length : priorities.length}</span
 					><ChevronRight size={15} /></summary
 				>
 				<div class="priority-content">
-					{@render priorityCards()}
+					{#if hasProposal || view === 'impact'}{@render changesCards()}{:else}{@render priorityCards()}{/if}
 				</div>
 			</details>
 			{#if tour >= 0}<section class="tour-card" aria-label="Guided walkthrough">
@@ -2975,18 +3074,23 @@
 					{#each journeyLegend as band (band.id)}
 						<span><i style:background={band.color}></i>{band.label}</span>
 					{/each}
+					{#if hasJourneyChanges}<button
+							class="change-outline-key"
+							onclick={() => (view = 'impact')}><i></i>Outlined = changed</button
+						>{/if}
 				{:else}
-					<span
-						><i class="reachable-key"></i>{view === 'people'
-							? 'People · estimated'
-							: 'Within access target'}</span
-					>
-					{#if view === 'impact'}
-						<span><i class="gap-key"></i>Beyond target</span><span
-							><i class="gain-key"></i>Newly reached</span
+					{#if view === 'people'}<span><i class="reachable-key"></i>People · estimated</span>
+					{:else}
+						<span class="time-key-title">Before → proposal</span>
+						<span><i class="faster-key"></i>Faster</span><span
+							><i class="new-route-key"></i>New route possible</span
 						>
-						{#if hasMixedAreas}<span><i class="mixed-key"></i>Mixed outcomes</span>{/if}
-						{#if hasUnknownAreas}<span><i class="unknown-key"></i>Incomplete data</span>{/if}
+						<span><i class="slower-key"></i>Worse / lost route</span><span
+							><i class="unchanged-key"></i>Unchanged</span
+						>
+						<span><i class="mixed-key"></i>Partial / mixed</span><span
+							><i class="unknown-key"></i>Incomplete data</span
+						>
 					{/if}
 				{/if}
 				<button onclick={() => (drawer = 'evidence')} class="stop-key-button"
@@ -3181,7 +3285,9 @@
 					: drawer === 'mobile-map'
 						? 'Map options'
 						: drawer === 'mobile-areas'
-							? 'Suggested investment areas'
+							? hasProposal
+								? 'Journey changes'
+								: 'Suggested investment areas'
 							: 'Policy results'
 				: drawer === 'evidence'
 					? 'Data evidence'
@@ -3219,7 +3325,9 @@
 									: drawer === 'mobile-map'
 										? 'Make the map yours'
 										: drawer === 'mobile-areas'
-											? 'Find an access gap'
+											? hasProposal
+												? 'See what improved'
+												: 'Find an access gap'
 											: 'What changes?'}
 							</h2>
 						</div>
@@ -3304,6 +3412,7 @@
 							<section class="mobile-option-section">
 								<h3>What do you want to see?</h3>
 								<DiscreteTabs items={views} value={view} onchange={(next) => (view = next)} />
+								<p class="journey-legend-note">{viewExplanation}</p>
 							</section>
 							<section class="mobile-option-section">
 								<h3>Access to</h3>
@@ -3345,11 +3454,15 @@
 									{:else if view === 'people'}
 										<span><i class="reachable-key"></i>People · estimated</span>
 									{:else}
-										<span><i class="reachable-key"></i>Within access target</span><span
-											><i class="gap-key"></i>Beyond target</span
-										><span><i class="gain-key"></i>Newly reached</span><span
-											><i class="mixed-key"></i>Mixed outcomes</span
-										><span><i class="unknown-key"></i>Incomplete data</span>
+										<span><i class="faster-key"></i>Faster</span><span
+											><i class="new-route-key"></i>New route possible</span
+										>
+										<span><i class="slower-key"></i>Worse / lost route</span><span
+											><i class="unchanged-key"></i>Unchanged</span
+										>
+										<span><i class="mixed-key"></i>Partial / mixed</span><span
+											><i class="unknown-key"></i>Incomplete data</span
+										>
 									{/if}
 									<span><i class="stop-key"></i>Existing assets</span><span class="proposal-key"
 										><b>+</b>Proposed · not built</span
@@ -3358,6 +3471,10 @@
 								{#if view === 'access'}<p class="journey-legend-note">
 										Modeled walk, wait and ride time. Gray means incomplete data; mixed cells
 										contain different time bands.
+									</p>{/if}
+								{#if view === 'impact'}<p class="journey-legend-note">
+										Every shorter journey counts, even inside the same time band. Purple includes
+										areas where only some residents see a change.
 									</p>{/if}
 							</details>
 							{#if basemap === 'satellite'}<p class="imagery-license">
@@ -3370,11 +3487,13 @@
 							>
 						{:else if drawer === 'mobile-areas'}
 							<p class="mobile-drawer-intro">
-								Start with a place where reaching {scenario.assumptions.goal === 'healthcare'
-									? 'care'
-									: 'school'} takes too long.
+								{hasProposal
+									? 'See which journeys your proposal improves, then tap an example to inspect it.'
+									: `Start with a place where reaching ${scenario.assumptions.goal === 'healthcare' ? 'care' : 'school'} takes too long.`}
 							</p>
-							<div class="mobile-priority-cards">{@render priorityCards()}</div>
+							<div class="mobile-priority-cards">
+								{#if hasProposal}{@render changesCards()}{:else}{@render priorityCards()}{/if}
+							</div>
 						{:else}
 							<p class="mobile-drawer-intro">
 								Your proposal, compared with the current network. Costs and emissions depend on your
@@ -3785,8 +3904,10 @@
 								Access colors show modeled walk, wait and ride time to the selected destination
 								type, in 5, 10, 15 and 30-minute bands. Gray means incomplete data. Mixed times mean
 								a honeycomb contains residents from different time bands; its example journey
-								represents one contributing population origin. Impact shows gains and losses against
-								the selected access target.
+								represents one contributing population origin. What changed (Impact) compares actual
+								journeys before and with your proposal, including shorter journeys within the same
+								time band. Green outlines mark improvements, red marks worse journeys, and purple
+								marks partial or mixed changes. Unknown baseline evidence never counts as a gain.
 							</p>
 						</div>
 						<p class="data-gap">
@@ -5371,6 +5492,102 @@
 	.map-topbar:has(.basemap-picker[open]) {
 		z-index: 6;
 	}
+	.map-view-stack {
+		min-width: 0;
+	}
+	.map-view-explanation {
+		margin: 5px 0 0;
+		width: fit-content;
+		max-width: 100%;
+		padding: 4px 9px;
+		border-radius: 6px;
+		background: #fffffff2;
+		color: #47676c;
+		font-size: 12px;
+		line-height: 1.4;
+	}
+	.changes-content {
+		padding: 13px;
+		border: 1px solid #cfdfdb;
+		border-radius: 11px;
+		background: #fffffff5;
+		max-height: calc(100dvh - 370px);
+		overflow-y: auto;
+	}
+	.changes-content .eyebrow {
+		font-size: 10px;
+		letter-spacing: 0.6px;
+	}
+	.changes-content h2 {
+		margin: 8px 0;
+		font-size: 16px;
+		line-height: 1.35;
+		font-weight: 500;
+		color: #24464b;
+	}
+	.changes-content h2 strong {
+		color: #16886c;
+		font-weight: 750;
+	}
+	.change-explanation,
+	.change-empty {
+		margin: 6px 0 11px;
+		font-size: 12px;
+		line-height: 1.5;
+		color: #557477;
+	}
+	.change-card {
+		display: grid;
+		gap: 6px;
+		width: 100%;
+		margin: 7px 0;
+		padding: 10px;
+		border: 1px solid #cbe3d9;
+		border-radius: 8px;
+		background: #f2faf6;
+		text-align: left;
+		color: #244d42;
+		cursor: pointer;
+	}
+	.change-card:focus-visible {
+		outline: 2px solid #16886c;
+		outline-offset: 2px;
+	}
+	.change-card-heading,
+	.change-times {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.change-card-heading {
+		justify-content: space-between;
+		font-size: 12px;
+	}
+	.change-times {
+		font-size: 15px;
+		font-variant-numeric: tabular-nums;
+	}
+	.change-times > span:first-child {
+		color: #70807d;
+	}
+	.change-card-detail {
+		font-size: 11px;
+		line-height: 1.4;
+		color: #4d7667;
+	}
+	.change-footnote,
+	.change-warning {
+		margin: 10px 0 0;
+		font-size: 11px;
+		line-height: 1.5;
+		color: #627c80;
+	}
+	.change-warning {
+		color: #a04b38;
+	}
+	.mobile-priority-cards .changes-content {
+		max-height: none;
+	}
 	.map-options {
 		display: flex;
 		align-items: center;
@@ -5580,14 +5797,20 @@
 	.reachable-key {
 		background: #78baa5;
 	}
-	.gap-key {
-		background: #e3b272;
+	.faster-key {
+		background: #16886c;
 	}
-	.gain-key {
-		background: #00a68c;
+	.new-route-key {
+		background: #087e83;
+	}
+	.slower-key {
+		background: #c45f48;
+	}
+	.unchanged-key {
+		background: #a0acb0;
 	}
 	.mixed-key {
-		background: #8c91b5;
+		background: #8374ad;
 	}
 	.unknown-key {
 		background: #65717d;
@@ -5607,6 +5830,17 @@
 		color: #79939a;
 		background: transparent;
 		font-size: 12px;
+	}
+	.map-key .change-outline-key {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		color: #16886c;
+		font-weight: 600;
+	}
+	.change-outline-key i {
+		border: 1.5px solid #16886c;
+		background: transparent;
 	}
 	.decision-panel {
 		position: absolute;
