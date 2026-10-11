@@ -207,19 +207,13 @@
 		colorOpacity,
 		0
 	]);
-	let impactOpacity: ExpressionSpecification = $derived([
+	// Impact changes the meaning of the colors, not the geographic coverage.
+	// Keep neutral and incomplete cells at the user's chosen opacity too.
+	let contextEdgeOpacity: ExpressionSpecification = $derived([
 		'case',
-		['<=', ['get', 'population'], 0],
-		0,
-		[
-			'match',
-			['get', 'journeyChange'],
-			'unchanged',
-			colorOpacity * 0.15,
-			'unknown',
-			colorOpacity * 0.35,
-			colorOpacity
-		]
+		['>', ['get', 'population'], 0],
+		Math.min(0.3, colorOpacity * 2),
+		0
 	]);
 	let changeOpacity: ExpressionSpecification = $derived([
 		'case',
@@ -551,7 +545,7 @@
 						source: 'areas',
 						paint: {
 							'fill-color': view === 'impact' ? impactColors : journeyColors,
-							'fill-opacity': view === 'impact' ? impactOpacity : journeyOpacity,
+							'fill-opacity': journeyOpacity,
 							'fill-opacity-transition': { duration: 0 },
 							'fill-antialias': false
 						}
@@ -577,11 +571,11 @@
 					id: 'area-cell-edges',
 					type: 'line',
 					source: 'areas',
-					layout: { visibility: 'none' },
+					layout: { visibility: view === 'impact' ? 'visible' : 'none' },
 					paint: {
-						'line-color': '#527c83',
-						'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.1, 15, 0.28, 18, 0.45],
-						'line-opacity': ['case', ['>', ['get', 'population'], 0], 0.05, 0]
+						'line-color': '#7b8b94',
+						'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.2, 15, 0.5, 18, 0.7],
+						'line-opacity': contextEdgeOpacity
 					}
 				});
 				m.addLayer({
@@ -1830,12 +1824,10 @@
 			'fill-color',
 			view === 'impact' ? impactColors : journeyColors
 		);
-		map.setPaintProperty(
-			'access-areas',
-			'fill-opacity',
-			view === 'impact' ? impactOpacity : journeyOpacity
-		);
+		map.setPaintProperty('access-areas', 'fill-opacity', journeyOpacity);
 		map.setLayoutProperty('access-areas', 'visibility', view === 'people' ? 'none' : 'visible');
+		map.setPaintProperty('area-cell-edges', 'line-opacity', contextEdgeOpacity);
+		map.setLayoutProperty('area-cell-edges', 'visibility', view === 'impact' ? 'visible' : 'none');
 		map.setPaintProperty('journey-change-outlines', 'line-opacity', changeOpacity);
 		map.setLayoutProperty(
 			'journey-change-outlines',
