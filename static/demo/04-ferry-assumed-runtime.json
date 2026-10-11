@@ -1,0 +1,344 @@
+{
+  "schemaVersion": 1,
+  "datasetVersion": "greater-male-2026-10-10-5bbad9760b",
+  "modelVersion": "service-graph-1.3.0",
+  "actions": [
+    {
+      "kind": "add-route",
+      "pattern": {
+        "id": "scenario:vilimale-ferry:2026-10-10:10:out",
+        "routeId": "scenario:vilimale-ferry:2026-10-10:10",
+        "name": "Maafannu Ferry Terminal → Villingili Ferry Terminal · assumed crossing",
+        "mode": "ferry",
+        "stopIds": [
+          "ferry-terminal:rtl:101",
+          "ferry-terminal:rtl:103"
+        ],
+        "calendar": {
+          "weekdays": [],
+          "includedDates": [
+            "2026-10-10"
+          ],
+          "startDate": "2026-10-10",
+          "endDate": "2026-10-10"
+        },
+        "timing": {
+          "kind": "frequency",
+          "windows": [
+            {
+              "startMinutes": 0,
+              "endMinutes": 30,
+              "headwayMinutes": 15
+            },
+            {
+              "startMinutes": 30,
+              "endMinutes": 120,
+              "headwayMinutes": 30
+            },
+            {
+              "startMinutes": 120,
+              "endMinutes": 300,
+              "headwayMinutes": 60
+            },
+            {
+              "startMinutes": 300,
+              "endMinutes": 330,
+              "headwayMinutes": 30
+            },
+            {
+              "startMinutes": 330,
+              "endMinutes": 480,
+              "headwayMinutes": 15
+            },
+            {
+              "startMinutes": 480,
+              "endMinutes": 1040,
+              "headwayMinutes": 10
+            },
+            {
+              "startMinutes": 1050,
+              "endMinutes": 1130,
+              "headwayMinutes": 5
+            },
+            {
+              "startMinutes": 1130,
+              "endMinutes": 1440,
+              "headwayMinutes": 10
+            }
+          ],
+          "segmentMinutes": [
+            10
+          ]
+        },
+        "provenance": "assumed",
+        "sourceIds": [
+          "mtcc-vilimale-calendar-2026",
+          "rtl-terminal-catalog",
+          "user-crossing-runtime"
+        ],
+        "calendarDayType": "Saturday and other holidays",
+        "sourceUrl": "https://mtcc.mv/wp-content/uploads/2025/12/Vili-male-Ferry-Schedule-2026-V1.pdf",
+        "crossingRuntimeAssumed": true
+      },
+      "returnPattern": {
+        "id": "scenario:vilimale-ferry:2026-10-10:10:back",
+        "routeId": "scenario:vilimale-ferry:2026-10-10:10",
+        "name": "Villingili Ferry Terminal → Maafannu Ferry Terminal · assumed crossing",
+        "mode": "ferry",
+        "stopIds": [
+          "ferry-terminal:rtl:103",
+          "ferry-terminal:rtl:101"
+        ],
+        "calendar": {
+          "weekdays": [],
+          "includedDates": [
+            "2026-10-10"
+          ],
+          "startDate": "2026-10-10",
+          "endDate": "2026-10-10"
+        },
+        "timing": {
+          "kind": "frequency",
+          "windows": [
+            {
+              "startMinutes": 0,
+              "endMinutes": 30,
+              "headwayMinutes": 15
+            },
+            {
+              "startMinutes": 30,
+              "endMinutes": 120,
+              "headwayMinutes": 30
+            },
+            {
+              "startMinutes": 120,
+              "endMinutes": 300,
+              "headwayMinutes": 60
+            },
+            {
+              "startMinutes": 300,
+              "endMinutes": 330,
+              "headwayMinutes": 30
+            },
+            {
+              "startMinutes": 330,
+              "endMinutes": 480,
+              "headwayMinutes": 15
+            },
+            {
+              "startMinutes": 480,
+              "endMinutes": 1040,
+              "headwayMinutes": 10
+            },
+            {
+              "startMinutes": 1050,
+              "endMinutes": 1130,
+              "headwayMinutes": 5
+            },
+            {
+              "startMinutes": 1130,
+              "endMinutes": 1440,
+              "headwayMinutes": 10
+            }
+          ],
+          "segmentMinutes": [
+            10
+          ]
+        },
+        "provenance": "assumed",
+        "sourceIds": [
+          "mtcc-vilimale-calendar-2026",
+          "rtl-terminal-catalog",
+          "user-crossing-runtime"
+        ],
+        "calendarDayType": "Saturday and other holidays",
+        "sourceUrl": "https://mtcc.mv/wp-content/uploads/2025/12/Vili-male-Ferry-Schedule-2026-V1.pdf",
+        "crossingRuntimeAssumed": true
+      },
+      "stops": [
+        {
+          "id": "ferry-terminal:rtl:101",
+          "name": "Maafannu Ferry Terminal",
+          "lon": 73.50165235035352,
+          "lat": 4.171891971552377,
+          "islandId": "male",
+          "mode": "ferry",
+          "sourceIds": [
+            "rtl-terminal-catalog",
+            "mtcc-vilimale-calendar-2026"
+          ]
+        },
+        {
+          "id": "ferry-terminal:rtl:103",
+          "name": "Villingili Ferry Terminal",
+          "lon": 73.48744708629184,
+          "lat": 4.174914739012298,
+          "islandId": "vilimale",
+          "mode": "ferry",
+          "sourceIds": [
+            "rtl-terminal-catalog",
+            "mtcc-vilimale-calendar-2026"
+          ]
+        }
+      ]
+    }
+  ],
+  "assumptions": {
+    "date": "2026-10-10",
+    "departureMinutes": 930,
+    "targetMinutes": 60,
+    "goal": "healthcare",
+    "populationYear": 2026,
+    "walkMPerMinute": 80,
+    "maxJourneyMinutes": 60,
+    "maxTransfers": 2,
+    "maxAccessWalkMinutes": 15,
+    "maxTransferWalkMinutes": 10,
+    "maxSnapM": 100,
+    "boardingBufferMinutes": 2,
+    "busMovingKph": 15,
+    "busDwellMinutes": 0.5,
+    "annualOperatingDays": 300,
+    "layoverMinutes": 10,
+    "fleetReserveShare": 0.15,
+    "displacedPassengerKm": {
+      "low": 0,
+      "central": 0,
+      "high": 0
+    },
+    "costs": {
+      "dieselRetailMvrPerLitre": {
+        "value": 17.54,
+        "unit": "MVR/litre",
+        "effectiveDate": "2026-03-05",
+        "sourceIds": [
+          "sto-fuel2026"
+        ],
+        "qualification": "Published STO retail revision. Operator contracted/wholesale price unverified; this is not total operating cost."
+      },
+      "petrolRetailMvrPerLitre": {
+        "value": 16.01,
+        "unit": "MVR/litre",
+        "effectiveDate": "2026-03-05",
+        "sourceIds": [
+          "sto-fuel2026"
+        ],
+        "qualification": "Published STO retail revision. Operator contracted/wholesale price unverified; this is not total operating cost."
+      },
+      "electricityCommercialBands": {
+        "unit": "MVR/kWh",
+        "sourceIds": [
+          "stelco-tariff"
+        ],
+        "bands": [
+          {
+            "minMonthlyKwh": 0,
+            "maxMonthlyKwh": 100,
+            "rateMvrPerKwh": 3.3
+          },
+          {
+            "minMonthlyKwh": 101,
+            "maxMonthlyKwh": 300,
+            "rateMvrPerKwh": 3.35
+          },
+          {
+            "minMonthlyKwh": 301,
+            "maxMonthlyKwh": 500,
+            "rateMvrPerKwh": 3.65
+          },
+          {
+            "minMonthlyKwh": 501,
+            "maxMonthlyKwh": 600,
+            "rateMvrPerKwh": 4
+          },
+          {
+            "minMonthlyKwh": 601,
+            "maxMonthlyKwh": 3000,
+            "rateMvrPerKwh": 4.35
+          },
+          {
+            "minMonthlyKwh": 3001,
+            "maxMonthlyKwh": 10000,
+            "rateMvrPerKwh": 5.75
+          },
+          {
+            "minMonthlyKwh": 10001,
+            "maxMonthlyKwh": null,
+            "rateMvrPerKwh": 6.65
+          }
+        ],
+        "qualification": "Published Malé commercial tariff. Page has older surcharge notes; current depot category, surcharge and bill not verified."
+      },
+      "gridKgCo2ePerKwh": null,
+      "qualification": "No sourced marginal bus/stop capital cost, full per-km operating cost, or certified current Malé charging-grid factor. User-input illustrations must be clearly labeled.",
+      "stopCapitalMvr": {
+        "low": 150000,
+        "central": 250000,
+        "high": 450000
+      },
+      "dieselBusCapitalMvr": {
+        "low": 1500000,
+        "central": 2300000,
+        "high": 3200000
+      },
+      "electricBusCapitalMvr": {
+        "low": 2600000,
+        "central": 3600000,
+        "high": 5000000
+      },
+      "chargingInfrastructureMvr": {
+        "low": 100000,
+        "central": 300000,
+        "high": 500000
+      },
+      "dieselOperatingMvrPerKm": {
+        "low": 24,
+        "central": 36,
+        "high": 52
+      },
+      "electricOperatingMvrPerKm": {
+        "low": 18,
+        "central": 30,
+        "high": 46
+      },
+      "dieselKgCo2ePerKm": {
+        "low": 0.68,
+        "central": 0.85,
+        "high": 1.07
+      },
+      "electricKgCo2ePerKm": {
+        "low": 0.32,
+        "central": 0.66,
+        "high": 1.08
+      },
+      "displacedKgCo2ePerPassengerKm": {
+        "low": 0.06,
+        "central": 0.11,
+        "high": 0.18
+      }
+    },
+    "dieselLitresPerVehicleKm": {
+      "low": 0.25,
+      "central": 0.32,
+      "high": 0.4
+    },
+    "dieselKgCo2ePerLitre": {
+      "low": 2.65,
+      "central": 2.68,
+      "high": 2.72
+    },
+    "policyDelivery": {
+      "responsibleAgency": "MTCC / RTL, with the relevant local council",
+      "phases": [
+        "Verify operations and walking connections",
+        "Pilot service",
+        "Measure and adjust"
+      ],
+      "outstandingVerification": [
+        "Illustrative operating and procurement inputs require local quotes.",
+        "Passenger demand and private-trip displacement have not been measured.",
+        "Current full-day service calendars and pedestrian restrictions require confirmation."
+      ]
+    }
+  }
+}

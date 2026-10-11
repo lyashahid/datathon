@@ -6,6 +6,7 @@ export * from './investmentOptions.ts';
 export * from './facilities.ts';
 export * from './facilityProposals.ts';
 export * from './engine.ts';
+export * from './disruptions.ts';
 export * from './proposals.ts';
 export * from './connections.ts';
 export * from './scenario.ts';

@@ -16,6 +16,7 @@
 		snapshotStale={data.snapshotStale}
 		transportContext={data.transportContext}
 		policyEvidence={data.policyEvidence}
+		operations={data.operations}
 	/>
 {:else}
 	<main class="snapshot-unavailable">

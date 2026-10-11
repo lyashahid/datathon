@@ -2,9 +2,37 @@ import type {
 	PlanningAction,
 	PlanningAnalysis,
 	PlanningBaseline,
+	PlanningAssumptions,
 	PlanningServicePattern,
 	PlanningStop
 } from '#lib/planning/types.ts';
+
+/** Seed only changed road extents; the local land-clipped flood controls island coverage. */
+export function roadWaveTriggerCoordinates(
+	baseline: PlanningBaseline,
+	before: PlanningAssumptions['disruptions'],
+	after: PlanningAssumptions['disruptions']
+): [number, number][] {
+	const old = new Map((before ?? []).map((event) => [event.id, event]));
+	const next = new Map((after ?? []).map((event) => [event.id, event]));
+	const ids = new Set([...old.keys(), ...next.keys()]);
+	const edges = new Set<string>();
+	for (const id of ids) {
+		if (JSON.stringify(old.get(id)) === JSON.stringify(next.get(id))) continue;
+		for (const event of [old.get(id), next.get(id)])
+			for (const edgeId of event?.edgeIds ?? []) edges.add(edgeId);
+	}
+	const nodes = new Map(baseline.network.nodes.map((node) => [node.id, node]));
+	const result = new Map<string, [number, number]>();
+	for (const edge of baseline.network.edges) {
+		if (!edges.has(edge.id)) continue;
+		for (const id of [edge.from, edge.to]) {
+			const node = nodes.get(id);
+			if (node) result.set(id, [node.lon, node.lat]);
+		}
+	}
+	return [...result.values()];
+}
 
 /** Coordinate/stop-order replay only; route solving remains in the analysis worker. */
 function locations(baseline: PlanningBaseline, actions: readonly PlanningAction[]) {

@@ -1,0 +1,79 @@
+{
+	"profiledAt": "2026-10-11T03:57:00.793Z",
+	"node": "v24.19.0",
+	"platform": "win32/x64",
+	"dataset": "greater-male-2026-10-10-5bbad9760b",
+	"model": "service-graph-1.3.0",
+	"date": "2026-10-10",
+	"departureMinutesMvt": 930,
+	"originId": "wp:hulhumale:3446:1091",
+	"counts": {
+		"origins": 667,
+		"nodes": 4359,
+		"edges": 5743,
+		"patterns": 11,
+		"departureSamples": 18
+	},
+	"results": {
+		"baselineAppointment": "feasible",
+		"investmentAppointment": "feasible",
+		"feasibleDepartureSamples": 6,
+		"unknownDepartureSamples": 8,
+		"scanLabel": "Departures checked every 30 minutes in the partial observed window; missing return services remain unknown."
+	},
+	"interpretation": "Node model timings on the real cached bundle. Calculation runs on demand in a browser worker. Worker startup, cloning, browser rendering and device performance are excluded. Partial observed service coverage does not certify all-day departure windows. Repeat results must match exactly.",
+	"samples": [
+		{
+			"name": "selected baseline appointment cold",
+			"milliseconds": 237.46
+		},
+		{
+			"name": "selected investment appointment first",
+			"milliseconds": 22.47
+		},
+		{
+			"name": "investment partial-window departure scan first",
+			"milliseconds": 120.13
+		},
+		{
+			"name": "selected appointment repeat 1",
+			"milliseconds": 11.77
+		},
+		{
+			"name": "partial-window scan repeat 1",
+			"milliseconds": 121.68
+		},
+		{
+			"name": "selected appointment repeat 2",
+			"milliseconds": 6.64
+		},
+		{
+			"name": "partial-window scan repeat 2",
+			"milliseconds": 99.06
+		},
+		{
+			"name": "selected appointment repeat 3",
+			"milliseconds": 10.04
+		},
+		{
+			"name": "partial-window scan repeat 3",
+			"milliseconds": 80.48
+		},
+		{
+			"name": "selected appointment repeat 4",
+			"milliseconds": 7.05
+		},
+		{
+			"name": "partial-window scan repeat 4",
+			"milliseconds": 75.81
+		},
+		{
+			"name": "selected appointment repeat 5",
+			"milliseconds": 8.03
+		},
+		{
+			"name": "partial-window scan repeat 5",
+			"milliseconds": 82.47
+		}
+	]
+}

@@ -4,6 +4,7 @@ import { isFacilityProposal } from './facilities.ts';
 import type {
 	PlanningAction,
 	PlanningAssumptions,
+	PlanningDisruption,
 	PlanningServicePattern,
 	PlanningStop
 } from './types.ts';
@@ -17,6 +18,62 @@ const date = (v: unknown): v is string => {
 	const parsed = new Date(`${v}T00:00:00Z`);
 	return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === v;
 };
+export function validPlanningDisruptions(v: unknown): v is PlanningDisruption[] {
+	if (!Array.isArray(v) || v.length > 100) return false;
+	const seen = new Set<string>();
+	return v.every((event) => {
+		if (
+			!record(event) ||
+			!id(event.id) ||
+			seen.has(event.id) ||
+			!id(event.name) ||
+			!['closure', 'delay'].includes(event.kind as string) ||
+			!Array.isArray(event.edgeIds) ||
+			!event.edgeIds.length ||
+			event.edgeIds.length > 10000 ||
+			!event.edgeIds.every(id) ||
+			!Array.isArray(event.modes) ||
+			!event.modes.length ||
+			!event.modes.every((mode) => ['bus', 'walk'].includes(mode)) ||
+			!['both', 'forward', 'reverse'].includes(event.direction as string) ||
+			!date(event.startDate) ||
+			!date(event.endDate) ||
+			!finite(event.startMinutes) ||
+			!finite(event.endMinutes) ||
+			event.startMinutes < 0 ||
+			event.startMinutes > 2880 ||
+			event.endMinutes < 0 ||
+			event.endMinutes > 2880 ||
+			!['observed', 'assumed'].includes(event.provenance as string) ||
+			(event.enabled !== undefined && typeof event.enabled !== 'boolean') ||
+			(event.sourceIds !== undefined &&
+				(!Array.isArray(event.sourceIds) || !event.sourceIds.every(id))) ||
+			(event.sourceUrl !== undefined &&
+				(typeof event.sourceUrl !== 'string' ||
+					event.sourceUrl.length > 4000 ||
+					!/^https?:\/\//.test(event.sourceUrl))) ||
+			(event.evidenceNote !== undefined &&
+				(typeof event.evidenceNote !== 'string' || event.evidenceNote.length > 5000))
+		)
+			return false;
+		const duration =
+			Date.parse(`${event.endDate}T00:00:00Z`) / 60000 +
+			event.endMinutes -
+			Date.parse(`${event.startDate}T00:00:00Z`) / 60000 -
+			event.startMinutes;
+		if (!(duration > 0) || duration > 366 * 1440) return false;
+		if (
+			event.kind === 'delay' &&
+			(!finite(event.delayMinutes) ||
+				event.delayMinutes <= 0 ||
+				event.delayMinutes > 180 ||
+				event.modes.includes('walk'))
+		)
+			return false;
+		seen.add(event.id);
+		return true;
+	});
+}
 const position = (v: unknown) =>
 	record(v) && finite(v.lon) && Math.abs(v.lon) <= 180 && finite(v.lat) && Math.abs(v.lat) <= 90;
 const geometry = (v: unknown) =>
@@ -76,6 +133,18 @@ function pattern(v: unknown): v is PlanningServicePattern {
 		return false;
 	if (
 		!geometry(v.geometry) ||
+		(v.timing.kind === 'scheduled' &&
+			Array.isArray(v.timing.trips) &&
+			v.timing.trips.some(
+				(trip) =>
+					!record(trip) ||
+					(trip.segmentGeometry !== undefined &&
+						(!Array.isArray(trip.segmentGeometry) ||
+							trip.segmentGeometry.length !== (v.stopIds as string[]).length - 1 ||
+							!trip.segmentGeometry.every(
+								(segment) => Array.isArray(segment) && segment.length >= 2 && geometry(segment)
+							)))
+			)) ||
 		(v.segmentGeometry !== undefined &&
 			(!Array.isArray(v.segmentGeometry) ||
 				v.segmentGeometry.length !== v.stopIds.length - 1 ||
@@ -175,6 +244,27 @@ export function validPlanningAssumptions(v: unknown): v is PlanningAssumptions {
 		![2026, 2030].includes(v.populationYear as number) ||
 		!record(v.costs) ||
 		!validRange(v.displacedPassengerKm)
+	)
+		return false;
+	if (v.disruptions !== undefined && !validPlanningDisruptions(v.disruptions)) return false;
+	if (
+		v.fleetResponse !== undefined &&
+		!['maintain-frequency', 'fixed-fleet'].includes(v.fleetResponse as string)
+	)
+		return false;
+	if (
+		v.robustnessStresses !== undefined &&
+		(!Array.isArray(v.robustnessStresses) ||
+			v.robustnessStresses.length > 3 ||
+			!v.robustnessStresses.every(
+				(stress) =>
+					record(stress) &&
+					id(stress.id) &&
+					id(stress.name) &&
+					validPlanningDisruptions(stress.disruptions)
+			) ||
+			new Set(v.robustnessStresses.map((stress) => (record(stress) ? stress.id : undefined)))
+				.size !== v.robustnessStresses.length)
 	)
 		return false;
 	const fields = [

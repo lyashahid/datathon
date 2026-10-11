@@ -2,6 +2,25 @@
 	import { onMount, tick, untrack } from 'svelte';
 	import { latLngToCell } from 'h3-js';
 	import type { FeatureCollection, LineString } from 'geojson';
+	import type { Point } from 'geojson';
+	import type { OperationsBundle } from '#lib/operations/types.ts';
+	import { activeWeatherAlerts } from '#lib/operations/lifecycle.ts';
+	import { planningRoadFeatures } from '#lib/planning/disruptions.ts';
+	import OperationsPanel from './OperationsPanel.svelte';
+	import RobustnessPanel from './RobustnessPanel.svelte';
+	import RoundTripPanel from './RoundTripPanel.svelte';
+	import ServicePlaybackPanel from './ServicePlaybackPanel.svelte';
+	import type {
+		AppointmentJourney,
+		AppointmentOptions,
+		AppointmentDepartureScan
+	} from '#lib/planning/returnJourney.ts';
+	import {
+		ReturnJourneyWorkerClient,
+		SupersededAppointmentRequest
+	} from '#lib/planning/returnJourneyClient.ts';
+	import FerryAssumptionPanel from './FerryAssumptionPanel.svelte';
+	import DemoPresetPicker, { type DemoCase } from './DemoPresetPicker.svelte';
 	import {
 		ArrowUpRight,
 		Check,
@@ -45,7 +64,9 @@
 	import { honeycombAreas } from './honeycombAreas.ts';
 	import { TRAVEL_TIME_BANDS } from './travelTimeBands.ts';
 	import { buildWaveCells, continueWave, type RecalculationWave } from './recalculationWave.ts';
-	import { waveTriggerCoordinates } from './waveTriggers.ts';
+	import { waveTriggerCoordinates, roadWaveTriggerCoordinates } from './waveTriggers.ts';
+	import AnnualImageryPicker from './AnnualImageryPicker.svelte';
+	import { makeAnnualImageryStyle, type AnnualImageryYear } from '#lib/operations/imagery.ts';
 	import MobileSheet from './MobileSheet.svelte';
 	import ConnectionEditor from './ConnectionEditor.svelte';
 	import {
@@ -102,15 +123,106 @@
 		baseline,
 		snapshotStale = false,
 		transportContext = null,
-		policyEvidence = null
+		policyEvidence = null,
+		operations = null
 	}: {
 		baseline: PlanningBaseline;
 		snapshotStale?: boolean;
 		transportContext?: TransportContext | null;
 		policyEvidence?: PolicyEvidenceBundle | null;
+		operations?: OperationsBundle | null;
 	} = $props();
-	let showVessels = $state(true);
-	let showAirport = $state(true);
+	let showVessels = $state(false);
+	let showAirport = $state(false);
+	let operationsOpen = $state(false);
+	let pickingRoads = $state(false);
+	let selectedRoads = $state<string[]>([]);
+	let operationsExpanded = $state(true);
+	let playbackOpen = $state(false);
+	let playbackExpanded = $state(true);
+	let playbackPatternId = $state('');
+	let playbackSymbols = $state.raw<FeatureCollection<Point>>({
+		type: 'FeatureCollection',
+		features: []
+	});
+	let appointmentResult = $state.raw<AppointmentJourney | null>(null);
+	let departureScan = $state.raw<AppointmentDepartureScan | null>(null);
+	let appointmentOptions = $state<AppointmentOptions>({
+		appointmentMinutes: 60,
+		returnDeadlineMinutes: 21 * 60
+	});
+	let appointmentBusy = $state(false);
+	let returnClient: ReturnJourneyWorkerClient | null = null;
+	let returnRequest = 0;
+	let returnOpen = $state(false);
+	function openOperations() {
+		closeOverlay();
+		dismissContext();
+		playbackOpen = false;
+		operationsOpen = true;
+		areasExpanded = false;
+		operationsExpanded = true;
+	}
+	function togglePlayback() {
+		const opening = !playbackOpen;
+		closeOperations();
+		dismissContext();
+		playbackOpen = opening;
+		playbackExpanded = true;
+		areasExpanded = false;
+	}
+	function closeOperations() {
+		operationsOpen = false;
+		pickingRoads = false;
+		selectedRoads = [];
+	}
+	function toggleRoad(id: string) {
+		selectedRoads = selectedRoads.includes(id)
+			? selectedRoads.filter((e) => e !== id)
+			: [...selectedRoads, id];
+	}
+	function chooseTask(value: string) {
+		if (value === 'disruption') openOperations();
+		else if (value === 'compare') {
+			closeOperations();
+			playbackOpen = false;
+			compareAlternatives();
+		} else {
+			closeOperations();
+			playbackOpen = false;
+			closeOverlay();
+		}
+	}
+	async function evaluateReturn(options = appointmentOptions, scan = false) {
+		if (!analysis || !selectedId || !returnClient) return;
+		const id = ++returnRequest;
+		const actions = structuredClone(scenario.actions);
+		const originId = selectedId;
+		const assumptions = structuredClone(scenario.assumptions);
+		const requestOptions = $state.snapshot(options);
+		const worker = returnClient;
+		appointmentOptions = options;
+		appointmentBusy = true;
+		appointmentResult = null;
+		departureScan = null;
+		await tick();
+		if (id !== returnRequest) return;
+		try {
+			const result = await worker.analyze(actions, originId, assumptions, requestOptions);
+			if (id !== returnRequest) return;
+			const scanned = scan
+				? await worker.scan(actions, originId, assumptions, requestOptions)
+				: null;
+			if (id !== returnRequest) return;
+			appointmentResult = result;
+			departureScan = scanned;
+		} catch (error) {
+			if (id === returnRequest && !(error instanceof SupersededAppointmentRequest))
+				notice = `Return journey unavailable: ${String(error)}`;
+		} finally {
+			if (id === returnRequest) appointmentBusy = false;
+		}
+	}
 	let transportTab = $state<'boats' | 'port' | 'airport'>('boats');
 	const contextSymbols = $derived(
 		transportContextSymbols(transportContext, showVessels, showAirport)
@@ -123,6 +235,7 @@
 	let mapShown = $state.raw<PlanningAnalysis | null>(null);
 	let wave = $state.raw<RecalculationWave | null>(null);
 	let lastWaveActions: readonly PlanningAction[] | null = null;
+	let lastWaveDisruptions: PlanningAssumptions['disruptions'] = undefined;
 	let pendingMapResult: { id: number; result: PlanningAnalysis } | null = null;
 	let busy = $state(true);
 	let selectedId = $state('');
@@ -169,6 +282,33 @@
 	);
 	let perspective = $state(false);
 	let basemap = $state<BasemapMode>('atlas');
+	let imageryYear = $state<AnnualImageryYear>(2025);
+	let annualImagerySelected = $state(false);
+	const satelliteStyle = $derived(
+		annualImagerySelected && operations?.earthObservation
+			? makeAnnualImageryStyle(imageryYear, operations.earthObservation)
+			: null
+	);
+	const imageryDetail = $derived(
+		annualImagerySelected ? `Sentinel-2 · ${imageryYear} annual mosaic · 10 m` : SATELLITE_DETAIL
+	);
+	const imageryLicenseUrl = $derived(
+		annualImagerySelected
+			? 'https://creativecommons.org/licenses/by-nc-sa/4.0/'
+			: SATELLITE_LICENSE_URL
+	);
+	const imageryLicenseNotice = $derived(
+		annualImagerySelected ? 'EOxCloudless · CC BY-NC-SA 4.0' : SATELLITE_LICENSE_NOTICE
+	);
+	function selectImagery(year: AnnualImageryYear) {
+		imageryYear = year;
+		annualImagerySelected = true;
+		basemap = 'satellite';
+	}
+	function minuteChange(value: number) {
+		const absolute = Math.abs(value);
+		return absolute > 0 && absolute < 0.05 ? '<0.1' : number(absolute, 1);
+	}
 	const overlayOpacityKey = 'mobility-sandbox-map-opacity';
 	let overlayOpacity = $state(12);
 	let opacityPreferenceReady = $state(false);
@@ -186,7 +326,9 @@
 	let connectionReason = $state('Choose two or more stops in the order the bus should visit them.');
 	let keepStopConnections = $state(true);
 	let moveHeadway = $state(15);
-	const mobileBottomInset = $derived(76 + (context ? mobileSheetHeight : 0));
+	const mobileBottomInset = $derived(
+		76 + (context || operationsOpen || playbackOpen ? mobileSheetHeight : 0)
+	);
 	let placementReason = $state('Move the pointer to a street to preview a connection.');
 	let placementTimer: ReturnType<typeof setTimeout> | undefined;
 	let pendingPlacement: [number, number] | null = null;
@@ -353,6 +495,7 @@
 	]);
 	const selectedOrigin = $derived(baseline.origins.find((origin) => origin.id === selectedId));
 	const selectedResult = $derived(shown?.origins.find((origin) => origin.originId === selectedId));
+	const focusJourney = $derived(context === 'area' || context === 'build' ? selectedResult : null);
 	const priorities = $derived(
 		priorityAreas(baseline, analysis, scenario.assumptions.targetMinutes)
 	);
@@ -369,6 +512,31 @@
 	);
 	let patternId = $state('');
 	const selectedPattern = $derived(activePatterns.find((pattern) => pattern.id === patternId));
+	const playbackPatterns = $derived(
+		analysis?.world.patterns.filter((p) => p.enabled !== false) ?? []
+	);
+	const playbackPattern = $derived(
+		playbackPatterns.find((p) => p.id === playbackPatternId) ??
+			selectedPattern ??
+			playbackPatterns[0]
+	);
+	const roadConditions = $derived(planningRoadFeatures(baseline, scenario.assumptions));
+	const planningTime = $derived(
+		Date.parse(`${scenario.assumptions.date}T00:00:00+05:00`) +
+			scenario.assumptions.departureMinutes * 60000
+	);
+	const weatherAreas = $derived<FeatureCollection>({
+		type: 'FeatureCollection',
+		features: operations
+			? activeWeatherAlerts(operations, planningTime)
+					.filter((a) => a.geometry)
+					.map((a) => ({
+						type: 'Feature',
+						properties: { id: a.id, name: a.headline },
+						geometry: a.geometry!
+					}))
+			: []
+	});
 	const selectedStop = $derived(shown?.world.stops.find((stop) => stop.id === selectedStopId));
 	const stopConnections = $derived(
 		analysis?.world.patterns.filter(
@@ -767,7 +935,18 @@
 			case 'add-route': {
 				const timing = action.pattern.timing;
 				const window = timing.kind === 'frequency' ? timing.windows[0] : null;
-				return `${action.pattern.name}: ${number(((action.pattern.distanceM ?? 0) + (action.returnPattern?.distanceM ?? 0)) / 1000, 1)} km round trip, ${action.pattern.fleet ?? 'diesel'} fleet${window ? `, every ${window.headwayMinutes} minutes, ${timeLabel(window.startMinutes)}–${timeLabel(window.endMinutes)} MVT` : ', published departures'}.`;
+				if (action.pattern.mode === 'ferry') {
+					const minutes =
+						timing.kind === 'frequency'
+							? timing.segmentMinutes?.reduce((sum, value) => sum + value, 0)
+							: undefined;
+					return `${action.pattern.name}: ${minutes == null ? 'crossing time unavailable' : `${number(minutes, 1)}-minute assumed crossing`}; published day-specific frequency intervals; mapped crossing distance, vessel costs and energy factors unavailable.`;
+				}
+				const distance =
+					action.pattern.distanceM != null && action.returnPattern?.distanceM != null
+						? `${number((action.pattern.distanceM + action.returnPattern.distanceM) / 1000, 1)} km round trip`
+						: 'round-trip distance unavailable';
+				return `${action.pattern.name}: ${distance}, ${action.pattern.fleet ?? 'diesel'} fleet${window ? `, every ${window.headwayMinutes} minutes, ${timeLabel(window.startMinutes)}–${timeLabel(window.endMinutes)} MVT` : ', published departures'}.`;
 			}
 			case 'extend-route':
 				return `Extend ${route} to ${action.stop.name}: ${number((action.distanceM + (action.returnDistanceM ?? 0)) / 1000, 1)} additional round-trip km.`;
@@ -859,6 +1038,7 @@
 		collapseSuggestions();
 		narrowScreen.addEventListener('change', collapseSuggestions);
 		client = new AnalysisWorkerClient(baseline);
+		returnClient = new ReturnJourneyWorkerClient(baseline);
 		scheduler = new LiveAnalysisScheduler(client);
 		applyAssumptionPreset();
 		// Capture the fresh-session preset before loading any locally saved proposal.
@@ -882,6 +1062,7 @@
 			clearTimeout(stopPreviewTimer);
 			scheduler?.dispose();
 			client?.dispose();
+			returnClient?.dispose();
 		};
 	});
 	$effect(() => {
@@ -891,6 +1072,23 @@
 		} catch {
 			// Changing the overlay does not depend on saving a preference.
 		}
+	});
+	$effect(() => {
+		const key = `${selectedId}:${analysis?.versionPins.model}:${scenario.actions.length}:${scenario.assumptions.date}:${scenario.assumptions.departureMinutes}`;
+		const current = analysis;
+		if (returnOpen && current && key)
+			untrack(() => {
+				appointmentResult = null;
+				departureScan = null;
+				void evaluateReturn();
+			});
+		else
+			untrack(() => {
+				appointmentResult = null;
+				departureScan = null;
+				returnRequest++;
+				appointmentBusy = false;
+			});
 	});
 	$effect(() => {
 		if (!initialized) return;
@@ -903,9 +1101,13 @@
 		const start = performance.now();
 		untrack(() => {
 			const seeds = lastWaveActions
-				? waveTriggerCoordinates(baseline, lastWaveActions, actions, analysis?.world)
+				? [
+						...waveTriggerCoordinates(baseline, lastWaveActions, actions, analysis?.world),
+						...roadWaveTriggerCoordinates(baseline, lastWaveDisruptions, assumptions.disruptions)
+					]
 				: [];
 			lastWaveActions = structuredClone(actions);
+			lastWaveDisruptions = structuredClone(assumptions.disruptions);
 			pendingMapResult = null;
 			if (seeds.length) {
 				wave = continueWave(wave, id, buildWaveCells(visualGrid, seeds), start);
@@ -986,6 +1188,8 @@
 		busy = false;
 	}
 	function selectOrigin(id: string, focus = false, cellId = '') {
+		closeOperations();
+		playbackOpen = false;
 		if (drawer === 'mobile-areas') closeOverlay();
 		mobileDetailExpanded = false;
 		cancelDraft();
@@ -1052,6 +1256,8 @@
 		addBus(position);
 	}
 	function selectStop(id: string, resetDraft = true) {
+		closeOperations();
+		playbackOpen = false;
 		if (resetDraft) cancelDraft();
 		mobileDetailExpanded = false;
 		context = 'service';
@@ -1066,6 +1272,8 @@
 		if (pattern) choosePattern(pattern.id);
 	}
 	function selectRoute(id: string) {
+		closeOperations();
+		playbackOpen = false;
 		mobileDetailExpanded = true;
 		cancelDraft();
 		selectedStopId = '';
@@ -1096,6 +1304,8 @@
 		selectedStopId = '';
 	}
 	function beginBuild(mode: BuildMode = 'destination') {
+		closeOperations();
+		playbackOpen = false;
 		mobileDetailExpanded = false;
 		cancelDraft();
 		context = 'build';
@@ -1160,6 +1370,8 @@
 		);
 	}
 	function beginConnection(stopId = '', mode: 'new' | 'insert' = 'new') {
+		closeOperations();
+		playbackOpen = false;
 		cancelDraft();
 		context = 'connect';
 		editMode = true;
@@ -1471,6 +1683,11 @@
 	}
 	function resetToDefault() {
 		if (!initialized || busy || !startingAssumptions) return;
+		closeOperations();
+		playbackOpen = false;
+		playbackSymbols = { type: 'FeatureCollection', features: [] };
+		appointmentResult = null;
+		departureScan = null;
 		cancelDraft();
 		closeOverlay();
 		context = null;
@@ -1492,12 +1709,14 @@
 		fleet = 'diesel';
 		view = 'access';
 		basemap = 'atlas';
+		imageryYear = 2025;
+		annualImagerySelected = false;
 		overlayOpacity = 12;
 		perspective = false;
 		detailGrid = false;
 		includeUntimedStops = false;
-		showVessels = true;
-		showAirport = true;
+		showVessels = false;
+		showAirport = false;
 		transportTab = 'boats';
 		settingsTab = 'journey';
 		sourceSearch = '';
@@ -1612,6 +1831,35 @@
 		}
 		upload.value = '';
 	}
+	function loadDemo(demo: DemoCase, json: string) {
+		const result = scenario.importJson(json);
+		if (!result.ok) {
+			notice = result.reason;
+			return;
+		}
+		cancelDraft();
+		closeOperations();
+		playbackOpen = false;
+		closeOverlay();
+		syncPrivateInputs();
+		selectedId = demo.originId;
+		selectedCellId = '';
+		patternId = demo.selectedPatternId ?? '';
+		focusCoordinate = demo.mapCenter;
+		context = 'area';
+		editMode = false;
+		areasExpanded = false;
+		mobileDetailExpanded = true;
+		returnOpen = false;
+		appointmentResult = null;
+		departureScan = null;
+		returnRequest++;
+		appointmentBusy = false;
+		appointmentOptions = demo.appointmentOptions
+			? structuredClone(demo.appointmentOptions)
+			: { appointmentMinutes: 60, returnDeadlineMinutes: 21 * 60 };
+		notice = `${demo.title} loaded. Inputs are editable assumptions; Undo restores your previous proposal.`;
+	}
 	async function compareAlternatives() {
 		if (busy) return;
 		cancelDraft();
@@ -1651,6 +1899,8 @@
 	}
 	async function openBrief() {
 		cancelDraft();
+		playbackOpen = false;
+		playbackSymbols = { type: 'FeatureCollection', features: [] };
 		mapShown = analysis;
 		pendingMapResult = null;
 		wave = null;
@@ -1790,13 +2040,15 @@
 	<div class="result access-result">
 		<span class="result-label"
 			>ADDITIONAL PEOPLE <span class="result-chip"
-				>{draft || liveActions
-					? 'Preview'
-					: gesture
-						? 'Live'
-						: scenario.actions.length
-							? 'Proposal'
-							: 'Baseline'}</span
+				>{busy
+					? 'Calculating'
+					: draft || liveActions
+						? 'Preview'
+						: gesture
+							? 'Live'
+							: scenario.actions.length
+								? 'Proposal'
+								: 'Baseline'}</span
 			></span
 		><strong
 			>{shown ? `+${number(shown.summary.newlyReachedResidents)}` : 'Calculating…'}<span>
@@ -1812,20 +2064,30 @@
 	</div>
 	<div class="result">
 		<span class="result-label"
-			>JOURNEY CHANGE <span class="result-context">Already within target</span></span
+			>JOURNEY CHANGE <span class="result-context"
+				>{focusJourney ? 'Selected area' : 'Already within target'}</span
+			></span
 		><strong
-			>{shown?.summary.minutesSavedForAlreadyReachable != null
-				? number(Math.abs(shown.summary.minutesSavedForAlreadyReachable), 1)
-				: 'Unavailable'}<span
-				>{shown?.summary.minutesSavedForAlreadyReachable != null
-					? shown.summary.minutesSavedForAlreadyReachable < 0
-						? ' min slower'
-						: ' min saved'
-					: ''}</span
+			>{focusJourney
+				? `${focusJourney.before.minutes == null ? '—' : number(focusJourney.before.minutes)} → ${focusJourney.after.minutes == null ? '—' : number(focusJourney.after.minutes)}`
+				: shown?.summary.minutesSavedForAlreadyReachable != null
+					? minuteChange(shown.summary.minutesSavedForAlreadyReachable)
+					: 'Unavailable'}<span
+				>{focusJourney
+					? ' min'
+					: shown?.summary.minutesSavedForAlreadyReachable != null
+						? shown.summary.minutesSavedForAlreadyReachable < 0
+							? ' min slower'
+							: ' min saved'
+						: ''}</span
 			></strong
 		>
 		<p>
-			Population-weighted average
+			{focusJourney
+				? focusJourney.after.minutes == null
+					? 'A journey could not be established with these inputs'
+					: 'Before → after · walk, wait and service time'
+				: 'Population-weighted average'}
 			{#if shown?.summary.lostAccessResidents}<button onclick={() => (drawer = 'mobile-results')}
 					>{number(shown.summary.lostAccessResidents)} lose access</button
 				>{/if}
@@ -1838,8 +2100,18 @@
 				onclick={() => (costUnavailable ? (drawer = 'evidence') : openSettings('costs'))}
 				>{costUnavailable ? 'Details' : 'Estimate'} <Info size={11} /></button
 			></span
-		><strong>{money(shown?.costs.capitalMvr?.central)}<span> one-time</span></strong>
-		<p>{money(shown?.costs.annualOperatingMvr?.central)} / year change</p>
+		><strong
+			>{!scenario.actions.length && !draft && !liveActions
+				? 'Choose an investment'
+				: money(shown?.costs.capitalMvr?.central)}<span
+				>{scenario.actions.length || draft || liveActions ? ' one-time' : ''}</span
+			></strong
+		>
+		<p>
+			{!scenario.actions.length && !draft && !liveActions
+				? 'Capital and annual operations shown separately'
+				: `${money(shown?.costs.annualOperatingMvr?.central)} / year change`}
+		</p>
 	</div>
 	<div class="result carbon-result" class:carbon-increase={(shown?.carbon.central ?? 0) > 0}>
 		<span class="result-label"
@@ -1848,20 +2120,26 @@
 					onclick={() => (drawer = 'evidence')}>Why unavailable <Info size={11} /></button
 				>{:else}<span class="result-context">Estimate</span>{/if}</span
 		><strong
-			>{shown?.carbon.central == null
-				? 'Unavailable'
-				: `${shown.carbon.central > 0 ? '+' : ''}${number(shown.carbon.central / 1000, 1)}`}<span
-				>{shown?.carbon.central != null ? ' t CO₂e / yr' : ''}</span
+			>{!scenario.actions.length && !draft && !liveActions
+				? 'No investment yet'
+				: shown?.carbon.central == null
+					? 'Unavailable'
+					: `${shown.carbon.central > 0 ? '+' : ''}${number(shown.carbon.central / 1000, 1)}`}<span
+				>{(scenario.actions.length || draft || liveActions) && shown?.carbon.central != null
+					? ' t CO₂e / yr'
+					: ''}</span
 			></strong
 		>
 		<p>
-			{shown?.carbon.central == null
-				? 'Missing inputs'
-				: shown.carbon.central > 0
-					? 'Increase under these assumptions'
-					: shown.carbon.central < 0
-						? 'Reduction under these assumptions'
-						: 'No change'}
+			{!scenario.actions.length && !draft && !liveActions
+				? 'Road event effects shown in disruption tools'
+				: shown?.carbon.central == null
+					? 'Missing inputs'
+					: shown.carbon.central > 0
+						? 'Increase under these assumptions'
+						: shown.carbon.central < 0
+							? 'Reduction under these assumptions'
+							: 'No change'}
 			{#if shown?.carbon.central != null}<button
 					class="icon-button"
 					aria-label="Carbon assumptions"
@@ -1898,6 +2176,48 @@
 			>Collect better data · {number(analysis.summary.unknownResidents)} residents have unknown access
 			<Info size={13} /></button
 		>{/if}
+{/snippet}
+{#snippet playbackControls()}
+	<div class="playback-content">
+		<div class="context-heading">
+			<span class="eyebrow">SERVICE ILLUSTRATION</span><button
+				class="icon-button"
+				aria-label="Close service playback"
+				onclick={() => (playbackOpen = false)}><X size={17} /></button
+			>
+		</div>
+		<RoutePicker
+			label="Playback service"
+			allowEmpty={false}
+			value={playbackPattern?.id ?? ''}
+			items={playbackPatterns.map((p) => {
+				const duplicateName = playbackPatterns.some(
+					(other) => other.id !== p.id && other.name === p.name
+				);
+				const endpointName = (stopId: string | undefined, fallback: string) =>
+					(analysis?.world.stops.find((stop) => stop.id === stopId)?.name ?? fallback)
+						.replace(/^Proposed stop near /i, '')
+						.replace(/^Proposed neighbourhood stop$/i, 'Neighbourhood')
+						.replace(/^Proposed /i, '');
+				return {
+					value: p.id,
+					label: duplicateName
+						? `${endpointName(p.stopIds[0], 'Start')} → ${endpointName(p.stopIds.at(-1), 'Terminus')}`
+						: p.name
+				};
+			})}
+			onchange={(v) => (playbackPatternId = v)}
+		/>
+		<ServicePlaybackPanel
+			pattern={playbackPattern ?? null}
+			stops={analysis?.world.stops ?? []}
+			date={scenario.assumptions.date}
+			departureMinutes={scenario.assumptions.departureMinutes}
+			sourceReferenceDate={baseline.referenceDate}
+			onframe={(frame) =>
+				(playbackSymbols = frame?.features ?? { type: 'FeatureCollection', features: [] })}
+		/>
+	</div>
 {/snippet}
 {#snippet contextBody()}
 	<div class="panel-scroll">
@@ -1950,6 +2270,24 @@
 			</details>
 			<button class="primary-button full-width" onclick={() => beginBuild()}
 				><BusFront size={17} />Build a bus connection <ArrowUpRight size={15} /></button
+			>
+			<details class="evidence-group" bind:open={returnOpen}>
+				<summary>Can they get there and back?</summary>{#if appointmentBusy}<p
+						class="technical-note"
+						role="status"
+					>
+						Checking the return journey…
+					</p>{/if}<RoundTripPanel
+					busy={appointmentBusy}
+					result={appointmentResult}
+					options={appointmentOptions}
+					onoptions={(options) => evaluateReturn(options)}
+					{departureScan}
+					onscan={() => evaluateReturn(appointmentOptions, true)}
+				/>
+			</details>
+			<button class="secondary-button full-width" onclick={openOperations}
+				>Test a road closure or delay</button
 			>
 			<button class="secondary-button full-width" onclick={compareAlternatives} disabled={busy}
 				>Find affordable investments</button
@@ -2291,6 +2629,19 @@
 			>
 		</div>
 	</header>
+	<nav class="task-strip" aria-label="Planning task">
+		<DiscreteTabs
+			label="Planning task"
+			value={operationsOpen ? 'disruption' : drawer === 'compare' ? 'compare' : 'access'}
+			items={[
+				{ id: 'access', label: isMobile ? 'Access' : 'Explore access' },
+				{ id: 'disruption', label: isMobile ? 'Disruption' : 'Test disruption' },
+				{ id: 'compare', label: isMobile ? 'Compare' : 'Compare investment' }
+			]}
+			onchange={chooseTask}
+		/>
+		<span class="task-note">Public data · scenario estimates</span>
+	</nav>
 	<button
 		class="mobile-results-trigger"
 		aria-label="Open policy results and assumptions"
@@ -2310,15 +2661,23 @@
 			>
 			<span
 				><small>Journey</small><strong
-					>{shown?.summary.minutesSavedForAlreadyReachable == null
-						? '—'
-						: number(Math.abs(shown.summary.minutesSavedForAlreadyReachable), 1)}</strong
+					>{focusJourney
+						? focusJourney.after.minutes == null
+							? '—'
+							: `${number(focusJourney.after.minutes)} min`
+						: shown?.summary.minutesSavedForAlreadyReachable == null
+							? '—'
+							: minuteChange(shown.summary.minutesSavedForAlreadyReachable)}</strong
 				><em
-					>{shown?.summary.minutesSavedForAlreadyReachable == null
-						? 'Unavailable'
-						: shown.summary.minutesSavedForAlreadyReachable < 0
-							? 'min slower'
-							: 'min saved'}</em
+					>{focusJourney
+						? focusJourney.before.minutes == null
+							? 'Before unknown'
+							: `${number(focusJourney.before.minutes)} min before`
+						: shown?.summary.minutesSavedForAlreadyReachable == null
+							? 'Unavailable'
+							: shown.summary.minutesSavedForAlreadyReachable < 0
+								? 'min slower'
+								: 'min saved'}</em
 				></span
 			>
 			<span
@@ -2386,7 +2745,8 @@
 			class="map-stage"
 			style:--map-controls-height={`${mapOverlayHeight}px`}
 			class:editing={editMode}
-			class:has-selection={context !== null}
+			class:has-selection={context !== null || operationsOpen || playbackOpen}
+			class:has-operations={operationsOpen || playbackOpen}
 			class:satellite={basemap === 'satellite'}
 		>
 			<AtlasMap
@@ -2403,6 +2763,12 @@
 				routes={mapRoutes}
 				{symbols}
 				{contextSymbols}
+				{roadConditions}
+				weatherAreas={operationsOpen ? weatherAreas : { type: 'FeatureCollection', features: [] }}
+				{playbackSymbols}
+				{selectedRoads}
+				roadSelectionEnabled={operationsOpen && pickingRoads}
+				onroadselect={toggleRoad}
 				{policyLayers}
 				oncontextselect={(kind) => {
 					transportTab = kind === 'airport' ? 'airport' : 'boats';
@@ -2433,6 +2799,7 @@
 							: 'Place a bus connection'}
 				{editRevision}
 				{basemap}
+				{satelliteStyle}
 				{placementPoint}
 				placementIcon={buildMode === 'clinic' || buildMode === 'school' ? buildMode : 'shelter'}
 				placementState={movingStopId &&
@@ -2544,7 +2911,7 @@
 						>
 						<div class="basemap-menu">
 							<span class="eyebrow">MAP APPEARANCE</span
-							>{#each [{ id: 'atlas', label: 'Policy atlas', note: 'Calm · available offline' }, { id: 'streets', label: 'Street map', note: 'Street names · online' }, { id: 'satellite', label: 'Satellite', note: SATELLITE_DETAIL }] as option (option.id)}<button
+							>{#each [{ id: 'atlas', label: 'Policy atlas', note: 'Calm · available offline' }, { id: 'streets', label: 'Street map', note: 'Street names · online' }, { id: 'satellite', label: 'Satellite', note: imageryDetail }] as option (option.id)}<button
 									aria-pressed={basemap === option.id}
 									onclick={(event) => {
 										basemap = option.id as BasemapMode;
@@ -2554,9 +2921,14 @@
 									>{#if basemap === option.id}<Check size={15} />{/if}</button
 								>{/each}
 							{@render opacityControl('desktop-hexagon-opacity')}
+							<AnnualImageryPicker
+								evidence={operations?.earthObservation}
+								year={imageryYear}
+								onselect={selectImagery}
+							/>
 							<p class="imagery-license">
-								<a href={SATELLITE_LICENSE_URL} target="_blank" rel="noopener noreferrer"
-									>{SATELLITE_LICENSE_NOTICE}</a
+								<a href={imageryLicenseUrl} target="_blank" rel="noopener noreferrer"
+									>{imageryLicenseNotice}</a
 								>
 							</p>
 						</div>
@@ -2595,7 +2967,7 @@
 				role="group"
 				aria-label={view === 'access' ? 'Journey time bands' : 'Map legend'}
 			>
-				{#if basemap === 'satellite'}<span class="imagery-caption">{SATELLITE_DETAIL}</span>{/if}
+				{#if basemap === 'satellite'}<span class="imagery-caption">{imageryDetail}</span>{/if}
 				{#if view === 'access'}
 					<span class="time-key-title"
 						>Time to {scenario.assumptions.goal === 'education' ? 'school' : 'care'}</span
@@ -2625,7 +2997,56 @@
 					>{/if}
 			</div>
 
-			{#if context}
+			{#if playbackOpen}
+				{#if isMobile}<MobileSheet
+						title="Service playback"
+						summary="Timetable illustration · not live tracking"
+						bind:expanded={playbackExpanded}
+						onclose={() => (playbackOpen = false)}
+						onextent={(height) => (mobileSheetHeight = height)}
+						>{@render playbackControls()}</MobileSheet
+					>
+				{:else}<aside class="decision-panel playback-holder" aria-label="Service playback">
+						{@render playbackControls()}
+					</aside>{/if}
+			{:else if operationsOpen}
+				{#if isMobile}<MobileSheet
+						title="Test a disruption"
+						summary={`${selectedRoads.length} roads selected · tap to edit`}
+						bind:expanded={operationsExpanded}
+						onclose={closeOperations}
+						onextent={(height) => (mobileSheetHeight = height)}
+						><OperationsPanel
+							{baseline}
+							bundle={operations}
+							assumptions={scenario.assumptions}
+							{analysis}
+							selectedEdges={selectedRoads}
+							picking={pickingRoads}
+							onpick={() => {
+								pickingRoads = !pickingRoads;
+								operationsExpanded = !pickingRoads;
+							}}
+							onclear={() => (selectedRoads = [])}
+							onchange={patchAssumptions}
+							onclose={closeOperations}
+						/></MobileSheet
+					>
+				{:else}<aside class="decision-panel operations-holder" aria-label="Test a disruption">
+						<OperationsPanel
+							{baseline}
+							bundle={operations}
+							assumptions={scenario.assumptions}
+							{analysis}
+							selectedEdges={selectedRoads}
+							picking={pickingRoads}
+							onpick={() => (pickingRoads = !pickingRoads)}
+							onclear={() => (selectedRoads = [])}
+							onchange={patchAssumptions}
+							onclose={closeOperations}
+						/>
+					</aside>{/if}
+			{:else if context}
 				{#if isMobile}
 					<MobileSheet
 						title={mobileContextTitle}
@@ -2671,7 +3092,11 @@
 					class="edit-mode-button"
 					class:active={!editMode}
 					aria-pressed={!editMode}
-					onclick={dismissContext}><MousePointer2 size={17} />Explore</button
+					onclick={() => {
+						closeOperations();
+						playbackOpen = false;
+						dismissContext();
+					}}><MousePointer2 size={17} />Explore</button
 				>
 				<button
 					class="dock-tool"
@@ -2683,7 +3108,13 @@
 				>
 				<button class="dock-tool" onclick={() => (drawer = 'services')}
 					><TransportGraphic kind="shelter" size={31} />Services</button
-				><span class="dock-divider"></span>
+				>
+				{#if !isMobile}<button
+						class="dock-tool playback-toggle"
+						class:active={playbackOpen}
+						aria-pressed={playbackOpen}
+						onclick={togglePlayback}><BusFront size={19} />Playback</button
+					>{/if}<span class="dock-divider"></span>
 				<div class="history-buttons">
 					<button
 						class="icon-button"
@@ -2799,6 +3230,17 @@
 					<div class="mobile-drawer-body">
 						{#if drawer === 'mobile-menu'}
 							<div class="mobile-menu-list">
+								<button
+									onclick={() => {
+										closeOverlay();
+										togglePlayback();
+									}}
+									><BusFront size={20} /><span
+										><strong>Service playback</strong><small
+											>Illustrate a route and its schedule</small
+										></span
+									><ChevronRight size={17} /></button
+								>
 								<button onclick={() => (drawer = 'evidence')}
 									><Layers size={20} /><span
 										><strong>Evidence</strong><small>Sources, coverage and data gaps</small></span
@@ -2873,7 +3315,7 @@
 							<section class="mobile-option-section">
 								<h3>Map appearance</h3>
 								<div class="mobile-basemaps">
-									{#each [{ id: 'atlas', label: 'Policy atlas', note: 'Calm · works offline' }, { id: 'streets', label: 'Street map', note: 'Road names · online' }, { id: 'satellite', label: 'Satellite', note: SATELLITE_DETAIL }] as option (option.id)}<button
+									{#each [{ id: 'atlas', label: 'Policy atlas', note: 'Calm · works offline' }, { id: 'streets', label: 'Street map', note: 'Road names · online' }, { id: 'satellite', label: 'Satellite', note: imageryDetail }] as option (option.id)}<button
 											aria-pressed={basemap === option.id}
 											onclick={() => (basemap = option.id as BasemapMode)}
 											><span><strong>{option.label}</strong><small>{option.note}</small></span
@@ -2887,6 +3329,11 @@
 									><span>Perspective view</span><span>{perspective ? 'On' : 'Off'}</span></button
 								>
 								{@render opacityControl('mobile-hexagon-opacity')}
+								<AnnualImageryPicker
+									evidence={operations?.earthObservation}
+									year={imageryYear}
+									onselect={selectImagery}
+								/>
 							</section>
 							<details class="mobile-legend">
 								<summary>How to read the map <ChevronDown size={15} /></summary>
@@ -2914,8 +3361,8 @@
 									</p>{/if}
 							</details>
 							{#if basemap === 'satellite'}<p class="imagery-license">
-									<a href={SATELLITE_LICENSE_URL} target="_blank" rel="noopener noreferrer"
-										>{SATELLITE_LICENSE_NOTICE}</a
+									<a href={imageryLicenseUrl} target="_blank" rel="noopener noreferrer"
+										>{imageryLicenseNotice}</a
 									>
 								</p>{/if}
 							<button class="primary-button full-width" onclick={closeOverlay}
@@ -2998,14 +3445,40 @@
 								unit: 't CO₂e'
 							}
 						]}
-						interventions={scenario.actions.map(describeAction)}
-						evidence={sourceEvidence}
+						interventions={[
+							...scenario.actions.map(describeAction),
+							...(scenario.assumptions.disruptions ?? []).map(
+								(e) =>
+									`${e.name}: assumed ${e.kind} on ${e.edgeIds.length} road segments; ${e.startDate} ${timeLabel(e.startMinutes)}–${e.endDate} ${timeLabel(e.endMinutes)} MVT.`
+							)
+						]}
+						evidence={[
+							...sourceEvidence,
+							...(operations?.sources ?? []).map((s) => ({
+								name: s.title,
+								status: s.status,
+								date: s.retrievedAt ?? 'Unavailable',
+								detail: s.coverage,
+								url: s.url
+							}))
+						]}
 						assumptions={[
 							`${scenario.assumptions.date}, ${timeLabel(scenario.assumptions.departureMinutes)} MVT; ${scenario.assumptions.targetMinutes}-minute target; max ${scenario.assumptions.maxTransfers} transfers.`,
 							`${scenario.assumptions.populationYear} population is modeled within official island totals${scenario.assumptions.housingDistribution?.length ? '; housing completion is conditional' : ''}.`,
 							`${coverage.label}; full calendars and ferry crossing times are incomplete.`,
 							`${destinationScope}${scenario.assumptions.destinationRequirements?.publicAccess === 'public' ? ', public only' : ''}; ${scenario.assumptions.destinationRequirements?.requireOpenAtDeparture ? 'verified hours required' : 'hours unverified'}. Required missing metadata stays unknown.`,
 							'Costs and energy factors are illustrative. Carbon depends on assumed private-travel displacement; added service can increase emissions.',
+							...(scenario.assumptions.disruptions?.length
+								? [
+										'Temporary road event operations and fleet requirements are reported separately; annual investment figures do not annualize temporary closures. Frequency/walking road restrictions use selected departure time; scheduled bus delays propagate through their actual segment times.'
+									]
+								: []),
+							...(appointmentResult
+								? [
+										`Appointment return check: ${appointmentResult.status}; ${appointmentOptions.appointmentMinutes} minutes at destination; home by ${timeLabel(appointmentOptions.returnDeadlineMinutes)} MVT. ${appointmentResult.reason ?? 'Same verified destination and original resident location.'}`,
+										...appointmentResult.warnings
+									]
+								: []),
 							`${scenario.assumptions.annualOperatingDays} operating days/year. Cost and carbon rows are incremental changes, not whole-network totals.`,
 							`${coverage.supportedStartMinutes == null ? 'No supported service window.' : `Observed service window ${timeLabel(coverage.supportedStartMinutes)}–${timeLabel(coverage.supportedEndMinutes ?? coverage.supportedStartMinutes)} MVT.`} WorldPop weights are normalized to official projected island totals.`,
 							`Walking speed: ${scenario.assumptions.walkMPerMinute} metres/minute. ${scenario.assumptions.walkingRequirements?.requireAuditedWheelchair ? 'Audited wheelchair routes required; incomplete audits remain unavailable.' : 'Mapped paths are not a continuous accessibility audit.'}`,
@@ -3047,8 +3520,17 @@
 							datasetVersion: baseline.version,
 							modelVersion: analysis?.versionPins.model,
 							policyEvidenceVersion: policyEvidence?.version,
+							operationsVersion: operations?.version,
+							disruptionImpact: analysis?.disruptionImpact,
+							robustness: analysis?.robustness,
+							appointment: appointmentResult,
 							planningAssumptions: scenario.assumptions,
-							sourceMetadata: [...baseline.sources, ...(policyEvidence?.sources ?? [])]
+							scenarioActions: structuredClone($state.snapshot(scenario.actions)),
+							sourceMetadata: [
+								...baseline.sources,
+								...(policyEvidence?.sources ?? []),
+								...(operations?.sources ?? [])
+							]
 						}}
 						mapCaption="Greater Malé · top-down planning atlas"
 						carbonRange={{
@@ -3170,6 +3652,7 @@
 									</div>
 								</dl>
 								<p class="investment-explanation">{alternative.evaluation.explanation}</p>
+								<RobustnessPanel result={alternative.result.robustness} />
 								<p class="technical-note">
 									Capital range {money(alternative.result.costs.capitalMvr?.low)}–{money(
 										alternative.result.costs.capitalMvr?.high
@@ -3240,6 +3723,18 @@
 								beginConnection();
 							}}
 						/>{/if}
+					<details class="evidence-group">
+						<summary>Test an inter-island return journey</summary><FerryAssumptionPanel
+							{baseline}
+							evidence={operations?.ferryEvidence ?? null}
+							date={scenario.assumptions.date}
+							onapply={(action, warnings) => {
+								cancelDraft();
+								scenario.addAction(action);
+								notice = warnings.join(' ');
+							}}
+						/>
+					</details>
 				</div>
 			{:else}<div class="evidence-drawer">
 					<div class="drawer-heading">
@@ -3927,6 +4422,7 @@
 									Reset restores the starting map and planning settings. Undo brings back your
 									proposal.
 								</p>
+								<DemoPresetPicker {baseline} onselect={loadDemo} />
 								<p class="technical-note">
 									Scenarios are pinned to data and model versions. Imports with incompatible
 									versions are rejected. {analysisMs == null
@@ -3940,6 +4436,64 @@
 </div>
 
 <style>
+	.task-strip {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 8px 24px;
+		background: #f9fbf5;
+		border-bottom: 1px solid #dfe8dd;
+		flex-shrink: 0;
+	}
+	.task-note {
+		font-size: 11px;
+		color: #81927c;
+	}
+	.operations-holder {
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		width: 370px;
+	}
+	.playback-holder {
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		width: 370px;
+	}
+	.playback-content {
+		padding: 16px;
+	}
+	.playback-content :global(.service-playback) {
+		margin-top: 12px;
+	}
+	.map-stage.has-operations .priority-panel,
+	.map-stage.has-operations .map-key {
+		display: none;
+	}
+	@media (max-width: 680px) {
+		.task-strip {
+			padding: 6px 12px;
+		}
+		.task-note {
+			display: none;
+		}
+		.task-strip :global(.discrete-tabs) {
+			width: 100%;
+			flex-wrap: nowrap;
+			gap: 5px;
+		}
+		.task-strip :global(.discrete-tabs button) {
+			flex: 1;
+			font-size: 12px;
+			min-height: 36px;
+			padding: 7px 9px;
+		}
+	}
+	@media print {
+		.task-strip {
+			display: none;
+		}
+	}
 	.planning-context {
 		display: flex;
 		flex: 0 0 auto;
@@ -6170,14 +6724,23 @@
 	}
 	@media (max-height: 600px) and (min-width: 681px) {
 		.policy-atlas {
-			overflow-y: auto;
+			overflow: hidden;
 		}
 		.workspace {
-			flex: none;
+			flex: 1;
 		}
 		.map-stage {
-			height: 560px;
-			min-height: 560px;
+			height: auto;
+			min-height: 0;
+		}
+		.results-bar {
+			min-height: 0;
+		}
+		.result {
+			padding: 8px 12px;
+		}
+		.result-chip {
+			display: none;
 		}
 		.atlas-header,
 		.results-bar {

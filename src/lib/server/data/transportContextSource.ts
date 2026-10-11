@@ -243,8 +243,12 @@ export function createTransportContextLoader(
 ) {
 	let lastFollowme: ContextDataset<VesselObservation> | null = null;
 	let lastAgency: Pick<TransportContext, 'mpl' | 'aviation'> | null = null;
-	return async (flags: { vessels: boolean; flights: boolean }): Promise<TransportContext> => {
-		if (flags.vessels) {
+	return async (flags: {
+		vessels: boolean;
+		flights: boolean;
+		publicOnly?: boolean;
+	}): Promise<TransportContext> => {
+		if (flags.vessels && !flags.publicOnly) {
 			try {
 				lastFollowme = validateFollowmeSnapshot(
 					JSON.parse(await read(join(root, 'data/public/archive/context/followme/context.json')))
@@ -266,13 +270,21 @@ export function createTransportContextLoader(
 					};
 			}
 		}
-		const followme = flags.vessels
-			? (lastFollowme ??
-				emptyDataset<VesselObservation>(
-					true,
-					'No validated local FollowMe snapshot. Run npm run data:followme. An issued API key is optional for authorized API refresh.'
-				))
-			: emptyDataset<VesselObservation>(false, 'Vessel data is disabled in server configuration.');
+		const followme = flags.publicOnly
+			? emptyDataset<VesselObservation>(
+					false,
+					'Public-only competition profile excludes restricted local FollowMe snapshots. Set PUBLIC_DATA_ONLY=false only where reuse is authorized.'
+				)
+			: flags.vessels
+				? (lastFollowme ??
+					emptyDataset<VesselObservation>(
+						true,
+						'No validated local FollowMe snapshot. Run npm run data:followme. An issued API key is optional for authorized API refresh.'
+					))
+				: emptyDataset<VesselObservation>(
+						false,
+						'Vessel data is disabled in server configuration.'
+					);
 		const mpl = flags.vessels
 			? (lastAgency?.mpl ?? {
 					...emptyDataset<PortCall>(true, 'No validated MPL snapshot. Run npm run data:context.'),

@@ -3,6 +3,12 @@ import { planningCoverage } from './coverage.ts';
 import { planningPopulation } from './population.ts';
 import { calculatePlanningEconomics } from './economics.ts';
 import {
+	applyPlanningDisruptions,
+	disruptionIsActive,
+	repricePlanningDisruptionImpact,
+	type DisruptedPlanningWorld
+} from './disruptions.ts';
+import {
 	createRoutingContext,
 	originHasSpatialTransitAccess,
 	routePlanningOrigin,
@@ -14,7 +20,8 @@ import type {
 	PlanningAnalysis,
 	PlanningAssumptions,
 	PlanningBaseline,
-	PlanningJourney
+	PlanningJourney,
+	PlanningRobustnessCase
 } from './types.ts';
 
 const baselineRoutingCache = new WeakMap<
@@ -25,6 +32,7 @@ type CachedRouting = {
 	context: RoutingContext;
 	journeys: PlanningJourney[];
 	spatial: (boolean | null)[];
+	disrupted?: DisruptedPlanningWorld;
 };
 const scenarioRoutingCache = new WeakMap<PlanningBaseline, Map<string, CachedRouting>>();
 function routingKey(assumptions: PlanningAssumptions) {
@@ -53,10 +61,15 @@ function routingKey(assumptions: PlanningAssumptions) {
 		boardingBufferMinutes,
 		targetMinutes: assumptions.targetMinutes,
 		walkingRequirements: assumptions.walkingRequirements,
-		destinationRequirements: assumptions.destinationRequirements
+		destinationRequirements: assumptions.destinationRequirements,
+		disruptions: assumptions.disruptions,
+		fleetResponse: assumptions.fleetResponse
 	});
 }
-function baselineRouting(baseline: PlanningBaseline, assumptions: PlanningAssumptions) {
+function baselineRouting(
+	baseline: PlanningBaseline,
+	assumptions: PlanningAssumptions
+): CachedRouting {
 	// Population, finance and mode shift do not alter the journey search. Eight routing views
 	// are retained per immutable data bundle; cached paths remain private to this engine.
 	const key = routingKey(assumptions);
@@ -84,7 +97,7 @@ function scenarioRouting(
 	world: PlanningWorld,
 	assumptions: PlanningAssumptions
 ): CachedRouting {
-	const key = `${routingKey(assumptions)}|${assumptions.busMovingKph}|${assumptions.busDwellMinutes}|${JSON.stringify(actions)}`;
+	const key = `${routingKey(assumptions)}|${assumptions.busMovingKph}|${assumptions.busDwellMinutes}|${assumptions.layoverMinutes}|${JSON.stringify(actions)}`;
 	let cache = scenarioRoutingCache.get(baseline);
 	if (!cache) {
 		cache = new Map();
@@ -92,9 +105,22 @@ function scenarioRouting(
 	}
 	let entry = cache.get(key);
 	if (!entry) {
-		const context = createRoutingContext(baseline, world, assumptions);
+		const disrupted = applyPlanningDisruptions(baseline, world, assumptions);
+		const walkingAffected = assumptions.disruptions?.some(
+			(event) =>
+				event.kind === 'closure' &&
+				event.modes.includes('walk') &&
+				disruptionIsActive(event, assumptions.date, assumptions.departureMinutes)
+		);
+		const context = createRoutingContext(
+			walkingAffected ? { ...baseline, network: disrupted.network } : baseline,
+			disrupted.world,
+			assumptions,
+			baseline.network
+		);
 		entry = {
 			context,
+			disrupted,
 			journeys: baseline.origins.map((o) => routePlanningOrigin(context, o, assumptions)),
 			spatial: baseline.origins.map((o) => originHasSpatialTransitAccess(context, o, assumptions))
 		};
@@ -110,18 +136,127 @@ export function analyzePlanning(
 	actions: readonly PlanningAction[],
 	assumptions: PlanningAssumptions
 ): PlanningAnalysis {
-	const world = derivePlanningWorld(baseline, actions, assumptions);
-	const beforeRouting = baselineRouting(baseline, assumptions);
+	const result = analyzePlanningCore(baseline, actions, assumptions);
+	if (assumptions.robustnessStresses?.length) {
+		const normalAssumptions = { ...assumptions, disruptions: [], robustnessStresses: undefined };
+		const normal = assumptions.disruptions?.some((event) => event.enabled !== false)
+			? analyzePlanningCore(baseline, actions, normalAssumptions)
+			: result;
+		const toCase = (
+			analysis: PlanningAnalysis,
+			base: PlanningAnalysis,
+			id: string,
+			name: string
+		): PlanningRobustnessCase => ({
+			id,
+			name,
+			baselineReachableResidents: base.summary.scenarioReachableResidents,
+			scenarioReachableResidents: analysis.summary.scenarioReachableResidents,
+			retainedAccessResidents: analysis.origins
+				.filter(
+					(origin, index) =>
+						normal.origins[index].after.status === 'reachable' &&
+						normal.origins[index].after.minutes! <= assumptions.targetMinutes &&
+						origin.after.status === 'reachable' &&
+						origin.after.minutes! <= assumptions.targetMinutes
+				)
+				.reduce((sum, origin) => sum + origin.population, 0),
+			gainedResidents: analysis.origins
+				.filter(
+					(origin, index) =>
+						base.origins[index].after.status !== 'unavailable' &&
+						!(
+							base.origins[index].after.status === 'reachable' &&
+							base.origins[index].after.minutes! <= assumptions.targetMinutes
+						) &&
+						origin.after.status === 'reachable' &&
+						origin.after.minutes! <= assumptions.targetMinutes
+				)
+				.reduce((sum, origin) => sum + origin.population, 0),
+			lostResidents: analysis.origins
+				.filter(
+					(origin, index) =>
+						base.origins[index].after.status === 'reachable' &&
+						base.origins[index].after.minutes! <= assumptions.targetMinutes &&
+						origin.after.status !== 'unavailable' &&
+						!(
+							origin.after.status === 'reachable' &&
+							origin.after.minutes! <= assumptions.targetMinutes
+						)
+				)
+				.reduce((sum, origin) => sum + origin.population, 0),
+			unknownResidents: analysis.summary.unknownResidents,
+			additionalFleet: analysis.disruptionImpact?.fleetFeedback.some(
+				(item) => item.additionalFleet === null
+			)
+				? null
+				: (analysis.disruptionImpact?.fleetFeedback.reduce(
+						(sum, item) => sum + (item.additionalFleet ?? 0),
+						0
+					) ?? 0),
+			capitalMvr: analysis.costs.capitalMvr,
+			annualOperatingMvr: analysis.costs.annualOperatingMvr,
+			carbonKgCo2e:
+				analysis.carbon.low === null ||
+				analysis.carbon.central === null ||
+				analysis.carbon.high === null
+					? null
+					: {
+							low: analysis.carbon.low,
+							central: analysis.carbon.central,
+							high: analysis.carbon.high
+						}
+		});
+		const baseNormal = actions.length
+			? analyzePlanningCore(baseline, [], normalAssumptions)
+			: normal;
+		const stresses = assumptions.robustnessStresses.slice(0, 3).map((stress) => {
+			const stressAssumptions = { ...normalAssumptions, disruptions: stress.disruptions };
+			const candidate = analyzePlanningCore(baseline, actions, stressAssumptions);
+			return toCase(
+				candidate,
+				actions.length ? analyzePlanningCore(baseline, [], stressAssumptions) : candidate,
+				stress.id,
+				stress.name
+			);
+		});
+		result.robustness = {
+			normal: toCase(normal, baseNormal, 'normal', 'Normal service'),
+			stresses,
+			worstReachableResidents: Math.min(
+				normal.summary.scenarioReachableResidents,
+				...stresses.map((stress) => stress.scenarioReachableResidents)
+			),
+			method:
+				'Identical population, destinations, reference timetables and intervention actions; only explicit disruption inputs vary. Stress tests are assumptions, not forecasts or probability estimates.'
+		};
+	}
+	return result;
+}
+
+function analyzePlanningCore(
+	baseline: PlanningBaseline,
+	actions: readonly PlanningAction[],
+	assumptions: PlanningAssumptions
+): PlanningAnalysis {
+	const normalWorld = derivePlanningWorld(baseline, actions, assumptions);
+	const normalAssumptions = { ...assumptions, disruptions: undefined };
+	const beforeRouting = baselineRouting(baseline, normalAssumptions);
 	const beforeContext = beforeRouting.context;
-	const afterRouting = actions.length
-		? scenarioRouting(baseline, actions, world, assumptions)
+	const hasScenario =
+		actions.length > 0 || !!assumptions.disruptions?.some((event) => event.enabled !== false);
+	const afterRouting = hasScenario
+		? scenarioRouting(baseline, actions, normalWorld, assumptions)
 		: beforeRouting;
 	const afterContext = afterRouting.context;
+	const disruption =
+		afterRouting.disrupted ?? applyPlanningDisruptions(baseline, normalWorld, normalAssumptions);
+	const world = disruption.world;
 	const target = assumptions.targetMinutes;
 	const populationDistribution = planningPopulation(baseline, assumptions);
 	const coverage = planningCoverage(baseline, assumptions);
 	const beforeJourneys = structuredClone(beforeRouting.journeys);
-	const afterJourneys = actions.length ? structuredClone(afterRouting.journeys) : beforeJourneys;
+	const afterJourneys = hasScenario ? structuredClone(afterRouting.journeys) : beforeJourneys;
 	const origins = baseline.origins.map((origin, index) => {
 		const before = beforeJourneys[index];
 		const after = afterJourneys[index];
@@ -216,6 +351,34 @@ export function analyzePlanning(
 			becameUnavailableResidents: sum((o) => o.becameUnavailable)
 		};
 	});
+	// The cached impact is immutable. Resident consequences depend on population/target
+	// assumptions and must not mutate a previous analysis or accumulate across reruns.
+	const disruptionImpact = {
+		...repricePlanningDisruptionImpact(disruption.impact, world, assumptions),
+		lostAccessResidents: 0,
+		worsenedJourneyResidents: 0
+	};
+	if (assumptions.disruptions?.length) {
+		const normalRouting = actions.length
+			? scenarioRouting(baseline, actions, normalWorld, normalAssumptions)
+			: beforeRouting;
+		for (const [index, origin] of origins.entries()) {
+			const normalJourney = normalRouting.journeys[index];
+			if (
+				normalJourney.status === 'reachable' &&
+				normalJourney.minutes! <= target &&
+				origin.after.status !== 'unavailable' &&
+				!(origin.after.status === 'reachable' && origin.after.minutes! <= target)
+			)
+				disruptionImpact.lostAccessResidents += origin.population;
+			if (
+				normalJourney.status === 'reachable' &&
+				origin.after.status === 'reachable' &&
+				origin.after.minutes! > normalJourney.minutes! + 0.01
+			)
+				disruptionImpact.worsenedJourneyResidents += origin.population;
+		}
+	}
 	return {
 		targetMinutes: target,
 		departureMinutes: assumptions.departureMinutes,
@@ -257,7 +420,8 @@ export function analyzePlanning(
 				.reduce((s, o) => s + o.population, 0)
 		},
 		world: { stops: world.stops, patterns: world.patterns, facilities: world.facilities },
-		...calculatePlanningEconomics(baseline, world, assumptions),
+		...calculatePlanningEconomics(baseline, normalWorld, assumptions),
+		disruptionImpact,
 		warnings,
 		transportAccess: {
 			beforeResidents,

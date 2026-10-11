@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { PlanningAction, PlanningBaseline } from '#lib/planning/types.ts';
-import { waveTriggerCoordinates } from './waveTriggers.ts';
+import type { PlanningAction, PlanningBaseline, PlanningDisruption } from '#lib/planning/types.ts';
+import { waveTriggerCoordinates, roadWaveTriggerCoordinates } from './waveTriggers.ts';
 
 const stop = { id: 'a', name: 'A', lon: 73.51, lat: 4.17, islandId: 'male', sourceIds: [] };
 const pattern = {
@@ -20,6 +20,37 @@ const baseline = {
 } as unknown as PlanningBaseline;
 
 describe('recalculation wave triggers', () => {
+	it('limits disruption changes and undo to endpoints of the changed roads', () => {
+		const data = {
+			...baseline,
+			network: {
+				nodes: [
+					{ id: 'from', lon: 73.51, lat: 4.17 },
+					{ id: 'to', lon: 73.52, lat: 4.17 },
+					{ id: 'elsewhere', lon: 73.6, lat: 4.2 }
+				],
+				edges: [
+					{ id: 'road', from: 'from', to: 'to' },
+					{ id: 'other', from: 'to', to: 'elsewhere' }
+				]
+			}
+		} as unknown as PlanningBaseline;
+		const event = {
+			id: 'delay',
+			edgeIds: ['road'],
+			kind: 'delay',
+			delayMinutes: 5
+		} as PlanningDisruption;
+		expect(roadWaveTriggerCoordinates(data, [], [event])).toEqual([
+			[73.51, 4.17],
+			[73.52, 4.17]
+		]);
+		expect(roadWaveTriggerCoordinates(data, [event], [])).toEqual([
+			[73.51, 4.17],
+			[73.52, 4.17]
+		]);
+		expect(roadWaveTriggerCoordinates(data, [event], [structuredClone(event)])).toEqual([]);
+	});
 	it('does not restart for a structurally identical history or preview-only changes', () => {
 		const actions: PlanningAction[] = [{ kind: 'disable-stop', stopId: 'a' }];
 		expect(waveTriggerCoordinates(baseline, actions, structuredClone(actions))).toEqual([]);

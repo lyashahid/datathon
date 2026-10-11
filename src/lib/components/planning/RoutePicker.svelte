@@ -6,18 +6,24 @@
 	let {
 		value,
 		items,
-		onchange
+		onchange,
+		label = 'Connection',
+		emptyLabel = 'Nearest destination',
+		allowEmpty = true
 	}: {
 		value: string;
 		items: readonly ConnectionItem[];
 		onchange: (value: string) => void;
+		label?: string;
+		emptyLabel?: string;
+		allowEmpty?: boolean;
 	} = $props();
 
 	// Bits UI items need nonempty values. Prefix actual IDs to keep the nearest option distinct.
 	const nearest = 'nearest';
 	const destinationPrefix = 'destination:';
 	const options = $derived([
-		{ value: nearest, label: 'Nearest destination' },
+		...(allowEmpty ? [{ value: nearest, label: emptyLabel }] : []),
 		...items
 			.filter((item) => item.value !== '')
 			.map((item) => ({ value: destinationPrefix + item.value, label: item.label }))
@@ -36,9 +42,9 @@
 
 <div class="route-picker">
 	<Select.Root type="single" items={options} bind:value={getValue, setValue}>
-		<Select.Trigger aria-label="Connection" class="route-picker-trigger">
+		<Select.Trigger aria-label={label} class="route-picker-trigger">
 			<Route size={16} strokeWidth={1.8} aria-hidden="true" />
-			<span class="route-picker-label"><Select.Value placeholder="Nearest destination" /></span>
+			<span class="route-picker-label"><Select.Value placeholder={emptyLabel} /></span>
 			<ChevronDown size={16} strokeWidth={1.8} aria-hidden="true" class="route-picker-chevron" />
 		</Select.Trigger>
 		<Select.Portal>

@@ -1,7 +1,7 @@
 import type { PlanningAssumptions, PlanningBaseline } from './types.ts';
 import { supportedSnapshotSettings } from './coverage.ts';
 
-export const PLANNING_MODEL_VERSION = 'service-graph-1.2.0';
+export const PLANNING_MODEL_VERSION = 'service-graph-1.3.0';
 /** Numeric routing defaults are assumptions. Financial/carbon anchors are not fabricated. */
 export function createDefaultAssumptions(baseline: PlanningBaseline): PlanningAssumptions {
 	return {

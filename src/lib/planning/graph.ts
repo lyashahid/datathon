@@ -4,6 +4,8 @@ export interface GraphArc {
 	to: number;
 	distanceM: number;
 	geometry?: [number, number][];
+	edgeId?: string;
+	delayMinutes?: number;
 }
 export interface NetworkGraph {
 	nodes: PlanningBaseline['network']['nodes'];
@@ -95,23 +97,37 @@ export function buildNetworkGraph(network: PlanningBaseline['network']): Network
 			edge.distanceM <= 0
 		)
 			continue;
-		if (edge.walkAllowed) {
-			walk[from].push({ to, distanceM: edge.distanceM, geometry: edge.geometry });
+		if (edge.walkAllowed && edge.walkForwardAllowed !== false) {
+			walk[from].push({ to, distanceM: edge.distanceM, geometry: edge.geometry, edgeId: edge.id });
+			walkConnected[from] = walkConnected[to] = true;
+		}
+		if (edge.walkAllowed && edge.walkReverseAllowed !== false) {
 			walk[to].push({
 				to: from,
 				distanceM: edge.distanceM,
+				edgeId: edge.id,
 				geometry: edge.geometry ? [...edge.geometry].reverse() : undefined
 			});
 			walkConnected[from] = walkConnected[to] = true;
 		}
-		if (edge.driveAllowed) {
-			drive[from].push({ to, distanceM: edge.distanceM, geometry: edge.geometry });
-			if (!edge.oneway)
-				drive[to].push({
-					to: from,
-					distanceM: edge.distanceM,
-					geometry: edge.geometry ? [...edge.geometry].reverse() : undefined
-				});
+		if (edge.driveAllowed && edge.driveForwardAllowed !== false) {
+			drive[from].push({
+				to,
+				distanceM: edge.distanceM,
+				geometry: edge.geometry,
+				edgeId: edge.id,
+				delayMinutes: edge.driveForwardDelayMinutes
+			});
+			driveConnected[from] = driveConnected[to] = true;
+		}
+		if (edge.driveAllowed && !edge.oneway && edge.driveReverseAllowed !== false) {
+			drive[to].push({
+				to: from,
+				distanceM: edge.distanceM,
+				edgeId: edge.id,
+				delayMinutes: edge.driveReverseDelayMinutes,
+				geometry: edge.geometry ? [...edge.geometry].reverse() : undefined
+			});
 			driveConnected[from] = driveConnected[to] = true;
 		}
 	}

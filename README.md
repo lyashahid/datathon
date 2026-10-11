@@ -16,6 +16,14 @@ npm run dev -- --host 127.0.0.1
 
 Open http://127.0.0.1:5173. No API keys are required. The committed public planning bundle and all map geometry load locally; upstream portals are only needed when refreshing data. Production: `npm run build` and `npm run preview -- --host 127.0.0.1`.
 
+The opening workflow has three tasks: explore access, test a road disruption, and compare an investment. Road closures and delays have an explicit date, time, direction and travel mode. Choose whether to maintain frequency with more vehicles or accept longer waits with a fixed fleet. Temporary disruption costs are reported separately from annual investment costs. The map retains its previous result while its local honeycomb wave and the matching calculation finish.
+
+Expand an area's **Can they get there and back?** section to check an appointment duration and home-arrival deadline. Service playback illustrates a selected route's published or assumed timing; it is not live vehicle tracking. The optional Vilimalé service needs an explicitly entered crossing duration because its public calendar does not provide one.
+
+`PUBLIC_DATA_ONLY=true` is the default competition profile. `ENABLE_NOTICE_AI=false` works without a key using source-linked extraction rules; optional AI requires server-side credentials and an explicitly configured model. No notice automatically changes a road. Keep the last validated operations snapshot available with `npm run data:operations`; see [operations sources and configuration](docs/operations-data.md). Planning remains local after loading; online satellite tiles and fetching a new notice require a connection.
+
+The satellite picker can compare the published 2020 and 2025 Sentinel-2 mosaics. These are visual context, not measured congestion or development change. National population coverage is separate from Greater Malé routing. See the [demo script](docs/DEMO_SCRIPT.md) for a reproducible five-minute presentation and pinned scenario examples.
+
 ## Data preparation
 
 The public snapshot includes official census and planning populations, island demographic aggregates, WorldPop spatial weights, OSM street topology and buildings, matched facilities, and dated RTL bus departures. Raw downloads are ignored under `data/raw/`; processed assets and their checksums are under `data/public/`.

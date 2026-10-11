@@ -33,6 +33,83 @@ export interface PlanningEdge {
 	oneway?: boolean;
 	sourceOsmWayId?: string | number;
 	geometry?: [number, number][];
+	/** Scenario-only directional permissions. Observed OSM permissions remain unchanged. */
+	walkForwardAllowed?: boolean;
+	walkReverseAllowed?: boolean;
+	driveForwardAllowed?: boolean;
+	driveReverseAllowed?: boolean;
+	driveForwardDelayMinutes?: number;
+	driveReverseDelayMinutes?: number;
+}
+export interface PlanningDisruption {
+	id: string;
+	name: string;
+	kind: 'closure' | 'delay';
+	edgeIds: string[];
+	modes: ('bus' | 'walk')[];
+	/** Forward follows the stored OSM edge's from→to direction. */
+	direction: 'both' | 'forward' | 'reverse';
+	startDate: string;
+	endDate: string;
+	startMinutes: number;
+	endMinutes: number;
+	delayMinutes?: number;
+	provenance: 'observed' | 'assumed';
+	sourceIds?: string[];
+	sourceUrl?: string;
+	evidenceNote?: string;
+	enabled?: boolean;
+}
+export interface PlanningStressCase {
+	id: string;
+	name: string;
+	disruptions: PlanningDisruption[];
+}
+export interface PlanningFleetFeedback {
+	routeId: string;
+	name: string;
+	policy: 'maintain-frequency' | 'fixed-fleet';
+	baselineCycleMinutes: number | null;
+	scenarioCycleMinutes: number | null;
+	baselineHeadwayMinutes: number | null;
+	scenarioHeadwayMinutes: number | null;
+	baselineFleet: number | null;
+	requiredFleet: number | null;
+	additionalFleet: number | null;
+	/** Procurement requirement including the same reserve share used by investment economics. */
+	baselineProcurementFleet: number | null;
+	requiredProcurementFleet: number | null;
+	additionalProcurementFleet: number | null;
+	additionalCapitalMvr: NumericRange | null;
+	eventOperatingMvr: NumericRange | null;
+	/** Added transit operating emissions during the event; no inferred private mode shift. */
+	eventCarbonKgCo2e: NumericRange | null;
+	eventVehicleKm: number | null;
+	eventVehicleHours: number | null;
+	unavailableReasons: string[];
+}
+export interface PlanningDisruptionImpact {
+	activeEventIds: string[];
+	affectedPatternIds: string[];
+	blockedPatternIds: string[];
+	fleetFeedback: PlanningFleetFeedback[];
+	lostAccessResidents: number;
+	worsenedJourneyResidents: number;
+	method: string;
+}
+export interface PlanningRobustnessCase {
+	id: string;
+	name: string;
+	baselineReachableResidents: number;
+	scenarioReachableResidents: number;
+	retainedAccessResidents: number;
+	gainedResidents: number;
+	lostResidents: number;
+	unknownResidents: number;
+	additionalFleet: number | null;
+	capitalMvr: NumericRange | null;
+	annualOperatingMvr: NumericRange | null;
+	carbonKgCo2e: NumericRange | null;
 }
 export interface PlanningFacility extends PlanningPosition {
 	id: string;
@@ -95,6 +172,8 @@ export interface ScheduledTrip {
 	id: string;
 	/** Minutes since service midnight; values over 1440 represent next-day arrivals. */
 	stopTimes: { arrivalMinutes: number; departureMinutes: number }[];
+	/** Scenario detour geometry can vary between departures as a road event starts/expires. */
+	segmentGeometry?: [number, number][][];
 }
 export interface PlanningServicePattern {
 	id: string;
@@ -216,6 +295,10 @@ export interface PlanningAssumptions {
 	destinationRequirements?: PlanningDestinationRequirements;
 	walkingRequirements?: { requireAuditedWheelchair?: boolean };
 	populationYear: 2026 | 2030;
+	disruptions?: PlanningDisruption[];
+	fleetResponse?: 'maintain-frequency' | 'fixed-fleet';
+	/** Up to three explicit stress cases evaluated with identical population/service inputs. */
+	robustnessStresses?: PlanningStressCase[];
 	/** Conditional 2030 neighborhood allocation, preserving the official island total. */
 	housingDistribution?: { islandId: string; originIds: string[]; share: number }[];
 	policyDelivery?: {
@@ -351,6 +434,13 @@ export interface PlanningAnalysis {
 	costs: PlanningCosts;
 	carbon: PlanningCarbon;
 	warnings: string[];
+	disruptionImpact?: PlanningDisruptionImpact;
+	robustness?: {
+		normal: PlanningRobustnessCase;
+		stresses: PlanningRobustnessCase[];
+		worstReachableResidents: number;
+		method: string;
+	};
 	transportAccess: {
 		beforeResidents: number;
 		afterResidents: number;

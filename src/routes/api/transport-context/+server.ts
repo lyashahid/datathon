@@ -1,10 +1,15 @@
 import { json } from '@sveltejs/kit';
-import { ENABLE_VESSEL_DATA, ENABLE_FLIGHT_PASSENGER_DATA } from '$app/env/private';
+import {
+	ENABLE_VESSEL_DATA,
+	ENABLE_FLIGHT_PASSENGER_DATA,
+	PUBLIC_DATA_ONLY
+} from '$app/env/private';
 import { loadTransportContext } from '#lib/server/data/transportContextSource.ts';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ request }) => {
 	const bundle = await loadTransportContext({
+		publicOnly: PUBLIC_DATA_ONLY,
 		vessels: ENABLE_VESSEL_DATA,
 		flights: ENABLE_FLIGHT_PASSENGER_DATA
 	});

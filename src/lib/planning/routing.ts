@@ -78,36 +78,55 @@ export function patternIsValid(pattern: PlanningServicePattern): boolean {
 /** Walking caches are pinned to the immutable network object, not scenario infrastructure. */
 class WalkingAccess {
 	readonly graph: NetworkGraph;
-	readonly #trees = new Map<string, PathTree>();
+	readonly #referenceGraph: NetworkGraph;
+	readonly #trees = new Map<
+		number,
+		{ maxM: number; tree: PathTree; views: Map<number, PathTree> }
+	>();
 	readonly #snaps = new Map<string, Snapped | null>();
-	constructor(baseline: PlanningBaseline) {
+	constructor(baseline: PlanningBaseline, referenceNetwork?: PlanningBaseline['network']) {
 		this.graph = buildNetworkGraph(baseline.network);
+		this.#referenceGraph = referenceNetwork ? buildNetworkGraph(referenceNetwork) : this.graph;
 	}
 	snap(position: { lon: number; lat: number }, maxM: number) {
 		const key = `${position.lon}:${position.lat}:${maxM}`;
 		if (this.#snaps.has(key)) return this.#snaps.get(key)!;
-		const snap = nearestGraphNode(this.graph, position, 'walk', maxM);
+		// A closure cannot teleport an origin/stop to a different surviving road component.
+		const snap = nearestGraphNode(this.#referenceGraph, position, 'walk', maxM);
 		if (this.#snaps.size >= 10000) this.#snaps.delete(this.#snaps.keys().next().value!);
 		this.#snaps.set(key, snap);
 		return snap;
 	}
 	tree(start: number, maxM: number) {
-		const key = `${start}:${maxM}`;
-		let tree = this.#trees.get(key);
-		if (!tree) {
-			tree = shortestPaths(this.graph, start, 'walk', maxM);
-			// Keep bounded: long pointer sessions must not retain a tree for every cursor location.
-			if (this.#trees.size >= 768) this.#trees.delete(this.#trees.keys().next().value!);
-			this.#trees.set(key, tree);
+		let entry = this.#trees.get(start);
+		if (!entry || entry.maxM < maxM) {
+			entry = { maxM, tree: shortestPaths(this.graph, start, 'walk', maxM), views: new Map() };
+			// Journey and SDG radii share a tree. Counting them as separate origins evicted
+			// a whole public bundle's paths on every changed bus-only scenario.
+			if (!this.#trees.has(start) && this.#trees.size >= 768)
+				this.#trees.delete(this.#trees.keys().next().value!);
+			this.#trees.set(start, entry);
 		}
-		return tree;
+		if (entry.maxM === maxM) return entry.tree;
+		let view = entry.views.get(maxM);
+		if (!view) {
+			// Preserve the bounded shortestPaths contract: nodes outside this caller's
+			// horizon stay infinite, even when a longer-radius tree was cached earlier.
+			view = {
+				...entry.tree,
+				distances: entry.tree.distances.map((m) => (m <= maxM ? m : Infinity))
+			};
+			if (entry.views.size >= 2) entry.views.delete(entry.views.keys().next().value!);
+			entry.views.set(maxM, view);
+		}
+		return view;
 	}
 }
 const walkingCache = new WeakMap<PlanningBaseline['network'], WalkingAccess>();
-function walkingAccess(baseline: PlanningBaseline) {
+function walkingAccess(baseline: PlanningBaseline, referenceNetwork?: PlanningBaseline['network']) {
 	let access = walkingCache.get(baseline.network);
 	if (!access) {
-		access = new WalkingAccess(baseline);
+		access = new WalkingAccess(baseline, referenceNetwork);
 		walkingCache.set(baseline.network, access);
 	}
 	return access;
@@ -162,9 +181,10 @@ export interface RoutingContext {
 export function createRoutingContext(
 	baseline: PlanningBaseline,
 	world: PlanningWorld,
-	assumptions: PlanningAssumptions
+	assumptions: PlanningAssumptions,
+	referenceNetwork?: PlanningBaseline['network']
 ): RoutingContext {
-	const access = walkingAccess(baseline);
+	const access = walkingAccess(baseline, referenceNetwork);
 	const activeStops = world.stops.filter((s) => s.disabled !== true);
 	const stops = new Map(activeStops.map((s) => [s.id, s]));
 	const stopSnaps = new Map<string, Snapped>();
@@ -246,6 +266,19 @@ export function createRoutingContext(
 	const localDestinationIslands = new Set(facilities.map((f) => f.islandId));
 	const observedCrossingIslands = new Set<string>();
 	for (const p of patterns.filter((p) => p.provenance === 'observed')) {
+		const islands = new Set(
+			p.stopIds.flatMap((id) => (stops.has(id) ? [stops.get(id)!.islandId] : []))
+		);
+		if (islands.size > 1) for (const id of islands) observedCrossingIslands.add(id);
+	}
+	// A reviewed scenario closure/delay of an observed crossing is a computed restriction,
+	// not missing service evidence. Retain that coverage even when its trip is cancelled.
+	for (const p of world.patterns.filter(
+		(p) =>
+			p.disruptionAdjusted === true &&
+			p.referenceProvenance === 'observed' &&
+			calendarRuns(p.calendar, assumptions.date)
+	)) {
 		const islands = new Set(
 			p.stopIds.flatMap((id) => (stops.has(id) ? [stops.get(id)!.islandId] : []))
 		);
@@ -474,10 +507,12 @@ export function routePlanningOrigin(
 		pattern: PlanningServicePattern,
 		index: number,
 		fromId: string,
-		toId: string
+		toId: string,
+		trip?: ScheduledTrip
 	): [number, number][] => {
 		const from = context.stops.get(fromId);
 		const to = context.stops.get(toId);
+		if (trip?.segmentGeometry?.[index]?.length) return trip.segmentGeometry[index];
 		if (Array.isArray(pattern.segmentGeometry) && pattern.segmentGeometry[index]?.length)
 			return pattern.segmentGeometry[index];
 		if (pattern.stopIds.length === 2 && pattern.geometry) return pattern.geometry;
@@ -525,7 +560,7 @@ export function routePlanningOrigin(
 						waitMinutes: 0,
 						patternId: pattern.id,
 						tripId: current.trip?.id,
-						geometry: transitGeometry(pattern, index, current.stopId, nextStop)
+						geometry: transitGeometry(pattern, index, current.stopId, nextStop, current.trip)
 					}
 				});
 			}

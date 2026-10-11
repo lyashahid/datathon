@@ -1,6 +1,25 @@
 import { defineEnvVars } from '@sveltejs/kit/env';
 
 export const variables = defineEnvVars({
+	PUBLIC_DATA_ONLY: {
+		description:
+			'Competition/public profile. Default true; suppresses restricted local FollowMe snapshots from browser responses.',
+		schema: (value) => parseDataFlag(value, 'PUBLIC_DATA_ONLY')
+	},
+	ENABLE_NOTICE_AI: {
+		description:
+			'Optional server-side AI assistance for public notice extraction. Default false; source-linked rules work without keys.',
+		schema: (value) => parseDataFlag(value?.trim() || 'false', 'ENABLE_NOTICE_AI')
+	},
+	OPENAI_API_KEY: {
+		description: 'Optional server-only key for notice extraction. Never sent to the browser.',
+		schema: (value) => value?.trim() || undefined
+	},
+	NOTICE_AI_MODEL: {
+		description:
+			'Explicit Responses API model for optional notice extraction; required with ENABLE_NOTICE_AI=true and a key.',
+		schema: (value) => value?.trim() || undefined
+	},
 	MAP_STYLE_URL: {
 		public: true,
 		description:

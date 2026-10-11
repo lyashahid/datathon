@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "datasetVersion": "greater-male-2026-10-10-5bbad9760b",
+  "modelVersion": "service-graph-1.3.0",
+  "baselineSha256": "6a9496de7911b1986f869b14916575705df4c8e0ec4bf208954d2c3009fee9cb",
+  "operationsVersion": "operations-operations-public-2-7c349e5571a9",
+  "planningDate": "2026-10-10",
+  "departureMinutesMvt": 930,
+  "inputQualification": "Public cached sources underpin the baseline. New service, road closure, costs, emissions factors and ferry crossing duration are editable scenario assumptions. No private-travel displacement or observed congestion is claimed.",
+  "appointmentOptions": {
+    "appointmentMinutes": 60,
+    "returnDeadlineMinutes": 1200
+  },
+  "cases": [
+    {
+      "id": "bus-investment",
+      "file": "/demo/01-bus-investment.json",
+      "title": "Hulhumalé healthcare connection",
+      "mapCenter": [
+        73.5495823,
+        4.2345837
+      ],
+      "selectedPatternId": "proposal-route-73.549985-4.233990-osm:way:383751026-out",
+      "originId": "wp:hulhumale:3446:1091",
+      "originPopulation": 1229.3079868261914,
+      "beforeJourneyMinutes": 30.13131736471803,
+      "afterJourneyMinutes": 20.08694736471807,
+      "newlyReachedResidents": 5526.302750169985,
+      "unknownResidents": 9467.792904901467,
+      "capitalMvr": {
+        "low": 7800000,
+        "central": 12000000,
+        "high": 16900000
+      },
+      "annualOperatingMvr": {
+        "low": 2510423.5391999995,
+        "central": 3765635.3087999993,
+        "high": 5439251.001599999
+      },
+      "annualVehicleKm": 104600.98079999998,
+      "requiredFleet": 5,
+      "carbonKgCo2e": {
+        "low": 69298.14977999998,
+        "central": 89705.80113407999,
+        "high": 113805.86711039998
+      },
+      "breakEvenDisplacedPassengerKm": 815507.2830370908,
+      "coverage": {
+        "status": "partial",
+        "date": "2026-10-10",
+        "departureMinutes": 930,
+        "observedPatternCount": 11,
+        "assumedPatternCount": 0,
+        "supportedStartMinutes": 920,
+        "supportedEndMinutes": 1438,
+        "label": "Partial observed snapshot",
+        "reasons": [
+          "Public API provides remaining bus departures at fetch time, not a complete recurring timetable. Calendar is pinned to snapshot date; morning and other-day results are incomplete.",
+          "Return directions are only those explicitly supplied by the operator. No reverse services invented.",
+          "Ferry frequency PDFs lack verified sailing runtime/precise terminals; retained as source evidence, excluded from journey calculations.",
+          "R10 Orchid: published stops exist but no complete timings returned; route visible, journey service unavailable.",
+          "R11 Ameenee: published stops exist but no complete timings returned; route visible, journey service unavailable.",
+          "R12 Sosun: published stops exist but no complete timings returned; route visible, journey service unavailable.",
+          "R15 West Park to Orange Hiya: published stops exist but no complete timings returned; route visible, journey service unavailable."
+        ]
+      },
+      "affectedPatternIds": [],
+      "appointment": {
+        "status": "feasible",
+        "reason": null,
+        "destination": "Hulhumalé Hospital",
+        "departAt": 930,
+        "arriveAt": 950.0869473647181,
+        "returnDepartAt": 1010.0869473647181,
+        "homeAt": 1030.1846867294362,
+        "warnings": [
+          "Partial service evidence: a confirmed journey may be shown, but these results do not establish all-day service availability or the last actual departure.",
+          "This journey uses assumed scenario service. Frequency services use half-headway expected waits, not guaranteed connections."
+        ]
+      }
+    },
+    {
+      "id": "road-closure",
+      "file": "/demo/02-road-closure.json",
+      "title": "What if roadworks affect this investment?",
+      "mapCenter": [
+        73.5495823,
+        4.2345837
+      ],
+      "selectedPatternId": "proposal-route-73.549985-4.233990-osm:way:383751026-out",
+      "originId": "wp:hulhumale:3446:1091",
+      "originPopulation": 1229.3079868261914,
+      "beforeJourneyMinutes": 30.13131736471803,
+      "afterJourneyMinutes": 20.906531364718035,
+      "newlyReachedResidents": 4787.713855997425,
+      "unknownResidents": 9467.792904901467,
+      "capitalMvr": {
+        "low": 7800000,
+        "central": 12000000,
+        "high": 16900000
+      },
+      "annualOperatingMvr": {
+        "low": 2510423.5391999995,
+        "central": 3765635.3087999993,
+        "high": 5439251.001599999
+      },
+      "annualVehicleKm": 104600.98079999998,
+      "requiredFleet": 5,
+      "carbonKgCo2e": {
+        "low": 69298.14977999998,
+        "central": 89705.80113407999,
+        "high": 113805.86711039998
+      },
+      "breakEvenDisplacedPassengerKm": 815507.2830370908,
+      "coverage": {
+        "status": "partial",
+        "date": "2026-10-10",
+        "departureMinutes": 930,
+        "observedPatternCount": 11,
+        "assumedPatternCount": 0,
+        "supportedStartMinutes": 920,
+        "supportedEndMinutes": 1438,
+        "label": "Partial observed snapshot",
+        "reasons": [
+          "Public API provides remaining bus departures at fetch time, not a complete recurring timetable. Calendar is pinned to snapshot date; morning and other-day results are incomplete.",
+          "Return directions are only those explicitly supplied by the operator. No reverse services invented.",
+          "Ferry frequency PDFs lack verified sailing runtime/precise terminals; retained as source evidence, excluded from journey calculations.",
+          "R10 Orchid: published stops exist but no complete timings returned; route visible, journey service unavailable.",
+          "R11 Ameenee: published stops exist but no complete timings returned; route visible, journey service unavailable.",
+          "R12 Sosun: published stops exist but no complete timings returned; route visible, journey service unavailable.",
+          "R15 West Park to Orange Hiya: published stops exist but no complete timings returned; route visible, journey service unavailable."
+        ]
+      },
+      "affectedPatternIds": [
+        "proposal-route-73.549985-4.233990-osm:way:383751026-out"
+      ],
+      "event": {
+        "id": "demo-assumed-road-closure",
+        "name": "Assumed roadworks: test a detour",
+        "kind": "closure",
+        "edgeIds": [
+          "osmway:1338632887:1:2"
+        ],
+        "modes": [
+          "bus"
+        ],
+        "direction": "both",
+        "startDate": "2026-10-10",
+        "endDate": "2026-10-10",
+        "startMinutes": 900,
+        "endMinutes": 1080,
+        "provenance": "assumed",
+        "evidenceNote": "Offline demonstration only. This is not an observed road closure."
+      },
+      "fleetFeedback": [
+        {
+          "routeId": "proposal-route-73.549985-4.233990-osm:way:383751026",
+          "name": "Proposed healthcare connection",
+          "policy": "maintain-frequency",
+          "baselineCycleMinutes": 30.370551999999996,
+          "scenarioCycleMinutes": 31.190135999999995,
+          "baselineHeadwayMinutes": 10,
+          "scenarioHeadwayMinutes": 10,
+          "baselineFleet": 4,
+          "requiredFleet": 4,
+          "additionalFleet": 0,
+          "baselineProcurementFleet": 5,
+          "requiredProcurementFleet": 5,
+          "additionalProcurementFleet": 0,
+          "additionalCapitalMvr": {
+            "low": 0,
+            "central": 0,
+            "high": 0
+          },
+          "eventOperatingMvr": {
+            "low": 88.51507200000015,
+            "central": 132.77260800000022,
+            "high": 191.78265600000032
+          },
+          "eventCarbonKgCo2e": {
+            "low": 2.443384800000004,
+            "central": 3.1629385728000052,
+            "high": 4.012683264000007
+          },
+          "eventVehicleKm": 3.688128000000006,
+          "eventVehicleHours": 0.24587519999999952,
+          "unavailableReasons": []
+        }
+      ]
+    },
+    {
+      "id": "ferry-unknown",
+      "file": "/demo/03-ferry-unknown.json",
+      "title": "Vilimalé: missing crossing time remains unknown",
+      "originId": "wp:vilimale:3518:1016",
+      "mapCenter": [
+        73.4870051,
+        4.1745739
+      ],
+      "appointment": {
+        "status": "unavailable",
+        "reason": "Local destination coverage incomplete: no mapped eligible destination on this island and no verified crossing service in the loaded snapshot. This does not establish lack of actual access.",
+        "destination": null,
+        "departAt": 930,
+        "arriveAt": null,
+        "returnDepartAt": null,
+        "homeAt": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "ferry-assumed-runtime",
+      "file": "/demo/04-ferry-assumed-runtime.json",
+      "title": "Vilimalé: test an explicit 10-minute crossing",
+      "originId": "wp:vilimale:3518:1016",
+      "mapCenter": [
+        73.4870051,
+        4.1745739
+      ],
+      "selectedPatternId": "scenario:vilimale-ferry:2026-10-10:10:out",
+      "appointment": {
+        "status": "feasible",
+        "reason": null,
+        "destination": "Dharumavantha Hospital",
+        "departAt": 930,
+        "arriveAt": 951.3674453265369,
+        "returnDepartAt": 1011.3674453265369,
+        "homeAt": 1032.7348906530735,
+        "warnings": [
+          "Partial service evidence: a confirmed journey may be shown, but these results do not establish all-day service availability or the last actual departure.",
+          "This journey uses assumed scenario service. Frequency services use half-headway expected waits, not guaranteed connections."
+        ]
+      },
+      "warnings": [
+        "Crossing time 10 minutes is a user assumption. Headways follow Saturday and other holidays; expected wait is half the headway, not a guaranteed sailing.",
+        "No cancellation/public-holiday exception calendar, verified sailing trajectory, ferry cost or ferry emissions model is supplied.",
+        "17:20–17:30 remains unavailable: Gap between printed timetable rows."
+      ],
+      "sourceUrl": "https://mtcc.mv/wp-content/uploads/2025/12/Vili-male-Ferry-Schedule-2026-V1.pdf"
+    }
+  ]
+}

@@ -177,8 +177,8 @@ describe('land-clipped honeycomb display', () => {
 		) as PlanningBaseline;
 		const before = JSON.stringify(data.origins);
 		const grid = honeycombGrid(data);
-		expect(grid.features.length).toBeGreaterThan(25000);
-		expect(grid.features.length).toBeLessThan(35000);
+		expect(grid.features.length).toBeGreaterThan(4000);
+		expect(grid.features.length).toBeLessThan(5000);
 		const originIds = grid.features.flatMap((feature) => feature.properties.originIds).sort();
 		expect(originIds).toEqual(data.origins.map((origin) => origin.id).sort());
 		expect(JSON.stringify(data.origins)).toBe(before);

@@ -14,8 +14,8 @@ import {
 import type { FeatureCollection, MultiPolygon, Polygon } from 'geojson';
 import type { PlanningBaseline } from '#lib/planning/types.ts';
 
-// Finer display cells reveal local changes without changing raster/routing origins.
-export const HONEYCOMB_RESOLUTION = 12;
+// Larger, shoreline-clipped display cells; raster populations and routing stay unchanged.
+export const HONEYCOMB_RESOLUTION = 11;
 export type HoneycombGeometry = Polygon | MultiPolygon;
 export interface HoneycombProperties {
 	id: string;

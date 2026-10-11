@@ -8,10 +8,16 @@
 	import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 	import { type GraphicKind, type GraphicState } from './graphics/transportGraphics.ts';
 	import { createMapSprite, MAP_GRAPHIC_STATES } from './graphics/mapSprites.ts';
-	import { BASEMAP_PREFIX, loadBasemap, type BasemapMode } from './basemaps.ts';
+	import {
+		BASEMAP_PREFIX,
+		loadBasemap,
+		type BasemapMode,
+		type BasemapLoadResult
+	} from './basemaps.ts';
 	import { waveFrame, type RecalculationWave, type WaveGeometry } from './recalculationWave.ts';
 	import { GPUWaveLayer } from './gpuWaveLayer.ts';
 	import { HONEYCOMB_RESOLUTION } from './honeycombGrid.ts';
+	import { roadDirectionMarkers } from './roadDirections.ts';
 	import { TRAVEL_TIME_BANDS } from './travelTimeBands.ts';
 	import {
 		connectionStopMarkers,
@@ -61,6 +67,12 @@
 		routes,
 		symbols,
 		contextSymbols = { type: 'FeatureCollection', features: [] },
+		roadConditions = { type: 'FeatureCollection', features: [] },
+		weatherAreas = { type: 'FeatureCollection', features: [] },
+		playbackSymbols = { type: 'FeatureCollection', features: [] },
+		selectedRoads = [],
+		roadSelectionEnabled = false,
+		onroadselect,
 		policyLayers = [],
 		connectionMode = false,
 		connectionStopIds = [],
@@ -73,6 +85,7 @@
 		detailGrid = false,
 		placing = false,
 		basemap = 'atlas',
+		satelliteStyle = null,
 		placementPoint = null,
 		placementState = 'draft',
 		placementLabel = 'Place a stop',
@@ -113,6 +126,12 @@
 		routes: FeatureCollection<LineString>;
 		symbols: FeatureCollection<Point>;
 		contextSymbols?: FeatureCollection<Point>;
+		roadConditions?: FeatureCollection<LineString>;
+		weatherAreas?: FeatureCollection;
+		playbackSymbols?: FeatureCollection<Point>;
+		selectedRoads?: string[];
+		roadSelectionEnabled?: boolean;
+		onroadselect?: (edgeId: string) => void;
 		/** Optional official GIS observations. They provide audit context, not validated routing edges. */
 		policyLayers?: {
 			id: string;
@@ -132,6 +151,7 @@
 		detailGrid?: boolean;
 		placing?: boolean;
 		basemap?: BasemapMode;
+		satelliteStyle?: BasemapLoadResult | null;
 		placementPoint?: MapCoordinate | null;
 		placementState?: GraphicState;
 		placementLabel?: string;
@@ -444,7 +464,11 @@
 					'connection-preview': connectionMode ? connectionPreview : empty,
 					symbols,
 					journey,
-					'transport-context': contextSymbols
+					'transport-context': contextSymbols,
+					'road-conditions': roadConditions,
+					'road-directions': roadDirectionMarkers(roadConditions, selectedRoads),
+					'weather-advisories': weatherAreas,
+					'service-playback': playbackSymbols
 				}))
 					m.addSource(id, { type: 'geojson', data: data ?? empty });
 				m.addLayer({
@@ -675,6 +699,77 @@
 					paint: { 'line-color': '#b86b14', 'line-width': 4, 'line-dasharray': [2, 1] }
 				});
 				m.addLayer({
+					id: 'weather-advisory-fill',
+					type: 'fill',
+					source: 'weather-advisories',
+					paint: { 'fill-color': '#c79042', 'fill-opacity': 0.055 }
+				});
+				m.addLayer({
+					id: 'weather-advisory-outline',
+					type: 'line',
+					source: 'weather-advisories',
+					paint: {
+						'line-color': '#c79042',
+						'line-width': 2,
+						'line-opacity': 0.6,
+						'line-dasharray': [3, 3]
+					}
+				});
+				m.addLayer({
+					id: 'road-pick-target',
+					type: 'line',
+					source: 'road-conditions',
+					paint: { 'line-color': '#215f9c', 'line-width': 15, 'line-opacity': 0.01 }
+				});
+				m.addLayer({
+					id: 'road-selection',
+					type: 'line',
+					source: 'road-conditions',
+					filter: ['in', ['get', 'edgeId'], ['literal', selectedRoads]],
+					paint: { 'line-color': '#3075b4', 'line-width': 6, 'line-opacity': 0.85 }
+				});
+				const directionCanvas = document.createElement('canvas');
+				directionCanvas.width = directionCanvas.height = 24;
+				const directionContext = directionCanvas.getContext('2d')!;
+				directionContext.beginPath();
+				directionContext.moveTo(12, 3);
+				directionContext.lineTo(19, 20);
+				directionContext.lineTo(12, 16);
+				directionContext.lineTo(5, 20);
+				directionContext.closePath();
+				directionContext.fillStyle = '#ffffff';
+				directionContext.fill();
+				directionContext.strokeStyle = '#215f9c';
+				directionContext.lineWidth = 2;
+				directionContext.stroke();
+				m.addImage('road-direction-arrow', directionContext.getImageData(0, 0, 24, 24), {
+					pixelRatio: 1.5
+				});
+				m.addLayer({
+					id: 'road-direction-arrows',
+					type: 'symbol',
+					source: 'road-directions',
+					layout: {
+						'icon-image': 'road-direction-arrow',
+						'icon-rotate': ['get', 'bearing'],
+						'icon-rotation-alignment': 'map',
+						'icon-pitch-alignment': 'map',
+						'icon-allow-overlap': true
+					}
+				});
+				m.addLayer({
+					id: 'road-impacts',
+					type: 'line',
+					source: 'road-conditions',
+					filter: ['!=', ['get', 'disruptionKind'], 'none'],
+					paint: {
+						'line-color': ['match', ['get', 'disruptionKind'], 'closure', '#c44f41', '#d89228'],
+						'line-width': 5,
+						'line-opacity': 0.95,
+						'line-dasharray': [2, 1]
+					}
+				});
+				m.addLayer({
 					id: 'journey-casing',
 					type: 'line',
 					source: 'journey',
@@ -717,6 +812,31 @@
 					})
 				);
 				if (disposed) return;
+				m.addLayer({
+					id: 'playback-halo',
+					type: 'circle',
+					source: 'service-playback',
+					paint: {
+						'circle-radius': 17,
+						'circle-color': '#ffffff',
+						'circle-opacity': 0.85,
+						'circle-stroke-color': '#1c705e',
+						'circle-stroke-width': 2
+					}
+				});
+				m.addLayer({
+					id: 'playback-vehicles',
+					type: 'symbol',
+					source: 'service-playback',
+					layout: {
+						'icon-image': ['match', ['get', 'mode'], 'ferry', 'ferry', 'bus'],
+						'icon-size': 0.8,
+						'icon-allow-overlap': true,
+						'icon-ignore-placement': true,
+						'icon-pitch-alignment': 'viewport',
+						'icon-rotation-alignment': 'viewport'
+					}
+				});
 				m.addLayer({
 					id: 'transport-context-boards',
 					type: 'symbol',
@@ -1142,7 +1262,8 @@
 					else onconnectionplace?.(position);
 				}
 				function pointerDown(event: PointerEvent) {
-					if (!editMode || placing || connectionMode || !onstopcommit) return;
+					if (!editMode || placing || connectionMode || roadSelectionEnabled || !onstopcommit)
+						return;
 					if (pointerId !== null) {
 						if (pointerId !== event.pointerId) endDrag(true);
 						return;
@@ -1303,6 +1424,20 @@
 						event.originalEvent.target.closest('.maplibregl-popup')
 					)
 						return;
+					if (roadSelectionEnabled) {
+						const candidates = m.queryRenderedFeatures(
+							[
+								[event.point.x - 7, event.point.y - 7],
+								[event.point.x + 7, event.point.y + 7]
+							],
+							{ layers: ['road-pick-target'] }
+						);
+						const road = candidates.find(
+							(feature) => typeof feature.properties.edgeId === 'string'
+						);
+						if (road) onroadselect?.(String(road.properties.edgeId));
+						return;
+					}
 					if (connectionMode) {
 						chooseConnection([event.point.x, event.point.y], [event.lngLat.lng, event.lngLat.lat]);
 						return;
@@ -1439,6 +1574,8 @@
 					removeBasemap(m);
 					showAtlas(m, true);
 					m.setLayoutProperty('transport-context-boards', 'visibility', 'none');
+					m.setLayoutProperty('playback-halo', 'visibility', 'none');
+					m.setLayoutProperty('playback-vehicles', 'visibility', 'none');
 					m.stop();
 					const camera = {
 						center: m.getCenter(),
@@ -1463,6 +1600,8 @@
 						return m.getCanvas().toDataURL('image/png');
 					} finally {
 						m.setLayoutProperty('transport-context-boards', 'visibility', 'visible');
+						m.setLayoutProperty('playback-halo', 'visibility', 'visible');
+						m.setLayoutProperty('playback-vehicles', 'visibility', 'visible');
 						m.jumpTo(camera);
 					}
 				});
@@ -1504,10 +1643,15 @@
 	$effect(() => {
 		const m = map;
 		const mode = basemap;
+		const override = satelliteStyle;
 		if (!m) return;
 		const controller = new AbortController();
 		basemapLoading = true;
-		void loadBasemap(mode, { signal: controller.signal })
+		void (
+			mode === 'satellite' && override
+				? Promise.resolve(override)
+				: loadBasemap(mode, { signal: controller.signal })
+		)
 			.then((result) => {
 				if (controller.signal.aborted) return;
 				if (result.unavailableReason) {
@@ -1534,6 +1678,19 @@
 	$effect(() => {
 		if (!map) return;
 		map.getSource<GeoJSONSource>('transport-context')?.setData(contextSymbols);
+	});
+	$effect(() => {
+		if (!map) return;
+		map.getSource<GeoJSONSource>('road-conditions')?.setData(roadConditions);
+		map
+			.getSource<GeoJSONSource>('road-directions')
+			?.setData(roadDirectionMarkers(roadConditions, selectedRoads));
+		map.getSource<GeoJSONSource>('weather-advisories')?.setData(weatherAreas);
+		map.getSource<GeoJSONSource>('service-playback')?.setData(playbackSymbols);
+		if (map.getLayer('road-selection'))
+			map.setFilter('road-selection', ['in', ['get', 'edgeId'], ['literal', selectedRoads]]);
+		if (map.getLayer('road-pick-target'))
+			map.setPaintProperty('road-pick-target', 'line-opacity', roadSelectionEnabled ? 0.12 : 0.01);
 	});
 	$effect(() => {
 		const m = map;
@@ -1681,7 +1838,7 @@
 		renderEditingSources?.();
 		map.getCanvas().style.cursor = dragging
 			? 'grabbing'
-			: placing || connectionMode
+			: placing || connectionMode || roadSelectionEnabled
 				? 'crosshair'
 				: '';
 	});

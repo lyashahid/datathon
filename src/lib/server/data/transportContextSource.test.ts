@@ -148,6 +148,22 @@ describe('auxiliary transport snapshots', () => {
 		expect(disabled.aviation.records).toEqual([]);
 		expect(disabled.followme.status).toBe('disabled');
 	});
+	it('public competition profile suppresses cached FollowMe while preserving public agency context', async () => {
+		const reads: string[] = [];
+		const loader = createTransportContextLoader(async (path) => {
+			reads.push(path);
+			return JSON.stringify(path.includes('followme') ? followme() : agency());
+		});
+		await loader({ vessels: true, flights: true });
+		reads.length = 0;
+		const publicBundle = await loader({ vessels: true, flights: true, publicOnly: true });
+		expect(reads.some((path) => path.includes('followme'))).toBe(false);
+		expect(publicBundle.followme.records).toEqual([]);
+		expect(publicBundle.followme.status).toBe('disabled');
+		expect(publicBundle.followme.gapReasons.join(' ')).toContain('Public-only competition profile');
+		expect(publicBundle.mpl.records).toHaveLength(1);
+		expect(publicBundle.aviation.records).toHaveLength(1);
+	});
 	it('missing data remains unavailable, not a zero-valued airport total', async () => {
 		const loader = createTransportContextLoader(async () => {
 			throw new Error('missing');

@@ -32,7 +32,12 @@
 		"data:policy-evidence": "node scripts/policy-evidence-run.mjs all",
 		"data:policy-evidence:fetch": "node scripts/policy-evidence-run.mjs fetch",
 		"data:policy-evidence:prepare": "node scripts/policy-evidence-run.mjs prepare",
-		"data:policy-evidence:validate": "node scripts/policy-evidence-run.mjs validate"
+		"data:policy-evidence:validate": "node scripts/policy-evidence-run.mjs validate",
+		"data:operations": "node scripts/operations-data.mjs all",
+		"data:operations:fetch": "node scripts/operations-data.mjs fetch",
+		"data:operations:prepare": "node scripts/operations-data.mjs prepare",
+		"data:operations:validate": "node scripts/operations-data.mjs validate",
+		"data:operations:refresh": "node scripts/operations-data.mjs all"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
