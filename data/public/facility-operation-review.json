@@ -1,0 +1,1737 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-10",
+  "transformationVersion": "facility-operation-desk-review-v1",
+  "qualification": "Current institutional listing or direct primary event supports institution status, not audited opening hours. Exact campus/entrance positions remain OSM approximations; conflicting/unsupported sites are excluded. Unverified is not a claim of closure. Colleges, therapy facilities and state care are outside the general School goal.",
+  "sources": [
+    {
+      "id": "operation-avid-mqa",
+      "url": "https://mqa.gov.mv/en/higher-education-institutes/avid-college",
+      "title": "Avid College current accredited-institution record",
+      "publisher": "Maldives Qualifications Authority",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:38:49.425019+00:00",
+      "sha256": "5f5c1ff3a5d02f9b24f04091de0455d4a9bbf1f5af7a60db8d598bf24b7cd6f5",
+      "bytes": 116794,
+      "file": "facility-operation-review/avid-mqa.html",
+      "rawPath": "data/raw/facility-operation-review/avid-mqa.html",
+      "finalUrl": "https://mqa.gov.mv/en/higher-education-institutes/avid-college",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-brightway-contact-v2",
+      "url": "https://brightway.edu.mv/about-us/contact/",
+      "title": "Brightway International School contact address and office hours",
+      "publisher": "Brightway International School",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:34:24.171558+00:00",
+      "sha256": "1a65728e5b3abf58d03c8ab3921b6922cc942d09713bf2222a2a6a04328b7a40",
+      "bytes": 169740,
+      "file": "facility-operation-review/brightway-contact-v2.html",
+      "rawPath": "data/raw/facility-operation-review/brightway-contact-v2.html",
+      "finalUrl": "https://brightway.edu.mv/about-us/contact/",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-brightway-home",
+      "url": "https://brightway.edu.mv/",
+      "title": "Brightway International School programmes",
+      "publisher": "Brightway International School",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:52.298110+00:00",
+      "sha256": "48dc1d205487496ecd1131b9be8c4492f7559b58ad4ca4454a0f31175eae2e63",
+      "bytes": 258380,
+      "file": "facility-operation-review/brightway-home.html",
+      "rawPath": "data/raw/facility-operation-review/brightway-home.html",
+      "finalUrl": "https://brightway.edu.mv/",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-fiyavathi-presidency",
+      "url": "https://presidency.gov.mv/Press/Article/32384",
+      "title": "Fiyavathi state children's-care facility, 7 December 2024",
+      "publisher": "The President's Office",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:34:24.845458+00:00",
+      "sha256": "f28325adcc33a5e0b3f6e815ae674279569f3055381a7a005773037b5ec42402",
+      "bytes": 31908,
+      "file": "facility-operation-review/fiyavathi-presidency.html",
+      "rawPath": "data/raw/facility-operation-review/fiyavathi-presidency.html",
+      "finalUrl": "https://presidency.gov.mv/Press/Article/32384",
+      "contentType": "text/html; charset=utf-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-galolhu-council-2025",
+      "url": "https://malecity.gov.mv/en/news/605",
+      "title": "Galolhu School library inauguration, 11 May 2025",
+      "publisher": "Malé City Council",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:38:48.676783+00:00",
+      "sha256": "d389ff0ae07d47890b7cbbc09e53d5a6ac8439b496ba46ecadf736e61c5a8e69",
+      "bytes": 80160,
+      "file": "facility-operation-review/galolhu-council-2025.html",
+      "rawPath": "data/raw/facility-operation-review/galolhu-council-2025.html",
+      "finalUrl": "https://malecity.gov.mv/en/news/605",
+      "contentType": "text/html; charset=utf-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-galolhu-mnu-2026",
+      "url": "https://mnu.edu.mv/galolhu-school-preschool-students-enjoy-an-educational-visit-to-fhts/",
+      "title": "Galolhu School preschool student visit, 27 August 2026",
+      "publisher": "Maldives National University",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:53.368100+00:00",
+      "sha256": "341f2e57c1e934ba3197a73b930c932382fa5563b6937e140f7e245654cd452b",
+      "bytes": 127817,
+      "file": "facility-operation-review/galolhu-mnu-2026.html",
+      "rawPath": "data/raw/facility-operation-review/galolhu-mnu-2026.html",
+      "finalUrl": "https://mnu.edu.mv/galolhu-school-preschool-students-enjoy-an-educational-visit-to-fhts/",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-gis-admissions",
+      "url": "https://www.gis.edu.mv/admissions",
+      "title": "Ghiyasuddin International School admissions",
+      "publisher": "Ghiyasuddin International School",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:51.841497+00:00",
+      "sha256": "ab465841d8292768ba3068142d7fca6828dcc8fc2395d4fd7a1d3175d7c8d284",
+      "bytes": 56603,
+      "file": "facility-operation-review/gis-admissions.html",
+      "rawPath": "data/raw/facility-operation-review/gis-admissions.html",
+      "finalUrl": "https://www.gis.edu.mv/admissions",
+      "contentType": "text/html; charset=utf-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-gis-contact",
+      "url": "https://gis.edu.mv/contact",
+      "title": "Ghiyasuddin International School contact address",
+      "publisher": "Ghiyasuddin International School",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:51.842497+00:00",
+      "sha256": "b9f275dbaa0bf3648bab2c34642d2f792bcb15d43a624e367d581b21ae7a2dce",
+      "bytes": 52329,
+      "file": "facility-operation-review/gis-contact.html",
+      "rawPath": "data/raw/facility-operation-review/gis-contact.html",
+      "finalUrl": "https://gis.edu.mv/contact",
+      "contentType": "text/html; charset=utf-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-ilm-mqa",
+      "url": "https://mqa.gov.mv/en/higher-education-institutes/ilm-institute-for-islamic-studies",
+      "title": "ILM Institute for Islamic Studies higher-education record",
+      "publisher": "Maldives Qualifications Authority",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:52.524039+00:00",
+      "sha256": "13ff0a8c0cc1b739c80abc364cb51512b74810fde126208b86009afe661e35af",
+      "bytes": 86673,
+      "file": "facility-operation-review/ilm-mqa.html",
+      "rawPath": "data/raw/facility-operation-review/ilm-mqa.html",
+      "finalUrl": "https://mqa.gov.mv/en/higher-education-institutes/ilm-institute-for-islamic-studies",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-ilm-operator",
+      "url": "https://www.ilm.edu.mv/about-us/",
+      "title": "ILM Institute programmes and current contact address",
+      "publisher": "ILM Institute for Islamic Studies",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:58.449575+00:00",
+      "sha256": "ff8f82d01dfc2f965ae0ed61ec8e51463442ef1b7a83bcb7a0d287b36288f903",
+      "bytes": 200612,
+      "file": "facility-operation-review/ilm-operator.html",
+      "rawPath": "data/raw/facility-operation-review/ilm-operator.html",
+      "finalUrl": "https://www.ilm.edu.mv/about-us/",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-ium-mqa",
+      "url": "https://mqa.gov.mv/en/higher-education-institutes/islamic-university-of-maldives",
+      "title": "Islamic University of Maldives accredited-institution record",
+      "publisher": "Maldives Qualifications Authority",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:39:36.574676+00:00",
+      "sha256": "8de87b37358d712d15bebef988a245e587a7b0ce6e72c795144a2a6b06a15548",
+      "bytes": 133535,
+      "file": "facility-operation-review/ium-mqa.html",
+      "rawPath": "data/raw/facility-operation-review/ium-mqa.html",
+      "finalUrl": "https://mqa.gov.mv/en/higher-education-institutes/islamic-university-of-maldives",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-kaamil-hearts-2026",
+      "url": "https://www.tinyheartsofmaldives.org/resources/events/little-hearts-big-impact-kaamil-didi-preschool-champions-heart-health-and-giving",
+      "title": "Kaamil Didi Preschool school visit, 18 August 2026",
+      "publisher": "Tiny Hearts of Maldives",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:54.296790+00:00",
+      "sha256": "68a23ec2e9158a4d6b159d92764b2379ceac41d9786b14207a59abc61115bb64",
+      "bytes": 52369,
+      "file": "facility-operation-review/kaamil-hearts-2026.html",
+      "rawPath": "data/raw/facility-operation-review/kaamil-hearts-2026.html",
+      "finalUrl": "https://www.tinyheartsofmaldives.org/resources/events/little-hearts-big-impact-kaamil-didi-preschool-champions-heart-health-and-giving",
+      "contentType": "text/html; charset=utf-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-kangaroo-admissions",
+      "url": "https://www.kangarookids.school/admissions-overview/",
+      "title": "Kangaroo Kids admissions overview and preschool age groups",
+      "publisher": "Kangaroo Kids International Preschool Maldives",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:52.722885+00:00",
+      "sha256": "14c917c8d0766879dcb9c82e6f5cf995b5b93a63f2b2edf6e4709c1c14ff84a9",
+      "bytes": 440229,
+      "file": "facility-operation-review/kangaroo-admissions.html",
+      "rawPath": "data/raw/facility-operation-review/kangaroo-admissions.html",
+      "finalUrl": "https://www.kangarookids.school/admissions-overview/",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-kangaroo-contact",
+      "url": "https://www.kangarookids.school/contact-us/",
+      "title": "Kangaroo Kids Dream Campus contact address",
+      "publisher": "Kangaroo Kids International Preschool Maldives",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:34:23.302007+00:00",
+      "sha256": "dd0ed1d3d1f10564ff6daff8b79cf197d2222bfca6e448f096528d34185f385f",
+      "bytes": 420954,
+      "file": "facility-operation-review/kangaroo-contact.html",
+      "rawPath": "data/raw/facility-operation-review/kangaroo-contact.html",
+      "finalUrl": "https://www.kangarookids.school/contact-us/",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-mi-branches",
+      "url": "https://micollege.edu.mv/index.php/Home/Branches",
+      "title": "MI College branch directory, Hulhumalé Lot 11310",
+      "publisher": "MI College",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:38:50.098095+00:00",
+      "sha256": "ffc0dffa3d4aa9af11dd352e4d6af0eff4e61c68ecbb079bcab326f49836d6c3",
+      "bytes": 35843,
+      "file": "facility-operation-review/mi-branches.html",
+      "rawPath": "data/raw/facility-operation-review/mi-branches.html",
+      "finalUrl": "https://micollege.edu.mv/index.php/Home/Branches",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-mi-hulhumale",
+      "url": "https://www.micollege.edu.mv/index.php/Home/Our_campus/fe5dbbcea5ce7e2988b8c69bcfdfde8904aabc1f",
+      "title": "MI College Hulhumalé campus on Reethigas Hingun",
+      "publisher": "MI College",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:38:50.218693+00:00",
+      "sha256": "a24e04c7c07bebf321fa84c9e8b8c9b23041d39ef24fa692c797deecd2e496b0",
+      "bytes": 31319,
+      "file": "facility-operation-review/mi-hulhumale.html",
+      "rawPath": "data/raw/facility-operation-review/mi-hulhumale.html",
+      "finalUrl": "https://www.micollege.edu.mv/index.php/Home/Our_campus/fe5dbbcea5ce7e2988b8c69bcfdfde8904aabc1f",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-mnu-business",
+      "url": "https://mnu.edu.mv/mnubs/",
+      "title": "MNU Business School contact address",
+      "publisher": "Maldives National University",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:38:50.411727+00:00",
+      "sha256": "05b1ace3246d8fa6995d773da946ea6dbaf0b5604340539ecdaac1fb80a3124d",
+      "bytes": 464161,
+      "file": "facility-operation-review/mnu-business.html",
+      "rawPath": "data/raw/facility-operation-review/mnu-business.html",
+      "finalUrl": "https://mnu.edu.mv/mnubs/",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-mnu-cfos",
+      "url": "https://mnu.edu.mv/cfos/",
+      "title": "MNU College of Fisheries and Ocean Sciences contact address",
+      "publisher": "Maldives National University",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:38:50.327721+00:00",
+      "sha256": "f406ad32fbf5c23c5703744f08581b8bb4687ece26730e36898f4d4add4b55a3",
+      "bytes": 212044,
+      "file": "facility-operation-review/mnu-cfos.html",
+      "rawPath": "data/raw/facility-operation-review/mnu-cfos.html",
+      "finalUrl": "https://mnu.edu.mv/cfos/",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-mnu-home",
+      "url": "https://mnu.edu.mv/",
+      "title": "Maldives National University current contact and academic portals",
+      "publisher": "Maldives National University",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:38:50.907878+00:00",
+      "sha256": "3acf39ca036211031ed3127d7c2b0e1b00a685078fc31d87f1e3d3c993b6bb2e",
+      "bytes": 284581,
+      "file": "facility-operation-review/mnu-home.html",
+      "rawPath": "data/raw/facility-operation-review/mnu-home.html",
+      "finalUrl": "https://mnu.edu.mv/",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-moe-directory",
+      "url": "https://www.moe.gov.mv/en/schools",
+      "title": "School directory (live retrieval; directory update 23 May 2025)",
+      "publisher": "Ministry of Education, Higher Education and Skills Development",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:51.205888+00:00",
+      "sha256": "6863e03f3fab374195be691e1840df9601b8f4b94008b16617913f2cea1000fb",
+      "bytes": 641556,
+      "file": "facility-operation-review/moe-directory.html",
+      "rawPath": "data/raw/facility-operation-review/moe-directory.html",
+      "finalUrl": "https://www.moe.gov.mv/en/schools",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-moe-school-633",
+      "url": "https://www.moe.gov.mv/en/schools/633",
+      "title": "Official school profile: Iskandhar School",
+      "publisher": "Ministry of Education, Higher Education and Skills Development",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:51.078370+00:00",
+      "sha256": "2b79a77490d61f100ee0dbe1d458e926d8821919c9c6481aa3118fc6ac3389b6",
+      "bytes": 91153,
+      "file": "facility-operation-review/moe-school-633.html",
+      "rawPath": "data/raw/facility-operation-review/moe-school-633.html",
+      "finalUrl": "https://www.moe.gov.mv/en/schools/633",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-moe-school-635",
+      "url": "https://www.moe.gov.mv/en/schools/635",
+      "title": "Official school profile: Kalaafaanu School",
+      "publisher": "Ministry of Education, Higher Education and Skills Development",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:50.971652+00:00",
+      "sha256": "690b164fc60e3b6778d0f1c9f51794d26b1b0571d85a8e064e337453e14614ba",
+      "bytes": 89656,
+      "file": "facility-operation-review/moe-school-635.html",
+      "rawPath": "data/raw/facility-operation-review/moe-school-635.html",
+      "finalUrl": "https://www.moe.gov.mv/en/schools/635",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-moe-school-637",
+      "url": "https://www.moe.gov.mv/en/schools/637",
+      "title": "Official school profile: Imaduddin School",
+      "publisher": "Ministry of Education, Higher Education and Skills Development",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:51.179886+00:00",
+      "sha256": "91b1c6538583457ee5d57ce3319b0d38647cdccdd576cd137fbac449da225eb9",
+      "bytes": 89332,
+      "file": "facility-operation-review/moe-school-637.html",
+      "rawPath": "data/raw/facility-operation-review/moe-school-637.html",
+      "finalUrl": "https://www.moe.gov.mv/en/schools/637",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-moe-school-638",
+      "url": "https://www.moe.gov.mv/en/schools/638",
+      "title": "Official school profile: Aminiya School",
+      "publisher": "Ministry of Education, Higher Education and Skills Development",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:50.985652+00:00",
+      "sha256": "0e84cd2cd3490415b37703253fa61ea75040a354405e5bd9bb4bee20919581fb",
+      "bytes": 88788,
+      "file": "facility-operation-review/moe-school-638.html",
+      "rawPath": "data/raw/facility-operation-review/moe-school-638.html",
+      "finalUrl": "https://www.moe.gov.mv/en/schools/638",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-moe-school-640",
+      "url": "https://www.moe.gov.mv/en/schools/640",
+      "title": "Official school profile: Dharumavantha School",
+      "publisher": "Ministry of Education, Higher Education and Skills Development",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:51.192889+00:00",
+      "sha256": "fdc84b3f9803531c8141d4823e413ec0d2d9d35575edb177f15bbd0ba25dd681",
+      "bytes": 90441,
+      "file": "facility-operation-review/moe-school-640.html",
+      "rawPath": "data/raw/facility-operation-review/moe-school-640.html",
+      "finalUrl": "https://www.moe.gov.mv/en/schools/640",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-moe-school-642",
+      "url": "https://www.moe.gov.mv/en/schools/642",
+      "title": "Official school profile: Muhyiddin School",
+      "publisher": "Ministry of Education, Higher Education and Skills Development",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:51.156377+00:00",
+      "sha256": "ad00dcad0ab28d5a77568d282349ef181a31fd78306fc7670c2f1de60462ca89",
+      "bytes": 90851,
+      "file": "facility-operation-review/moe-school-642.html",
+      "rawPath": "data/raw/facility-operation-review/moe-school-642.html",
+      "finalUrl": "https://www.moe.gov.mv/en/schools/642",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-moe-school-643",
+      "url": "https://www.moe.gov.mv/en/schools/643",
+      "title": "Official school profile: Ghaazee School",
+      "publisher": "Ministry of Education, Higher Education and Skills Development",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:51.271124+00:00",
+      "sha256": "92d53de478847215b13e783e5b814cfcd69bfd3826ed425adb1c92ca995635a6",
+      "bytes": 91139,
+      "file": "facility-operation-review/moe-school-643.html",
+      "rawPath": "data/raw/facility-operation-review/moe-school-643.html",
+      "finalUrl": "https://www.moe.gov.mv/en/schools/643",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-moe-school-644",
+      "url": "https://www.moe.gov.mv/en/schools/644",
+      "title": "Official school profile: Centre for Higher Secondary Education Hulhumale'",
+      "publisher": "Ministry of Education, Higher Education and Skills Development",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:51.387161+00:00",
+      "sha256": "1112d50a4082990c8fb7ef79f22f12591168da20f6ff131e6b8c4bcab7bfa2f3",
+      "bytes": 90904,
+      "file": "facility-operation-review/moe-school-644.html",
+      "rawPath": "data/raw/facility-operation-review/moe-school-644.html",
+      "finalUrl": "https://www.moe.gov.mv/en/schools/644",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-moe-school-645",
+      "url": "https://www.moe.gov.mv/en/schools/645",
+      "title": "Official profile: Al Madhrasathul Arabiyyathul Islamiyya (address conflict)",
+      "publisher": "Ministry of Education, Higher Education and Skills Development",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:51.078370+00:00",
+      "sha256": "b0f19bafd56141d2d3dffa281d434b40aa293716354a5be438e4f9770a7e0457",
+      "bytes": 90730,
+      "file": "facility-operation-review/moe-school-645.html",
+      "rawPath": "data/raw/facility-operation-review/moe-school-645.html",
+      "finalUrl": "https://www.moe.gov.mv/en/schools/645",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-moe-school-646",
+      "url": "https://www.moe.gov.mv/en/schools/646",
+      "title": "Official school profile: Rehendhi School",
+      "publisher": "Ministry of Education, Higher Education and Skills Development",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:51.271124+00:00",
+      "sha256": "ac38cc58bd682e310ddf2aa2d54d085b6fdd9f8a63c62176b13a5202acd99d4c",
+      "bytes": 89855,
+      "file": "facility-operation-review/moe-school-646.html",
+      "rawPath": "data/raw/facility-operation-review/moe-school-646.html",
+      "finalUrl": "https://www.moe.gov.mv/en/schools/646",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-moe-school-647",
+      "url": "https://www.moe.gov.mv/en/schools/647",
+      "title": "Official school profile: Huravee School",
+      "publisher": "Ministry of Education, Higher Education and Skills Development",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:51.370163+00:00",
+      "sha256": "ae18324b56e448f459602ded722c495c85ed0f664e4e7d980a71b9d6086837d7",
+      "bytes": 91184,
+      "file": "facility-operation-review/moe-school-647.html",
+      "rawPath": "data/raw/facility-operation-review/moe-school-647.html",
+      "finalUrl": "https://www.moe.gov.mv/en/schools/647",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-moe-school-650",
+      "url": "https://www.moe.gov.mv/en/schools/650",
+      "title": "Official profile: Kaamil Didi Primary School (distinct from mapped preschool)",
+      "publisher": "Ministry of Education, Higher Education and Skills Development",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:51.369163+00:00",
+      "sha256": "ca4bb4445b96275e4423e39f9ae57172e4f225ab6953ff57bbb7ce6abbbe6a81",
+      "bytes": 86989,
+      "file": "facility-operation-review/moe-school-650.html",
+      "rawPath": "data/raw/facility-operation-review/moe-school-650.html",
+      "finalUrl": "https://www.moe.gov.mv/en/schools/650",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-moe-school-653",
+      "url": "https://www.moe.gov.mv/en/schools/653",
+      "title": "Official school profile: Shaheed Ali School",
+      "publisher": "Ministry of Education, Higher Education and Skills Development",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:51.446222+00:00",
+      "sha256": "72bf90e9f863be454ebf0905f6c1c7353966c5c3241c066df1f874acf3e83279",
+      "bytes": 89034,
+      "file": "facility-operation-review/moe-school-653.html",
+      "rawPath": "data/raw/facility-operation-review/moe-school-653.html",
+      "finalUrl": "https://www.moe.gov.mv/en/schools/653",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-polytechnic-mqa",
+      "url": "https://mqa.gov.mv/en/higher-education-institutes/maldives-polytechnic",
+      "title": "Maldives Polytechnic current accredited-institution record",
+      "publisher": "Maldives Qualifications Authority",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:38:49.417477+00:00",
+      "sha256": "42e0edabc3bec1ebf128bda0801f3977c3c827c0b279d2154f845512ca92d63a",
+      "bytes": 107735,
+      "file": "facility-operation-review/polytechnic-mqa.html",
+      "rawPath": "data/raw/facility-operation-review/polytechnic-mqa.html",
+      "finalUrl": "https://mqa.gov.mv/en/higher-education-institutes/maldives-polytechnic",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-private-colleges-mqa",
+      "url": "https://mqa.gov.mv/en/higher-education-institutes?type=private_college",
+      "title": "Private colleges directory and campus addresses",
+      "publisher": "Maldives Qualifications Authority",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:38:49.369438+00:00",
+      "sha256": "5d0a720f568c5eb888345fee15de3534242655bb4d805f653c228bf411900413",
+      "bytes": 82053,
+      "file": "facility-operation-review/private-colleges-mqa.html",
+      "rawPath": "data/raw/facility-operation-review/private-colleges-mqa.html",
+      "finalUrl": "https://mqa.gov.mv/en/higher-education-institutes?type=private_college",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-psm-arabiyya-2026",
+      "url": "https://cms.psmnews.mv/en/181929",
+      "title": "President statement on new Arabiyya building teaching date, 2026",
+      "publisher": "Public Service Media",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:38:50.629326+00:00",
+      "sha256": "24eb090665b74abd76987389876423cc195a37c09116762063e35fc7db5be93d",
+      "bytes": 48854,
+      "file": "facility-operation-review/psm-arabiyya-2026.html",
+      "rawPath": "data/raw/facility-operation-review/psm-arabiyya-2026.html",
+      "finalUrl": "https://cms.psmnews.mv/en/181929",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-psm-arabiyya-relocation",
+      "url": "https://psmnews.mv/en/123957",
+      "title": "Ministry announcement of Arabiyya temporary teaching site, 2023",
+      "publisher": "Public Service Media",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:54.034318+00:00",
+      "sha256": "aa903250047db3cf5d8d995d6afbb8bb245fc8baf98365dff0cb639dbb79a61b",
+      "bytes": 47151,
+      "file": "facility-operation-review/psm-arabiyya-relocation.html",
+      "rawPath": "data/raw/facility-operation-review/psm-arabiyya-relocation.html",
+      "finalUrl": "https://psmnews.mv/en/123957",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-stem-hems",
+      "url": "https://hems.health.gov.mv/establishments?search=Stem",
+      "title": "Stem Center live legal status (Closed)",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:40:42.942179+00:00",
+      "sha256": "c5dad4ab1d7f1f0bb6ad1f46b6a08d5368027aac775ffbb20273e5f5241f98e6",
+      "bytes": 47124,
+      "file": "facility-operation-review/stem-hems.html",
+      "rawPath": "data/raw/facility-operation-review/stem-hems.html",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-stem-maaharaa",
+      "url": "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare",
+      "title": "Stem Center registration, older Maaharaa health-facility directory",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:34:28.841922+00:00",
+      "sha256": "1ead4f5c8521fa50b8620d5f7ab7835b6bdf45425ed6b9ed8039472aea0d3425",
+      "bytes": 784469,
+      "file": "facility-operation-review/stem-maaharaa.html",
+      "rawPath": "data/raw/facility-operation-review/stem-maaharaa.html",
+      "finalUrl": "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare",
+      "contentType": "text/html; charset=utf-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-vihs-admissions",
+      "url": "https://my.vihs.edu.mv/applicationform.php",
+      "title": "Villa International High School 2026 application information",
+      "publisher": "Villa International High School",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:52.441624+00:00",
+      "sha256": "b7f77a97ec0537916372d96f5a84021f9125963f8bf336ac1eef4250881688a4",
+      "bytes": 463625,
+      "file": "facility-operation-review/vihs-admissions.html",
+      "rawPath": "data/raw/facility-operation-review/vihs-admissions.html",
+      "finalUrl": "https://my.vihs.edu.mv/applicationform.php",
+      "contentType": "text/html; charset=UTF-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    },
+    {
+      "id": "operation-vihs-contact",
+      "url": "https://vihs.edupage.org/contact/",
+      "title": "Villa International High School contact address",
+      "publisher": "Villa International High School",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T18:32:52.959952+00:00",
+      "sha256": "9922d952285ddae91d1029354ab9043362d71dbfd5f4ace10f759176f68786d2",
+      "bytes": 47776,
+      "file": "facility-operation-review/vihs-contact.html",
+      "rawPath": "data/raw/facility-operation-review/vihs-contact.html",
+      "finalUrl": "https://vihs.edupage.org/contact/",
+      "contentType": "text/html; charset=utf-8",
+      "referencePeriod": "Live institutional listing retrieved 2026-10-10; dated-event period is in title where applicable",
+      "license": "Public provider/government page; explicit reuse licence not established",
+      "transformationVersion": "facility-operation-desk-review-v1",
+      "qualification": "Desk-review evidence of institutional identity/status and published address; not a surveyed entrance or guarantee of today's operating hours."
+    }
+  ],
+  "records": [
+    {
+      "facilityId": "osm:node:4866622621",
+      "mappedName": "Imaduddin School",
+      "mappedKind": "school",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-school-637",
+        "operation-moe-directory"
+      ],
+      "statusNote": "Current Ministry school profile lists Imaduddin School at Rehendhi Hingun, Galolhu, Malé 20060. Identity match: exact name. The institution is current-listed; classroom operation today, admissions availability and opening hours were not inspected. No contradictory primary campus evidence was established in this review. Profile enrollment has no verified reporting period and is not imported.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "general-school",
+      "institutionStatus": "current-ministry-school-profile",
+      "officialName": "Imaduddin School",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5109306,
+          4.1711205
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "Rehendhi Hingun, Galolhu, Malé 20060",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      },
+      "officialProfileId": "637",
+      "identityMatch": "exact name"
+    },
+    {
+      "facilityId": "osm:node:5599539381",
+      "mappedName": "Maldives Polytechnic",
+      "mappedKind": "college",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-polytechnic-mqa"
+      ],
+      "statusNote": "Current primary institutional/programme listing confirms Maldives Polytechnic. This is tertiary education, retained only in the reviewed source inventory and excluded from the general School goal. Published campus context is approximate; an institutional listing is not inspection of a classroom, admissions availability or an entrance.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "tertiary-inventory-not-school-goal",
+      "institutionStatus": "current-primary-institutional-listing",
+      "officialName": "Maldives Polytechnic",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5103677,
+          4.1704908
+        ],
+        "status": "published-campus-context-approximate",
+        "publishedAddress": "Rehendhee Hingun, Galolhu, Malé 20364",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:node:6294958141",
+      "mappedName": "Avid College",
+      "mappedKind": "college",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-avid-mqa"
+      ],
+      "statusNote": "Current primary institutional/programme listing confirms Avid College. This is tertiary education, retained only in the reviewed source inventory and excluded from the general School goal. Published campus context is approximate; an institutional listing is not inspection of a classroom, admissions availability or an entrance.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "tertiary-inventory-not-school-goal",
+      "institutionStatus": "current-primary-institutional-listing",
+      "officialName": "Avid College",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5129293,
+          4.171026
+        ],
+        "status": "published-campus-context-approximate",
+        "publishedAddress": "Diamond Campus, Ameenee Goalhi, Malé",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:node:7297096388",
+      "mappedName": "Kangaroo Kids",
+      "mappedKind": "school",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-kangaroo-contact",
+        "operation-kangaroo-admissions"
+      ],
+      "statusNote": "Kangaroo Kids operator lists its Dream Campus at Lonuziyaaraiy Magu, Malé 20064 and preschool programmes for ages 18 months to 6 years. This is preschool access, not availability of every school level. Operator address supports the mapped campus context; its map link did not yield a independently verified entrance coordinate.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "preschool",
+      "institutionStatus": "current-operator-programmes-and-contact",
+      "officialName": "Kangaroo Kids International Preschool Maldives",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5150429,
+          4.1720396
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "Dream Campus, Lonuziyaaraiy Magu, Malé 20064",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:node:8935561366",
+      "mappedName": "Maldives National University",
+      "mappedKind": "college",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-mnu-home"
+      ],
+      "statusNote": "Current primary institutional/programme listing confirms The Maldives National University. This is tertiary education, retained only in the reviewed source inventory and excluded from the general School goal. Published campus context is approximate; an institutional listing is not inspection of a classroom, admissions availability or an entrance.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "tertiary-inventory-not-school-goal",
+      "institutionStatus": "current-primary-institutional-listing",
+      "officialName": "The Maldives National University",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5090205,
+          4.171219
+        ],
+        "status": "published-campus-context-approximate",
+        "publishedAddress": "Rahdhebai Hingun, Machchangolhi, Malé 20371",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:node:11183603546",
+      "mappedName": "learnium training centre",
+      "mappedKind": "school",
+      "islandId": "hulhumale",
+      "operatingStatus": "unverified",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-directory"
+      ],
+      "statusNote": "Learnium is mapped as a training centre; no matched primary operator/government evidence of a current general public school at this point was established. Current Ministry directory retrieval is retained as a reviewed search scope. Absence from that directory is not proof of closure or nonexistence; excluded from default School access until supported.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "unverified-general-school",
+      "institutionStatus": "no-matched-primary-operating-evidence",
+      "officialName": null,
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5441222,
+          4.2160513
+        ],
+        "status": "osm-position-not-independently-confirmed",
+        "publishedAddress": null,
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:node:11183603641",
+      "mappedName": "Stem Center",
+      "mappedKind": "school",
+      "islandId": "hulhumale",
+      "operatingStatus": "closed",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-stem-hems",
+        "operation-stem-maaharaa"
+      ],
+      "statusNote": "Current HEMS marks Stem Center Closed, registration HF-22-ALP/PVT/675, licence PVT-TSC-22-335-00. Older Maaharaa still lists the same registration at R-14-01 Hithigas Magu. Current explicit status takes precedence over that historical listing. It is a therapeutic-service clinic, not a general public school. Closure date and permanence are unpublished.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "therapeutic-service-not-general-school",
+      "institutionStatus": "current-HEMS-explicit-closed-registration",
+      "officialName": "Stem Center",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5425013,
+          4.2175848
+        ],
+        "status": "osm-position-not-independently-confirmed",
+        "publishedAddress": "R-14-01, Hithigas Magu, Hulhumalé",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      },
+      "registryId": "HF-22-ALP/PVT/675",
+      "conflictingSourceNote": "Maaharaa registered-facility listing persists despite HEMS Closed status."
+    },
+    {
+      "facilityId": "osm:node:11185404548",
+      "mappedName": "ILM Institute for Islamic Studies",
+      "mappedKind": "school",
+      "islandId": "male",
+      "operatingStatus": "unverified",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-ilm-mqa",
+        "operation-ilm-operator"
+      ],
+      "statusNote": "MQA and ILM's operator establish a current Islamic-studies higher-education/training institute. The operator lists Maafannu Madharusa, 2nd floor, Majeedhee Magu, Malé; the mapped point is in eastern Malé. This mapped campus has not been reconciled to that address. It is not a general public-school destination. Do not invent a replacement coordinate or infer institution closure.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "specialist-higher-education-not-general-school",
+      "institutionStatus": "current-primary-listed-institution-mapped-site-unreconciled",
+      "officialName": "ILM Institute for Islamic Studies",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5174547,
+          4.1763337
+        ],
+        "status": "current-operator-address-conflicts-with-mapped-site",
+        "publishedAddress": "Maafannu Madharusa, 2nd floor, Majeedhee Magu, Malé",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:node:11185404556",
+      "mappedName": "Islamic University of Maldives",
+      "mappedKind": "college",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-ium-mqa"
+      ],
+      "statusNote": "Current primary institutional/programme listing confirms Islamic University of Maldives. This is tertiary education, retained only in the reviewed source inventory and excluded from the general School goal. Published campus context is approximate; an institutional listing is not inspection of a classroom, admissions availability or an entrance.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "tertiary-inventory-not-school-goal",
+      "institutionStatus": "current-primary-institutional-listing",
+      "officialName": "Islamic University of Maldives",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5150644,
+          4.1759043
+        ],
+        "status": "institution-confirmed-osm-campus-position-not-independently-geocoded",
+        "publishedAddress": null,
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:node:11185404561",
+      "mappedName": "Atelier Academy of the Creative Arts",
+      "mappedKind": "college",
+      "islandId": "male",
+      "operatingStatus": "unverified",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-directory",
+        "operation-private-colleges-mqa"
+      ],
+      "statusNote": "No matched primary Maldives operator/accreditation evidence for Atelier Academy of the Creative Arts at this point was established. Reviewed directory coverage is limited and does not prove closure or nonexistence. The point remains unverified tertiary inventory and is excluded from School access.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "unverified-tertiary-inventory-not-school-goal",
+      "institutionStatus": "no-matched-primary-operating-evidence",
+      "officialName": null,
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5141991,
+          4.1762545
+        ],
+        "status": "osm-position-not-independently-confirmed",
+        "publishedAddress": null,
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:node:11186258646",
+      "mappedName": "MI College",
+      "mappedKind": "college",
+      "islandId": "hulhumale",
+      "operatingStatus": "unverified",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-mi-branches",
+        "operation-mi-hulhumale"
+      ],
+      "statusNote": "MI College's operator lists a current Hulhumalé branch at Lot 11310 on Reethigas Hingun. The mapped college point is farther south near Hulhumalé's southern residential area; this point has not been reconciled to the current operator's campus address. The institution is legitimate; its mapped site remains unverified. No replacement coordinate or closure is inferred. College inventory only, outside School access.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "tertiary-inventory-not-school-goal",
+      "institutionStatus": "current-primary-listed-institution-mapped-site-unreconciled",
+      "officialName": "MI College Hulhumalé Campus",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5398823,
+          4.2089786
+        ],
+        "status": "current-operator-address-conflicts-with-mapped-site",
+        "publishedAddress": "Lot 11310, ground/first/second floor, Reethigas Hingun, Hulhumalé",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:node:12196297366",
+      "mappedName": "Villa International High School",
+      "mappedKind": "school",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-vihs-contact",
+        "operation-vihs-admissions"
+      ],
+      "statusNote": "Villa International High School operator lists QI Campus on Rahdhebai Magu and a 2026 admissions application. The online form currently says admissions are closed, with a download/email alternative; it is evidence of an active institution, not a promise of an available place. High-school and college destinations at QI Campus are distinct services.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "higher-secondary-school",
+      "institutionStatus": "operator-2026-admissions-and-contact",
+      "officialName": "Villa International High School",
+      "latestDatedEvidence": "2026",
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5090432,
+          4.1695551
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "QI Campus, Rahdhebai Magu, Machchangolhi, Malé",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:node:13006103401",
+      "mappedName": "Kaamil Didi Pre School",
+      "mappedKind": "school",
+      "islandId": "hulhumale",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-kaamil-hearts-2026",
+        "operation-moe-school-650"
+      ],
+      "statusNote": "Tiny Hearts of Maldives directly reports its 18 August 2026 school visit to Kaamil Didi Preschool. This positively establishes an active preschool institution. The Ministry's Kaamil Didi Primary School profile concerns a distinct adjacent primary institution; its pupils or primary-school address are not transferred to this preschool point. The OSM preschool campus position remains approximate and is not independently entrance-geocoded.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "preschool",
+      "institutionStatus": "primary-partner-observed-school-visit-2026",
+      "officialName": "Kaamil Didi Preschool",
+      "latestDatedEvidence": "2026-08-18",
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5483008,
+          4.2300161
+        ],
+        "status": "osm-preschool-campus-approximation-distinct-from-primary-school",
+        "publishedAddress": null,
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:node:13006103601",
+      "mappedName": "Huravee School",
+      "mappedKind": "school",
+      "islandId": "hulhumale",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-school-647",
+        "operation-moe-directory"
+      ],
+      "statusNote": "Current Ministry school profile lists Huravee School at HM LOT 11402 (N1 School), Reethigas Magu, Hulhumalé 23500. Identity match: exact name. The institution is current-listed; classroom operation today, admissions availability and opening hours were not inspected. No contradictory primary campus evidence was established in this review. Profile enrollment has no verified reporting period and is not imported.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "general-school",
+      "institutionStatus": "current-ministry-school-profile",
+      "officialName": "Huravee School",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5442303,
+          4.2196377
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "HM LOT 11402 (N1 School), Reethigas Magu, Hulhumalé 23500",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      },
+      "officialProfileId": "647",
+      "identityMatch": "exact name"
+    },
+    {
+      "facilityId": "osm:node:13907139818",
+      "mappedName": "MNU College of Fisheries and Ocean Sciences",
+      "mappedKind": "college",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-mnu-cfos"
+      ],
+      "statusNote": "Current primary institutional/programme listing confirms MNU College of Fisheries and Ocean Sciences. This is tertiary education, retained only in the reviewed source inventory and excluded from the general School goal. Published campus context is approximate; an institutional listing is not inspection of a classroom, admissions availability or an entrance.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "tertiary-inventory-not-school-goal",
+      "institutionStatus": "current-primary-institutional-listing",
+      "officialName": "MNU College of Fisheries and Ocean Sciences",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5146668,
+          4.1752603
+        ],
+        "status": "published-campus-context-approximate",
+        "publishedAddress": "Sosun Magu, Henveyru, Malé 20068",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:node:14268489201",
+      "mappedName": "Shaheed Ali School",
+      "mappedKind": "school",
+      "islandId": "hulhumale",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-school-653",
+        "operation-moe-directory"
+      ],
+      "statusNote": "Current Ministry school profile lists Shaheed Ali School at N6-34, 20410 Berebedhima Hingun, Hulhumalé Phase 2. Identity match: exact name. The institution is current-listed; classroom operation today, admissions availability and opening hours were not inspected. No contradictory primary campus evidence was established in this review. Profile enrollment has no verified reporting period and is not imported.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "general-school",
+      "institutionStatus": "current-ministry-school-profile",
+      "officialName": "Shaheed Ali School",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5481447,
+          4.2340514
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "N6-34, 20410 Berebedhima Hingun, Hulhumalé Phase 2",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      },
+      "officialProfileId": "653",
+      "identityMatch": "exact name"
+    },
+    {
+      "facilityId": "osm:way:436189997",
+      "mappedName": "Brightway International School",
+      "mappedKind": "school",
+      "islandId": "hulhumale",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-brightway-contact-v2",
+        "operation-brightway-home"
+      ],
+      "statusNote": "Brightway operator lists Fareedhiya Building, Reethigas Hingun, Hulhumalé and current nursery-through-IGCSE programmes. The campus street/island is compatible with the mapped building; no surveyed entrance is supplied. Published office hours are not classroom or admissions guarantees.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "general-school",
+      "institutionStatus": "current-operator-programmes-and-contact",
+      "officialName": "Brightway International School",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5439335,
+          4.2185259
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "Fareedhiya Building, Reethigas Hingun, Hulhumalé",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:way:508266761",
+      "mappedName": "Iskandhar School",
+      "mappedKind": "school",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-school-633",
+        "operation-moe-directory"
+      ],
+      "statusNote": "Current Ministry school profile lists Iskandhar School at Chaandhanee Magu, Malé 20159. Identity match: exact name. The institution is current-listed; classroom operation today, admissions availability and opening hours were not inspected. No contradictory primary campus evidence was established in this review. Profile enrollment has no verified reporting period and is not imported.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "general-school",
+      "institutionStatus": "current-ministry-school-profile",
+      "officialName": "Iskandhar School",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5096695,
+          4.176218
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "Chaandhanee Magu, Malé 20159",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      },
+      "officialProfileId": "633",
+      "identityMatch": "exact name"
+    },
+    {
+      "facilityId": "osm:way:697262511",
+      "mappedName": "Ghaazee School",
+      "mappedKind": "school",
+      "islandId": "hulhumale",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-school-643",
+        "operation-moe-directory"
+      ],
+      "statusNote": "Current Ministry school profile lists Ghaazee School at Boaganvilla Magu, Hulhumalé 23000. Identity match: exact name. The institution is current-listed; classroom operation today, admissions availability and opening hours were not inspected. No contradictory primary campus evidence was established in this review. Profile enrollment has no verified reporting period and is not imported.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "general-school",
+      "institutionStatus": "current-ministry-school-profile",
+      "officialName": "Ghaazee School",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5414835,
+          4.2133435
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "Boaganvilla Magu, Hulhumalé 23000",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      },
+      "officialProfileId": "643",
+      "identityMatch": "exact name"
+    },
+    {
+      "facilityId": "osm:way:1207054212",
+      "mappedName": "Al Madhrasathul Arabiyyathul Islamiyya",
+      "mappedKind": "school",
+      "islandId": "male",
+      "operatingStatus": "unverified",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-school-645",
+        "operation-psm-arabiyya-relocation",
+        "operation-psm-arabiyya-2026"
+      ],
+      "statusNote": "Arabiyya is a legitimate active institution, but the Ministry profile retains a Medhuziyaaraiy Magu address while PSM reports the Ministry's temporary teaching move to the former Dharumavantha building near Velaanaage in 2023. A 2026 presidential statement says teaching at the new building begins next academic year after completion. The mapped old point cannot safely represent current teaching access. Excluded pending a verified current campus coordinate; the institution is not labeled closed and the new building is not assumed open.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "general-school-location-unreconciled",
+      "institutionStatus": "current-primary-listed-institution-relocation-evidence",
+      "officialName": "Al Madhrasathul Arabiyyathul Islamiyya",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5131153,
+          4.1778048
+        ],
+        "status": "conflicting-directory-and-temporary-teaching-site",
+        "publishedAddress": "Official profile: Medhuziyaaraiy Magu; temporary teaching site reported near Velaanaage",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      },
+      "officialProfileId": "645"
+    },
+    {
+      "facilityId": "osm:way:1210924794",
+      "mappedName": "Rehendhi School",
+      "mappedKind": "school",
+      "islandId": "hulhumale",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-school-646",
+        "operation-moe-directory"
+      ],
+      "statusNote": "Current Ministry school profile lists Rehendhi School at Chabeylee Magu, Hulhumalé 23000. Identity match: exact name. The institution is current-listed; classroom operation today, admissions availability and opening hours were not inspected. No contradictory primary campus evidence was established in this review. Profile enrollment has no verified reporting period and is not imported.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "general-school",
+      "institutionStatus": "current-ministry-school-profile",
+      "officialName": "Rehendhi School",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5413693,
+          4.2094742
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "Chabeylee Magu, Hulhumalé 23000",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      },
+      "officialProfileId": "646",
+      "identityMatch": "exact name"
+    },
+    {
+      "facilityId": "osm:way:1210925026",
+      "mappedName": "Fiyavathi",
+      "mappedKind": "school",
+      "islandId": "hulhumale",
+      "operatingStatus": "unverified",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-fiyavathi-presidency"
+      ],
+      "statusNote": "The President's Office describes Fiyavathi on 7 December 2024 as a state children's-care centre in Hulhumalé for children under 13. That establishes its identity and care purpose, not general public-school enrollment or separately verified 2026 operating status. Excluded from School access; no closure is inferred.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "state-children-care-not-general-school",
+      "institutionStatus": "government-care-facility-confirmed-2024",
+      "officialName": "Fiyavathi",
+      "latestDatedEvidence": "2024-12-07",
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5440521,
+          4.2189499
+        ],
+        "status": "osm-position-not-independently-confirmed",
+        "publishedAddress": null,
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:way:1317793006",
+      "mappedName": "Villa College",
+      "mappedKind": "college",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-private-colleges-mqa"
+      ],
+      "statusNote": "Current primary institutional/programme listing confirms Villa College. This is tertiary education, retained only in the reviewed source inventory and excluded from the general School goal. Published campus context is approximate; an institutional listing is not inspection of a classroom, admissions availability or an entrance.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "tertiary-inventory-not-school-goal",
+      "institutionStatus": "current-primary-institutional-listing",
+      "officialName": "Villa College",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5090481,
+          4.1696145
+        ],
+        "status": "published-campus-context-approximate",
+        "publishedAddress": "QI Campus, Rahdhebai Hingun, Malé 20373",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:way:1317921914",
+      "mappedName": "Kalaafaanu School",
+      "mappedKind": "school",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-school-635",
+        "operation-moe-directory"
+      ],
+      "statusNote": "Current Ministry school profile lists Kalaafaanu School at Kalaafaanu Hingun, Malé 20065. Identity match: exact name. The institution is current-listed; classroom operation today, admissions availability and opening hours were not inspected. No contradictory primary campus evidence was established in this review. Profile enrollment has no verified reporting period and is not imported.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "general-school",
+      "institutionStatus": "current-ministry-school-profile",
+      "officialName": "Kalaafaanu School",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5147254,
+          4.1712757
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "Kalaafaanu Hingun, Malé 20065",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      },
+      "officialProfileId": "635",
+      "identityMatch": "exact name"
+    },
+    {
+      "facilityId": "osm:way:1317950376",
+      "mappedName": "Muhiyyidin school",
+      "mappedKind": "school",
+      "islandId": "vilimale",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-school-642",
+        "operation-moe-directory"
+      ],
+      "statusNote": "Current Ministry school profile lists Muhyiddin School at Shamsuddheen Magu, Vilimalé. Identity match: reviewed transliteration alias: mapped Muhiyyidin school; same Vilimalé campus. The institution is current-listed; classroom operation today, admissions availability and opening hours were not inspected. No contradictory primary campus evidence was established in this review. Profile enrollment has no verified reporting period and is not imported.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "general-school",
+      "institutionStatus": "current-ministry-school-profile",
+      "officialName": "Muhyiddin School",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.4855552,
+          4.1729686
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "Shamsuddheen Magu, Vilimalé",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      },
+      "officialProfileId": "642",
+      "identityMatch": "reviewed transliteration alias: mapped Muhiyyidin school; same Vilimalé campus"
+    },
+    {
+      "facilityId": "osm:way:1320052745",
+      "mappedName": "MNU Business School",
+      "mappedKind": "college",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-mnu-business"
+      ],
+      "statusNote": "Current primary institutional/programme listing confirms MNU Business School. This is tertiary education, retained only in the reviewed source inventory and excluded from the general School goal. Published campus context is approximate; an institutional listing is not inspection of a classroom, admissions availability or an entrance.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "tertiary-inventory-not-school-goal",
+      "institutionStatus": "current-primary-institutional-listing",
+      "officialName": "MNU Business School",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5145927,
+          4.1752601
+        ],
+        "status": "published-campus-context-approximate",
+        "publishedAddress": "Sosun Magu, Henveiru, Malé 20069",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:way:1320069203",
+      "mappedName": "Dharumavantha School",
+      "mappedKind": "school",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-school-640",
+        "operation-moe-directory"
+      ],
+      "statusNote": "Current Ministry school profile lists Dharumavantha School at Rahdhebai Hingun, Malé 20078. Identity match: exact name; current southern site, distinct from former northern building. The institution is current-listed; classroom operation today, admissions availability and opening hours were not inspected. No contradictory primary campus evidence was established in this review. Profile enrollment has no verified reporting period and is not imported.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "general-school",
+      "institutionStatus": "current-ministry-school-profile",
+      "officialName": "Dharumavantha School",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5095933,
+          4.1697967
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "Rahdhebai Hingun, Malé 20078",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      },
+      "officialProfileId": "640",
+      "identityMatch": "exact name; current southern site, distinct from former northern building"
+    },
+    {
+      "facilityId": "osm:way:1323678631",
+      "mappedName": "Aminiya School",
+      "mappedKind": "school",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-school-638",
+        "operation-moe-directory"
+      ],
+      "statusNote": "Current Ministry school profile lists Aminiya School at Chaandhanee Magu, Malé 20159. Identity match: exact name. The institution is current-listed; classroom operation today, admissions availability and opening hours were not inspected. No contradictory primary campus evidence was established in this review. Profile enrollment has no verified reporting period and is not imported.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "general-school",
+      "institutionStatus": "current-ministry-school-profile",
+      "officialName": "Aminiya School",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5101417,
+          4.1767327
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "Chaandhanee Magu, Malé 20159",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      },
+      "officialProfileId": "638",
+      "identityMatch": "exact name"
+    },
+    {
+      "facilityId": "osm:way:1330634428",
+      "mappedName": "Ajiyal International School",
+      "mappedKind": "school",
+      "islandId": "hulhumale",
+      "operatingStatus": "unverified",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-directory"
+      ],
+      "statusNote": "No matched primary Maldives operator/government evidence for Ajiyal International School at this mapped Hulhumalé point was established. Similarly named foreign schools are not evidence for this site. Current Ministry directory retrieval is retained as a reviewed search scope. Absence from that directory is not proof of closure or nonexistence; excluded from default School access until supported.",
+      "verification": false,
+      "generalSchoolEligible": false,
+      "educationSuitability": "unverified-general-school",
+      "institutionStatus": "no-matched-primary-operating-evidence",
+      "officialName": null,
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5397651,
+          4.2198925
+        ],
+        "status": "osm-position-not-independently-confirmed",
+        "publishedAddress": null,
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:way:1547305510",
+      "mappedName": "CHSE Hulhumale",
+      "mappedKind": "school",
+      "islandId": "hulhumale",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-moe-school-644",
+        "operation-moe-directory"
+      ],
+      "statusNote": "Current Ministry school profile lists Centre for Higher Secondary Education Hulhumale' at Kurikeela Magu, Hulhumalé 23000. Identity match: reviewed abbreviation: CHSE Hulhumale; same Hulhumalé campus. The institution is current-listed; classroom operation today, admissions availability and opening hours were not inspected. No contradictory primary campus evidence was established in this review. Profile enrollment has no verified reporting period and is not imported.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "higher-secondary-school",
+      "institutionStatus": "current-ministry-school-profile",
+      "officialName": "Centre for Higher Secondary Education Hulhumale'",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5416537,
+          4.2205762
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "Kurikeela Magu, Hulhumalé 23000",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      },
+      "officialProfileId": "644",
+      "identityMatch": "reviewed abbreviation: CHSE Hulhumale; same Hulhumalé campus"
+    },
+    {
+      "facilityId": "osm:way:1548122368",
+      "mappedName": "Galolhu School",
+      "mappedKind": "school",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-galolhu-mnu-2026",
+        "operation-galolhu-council-2025"
+      ],
+      "statusNote": "MNU directly hosted Galolhu School preschool pupils on 27 August 2026. Malé City Council directly reports a 11 May 2025 event and inauguration of its on-site school library. These establish an active school institution; the OSM building position remains approximate. The reported 126 visiting pupils are not imported as school enrollment or capacity.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "preschool",
+      "institutionStatus": "primary-university-and-city-council-events",
+      "officialName": "Galolhu School",
+      "latestDatedEvidence": "2026-08-27",
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5118983,
+          4.1720765
+        ],
+        "status": "osm-position-not-independently-confirmed",
+        "publishedAddress": null,
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    },
+    {
+      "facilityId": "osm:way:1550190846",
+      "mappedName": "Ghiyasuddin International School",
+      "mappedKind": "school",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "operation-gis-contact",
+        "operation-gis-admissions"
+      ],
+      "statusNote": "Ghiyasuddin International School operator publishes its Malé campus at Ameenee Magu 20383 and current admissions information. The mapped campus context is compatible; enrollment places, classroom operation today and exact entrances were not inspected.",
+      "verification": "Primary institutional identity reviewed; OSM approximate site",
+      "generalSchoolEligible": true,
+      "educationSuitability": "general-school",
+      "institutionStatus": "current-operator-admissions-and-contact",
+      "officialName": "Ghiyasuddin International School",
+      "latestDatedEvidence": null,
+      "coordinateReview": {
+        "mappedCoordinate": [
+          73.5073872,
+          4.1713963
+        ],
+        "status": "published-campus-address-compatible-with-osm-approximation",
+        "publishedAddress": "Ameenee Magu, Malé 20383",
+        "independentPosition": null,
+        "inspectedEntrance": false,
+        "note": "OSM point/building centroid retained. Published address corroborates campus context where available; it does not certify an entrance or exact route endpoint."
+      }
+    }
+  ],
+  "summary": {
+    "mappedEducationPoints": 32,
+    "mappedSchoolPoints": 23,
+    "mappedCollegePoints": 9,
+    "generalSchoolEligiblePoints": 17,
+    "educationOperatingStatusCounts": {
+      "open": 24,
+      "unverified": 7,
+      "closed": 1
+    },
+    "independentlyInspectedEntrances": 0,
+    "existingHealthcareOverlayChanges": 0
+  },
+  "existingHealthcareReview": "All mapped healthcare facilities retain the separately versioned, same-date healthcare-location-audit. European Clinic Closed status was freshly reconfirmed in raw operation-european-hems evidence; no health overlay change is needed.",
+  "version": "facility-operation-review-b5830075bb4e"
+}

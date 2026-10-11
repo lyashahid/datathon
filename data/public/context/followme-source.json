@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "id": "followme-public-context",
+  "title": "FollowMe public vessel context",
+  "version": "followme-public-faff9560a59a",
+  "generatedAt": "2026-10-10T14:32:18.861Z",
+  "status": "local-snapshot",
+  "sourceUrl": "https://m.followme.mv/public/",
+  "termsUrl": "https://followme.mv/?pg=terms",
+  "apiDocsUrl": "https://followme.mv/api/v1/",
+  "publicObservationEndpoint": "https://m.followme.mv/public/api/device.php?id={public-list-id}",
+  "documentedKeyedEndpoint": "https://followme.mv/api/v4/public/{issued-key}/",
+  "cachePath": "data/public/archive/context/followme/context.json",
+  "attribution": "FollowMe Tracking Service",
+  "license": "Provider terms; not open data. Local user-requested research snapshot; no raw records shipped.",
+  "coverage": {
+    "directoryCardCount": 849,
+    "vesselCount": 842,
+    "excludedTypeCounts": {
+      "Bus": 4,
+      "Car": 2,
+      "Buggy": 1
+    },
+    "sampledPositionCount": 3,
+    "missingPositionCount": 839,
+    "timestampTimezone": null
+  },
+  "provenance": [
+    {
+      "id": "followme-public-directory",
+      "title": "FollowMe public vessel directory",
+      "retrievedAt": "2026-10-10T14:22:49.212Z",
+      "sha256": "e1a9d59fb44da0c49a5e87eea3b197de61d9cf018917e5b692c60230c064ba54",
+      "bytes": 4090841
+    },
+    {
+      "id": "followme-observation-1",
+      "title": "FollowMe one-shot public vessel observation",
+      "retrievedAt": "2026-10-10T14:26:39.6429529Z",
+      "sha256": "ba607e4287e03ca6604ff165b9dd89f5699e03d0eae71251b03324e7a62355d5",
+      "bytes": 303
+    },
+    {
+      "id": "followme-observation-2",
+      "title": "FollowMe one-shot public vessel observation",
+      "retrievedAt": "2026-10-10T14:29:24.5620491Z",
+      "sha256": "8ee1819799fca468c98c7c5074dbce6dec8aaa6f66ed5e363f42c2c7816cc8cb",
+      "bytes": 293
+    },
+    {
+      "id": "followme-observation-3",
+      "title": "FollowMe one-shot public vessel observation",
+      "retrievedAt": "2026-10-10T14:24:26.039Z",
+      "sha256": "211adbb59bc8790d5f6f04fae7a4aa9cdc541f14fc2e8461843c4e615d233f61",
+      "bytes": 303
+    }
+  ],
+  "gaps": [
+    "Owner-selected public listings only; not all Maldives vessels or a census of public transport.",
+    "Only 3 one-shot positions were sampled; remaining directory entries have no coordinates.",
+    "Update timestamps have no documented timezone; freshness and exact UTC observation time are unverified.",
+    "GPS, device power and mobile coverage may delay positions. Directory relative times are capture-time labels.",
+    "Vessel types/operator names are provider labels; passenger capacity, occupancy, fares and service eligibility are unknown.",
+    "Positions/geofences are not scheduled routes, passenger flows, reliable operating costs or emissions evidence.",
+    "FollowMe terms restrict scraping and redistribution. This user-requested research cache stays local and ignored.",
+    "Documented keyed API is available as a server-only transport adapter; no issued key or response schema was acquired."
+  ]
+}

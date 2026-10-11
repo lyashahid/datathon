@@ -2,6 +2,7 @@ import type { InfrastructureCollection, RouteCollection } from '#lib/types/domai
 import { BASELINE_SOURCE } from '$app/env/private';
 import { processedBaselineSource } from './processedSource.ts';
 import { sampleBaselineSource } from './sampleSource.ts';
+import { publicBaselineSource } from './publicSource.ts';
 
 /**
  * Where baseline infrastructure comes from, chosen by BASELINE_SOURCE: the bundled demo files
@@ -14,4 +15,8 @@ export interface BaselineSource {
 }
 
 export const baselineSource: BaselineSource =
-	BASELINE_SOURCE === 'processed' ? processedBaselineSource : sampleBaselineSource;
+	BASELINE_SOURCE === 'processed'
+		? processedBaselineSource
+		: BASELINE_SOURCE === 'sample'
+			? sampleBaselineSource
+			: publicBaselineSource;

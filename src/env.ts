@@ -14,14 +14,26 @@ export const variables = defineEnvVars({
 	},
 	BASELINE_SOURCE: {
 		description:
-			"Baseline data source: 'sample' (bundled demo, default) or 'processed' (output of npm run ingest in data/processed/).",
+			"Infrastructure/routes compatibility endpoints: 'public' (default), 'sample' (demo), or 'processed' (fixture ingestion). The atlas always uses the public planning bundle.",
 		schema: (value) => {
-			const v = value?.trim() || 'sample';
-			if (v !== 'sample' && v !== 'processed') {
-				throw new Error("BASELINE_SOURCE must be 'sample' or 'processed'");
+			const v = value?.trim() || 'public';
+			if (v !== 'sample' && v !== 'processed' && v !== 'public') {
+				throw new Error("BASELINE_SOURCE must be 'public', 'sample' or 'processed'");
 			}
 			return v;
 		}
+	},
+	ENABLE_VESSEL_DATA: {
+		description: 'Enable dated FollowMe vessel and MPL port-call context. Default true.',
+		schema: (value) => parseDataFlag(value, 'ENABLE_VESSEL_DATA')
+	},
+	ENABLE_FLIGHT_PASSENGER_DATA: {
+		description: 'Enable official MACL / MBS airport passenger context. Default true.',
+		schema: (value) => parseDataFlag(value, 'ENABLE_FLIGHT_PASSENGER_DATA')
+	},
+	FOLLOWME_API_KEY: {
+		description: 'Optional issued FollowMe API key. Server-only; never sent to the browser.',
+		schema: (value) => value?.trim() || undefined
 	},
 	WEATHER_PROVIDER: {
 		description:
@@ -29,3 +41,10 @@ export const variables = defineEnvVars({
 		schema: (value) => value?.trim() || undefined
 	}
 });
+
+function parseDataFlag(value: string | undefined, name: string): boolean {
+	const normalized = value?.trim().toLowerCase() || 'true';
+	if (normalized !== 'true' && normalized !== 'false')
+		throw new Error(`${name} must be true or false`);
+	return normalized === 'true';
+}

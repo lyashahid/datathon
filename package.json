@@ -14,7 +14,25 @@
 		"format": "prettier --write .",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
-		"ingest": "node scripts/ingest.ts"
+		"ingest": "node scripts/ingest.ts",
+		"ingest:fixtures": "node scripts/ingest.ts",
+		"data:setup": "node scripts/public-data-run.mjs setup",
+		"data:fetch": "node scripts/public-data-run.mjs fetch",
+		"data:prepare": "node scripts/public-data-run.mjs prepare",
+		"data:validate": "node scripts/public-data-run.mjs validate",
+		"data:audit-stops": "node scripts/public-data-run.mjs audit-stops",
+		"data:refresh": "node scripts/public-data-run.mjs all --refresh",
+		"data:context": "node scripts/agency-context.mjs all",
+		"data:context:fetch": "node scripts/agency-context.mjs fetch",
+		"data:context:prepare": "node scripts/agency-context.mjs prepare",
+		"data:context:validate": "node scripts/agency-context.mjs validate",
+		"data:context:refresh": "node scripts/agency-context.mjs all --refresh",
+		"data:followme": "node --env-file-if-exists=.env scripts/followme-context.mjs",
+		"test:context": "node --test scripts/agency-context.test.mjs scripts/followme-context.test.mjs && vitest run src/lib/context src/lib/server/data/transportContextSource.test.ts",
+		"data:policy-evidence": "node scripts/policy-evidence-run.mjs all",
+		"data:policy-evidence:fetch": "node scripts/policy-evidence-run.mjs fetch",
+		"data:policy-evidence:prepare": "node scripts/policy-evidence-run.mjs prepare",
+		"data:policy-evidence:validate": "node scripts/policy-evidence-run.mjs validate"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
@@ -45,7 +63,11 @@
 		"#lib/*": "./src/lib/*"
 	},
 	"dependencies": {
+		"bits-ui": "^2.19.5",
+		"earcut": "^3.2.4",
 		"h3-js": "^4.5.0",
-		"maplibre-gl": "^6.12.0"
+		"maplibre-gl": "^6.12.0",
+		"pdf-lib": "^1.17.1",
+		"polygon-clipping": "^0.15.7"
 	}
 }

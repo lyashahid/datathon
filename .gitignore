@@ -1,5 +1,13 @@
 node_modules
 
+# Original public downloads are reproducible from scripts/public-data.py.
+/data/raw/
+/data/public/archive/
+/artifacts/qa/
+/artifacts/graphics/
+/output/pdf/
+__pycache__/
+
 # Output
 .output
 .vercel

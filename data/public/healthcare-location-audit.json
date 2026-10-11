@@ -1,0 +1,1525 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-10",
+  "reviewedBaselineVersion": "greater-male-2026-10-10-ad35f36a6a",
+  "scope": "All 13 hospital/clinic records mapped in the reviewed Greater Malé planning baseline.",
+  "policy": {
+    "defaultGeneralCare": "Include only reviewed operatingStatus=open, careScope=general and existing verified map records; retain closed, specialist and unverified records in the inspectable catalogue.",
+    "statusMeaning": "Open denotes current registration/provider/operator evidence on review date. It does not certify opening hours on a selected departure date, capacity, affordability, disability access, or exact entrances.",
+    "absenceRule": "Missing registry/provider/source evidence is unverified, never proof of closure.",
+    "coordinateRule": "Preserve mapped coordinates unless an independently evidenced replacement location is established. Operator map pin agreement corroborates approximate location, not a surveyed entrance."
+  },
+  "facilities": [
+    {
+      "facilityId": "osm:node:6294957686",
+      "name": "Family Care",
+      "islandId": "male",
+      "operatingStatus": "unverified",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-hems-family",
+        "facility-aasandha-family-care"
+      ],
+      "registryId": "HF-10/ALP/PVT/057",
+      "statusNote": "Current HEMS and Aasandha confirm the clinic entity. The mapped H. Azum / Ameenee location cannot be confirmed: a recent social listing names G. Nooraaneemaage, Majeedhee Magu. Keep this map point unverified until primary location evidence reconciles the conflict. No closure asserted.",
+      "careScope": "general",
+      "careScopeNote": "General clinic or hospital category supported by the registry; this does not imply every specialty or emergency service.",
+      "registryEvidence": {
+        "name": "Family Care Clinic and Scan Center",
+        "type": "General Clinic",
+        "registrationId": "HF-10/ALP/PVT/057"
+      },
+      "recommendedKind": null,
+      "defaultGeneralCareEligible": false,
+      "coordinateReview": {
+        "status": "address-conflict",
+        "mappedPosition": {
+          "lon": 73.5159113,
+          "lat": 4.1708825
+        },
+        "independentPosition": null,
+        "evidenceSourceIds": [
+          "facility-maaharaa-addresses",
+          "facility-private-register-feb2026",
+          "facility-family-social-lead",
+          "facility-family-facebook"
+        ],
+        "certifiedEntrance": false,
+        "note": "Ministry dated February 2026 and Maaharaa give H. Azum, Ameenee Magu. Recent secondary social listing gives a different building and street. Do not invent a replacement coordinate."
+      },
+      "reviewSourceIds": [
+        "facility-hems-family",
+        "facility-aasandha-family-care",
+        "facility-maaharaa-addresses",
+        "facility-private-register-feb2026",
+        "facility-family-social-lead",
+        "facility-family-facebook"
+      ],
+      "closureReview": {
+        "sourceId": "facility-suspensions-family-care",
+        "note": "Named Aasandha suspension/termination query checked; no exact provider row found. This is not proof of physical operation."
+      }
+    },
+    {
+      "facilityId": "osm:node:9951457715",
+      "name": "Advance Medical Clinic",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-hems-advance",
+        "facility-aasandha-advance-medical"
+      ],
+      "registryId": "HF-12/ALP/PVT/373",
+      "statusNote": "Exact current HEMS registration and Aasandha empanelment support active general-clinic status. Advance Hospital is a different newly registered entity and must not be merged by owner name.",
+      "careScope": "general",
+      "careScopeNote": "General clinic or hospital category supported by the registry; this does not imply every specialty or emergency service.",
+      "registryEvidence": {
+        "name": "Advance Medical Clinic",
+        "type": "General Clinic",
+        "registrationId": "HF-12/ALP/PVT/373"
+      },
+      "recommendedKind": null,
+      "defaultGeneralCareEligible": true,
+      "coordinateReview": {
+        "status": "address-supported-osm",
+        "mappedPosition": {
+          "lon": 73.5099234,
+          "lat": 4.1726376
+        },
+        "independentPosition": null,
+        "evidenceSourceIds": [
+          "facility-maaharaa-addresses",
+          "facility-private-register-feb2026"
+        ],
+        "certifiedEntrance": false,
+        "note": "Ministry address G. Rocketge / Rocketege, Malé supports identity on this island; OSM point remains an approximate location, without independent entrance coordinates."
+      },
+      "reviewSourceIds": [
+        "facility-hems-advance",
+        "facility-aasandha-advance-medical",
+        "facility-maaharaa-addresses",
+        "facility-private-register-feb2026"
+      ],
+      "closureReview": {
+        "sourceId": "facility-suspensions-advance-medical",
+        "note": "Named Aasandha suspension/termination query checked; no exact provider row found. This is not proof of physical operation."
+      }
+    },
+    {
+      "facilityId": "osm:node:9951500245",
+      "name": "Central Clinic",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-hems-central",
+        "facility-aasandha-central-clinic"
+      ],
+      "registryId": "HF-10/ALP/PVT/025",
+      "statusNote": "Exact current HEMS registration and Aasandha empanelment support active general-clinic status. Central Medical Center is a separate registration.",
+      "careScope": "general",
+      "careScopeNote": "General clinic or hospital category supported by the registry; this does not imply every specialty or emergency service.",
+      "registryEvidence": {
+        "name": "Central Clinic",
+        "type": "General Clinic",
+        "registrationId": "HF-10/ALP/PVT/025"
+      },
+      "recommendedKind": null,
+      "defaultGeneralCareEligible": true,
+      "coordinateReview": {
+        "status": "address-supported-osm",
+        "mappedPosition": {
+          "lon": 73.5059555,
+          "lat": 4.1750642
+        },
+        "independentPosition": null,
+        "evidenceSourceIds": [
+          "facility-maaharaa-addresses",
+          "facility-private-register-feb2026"
+        ],
+        "certifiedEntrance": false,
+        "note": "Ministry address 1st floor M. Dhihlee Villa, Malé; OSM point is retained. No independent street entrance coordinates recovered."
+      },
+      "reviewSourceIds": [
+        "facility-hems-central",
+        "facility-aasandha-central-clinic",
+        "facility-maaharaa-addresses",
+        "facility-private-register-feb2026"
+      ],
+      "closureReview": {
+        "sourceId": "facility-suspensions-central-clinic",
+        "note": "Named Aasandha suspension/termination query checked; no exact provider row found. This is not proof of physical operation."
+      }
+    },
+    {
+      "facilityId": "osm:node:9951513836",
+      "name": "Senahiya Military Hospital",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-hems-senahiya",
+        "facility-aasandha-senahiya"
+      ],
+      "registryId": "HF-19/ALP/GOV/522",
+      "statusNote": "Current HEMS lists a general hospital and Aasandha lists Senahiya in Malé. Historical primary Ministry evidence says it provides general-public consultations. Current broad eligibility is unverified; exclude from default general-care routing without claiming the public is prohibited.",
+      "careScope": "unverified",
+      "careScopeNote": "Current broad general-public eligibility is not established.",
+      "registryEvidence": {
+        "name": "Senahiya Military Hospital",
+        "type": "General Hospital",
+        "registrationId": "HF-19/ALP/GOV/522"
+      },
+      "recommendedKind": null,
+      "defaultGeneralCareEligible": false,
+      "coordinateReview": {
+        "status": "address-supported-osm",
+        "mappedPosition": {
+          "lon": 73.516507,
+          "lat": 4.1716899
+        },
+        "independentPosition": null,
+        "evidenceSourceIds": [
+          "facility-maaharaa-addresses",
+          "facility-senahiya-public-history"
+        ],
+        "certifiedEntrance": false,
+        "note": "Current registry identity matches Senahiya in Malé; OSM position retained. No current operator entrance point independently recovered."
+      },
+      "reviewSourceIds": [
+        "facility-hems-senahiya",
+        "facility-aasandha-senahiya",
+        "facility-maaharaa-addresses",
+        "facility-senahiya-public-history"
+      ],
+      "closureReview": {
+        "sourceId": "facility-suspensions-senahiya",
+        "note": "Named Aasandha suspension/termination query checked; no exact provider row found. This is not proof of physical operation."
+      }
+    },
+    {
+      "facilityId": "osm:node:11186258448",
+      "name": "European Clinic",
+      "islandId": "hulhumale",
+      "operatingStatus": "closed",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-hems-european"
+      ],
+      "registryId": "HF-16/ALP/PVT/455",
+      "statusNote": "Current Ministry HEMS exact establishment is explicitly marked Closed (closed row and Closed card badge). Exclude from active access, retain historical catalogue. No closure date or permanence classification was published in this row.",
+      "careScope": "general",
+      "careScopeNote": "General clinic or hospital category supported by the registry; this does not imply every specialty or emergency service.",
+      "registryEvidence": {
+        "name": "European Clinic Maldives",
+        "type": "General Clinic",
+        "registrationId": "HF-16/ALP/PVT/455"
+      },
+      "recommendedKind": null,
+      "defaultGeneralCareEligible": false,
+      "coordinateReview": {
+        "status": "mapped-unverified",
+        "mappedPosition": {
+          "lon": 73.5461254,
+          "lat": 4.2194254
+        },
+        "independentPosition": null,
+        "evidenceSourceIds": [
+          "facility-aasandha-european"
+        ],
+        "certifiedEntrance": false,
+        "note": "Current operating site is closed. Existing Hulhumalé OSM point is retained only for inspection; no replacement coordinate."
+      },
+      "reviewSourceIds": [
+        "facility-hems-european",
+        "facility-aasandha-european"
+      ],
+      "closureReview": {
+        "sourceId": "facility-suspensions-european",
+        "note": "Named Aasandha suspension/termination query checked; no exact provider row found. This is not proof of physical operation."
+      }
+    },
+    {
+      "facilityId": "osm:node:11190861038",
+      "name": "MACL Medical Clinic",
+      "islandId": "hulhule",
+      "operatingStatus": "unverified",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-hems-macl",
+        "facility-maaharaa-addresses",
+        "facility-macl-old-search"
+      ],
+      "registryId": "HF-20/ALP/PVT/558",
+      "statusNote": "Airport OSM point matches historical Maaharaa registration HF-20/ALP/PVT/558. Current HEMS lists a different MACL registration HF-22/ALP/PVT/621 whose Maaharaa address is 8-A, M. Faamudheyrige, Malé. Name alone cannot confirm the airport clinic remains operational; do not infer closure or relocation.",
+      "careScope": "unverified",
+      "careScopeNote": "Current broad general-public eligibility is not established.",
+      "registryEvidence": {
+        "name": "MACL Medical Clinic (airport historical registration)",
+        "type": "General Clinic (historical)",
+        "registrationId": "HF-20/ALP/PVT/558"
+      },
+      "recommendedKind": null,
+      "defaultGeneralCareEligible": false,
+      "coordinateReview": {
+        "status": "registration-location-conflict",
+        "mappedPosition": {
+          "lon": 73.5268796,
+          "lat": 4.1883365
+        },
+        "independentPosition": null,
+        "evidenceSourceIds": [
+          "facility-aasandha-macl"
+        ],
+        "certifiedEntrance": false,
+        "note": "Old Ministry airport address and current distinct Malé-address registration conflict for a name-only join. No exact current airport registration recovered."
+      },
+      "reviewSourceIds": [
+        "facility-hems-macl",
+        "facility-maaharaa-addresses",
+        "facility-macl-old-search",
+        "facility-aasandha-macl"
+      ],
+      "closureReview": {
+        "sourceId": "facility-suspensions-macl",
+        "note": "Named Aasandha suspension/termination query checked; no exact provider row found. This is not proof of physical operation."
+      }
+    },
+    {
+      "facilityId": "osm:way:151403710",
+      "name": "Indira Gandhi Memorial Hospital",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-hems-indhira",
+        "facility-aasandha-indira",
+        "facility-igmh-operator"
+      ],
+      "registryId": "HF-11/ALP/GOV/223",
+      "statusNote": "Current exact Ministry registration, Aasandha provider and public operator appointment/services support active general-care status.",
+      "careScope": "general",
+      "careScopeNote": "General clinic or hospital category supported by the registry; this does not imply every specialty or emergency service.",
+      "registryEvidence": {
+        "name": "Indhira Gandhi Memorial Hospital",
+        "type": "Tertiary Hospital",
+        "registrationId": "HF-11/ALP/GOV/223"
+      },
+      "recommendedKind": null,
+      "defaultGeneralCareEligible": true,
+      "coordinateReview": {
+        "status": "address-supported-osm",
+        "mappedPosition": {
+          "lon": 73.5014791,
+          "lat": 4.1733498
+        },
+        "independentPosition": null,
+        "evidenceSourceIds": [
+          "facility-maaharaa-addresses",
+          "facility-igmh-contact"
+        ],
+        "certifiedEntrance": false,
+        "note": "Current operator contact supports Malé hospital identity and address. Retain existing OSM campus point; no certified entrance coordinates."
+      },
+      "reviewSourceIds": [
+        "facility-hems-indhira",
+        "facility-aasandha-indira",
+        "facility-igmh-operator",
+        "facility-maaharaa-addresses",
+        "facility-igmh-contact"
+      ],
+      "closureReview": {
+        "sourceId": "facility-suspensions-indira",
+        "note": "Named Aasandha suspension/termination query checked; no exact provider row found. This is not proof of physical operation."
+      }
+    },
+    {
+      "facilityId": "osm:way:383751026",
+      "name": "Hulhumalé Hospital",
+      "islandId": "hulhumale",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-hems-hulhumale",
+        "facility-aasandha-hulhumale",
+        "facility-hmh-operator"
+      ],
+      "registryId": "HF-11/ALP/GOV/202",
+      "statusNote": "Current Ministry registration, exact Aasandha provider and operator contact/appointments support active general-care status.",
+      "careScope": "general",
+      "careScopeNote": "General clinic or hospital category supported by the registry; this does not imply every specialty or emergency service.",
+      "registryEvidence": {
+        "name": "Hulhumale' Hospital",
+        "type": "Tertiary Hospital",
+        "registrationId": "HF-11/ALP/GOV/202"
+      },
+      "recommendedKind": null,
+      "defaultGeneralCareEligible": true,
+      "coordinateReview": {
+        "status": "address-supported-osm",
+        "mappedPosition": {
+          "lon": 73.5431481,
+          "lat": 4.2157496
+        },
+        "independentPosition": null,
+        "evidenceSourceIds": [
+          "facility-maaharaa-addresses"
+        ],
+        "certifiedEntrance": false,
+        "note": "Operator address Huvan’dhumaa Hingun, Hulhumalé and embedded place identity corroborate the hospital area; embedded viewport coordinates were not mistaken for the place pin. OSM point retained."
+      },
+      "reviewSourceIds": [
+        "facility-hems-hulhumale",
+        "facility-aasandha-hulhumale",
+        "facility-hmh-operator",
+        "facility-maaharaa-addresses"
+      ],
+      "closureReview": {
+        "sourceId": "facility-suspensions-hulhumale",
+        "note": "Named Aasandha suspension/termination query checked; no exact provider row found. This is not proof of physical operation."
+      }
+    },
+    {
+      "facilityId": "osm:way:762119227",
+      "name": "Medica",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-hems-medica",
+        "facility-aasandha-medica-page2",
+        "facility-medica-operator"
+      ],
+      "registryId": "HF-12/ALP/PVT/385",
+      "statusNote": "Current Ministry class is General Hospital, supported by exact Aasandha Medica Hospital row on search page 2 and current operator services. Reclassify current clinic record to hospital.",
+      "careScope": "general",
+      "careScopeNote": "General clinic or hospital category supported by the registry; this does not imply every specialty or emergency service.",
+      "registryEvidence": {
+        "name": "Medica",
+        "type": "General Hospital",
+        "registrationId": "HF-12/ALP/PVT/385"
+      },
+      "recommendedKind": "hospital",
+      "defaultGeneralCareEligible": true,
+      "coordinateReview": {
+        "status": "operator-map-corroborated",
+        "mappedPosition": {
+          "lon": 73.5094983,
+          "lat": 4.1786784
+        },
+        "independentPosition": {
+          "lon": 73.5095147,
+          "lat": 4.1787008
+        },
+        "evidenceSourceIds": [
+          "facility-maaharaa-addresses",
+          "facility-private-register-feb2026",
+          "facility-medica-map"
+        ],
+        "certifiedEntrance": false,
+        "note": "Operator contact gives M. Dahana, Faamudheyri Magu. Operator-linked Maps actual place pin is about 3 m from the OSM point. Keep OSM position; not a certified entrance.",
+        "separationMeters": 3.1
+      },
+      "reviewSourceIds": [
+        "facility-hems-medica",
+        "facility-aasandha-medica-page2",
+        "facility-medica-operator",
+        "facility-maaharaa-addresses",
+        "facility-private-register-feb2026",
+        "facility-medica-map"
+      ],
+      "closureReview": {
+        "sourceId": "facility-suspensions-medica",
+        "note": "Named Aasandha suspension/termination query checked; no exact provider row found. This is not proof of physical operation."
+      }
+    },
+    {
+      "facilityId": "osm:way:1001579095",
+      "name": "National Drug Agency of the Maldives",
+      "islandId": "male",
+      "operatingStatus": "unverified",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-hems-national-drug",
+        "facility-nda-gagan"
+      ],
+      "registryId": null,
+      "statusNote": "Mapped generic National Drug Agency record cannot be exact-joined to registered Gagan Clinic merely by owner. Current NDA operator describes Gagan as specialist outpatient addiction treatment at G. Greenge, Alikilegefaanu Magu. Do not count the agency point as a general hospital or relocate it without a confirmed identity/location join.",
+      "careScope": "specialist",
+      "careScopeNote": "Specialist addiction services are not a general-care substitute.",
+      "registryEvidence": {
+        "name": "No exact general-hospital registry match",
+        "type": "Unverified agency POI",
+        "registrationId": null
+      },
+      "recommendedKind": null,
+      "defaultGeneralCareEligible": false,
+      "coordinateReview": {
+        "status": "identity-location-unverified",
+        "mappedPosition": {
+          "lon": 73.5119889,
+          "lat": 4.1745256
+        },
+        "independentPosition": null,
+        "evidenceSourceIds": [
+          "facility-aasandha-national-drug",
+          "facility-maaharaa-addresses"
+        ],
+        "certifiedEntrance": false,
+        "note": "OSM agency/addiction-specialty site has no exact healthcare-registry match. Gagan Clinic is a separate name/address; no replacement point invented."
+      },
+      "reviewSourceIds": [
+        "facility-hems-national-drug",
+        "facility-nda-gagan",
+        "facility-aasandha-national-drug",
+        "facility-maaharaa-addresses"
+      ],
+      "closureReview": {
+        "sourceId": "facility-suspensions-national-drug",
+        "note": "Named Aasandha suspension/termination query checked; no exact provider row found. This is not proof of physical operation."
+      }
+    },
+    {
+      "facilityId": "osm:way:1317929099",
+      "name": "ADK Hospital",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-hems-adk",
+        "facility-aasandha-adk",
+        "facility-adk-operator"
+      ],
+      "registryId": "HF-10/ALP/PVT/007",
+      "statusNote": "Current Ministry registration, exact Aasandha provider and operator appointment/emergency services support active general-care status.",
+      "careScope": "general",
+      "careScopeNote": "General clinic or hospital category supported by the registry; this does not imply every specialty or emergency service.",
+      "registryEvidence": {
+        "name": "ADK Hospital",
+        "type": "Tertiary Hospital",
+        "registrationId": "HF-10/ALP/PVT/007"
+      },
+      "recommendedKind": null,
+      "defaultGeneralCareEligible": true,
+      "coordinateReview": {
+        "status": "operator-map-corroborated",
+        "mappedPosition": {
+          "lon": 73.5152912,
+          "lat": 4.1749249
+        },
+        "independentPosition": {
+          "lon": 73.515352,
+          "lat": 4.17521
+        },
+        "evidenceSourceIds": [
+          "facility-maaharaa-addresses",
+          "facility-adk-map"
+        ],
+        "certifiedEntrance": false,
+        "note": "Operator contact gives Sosun Magu. Operator-linked map search target is about 32 m from the OSM building centroid, corroborating campus area. Keep OSM point; no certified entrance.",
+        "separationMeters": 32.4
+      },
+      "reviewSourceIds": [
+        "facility-hems-adk",
+        "facility-aasandha-adk",
+        "facility-adk-operator",
+        "facility-maaharaa-addresses",
+        "facility-adk-map"
+      ],
+      "closureReview": {
+        "sourceId": "facility-suspensions-adk",
+        "note": "Named Aasandha suspension/termination query checked; no exact provider row found. This is not proof of physical operation."
+      }
+    },
+    {
+      "facilityId": "osm:way:1448574099",
+      "name": "Tree Top Hospital",
+      "islandId": "hulhumale",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-hems-tree-top",
+        "facility-aasandha-tree-top",
+        "facility-treetop-operator"
+      ],
+      "registryId": "HF-17/ALP/PVT/487",
+      "statusNote": "Current Ministry registration, exact Aasandha provider and operator services support active general-care status. Main Hulhumalé hospital must not be conflated with separate TTH Clinic in Malé.",
+      "careScope": "general",
+      "careScopeNote": "General clinic or hospital category supported by the registry; this does not imply every specialty or emergency service.",
+      "registryEvidence": {
+        "name": "Tree Top Hospital",
+        "type": "Tertiary Hospital",
+        "registrationId": "HF-17/ALP/PVT/487"
+      },
+      "recommendedKind": null,
+      "defaultGeneralCareEligible": true,
+      "coordinateReview": {
+        "status": "operator-map-corroborated",
+        "mappedPosition": {
+          "lon": 73.5390001,
+          "lat": 4.212186
+        },
+        "independentPosition": {
+          "lon": 73.5389742,
+          "lat": 4.2119696
+        },
+        "evidenceSourceIds": [
+          "facility-treetop-map"
+        ],
+        "certifiedEntrance": false,
+        "note": "Operator main hospital address Lot 10608, Dhumburi Magu, Hulhumalé. Operator-linked Maps actual place pin is about 24 m from OSM centroid. Keep OSM point, not a certified entrance.",
+        "separationMeters": 24.2
+      },
+      "reviewSourceIds": [
+        "facility-hems-tree-top",
+        "facility-aasandha-tree-top",
+        "facility-treetop-operator",
+        "facility-treetop-map"
+      ],
+      "closureReview": {
+        "sourceId": "facility-suspensions-tree-top",
+        "note": "Named Aasandha suspension/termination query checked; no exact provider row found. This is not proof of physical operation."
+      }
+    },
+    {
+      "facilityId": "osm:way:1548839614",
+      "name": "Dharumavantha Hospital",
+      "islandId": "male",
+      "operatingStatus": "open",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-hems-dharumavantha",
+        "facility-igmh-operator"
+      ],
+      "registryId": "HF-24/ALP/GOV/815",
+      "statusNote": "Current distinct Ministry registration and IGMH operator site confirm this hospital in the group. It shares a campus with IGMH; retain distinct registered buildings but do not sum overlapping beds, staff or patient totals.",
+      "careScope": "general",
+      "careScopeNote": "General clinic or hospital category supported by the registry; this does not imply every specialty or emergency service.",
+      "registryEvidence": {
+        "name": "Dharumavantha Hospital",
+        "type": "Tertiary Hospital",
+        "registrationId": "HF-24/ALP/GOV/815"
+      },
+      "recommendedKind": null,
+      "defaultGeneralCareEligible": true,
+      "coordinateReview": {
+        "status": "address-supported-osm",
+        "mappedPosition": {
+          "lon": 73.50159,
+          "lat": 4.1731778
+        },
+        "independentPosition": null,
+        "evidenceSourceIds": [
+          "facility-maaharaa-addresses",
+          "facility-aasandha-dharumavantha"
+        ],
+        "certifiedEntrance": false,
+        "note": "Ministry Maaharaa address Boduthakurufaanu Magu / plus-code 5GF2+593 and IGMH operator campus identity. Retain OSM building point. No entrance survey."
+      },
+      "reviewSourceIds": [
+        "facility-hems-dharumavantha",
+        "facility-igmh-operator",
+        "facility-maaharaa-addresses",
+        "facility-aasandha-dharumavantha"
+      ],
+      "closureReview": {
+        "sourceId": "facility-suspensions-dharumavantha",
+        "note": "Named Aasandha suspension/termination query checked; no exact provider row found. This is not proof of physical operation."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "facility-hems-family",
+      "title": "HEMS establishment review: Family",
+      "url": "https://hems.health.gov.mv/establishments?search=Family",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:27:09.717Z",
+      "sha256": "c920cca3bfb456a49ac108684ecb5b05605134ecc9f5ebfd09b191d6f21ff113",
+      "bytes": 176290,
+      "file": "data/raw/facility-audit/hems-family.html",
+      "rawPath": "data/raw/facility-audit/hems-family.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-hems-advance",
+      "title": "HEMS establishment review: Advance",
+      "url": "https://hems.health.gov.mv/establishments?search=Advance",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:27:09.887Z",
+      "sha256": "acd2951dae0ff018f021e216b15a11363e3b11d8055028aa8753b3056b7825cd",
+      "bytes": 74359,
+      "file": "data/raw/facility-audit/hems-advance.html",
+      "rawPath": "data/raw/facility-audit/hems-advance.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-hems-central",
+      "title": "HEMS establishment review: Central",
+      "url": "https://hems.health.gov.mv/establishments?search=Central",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:27:10.174Z",
+      "sha256": "341cf89344c4c24660022683598dd156830b739826bf37e4cdbecdfed806458f",
+      "bytes": 58090,
+      "file": "data/raw/facility-audit/hems-central.html",
+      "rawPath": "data/raw/facility-audit/hems-central.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-hems-senahiya",
+      "title": "HEMS establishment review: Senahiya",
+      "url": "https://hems.health.gov.mv/establishments?search=Senahiya",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:27:09.954Z",
+      "sha256": "a401a61c5ef0e921790b5a76ef481f51379a298f641edc841fa2ab80e343e1d4",
+      "bytes": 57805,
+      "file": "data/raw/facility-audit/hems-senahiya.html",
+      "rawPath": "data/raw/facility-audit/hems-senahiya.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-hems-european",
+      "title": "HEMS establishment review: European",
+      "url": "https://hems.health.gov.mv/establishments?search=European",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:27:09.928Z",
+      "sha256": "d66c038740dd01d139305a5c5092a6d3bde590094f8cb4db22a7f28ecbefa3b7",
+      "bytes": 47212,
+      "file": "data/raw/facility-audit/hems-european.html",
+      "rawPath": "data/raw/facility-audit/hems-european.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-hems-macl",
+      "title": "HEMS establishment review: MACL",
+      "url": "https://hems.health.gov.mv/establishments?search=MACL",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:27:10.101Z",
+      "sha256": "f70bd363fe1a43c91caf1834bc3da4e102601e6bcbd23c5ee7cde75fd9f21903",
+      "bytes": 50208,
+      "file": "data/raw/facility-audit/hems-macl.html",
+      "rawPath": "data/raw/facility-audit/hems-macl.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-hems-indhira",
+      "title": "HEMS establishment review: Indhira",
+      "url": "https://hems.health.gov.mv/establishments?search=Indhira",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:27:09.942Z",
+      "sha256": "cfacbea1ae5f04a1c7d8838953c8341014c58109c0778ebb191d11c33a49cd63",
+      "bytes": 49426,
+      "file": "data/raw/facility-audit/hems-indhira.html",
+      "rawPath": "data/raw/facility-audit/hems-indhira.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-hems-hulhumale",
+      "title": "HEMS establishment review: Hulhumale",
+      "url": "https://hems.health.gov.mv/establishments?search=Hulhumale",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:27:10.196Z",
+      "sha256": "f688f9aa34aa4c6b1dcc9812a0bfd4e43f2135b65c1c3a1be8918d277c601d08",
+      "bytes": 172702,
+      "file": "data/raw/facility-audit/hems-hulhumale.html",
+      "rawPath": "data/raw/facility-audit/hems-hulhumale.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-hems-medica",
+      "title": "HEMS establishment review: Medica",
+      "url": "https://hems.health.gov.mv/establishments?search=Medica",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:27:09.785Z",
+      "sha256": "6ef78507b736cde8571f9e1ebdf9b2515078572864ec9b5f47a21d2fa706c2fb",
+      "bytes": 176863,
+      "file": "data/raw/facility-audit/hems-medica.html",
+      "rawPath": "data/raw/facility-audit/hems-medica.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-hems-national-drug",
+      "title": "HEMS establishment review: National Drug",
+      "url": "https://hems.health.gov.mv/establishments?search=National%20Drug",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:27:10.158Z",
+      "sha256": "fe92c4cc7d702690fe6fe45933d1c6d2fd742d9dbc7213c1309e56e70009910d",
+      "bytes": 57742,
+      "file": "data/raw/facility-audit/hems-national-drug.html",
+      "rawPath": "data/raw/facility-audit/hems-national-drug.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-hems-adk",
+      "title": "HEMS establishment review: ADK",
+      "url": "https://hems.health.gov.mv/establishments?search=ADK",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:27:10.292Z",
+      "sha256": "100a5f59df039040ee34fd3967c9f7b37b796ef84a330d6dc43cbc76cf9d063e",
+      "bytes": 67141,
+      "file": "data/raw/facility-audit/hems-adk.html",
+      "rawPath": "data/raw/facility-audit/hems-adk.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-hems-tree-top",
+      "title": "HEMS establishment review: Tree Top",
+      "url": "https://hems.health.gov.mv/establishments?search=Tree%20Top",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:27:10.331Z",
+      "sha256": "8bdbdc4c6bf32fc94a91cbabef453a863ed95a08c9f79c1c1f35d8762f82f9af",
+      "bytes": 74997,
+      "file": "data/raw/facility-audit/hems-tree-top.html",
+      "rawPath": "data/raw/facility-audit/hems-tree-top.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-hems-dharumavantha",
+      "title": "HEMS establishment review: Dharumavantha",
+      "url": "https://hems.health.gov.mv/establishments?search=Dharumavantha",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:27:09.704Z",
+      "sha256": "297c34cb279ce2502cc8925c5c0e0431efc392e1f86133729d86b180fea1e4fc",
+      "bytes": 48640,
+      "file": "data/raw/facility-audit/hems-dharumavantha.html",
+      "rawPath": "data/raw/facility-audit/hems-dharumavantha.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-aasandha-family-care",
+      "title": "Aasandha empanelled provider search: Family Care",
+      "url": "https://www.aasandha.mv/empanelled-facilities-local?filter%5Bsearch%5D=Family%20Care",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-provider-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:43.408Z",
+      "sha256": "27f161e1e338b04019506b7d8ddd028435f74ddd6633e9eab22b242017317bd6",
+      "bytes": 35522,
+      "file": "data/raw/facility-audit/aasandha-providers-family-care.html",
+      "rawPath": "data/raw/facility-audit/aasandha-providers-family-care.html",
+      "notes": "Provider listing supports empanelment, not all-day opening or service capacity."
+    },
+    {
+      "id": "facility-suspensions-family-care",
+      "title": "Aasandha suspension / termination search: Family Care",
+      "url": "https://www.aasandha.mv/suspensions-terminations-of-service-providers?filter%5Bsearch%5D=Family%20Care",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-notice-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:47.732Z",
+      "sha256": "d4ec86a3794ad1fcd9c092654f141b9b6bc0c46bf8b8e06a57e860820f7af7f2",
+      "bytes": 33935,
+      "file": "data/raw/facility-audit/aasandha-suspensions-family-care.html",
+      "rawPath": "data/raw/facility-audit/aasandha-suspensions-family-care.html",
+      "notes": "No exact mapped-provider suspension was identified in this filtered result. Absence is not proof of physical operation."
+    },
+    {
+      "id": "facility-aasandha-advance-medical",
+      "title": "Aasandha empanelled provider search: Advance Medical",
+      "url": "https://www.aasandha.mv/empanelled-facilities-local?filter%5Bsearch%5D=Advance%20Medical",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-provider-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:41.955Z",
+      "sha256": "a9dcb1dd863f53fd95ae0a3624bcf0a22a91b4af258bae5b84373c419b2f629f",
+      "bytes": 36514,
+      "file": "data/raw/facility-audit/aasandha-providers-advance-medical.html",
+      "rawPath": "data/raw/facility-audit/aasandha-providers-advance-medical.html",
+      "notes": "Provider listing supports empanelment, not all-day opening or service capacity."
+    },
+    {
+      "id": "facility-suspensions-advance-medical",
+      "title": "Aasandha suspension / termination search: Advance Medical",
+      "url": "https://www.aasandha.mv/suspensions-terminations-of-service-providers?filter%5Bsearch%5D=Advance%20Medical",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-notice-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:46.205Z",
+      "sha256": "f60e1db2d939af93b554726028ad7bace9f2ab426f80c081d93698fd9f5a3e10",
+      "bytes": 33939,
+      "file": "data/raw/facility-audit/aasandha-suspensions-advance-medical.html",
+      "rawPath": "data/raw/facility-audit/aasandha-suspensions-advance-medical.html",
+      "notes": "No exact mapped-provider suspension was identified in this filtered result. Absence is not proof of physical operation."
+    },
+    {
+      "id": "facility-aasandha-central-clinic",
+      "title": "Aasandha empanelled provider search: Central Clinic",
+      "url": "https://www.aasandha.mv/empanelled-facilities-local?filter%5Bsearch%5D=Central%20Clinic",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-provider-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:44.931Z",
+      "sha256": "128c06d529c175ba136d3362594190dd22bba6e1ae4b666f663b07ee6f932fc8",
+      "bytes": 36504,
+      "file": "data/raw/facility-audit/aasandha-providers-central-clinic.html",
+      "rawPath": "data/raw/facility-audit/aasandha-providers-central-clinic.html",
+      "notes": "Provider listing supports empanelment, not all-day opening or service capacity."
+    },
+    {
+      "id": "facility-suspensions-central-clinic",
+      "title": "Aasandha suspension / termination search: Central Clinic",
+      "url": "https://www.aasandha.mv/suspensions-terminations-of-service-providers?filter%5Bsearch%5D=Central%20Clinic",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-notice-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:48.777Z",
+      "sha256": "327fc864dac7964b203e6d747d5083e840c4fa88be8a4ba6d4c62b66b9445b6f",
+      "bytes": 33938,
+      "file": "data/raw/facility-audit/aasandha-suspensions-central-clinic.html",
+      "rawPath": "data/raw/facility-audit/aasandha-suspensions-central-clinic.html",
+      "notes": "No exact mapped-provider suspension was identified in this filtered result. Absence is not proof of physical operation."
+    },
+    {
+      "id": "facility-aasandha-senahiya",
+      "title": "Aasandha empanelled provider search: Senahiya",
+      "url": "https://www.aasandha.mv/empanelled-facilities-local?filter%5Bsearch%5D=Senahiya",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-provider-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:43.288Z",
+      "sha256": "fbed410299d749259f6c7dba79a35b1eee19fbc85f6437a203976cc32de85f5f",
+      "bytes": 37501,
+      "file": "data/raw/facility-audit/aasandha-providers-senahiya.html",
+      "rawPath": "data/raw/facility-audit/aasandha-providers-senahiya.html",
+      "notes": "Provider listing supports empanelment, not all-day opening or service capacity."
+    },
+    {
+      "id": "facility-suspensions-senahiya",
+      "title": "Aasandha suspension / termination search: Senahiya",
+      "url": "https://www.aasandha.mv/suspensions-terminations-of-service-providers?filter%5Bsearch%5D=Senahiya",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-notice-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:47.612Z",
+      "sha256": "696d9d867ef3153e3bdb783671494042ba4ca038e5fd60a0460e59ef08a26d41",
+      "bytes": 33932,
+      "file": "data/raw/facility-audit/aasandha-suspensions-senahiya.html",
+      "rawPath": "data/raw/facility-audit/aasandha-suspensions-senahiya.html",
+      "notes": "No exact mapped-provider suspension was identified in this filtered result. Absence is not proof of physical operation."
+    },
+    {
+      "id": "facility-aasandha-european",
+      "title": "Aasandha empanelled provider search: European",
+      "url": "https://www.aasandha.mv/empanelled-facilities-local?filter%5Bsearch%5D=European",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-provider-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:43.298Z",
+      "sha256": "fc6abc398edd2006975cd231116cd62e615dc437d1b4b27dca861db38c799510",
+      "bytes": 33789,
+      "file": "data/raw/facility-audit/aasandha-providers-european.html",
+      "rawPath": "data/raw/facility-audit/aasandha-providers-european.html",
+      "notes": "Provider listing supports empanelment, not all-day opening or service capacity."
+    },
+    {
+      "id": "facility-suspensions-european",
+      "title": "Aasandha suspension / termination search: European",
+      "url": "https://www.aasandha.mv/suspensions-terminations-of-service-providers?filter%5Bsearch%5D=European",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-notice-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:47.651Z",
+      "sha256": "5b83a307ab126c6e00892ee7f8fdeccb0f5bd3d5cee34ea8f0066e3d36412441",
+      "bytes": 33932,
+      "file": "data/raw/facility-audit/aasandha-suspensions-european.html",
+      "rawPath": "data/raw/facility-audit/aasandha-suspensions-european.html",
+      "notes": "No exact mapped-provider suspension was identified in this filtered result. Absence is not proof of physical operation."
+    },
+    {
+      "id": "facility-aasandha-macl",
+      "title": "Aasandha empanelled provider search: MACL",
+      "url": "https://www.aasandha.mv/empanelled-facilities-local?filter%5Bsearch%5D=MACL",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-provider-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:44.992Z",
+      "sha256": "145349046fa60ef60ca035741da61cab2d2bab6abf94780dad629311b80e614b",
+      "bytes": 33785,
+      "file": "data/raw/facility-audit/aasandha-providers-macl.html",
+      "rawPath": "data/raw/facility-audit/aasandha-providers-macl.html",
+      "notes": "Provider listing supports empanelment, not all-day opening or service capacity."
+    },
+    {
+      "id": "facility-suspensions-macl",
+      "title": "Aasandha suspension / termination search: MACL",
+      "url": "https://www.aasandha.mv/suspensions-terminations-of-service-providers?filter%5Bsearch%5D=MACL",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-notice-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:48.817Z",
+      "sha256": "d1d28643dafc9a54d6dca95bcab25c6260cdfc64871ed32963ce6a6f27906c6e",
+      "bytes": 33928,
+      "file": "data/raw/facility-audit/aasandha-suspensions-macl.html",
+      "rawPath": "data/raw/facility-audit/aasandha-suspensions-macl.html",
+      "notes": "No exact mapped-provider suspension was identified in this filtered result. Absence is not proof of physical operation."
+    },
+    {
+      "id": "facility-aasandha-indira",
+      "title": "Aasandha empanelled provider search: Indira",
+      "url": "https://www.aasandha.mv/empanelled-facilities-local?filter%5Bsearch%5D=Indira",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-provider-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:46.115Z",
+      "sha256": "31382432312e1575ca4c8b4ac894ab30a8c93a07a16fdeda2fd118deb9068ce2",
+      "bytes": 35521,
+      "file": "data/raw/facility-audit/aasandha-providers-indira.html",
+      "rawPath": "data/raw/facility-audit/aasandha-providers-indira.html",
+      "notes": "Provider listing supports empanelment, not all-day opening or service capacity."
+    },
+    {
+      "id": "facility-suspensions-indira",
+      "title": "Aasandha suspension / termination search: Indira",
+      "url": "https://www.aasandha.mv/suspensions-terminations-of-service-providers?filter%5Bsearch%5D=Indira",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-notice-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:48.846Z",
+      "sha256": "e7e0ca722ded398cf9336d9c98dee2a8b7f405192129bef1d3c5ee6fcb5da027",
+      "bytes": 33930,
+      "file": "data/raw/facility-audit/aasandha-suspensions-indira.html",
+      "rawPath": "data/raw/facility-audit/aasandha-suspensions-indira.html",
+      "notes": "No exact mapped-provider suspension was identified in this filtered result. Absence is not proof of physical operation."
+    },
+    {
+      "id": "facility-aasandha-hulhumale",
+      "title": "Aasandha empanelled provider search: Hulhumale",
+      "url": "https://www.aasandha.mv/empanelled-facilities-local?filter%5Bsearch%5D=Hulhumale",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-provider-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:44.545Z",
+      "sha256": "45a714f9e1140a3a90b904da119c036fea7fb782a933e402b2ef3b3b848255ff",
+      "bytes": 57850,
+      "file": "data/raw/facility-audit/aasandha-providers-hulhumale.html",
+      "rawPath": "data/raw/facility-audit/aasandha-providers-hulhumale.html",
+      "notes": "Provider listing supports empanelment, not all-day opening or service capacity."
+    },
+    {
+      "id": "facility-suspensions-hulhumale",
+      "title": "Aasandha suspension / termination search: Hulhumale",
+      "url": "https://www.aasandha.mv/suspensions-terminations-of-service-providers?filter%5Bsearch%5D=Hulhumale",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-notice-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:47.821Z",
+      "sha256": "332b79711638b8acf0ed99c5ff67ed6cfa4feb514e9ae131bbe04ac0a11129cb",
+      "bytes": 56322,
+      "file": "data/raw/facility-audit/aasandha-suspensions-hulhumale.html",
+      "rawPath": "data/raw/facility-audit/aasandha-suspensions-hulhumale.html",
+      "notes": "No exact mapped-provider suspension was identified in this filtered result. Absence is not proof of physical operation."
+    },
+    {
+      "id": "facility-aasandha-medica",
+      "title": "Aasandha empanelled provider search: Medica",
+      "url": "https://www.aasandha.mv/empanelled-facilities-local?filter%5Bsearch%5D=Medica",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-provider-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:43.019Z",
+      "sha256": "c68ecbcb693ba67796405d46c713780508df170d2f73cfa6653eccab2c60af11",
+      "bytes": 57478,
+      "file": "data/raw/facility-audit/aasandha-providers-medica.html",
+      "rawPath": "data/raw/facility-audit/aasandha-providers-medica.html",
+      "notes": "Provider listing supports empanelment, not all-day opening or service capacity."
+    },
+    {
+      "id": "facility-suspensions-medica",
+      "title": "Aasandha suspension / termination search: Medica",
+      "url": "https://www.aasandha.mv/suspensions-terminations-of-service-providers?filter%5Bsearch%5D=Medica",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-notice-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:46.473Z",
+      "sha256": "d4371a01dcac0cb9d8f810b2a71b0bd902b1ca043be3d6c676bf6ee256556940",
+      "bytes": 47198,
+      "file": "data/raw/facility-audit/aasandha-suspensions-medica.html",
+      "rawPath": "data/raw/facility-audit/aasandha-suspensions-medica.html",
+      "notes": "No exact mapped-provider suspension was identified in this filtered result. Absence is not proof of physical operation."
+    },
+    {
+      "id": "facility-aasandha-national-drug",
+      "title": "Aasandha empanelled provider search: National Drug",
+      "url": "https://www.aasandha.mv/empanelled-facilities-local?filter%5Bsearch%5D=National%20Drug",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-provider-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:44.866Z",
+      "sha256": "49df83521635cd53e52980ede571bedf53ed14af30ed5c5fe7e8e3272948c4da",
+      "bytes": 35524,
+      "file": "data/raw/facility-audit/aasandha-providers-national-drug.html",
+      "rawPath": "data/raw/facility-audit/aasandha-providers-national-drug.html",
+      "notes": "Provider listing supports empanelment, not all-day opening or service capacity."
+    },
+    {
+      "id": "facility-suspensions-national-drug",
+      "title": "Aasandha suspension / termination search: National Drug",
+      "url": "https://www.aasandha.mv/suspensions-terminations-of-service-providers?filter%5Bsearch%5D=National%20Drug",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-notice-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:48.758Z",
+      "sha256": "7bd7fa2680dec12002cb07354289d8b5954fe80a15b9b904e3dcf240f119a4f1",
+      "bytes": 33937,
+      "file": "data/raw/facility-audit/aasandha-suspensions-national-drug.html",
+      "rawPath": "data/raw/facility-audit/aasandha-suspensions-national-drug.html",
+      "notes": "No exact mapped-provider suspension was identified in this filtered result. Absence is not proof of physical operation."
+    },
+    {
+      "id": "facility-aasandha-adk",
+      "title": "Aasandha empanelled provider search: ADK",
+      "url": "https://www.aasandha.mv/empanelled-facilities-local?filter%5Bsearch%5D=ADK",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-provider-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:41.978Z",
+      "sha256": "8a3d939630a052148077c508e7618cd03c21f95482ece5e46c676677db5911ff",
+      "bytes": 45418,
+      "file": "data/raw/facility-audit/aasandha-providers-adk.html",
+      "rawPath": "data/raw/facility-audit/aasandha-providers-adk.html",
+      "notes": "Provider listing supports empanelment, not all-day opening or service capacity."
+    },
+    {
+      "id": "facility-suspensions-adk",
+      "title": "Aasandha suspension / termination search: ADK",
+      "url": "https://www.aasandha.mv/suspensions-terminations-of-service-providers?filter%5Bsearch%5D=ADK",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-notice-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:46.322Z",
+      "sha256": "d97bd794f510f906d6fcf409bc066d758c00c4f2578d4394877ebb38e2a05e31",
+      "bytes": 33927,
+      "file": "data/raw/facility-audit/aasandha-suspensions-adk.html",
+      "rawPath": "data/raw/facility-audit/aasandha-suspensions-adk.html",
+      "notes": "No exact mapped-provider suspension was identified in this filtered result. Absence is not proof of physical operation."
+    },
+    {
+      "id": "facility-aasandha-tree-top",
+      "title": "Aasandha empanelled provider search: Tree Top",
+      "url": "https://www.aasandha.mv/empanelled-facilities-local?filter%5Bsearch%5D=Tree%20Top",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-provider-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:41.973Z",
+      "sha256": "67fa7ded42bca1f71e8abccfbee948e9ad365d782a972bbf318c93c406983d74",
+      "bytes": 36514,
+      "file": "data/raw/facility-audit/aasandha-providers-tree-top.html",
+      "rawPath": "data/raw/facility-audit/aasandha-providers-tree-top.html",
+      "notes": "Provider listing supports empanelment, not all-day opening or service capacity."
+    },
+    {
+      "id": "facility-suspensions-tree-top",
+      "title": "Aasandha suspension / termination search: Tree Top",
+      "url": "https://www.aasandha.mv/suspensions-terminations-of-service-providers?filter%5Bsearch%5D=Tree%20Top",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-notice-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:46.404Z",
+      "sha256": "c72a04ad4c6e0277b74550cd537f1a197084243b1abbd1b35889da79843dee74",
+      "bytes": 33932,
+      "file": "data/raw/facility-audit/aasandha-suspensions-tree-top.html",
+      "rawPath": "data/raw/facility-audit/aasandha-suspensions-tree-top.html",
+      "notes": "No exact mapped-provider suspension was identified in this filtered result. Absence is not proof of physical operation."
+    },
+    {
+      "id": "facility-aasandha-dharumavantha",
+      "title": "Aasandha empanelled provider search: Dharumavantha",
+      "url": "https://www.aasandha.mv/empanelled-facilities-local?filter%5Bsearch%5D=Dharumavantha",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-provider-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:44.715Z",
+      "sha256": "6c61438dff2029ce0a7075942f08cff2652847a96bcecb2de44694e010eb55c5",
+      "bytes": 35516,
+      "file": "data/raw/facility-audit/aasandha-providers-dharumavantha.html",
+      "rawPath": "data/raw/facility-audit/aasandha-providers-dharumavantha.html",
+      "notes": "Provider listing supports empanelment, not all-day opening or service capacity."
+    },
+    {
+      "id": "facility-suspensions-dharumavantha",
+      "title": "Aasandha suspension / termination search: Dharumavantha",
+      "url": "https://www.aasandha.mv/suspensions-terminations-of-service-providers?filter%5Bsearch%5D=Dharumavantha",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-notice-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:47.892Z",
+      "sha256": "e79d205ae0bea452b6907c87402afe7a733630d7c54b47dfcb99a18d990e7c47",
+      "bytes": 33937,
+      "file": "data/raw/facility-audit/aasandha-suspensions-dharumavantha.html",
+      "rawPath": "data/raw/facility-audit/aasandha-suspensions-dharumavantha.html",
+      "notes": "No exact mapped-provider suspension was identified in this filtered result. Absence is not proof of physical operation."
+    },
+    {
+      "id": "facility-aasandha-medica-page2",
+      "title": "Aasandha Medica Hospital exact row, search page 2",
+      "url": "https://www.aasandha.mv/empanelled-facilities-local?filter%5Bsearch%5D=Medica&page=2",
+      "publisher": "Aasandha Company Limited",
+      "evidenceType": "primary-provider-list",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:29:30.600Z",
+      "sha256": "c16b600adaf875efa7f0654dd4ca730760f1d69d6e77ed4b3aecba8c60a771ed",
+      "bytes": 57518,
+      "file": "data/raw/facility-audit/medica-aasandha-page2.html",
+      "rawPath": "data/raw/facility-audit/medica-aasandha-page2.html",
+      "notes": "Medica Hospital is on page 2; page 1 alone is incomplete."
+    },
+    {
+      "id": "facility-maaharaa-addresses",
+      "title": "Maaharaa public facility addresses and historical registrations",
+      "url": "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:29:33.701Z",
+      "sha256": "af7c6709331c9d81582a39d9537a1e4e1e88fbadb558adaaa54f0ffdf5260f36",
+      "bytes": 784469,
+      "file": "data/raw/facility-audit/maaharaa.html",
+      "rawPath": "data/raw/facility-audit/maaharaa.html",
+      "notes": "Contains historical versions, duplicate MACL name registrations, and old addresses; do not treat presence as current operating status."
+    },
+    {
+      "id": "facility-private-register-feb2026",
+      "title": "Operating Private Health Facilities, updated 3 February 2026",
+      "url": "https://health.gov.mv/storage/uploads/DqK0gAoO/e1wwortt.pdf",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:36:29.255Z",
+      "sha256": "660cc03e64004a490403595537911c61d6b5c604f87f9e2ef7f25dc1ed739785",
+      "bytes": 1869604,
+      "file": "data/raw/facility-audit/ministry-private-facilities-feb2026.pdf",
+      "rawPath": "data/raw/facility-audit/ministry-private-facilities-feb2026.pdf",
+      "notes": "Dated static address evidence; superseded status must use current HEMS. Family Care still listed at H. Azum."
+    },
+    {
+      "id": "facility-macl-old-search",
+      "title": "HEMS search for old airport MACL registration suffix 558",
+      "url": "https://hems.health.gov.mv/establishments?search=558",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-registry",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:33:54.582Z",
+      "sha256": "e696febc7b8cc93a09771ef5b0ff2d26937b733f46be47c551cd725ee2694b93",
+      "bytes": 40284,
+      "file": "data/raw/facility-audit/macl-old-registry.html",
+      "rawPath": "data/raw/facility-audit/macl-old-registry.html",
+      "notes": "No returned establishment. Not used to infer closure."
+    },
+    {
+      "id": "facility-medica-operator",
+      "title": "Medica Hospital contact and service page",
+      "url": "https://medica.com.mv/contact-us/",
+      "publisher": "Medica Hospital",
+      "evidenceType": "primary-operator",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:28:12.236Z",
+      "sha256": "3f1ad64a5860855e0ea5be4288ea82ea1411232f708bc3ae6067907c1a92c4cb",
+      "bytes": 274066,
+      "file": "data/raw/facility-audit/medica-contact.html",
+      "rawPath": "data/raw/facility-audit/medica-contact.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-treetop-operator",
+      "title": "Tree Top Hospital contact, main hospital and separate Malé clinic",
+      "url": "https://www.treetophospital.com/contact",
+      "publisher": "Tree Top Hospital",
+      "evidenceType": "primary-operator",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:29:30.433Z",
+      "sha256": "b931003e80749e5e6062d5c5479d93073c32400f5b157af3bfeed81f54cda729",
+      "bytes": 107581,
+      "file": "data/raw/facility-audit/treetop-contact.html",
+      "rawPath": "data/raw/facility-audit/treetop-contact.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-adk-operator",
+      "title": "ADK Hospital current contact and services",
+      "url": "https://www.adkhospital.com/contact",
+      "publisher": "ADK Hospital",
+      "evidenceType": "primary-operator",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:33:54.205Z",
+      "sha256": "7f7a9329896157881da79c3c945e0365ea9f1de797ec02bb4300557cf0f95b76",
+      "bytes": 112902,
+      "file": "data/raw/facility-audit/adk-contact-current.html",
+      "rawPath": "data/raw/facility-audit/adk-contact-current.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-igmh-operator",
+      "title": "IGMH current hospital services; Dharumavantha in hospital network",
+      "url": "https://www.igmh.gov.mv/en",
+      "publisher": "Indira Gandhi Memorial Hospital",
+      "evidenceType": "primary-operator",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:33:55.644Z",
+      "sha256": "b5975c3ddd80a976b4ff43499b545a5518db6b8159c1e7dd30c53a35d475bcb7",
+      "bytes": 1734226,
+      "file": "data/raw/facility-audit/igmh-home.html",
+      "rawPath": "data/raw/facility-audit/igmh-home.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-igmh-contact",
+      "title": "IGMH current contact",
+      "url": "https://www.igmh.gov.mv/en/contact-us",
+      "publisher": "Indira Gandhi Memorial Hospital",
+      "evidenceType": "primary-operator",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:33:55.152Z",
+      "sha256": "041c8342285b3de1fa4e5ba4034fd167d9325c0a7082d9e994dd424562768834",
+      "bytes": 1287928,
+      "file": "data/raw/facility-audit/igmh-contact-current.html",
+      "rawPath": "data/raw/facility-audit/igmh-contact-current.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-hmh-operator",
+      "title": "Hulhumalé Hospital current contact",
+      "url": "https://hmh.gov.mv/contact",
+      "publisher": "Hulhumalé Hospital",
+      "evidenceType": "primary-operator",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:36:28.689Z",
+      "sha256": "e1d1102450a60e377e3f9764fbdb51e41db44f51fd50d518cf232c355bda4147",
+      "bytes": 92709,
+      "file": "data/raw/facility-audit/hmh-contact.html",
+      "rawPath": "data/raw/facility-audit/hmh-contact.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-nda-gagan",
+      "title": "NDA Gagan Clinic specialist services and address",
+      "url": "https://nda.gov.mv/en/centers/gagan-clinic-male",
+      "publisher": "National Drug Agency",
+      "evidenceType": "primary-operator",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:37:24.350Z",
+      "sha256": "aba68efb457daa9d602c19af1d529e689508aa879d30a157bd8706aedfa4af63",
+      "bytes": 25024,
+      "file": "data/raw/facility-audit/nda-gagan.html",
+      "rawPath": "data/raw/facility-audit/nda-gagan.html",
+      "notes": "Gagan Clinic has a distinct registered name and address. Ownership cannot locate it at the generic NDA OSM point."
+    },
+    {
+      "id": "facility-senahiya-public-history",
+      "title": "Ministry health project framework: Senahiya public consultations",
+      "url": "https://health.gov.mv/storage/uploads/koMrROwd/ay9cfgku.pdf",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-policy-document",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:37:25.312Z",
+      "sha256": "2c97a57a8729336c7a85bfc766eedf06b7b7dfb351c7cfef1da98a6e86717d10",
+      "bytes": 9420730,
+      "file": "data/raw/facility-audit/senahiya-ministry-public-services.pdf",
+      "rawPath": "data/raw/facility-audit/senahiya-ministry-public-services.pdf",
+      "notes": "Historical document, circa 2020. Explicitly describes general-public services; insufficient to confirm current broad eligibility. Military ownership alone does not establish restricted public access."
+    },
+    {
+      "id": "facility-family-social-lead",
+      "title": "Family Care social listing: recent schedules and different address",
+      "url": "https://www.findhealthclinics.org/MV/Male/411231342233086/Family-Care-Clinic",
+      "publisher": "FindHealthClinics / mirrored social posts",
+      "evidenceType": "secondary-location-lead",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:33:54.989Z",
+      "sha256": "fd2dfb8fdc70a6f29a8d65aa1bb2dd15e9ab9ce789866374e9a2a842137b4ae3",
+      "bytes": 127038,
+      "file": "data/raw/facility-audit/family-social-mirror.html",
+      "rawPath": "data/raw/facility-audit/family-social-mirror.html",
+      "notes": "Lists G. Nooraaneemaage, Majeedhee Magu; recent schedules 4 October 2026. Relocation is a lead, not primary-confirmed."
+    },
+    {
+      "id": "facility-family-facebook",
+      "title": "Family Care Clinic official Facebook identity",
+      "url": "https://www.facebook.com/FamilyCareMaldives/",
+      "publisher": "Family Care Clinic",
+      "evidenceType": "primary-operator",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:34:42.024Z",
+      "sha256": "e13c13a91241eb7f35d18da624ee0e88e8442703aa931fa392fe9a7da214036b",
+      "bytes": 508446,
+      "file": "data/raw/facility-audit/family-facebook.html",
+      "rawPath": "data/raw/facility-audit/family-facebook.html",
+      "notes": "Public page metadata identifies the operator; location and relocation notice not exposed to this retrieval."
+    },
+    {
+      "id": "facility-medica-map",
+      "title": "Medica operator-linked Google Maps place",
+      "url": "https://maps.app.goo.gl/Q4s15YeyuMq6bLXm6",
+      "publisher": "Medica Hospital / Google Maps",
+      "evidenceType": "operator-linked-map",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:33:55.072Z",
+      "sha256": "63da6b3e3d5389c8c058944da933bbf60ede3d40a62ed4c1b4f7437a1ddc7ffc",
+      "bytes": 219383,
+      "file": "data/raw/facility-audit/medica-maps-redirect.html",
+      "rawPath": "data/raw/facility-audit/medica-maps-redirect.html",
+      "notes": "Actual place coordinates from redirect !3d4.1787008!4d73.5095147, not viewport @ coordinates. No street entrance survey."
+    },
+    {
+      "id": "facility-treetop-map",
+      "title": "Tree Top operator-linked Google Maps place",
+      "url": "https://maps.app.goo.gl/o3xxtq7nRqpzXfp28",
+      "publisher": "Tree Top Hospital / Google Maps",
+      "evidenceType": "operator-linked-map",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:33:56.044Z",
+      "sha256": "e78834fa728e9783c250342717241184ec002b8be909e39882c239b1a60e4cf5",
+      "bytes": 220891,
+      "file": "data/raw/facility-audit/treetop-maps-redirect.html",
+      "rawPath": "data/raw/facility-audit/treetop-maps-redirect.html",
+      "notes": "Actual place coordinates from redirect !3d4.2119696!4d73.5389742, not viewport or embedded-map centre."
+    },
+    {
+      "id": "facility-adk-map",
+      "title": "ADK operator-linked map destination",
+      "url": "https://maps.app.goo.gl/pQCiU7ujzSFrJ9Dd6",
+      "publisher": "ADK Hospital / Google Maps",
+      "evidenceType": "operator-linked-map",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:34:42.619Z",
+      "sha256": "251b812e3084cd8339abfbbeda2bf0464858dd94b7f8b9438098866926017154",
+      "bytes": 223111,
+      "file": "data/raw/facility-audit/adk-maps-redirect.html",
+      "rawPath": "data/raw/facility-audit/adk-maps-redirect.html",
+      "notes": "Operator-selected map search coordinates 4.175210, 73.515352; corroborates campus area, not a surveyed entrance."
+    },
+    {
+      "id": "facility-dhamanaveshi-ministry",
+      "title": "Ministry Dhamana Veshi department page",
+      "url": "https://health.gov.mv/en/departments/dhamanaveshi",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-operator",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:33:54.542Z",
+      "sha256": "56d86110a15d3931919684ed60d8c84e818f8f97ba34378fc3e8e2bb10cfe4cd",
+      "bytes": 29482,
+      "file": "data/raw/facility-audit/dhamanaveshi-ministry.html",
+      "rawPath": "data/raw/facility-audit/dhamanaveshi-ministry.html",
+      "notes": ""
+    },
+    {
+      "id": "facility-dhamanaveshi-charter",
+      "title": "Dhamanaveshi Service Charter 2026, published 5 February 2026",
+      "url": "https://health.gov.mv/storage/uploads/jqJEXNY5/m8buzzuo.pdf",
+      "publisher": "Ministry of Health, Family and Welfare",
+      "evidenceType": "primary-service-charter",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:36:28.718Z",
+      "sha256": "eaaa22723157ee287a8ba871cdc21d6834bf0d9c904904423e73985f8d6b66f1",
+      "bytes": 240317,
+      "file": "data/raw/facility-audit/dhamanaveshi-charter2026.pdf",
+      "rawPath": "data/raw/facility-audit/dhamanaveshi-charter2026.pdf",
+      "notes": "Predates June relocation reports; header retains Majeedhee Magu address."
+    },
+    {
+      "id": "facility-uphc-primary",
+      "title": "IGMH announcement of Urban Primary Health Centre, Maafannu",
+      "url": "https://www.igmh.gov.mv/en/news/urban-primary-health-centre---maafannu",
+      "publisher": "Indira Gandhi Memorial Hospital",
+      "evidenceType": "primary-operator",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:36:29.393Z",
+      "sha256": "dbb92d8169a5771bd328b08dc102f6fb6e283384da2b0a267acdac778561dde4",
+      "bytes": 1288105,
+      "file": "data/raw/facility-audit/igmh-uphc.html",
+      "rawPath": "data/raw/facility-audit/igmh-uphc.html",
+      "notes": "Confirms UPHC existence and primary-care role, not the June relocation or precise coordinates."
+    },
+    {
+      "id": "facility-dhamanaveshi-relocation-lead",
+      "title": "Dhamanaveshi services relocated during redevelopment, 1 June 2026",
+      "url": "https://www.oneonline.mv/en/120607",
+      "publisher": "One Online",
+      "evidenceType": "secondary-notice-report",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:37:25.638Z",
+      "sha256": "58fc395f7c4395a2f4f768878cebfc08ead2d05656c81db29ec54a22818446d4",
+      "bytes": 31343,
+      "file": "data/raw/facility-audit/dhamanaveshi-report-june2026.html",
+      "rawPath": "data/raw/facility-audit/dhamanaveshi-report-june2026.html",
+      "notes": "Reports temporary services at UPHC Maafannu and GP Clinic Hulhumalé Phase II. Primary June notice not independently recovered."
+    },
+    {
+      "id": "facility-dhamanaveshi-relocation-corroboration",
+      "title": "Dhamanaveshi services temporarily relocated, 2 June 2026",
+      "url": "https://atolltimes.mv/post/news/16122",
+      "publisher": "Atoll Times",
+      "evidenceType": "secondary-notice-report",
+      "status": "downloaded",
+      "fetchedAt": "2026-10-10T11:37:24.963Z",
+      "sha256": "edfc5b5d3a0b55127d1dbee78641c7c35894af993dfe52717cb6184518ed22f6",
+      "bytes": 58420,
+      "file": "data/raw/facility-audit/dhamanaveshi-report-atolltimes.html",
+      "rawPath": "data/raw/facility-audit/dhamanaveshi-report-atolltimes.html",
+      "notes": "Corroborating report; no replacement coordinates inferred."
+    }
+  ],
+  "coverageGaps": [
+    {
+      "name": "Dhamanaveshi",
+      "operatingStatus": "unverified",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-dhamanaveshi-ministry",
+        "facility-dhamanaveshi-charter",
+        "facility-uphc-primary",
+        "facility-dhamanaveshi-relocation-lead",
+        "facility-dhamanaveshi-relocation-corroboration"
+      ],
+      "statusNote": "Not among the 13 mapped baseline healthcare destinations. June 2026 secondary reports consistently describe temporary relocation to UPHC Maafannu and GP/other Hulhumalé services during renovation. A primary June notice and current replacement coordinates were not recovered. February 2026 Ministry charter predates this event and cannot confirm continued operation at the old Majeedhee Magu building. Do not add or move a point on this evidence alone.",
+      "careScope": "general",
+      "coordinates": null
+    },
+    {
+      "name": "Vilimalé Hospital",
+      "operatingStatus": "unverified",
+      "statusReviewedAt": "2026-10-10",
+      "statusSourceIds": [
+        "facility-igmh-operator"
+      ],
+      "statusNote": "Operator network lists hospital; current baseline explicitly lacks a verified geocoded point. This facility audit does not invent a centroid or count access to it.",
+      "careScope": "general",
+      "coordinates": null
+    }
+  ],
+  "limitations": [
+    "Review is a desk audit of public primary sources, not a site visit or telephone confirmation.",
+    "The Ministry HEMS class list includes explicit closed flags; practitioners counts are not measured capacity and a zero displayed count does not prove closure.",
+    "Aasandha empanelment and suspension lists cover insurance relationships, not the physical opening of every service at a site.",
+    "Most points remain OSM node/building centroids. No facility has a certified accessible street entrance in this bundle.",
+    "All healthcare destination availability remains untimed: current operating status does not establish whether an outpatient clinic is open at a scenario departure time.",
+    "No exact duplicate healthcare IDs/names occur among these 13 records. IGMH and Dharumavantha are distinct registered buildings in a shared campus, not independently additive capacity."
+  ],
+  "version": "healthcare-review-2026-10-10-1ce8415f02"
+}

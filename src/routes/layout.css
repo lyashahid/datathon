@@ -31,15 +31,15 @@
 	--hud-rail-w: 2.75rem;
 	--hud-sidebar-w: 15rem;
 	--hud-inspector-w: 18.5rem;
-	color-scheme: dark;
+	color-scheme: light;
 }
 
 html,
 body {
 	height: 100%;
 	overflow: hidden;
-	background: var(--color-hud-void);
-	color: var(--color-hud-text);
+	background: #f5f8f5;
+	color: #163e4b;
 	font-family: var(--font-sans);
 	-webkit-font-smoothing: antialiased;
 }

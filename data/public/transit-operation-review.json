@@ -1,0 +1,2977 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-10T18:31:18.729001+00:00",
+  "reviewedAtMaldivesLocal": "2026-10-10T23:31:18.729001+05:00",
+  "baselineVersion": "greater-male-2026-10-10-9a4eeb83bc",
+  "baselineSha256": "11551e4e401cc2785a05f45ae08869ef6199a4c99736dbddc6781dfc6e1ebbf3",
+  "scope": "Public-source identity and timing-coverage review; no field or telephone verification.",
+  "summary": {
+    "currentCatalogueRoutes": 15,
+    "currentRouteStopMembershipRecords": 194,
+    "currentUniqueOperatorStopCodes": 99,
+    "baselineStopCodes": 99,
+    "addedOperatorCodes": [],
+    "removedOperatorCodes": [],
+    "changedPublishedCoordinateCodes": [],
+    "orphanCodes": [],
+    "codesWithLoadedPlanningService": 61,
+    "codesWithoutLoadedPlanningService": 38,
+    "physicalOpenVerifiedCodes": 0,
+    "physicalClosedVerifiedCodes": 0
+  },
+  "byIsland": [
+    {
+      "islandId": "hulhule",
+      "operatorListedCodes": 3,
+      "codesWithLoadedPlanningService": 3,
+      "codesWithoutLoadedPlanningService": 0
+    },
+    {
+      "islandId": "hulhumale",
+      "operatorListedCodes": 30,
+      "codesWithLoadedPlanningService": 30,
+      "codesWithoutLoadedPlanningService": 0
+    },
+    {
+      "islandId": "male",
+      "operatorListedCodes": 49,
+      "codesWithLoadedPlanningService": 11,
+      "codesWithoutLoadedPlanningService": 38
+    },
+    {
+      "islandId": "vilimale",
+      "operatorListedCodes": 17,
+      "codesWithLoadedPlanningService": 17,
+      "codesWithoutLoadedPlanningService": 0
+    }
+  ],
+  "currentRoutes": [
+    {
+      "id": "rtl:route:133",
+      "routeNumber": "R1",
+      "name": "West Park to HM Phase 1",
+      "stopIds": [
+        "rtl:stop:103",
+        "rtl:stop:304",
+        "rtl:stop:105",
+        "rtl:stop:106",
+        "rtl:stop:107",
+        "rtl:stop:121",
+        "rtl:stop:108",
+        "rtl:stop:109",
+        "rtl:stop:110",
+        "rtl:stop:111",
+        "rtl:stop:112",
+        "rtl:stop:113",
+        "rtl:stop:114",
+        "rtl:stop:115",
+        "rtl:stop:11106",
+        "rtl:stop:117",
+        "rtl:stop:118",
+        "rtl:stop:11103"
+      ],
+      "stopCount": 18,
+      "stopsWithAnyReturnedTiming": 16,
+      "rawCompleteTimingOrderCount": 0,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    },
+    {
+      "id": "rtl:route:122",
+      "routeNumber": "R10",
+      "name": "Orchid",
+      "stopIds": [
+        "rtl:stop:1102",
+        "rtl:stop:1103",
+        "rtl:stop:1004",
+        "rtl:stop:1005",
+        "rtl:stop:1006",
+        "rtl:stop:1007",
+        "rtl:stop:1008",
+        "rtl:stop:1009",
+        "rtl:stop:201",
+        "rtl:stop:1011",
+        "rtl:stop:1012",
+        "rtl:stop:1013",
+        "rtl:stop:1014",
+        "rtl:stop:1106",
+        "rtl:stop:1016",
+        "rtl:stop:1017",
+        "rtl:stop:1018"
+      ],
+      "stopCount": 17,
+      "stopsWithAnyReturnedTiming": 0,
+      "rawCompleteTimingOrderCount": 0,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    },
+    {
+      "id": "rtl:route:121",
+      "routeNumber": "R11",
+      "name": "Ameenee",
+      "stopIds": [
+        "rtl:stop:202",
+        "rtl:stop:1111",
+        "rtl:stop:1112",
+        "rtl:stop:1113",
+        "rtl:stop:1114",
+        "rtl:stop:1115",
+        "rtl:stop:1116",
+        "rtl:stop:1117",
+        "rtl:stop:1101",
+        "rtl:stop:120",
+        "rtl:stop:1102",
+        "rtl:stop:1103",
+        "rtl:stop:1104",
+        "rtl:stop:1105",
+        "rtl:stop:1015",
+        "rtl:stop:1107",
+        "rtl:stop:1119",
+        "rtl:stop:1108",
+        "rtl:stop:1109"
+      ],
+      "stopCount": 19,
+      "stopsWithAnyReturnedTiming": 0,
+      "rawCompleteTimingOrderCount": 0,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    },
+    {
+      "id": "rtl:route:130",
+      "routeNumber": "R12",
+      "name": "Sosun",
+      "stopIds": [
+        "rtl:stop:1201",
+        "rtl:stop:1202",
+        "rtl:stop:1007",
+        "rtl:stop:1204",
+        "rtl:stop:32006",
+        "rtl:stop:1205",
+        "rtl:stop:1206",
+        "rtl:stop:1108",
+        "rtl:stop:1109"
+      ],
+      "stopCount": 9,
+      "stopsWithAnyReturnedTiming": 0,
+      "rawCompleteTimingOrderCount": 0,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    },
+    {
+      "id": "rtl:route:131",
+      "routeNumber": "R13",
+      "name": "Villimale Internal",
+      "stopIds": [
+        "rtl:stop:1301",
+        "rtl:stop:1302",
+        "rtl:stop:1303",
+        "rtl:stop:1304",
+        "rtl:stop:1305",
+        "rtl:stop:1306",
+        "rtl:stop:1307",
+        "rtl:stop:1308",
+        "rtl:stop:1309",
+        "rtl:stop:1310",
+        "rtl:stop:1311",
+        "rtl:stop:1312",
+        "rtl:stop:1313"
+      ],
+      "stopCount": 13,
+      "stopsWithAnyReturnedTiming": 13,
+      "rawCompleteTimingOrderCount": 1,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    },
+    {
+      "id": "rtl:route:145",
+      "routeNumber": "R14",
+      "name": "VILLIMALE INTERNAL 2",
+      "stopIds": [
+        "rtl:stop:1301",
+        "rtl:stop:1313",
+        "rtl:stop:1312",
+        "rtl:stop:1311",
+        "rtl:stop:32003",
+        "rtl:stop:1307",
+        "rtl:stop:1306",
+        "rtl:stop:1305",
+        "rtl:stop:1304",
+        "rtl:stop:33051",
+        "rtl:stop:33052",
+        "rtl:stop:32005"
+      ],
+      "stopCount": 12,
+      "stopsWithAnyReturnedTiming": 12,
+      "rawCompleteTimingOrderCount": 2,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    },
+    {
+      "id": "rtl:route:146",
+      "routeNumber": "R15",
+      "name": "West Park to Orange Hiya",
+      "stopIds": [
+        "rtl:stop:1102",
+        "rtl:stop:1103",
+        "rtl:stop:1015",
+        "rtl:stop:1119",
+        "rtl:stop:1109",
+        "rtl:stop:20002",
+        "rtl:stop:1207",
+        "rtl:stop:204",
+        "rtl:stop:1012",
+        "rtl:stop:1013",
+        "rtl:stop:1106",
+        "rtl:stop:1017",
+        "rtl:stop:1018"
+      ],
+      "stopCount": 13,
+      "stopsWithAnyReturnedTiming": 0,
+      "rawCompleteTimingOrderCount": 0,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    },
+    {
+      "id": "rtl:route:132",
+      "routeNumber": "R2",
+      "name": "Carnival to HM Phase 1",
+      "stopIds": [
+        "rtl:stop:201",
+        "rtl:stop:20002",
+        "rtl:stop:203",
+        "rtl:stop:109",
+        "rtl:stop:401",
+        "rtl:stop:11201",
+        "rtl:stop:114",
+        "rtl:stop:115",
+        "rtl:stop:106",
+        "rtl:stop:204",
+        "rtl:stop:1011"
+      ],
+      "stopCount": 11,
+      "stopsWithAnyReturnedTiming": 9,
+      "rawCompleteTimingOrderCount": 0,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    },
+    {
+      "id": "rtl:route:123",
+      "routeNumber": "R3",
+      "name": "West Park to VIA",
+      "stopIds": [
+        "rtl:stop:103",
+        "rtl:stop:304",
+        "rtl:stop:105",
+        "rtl:stop:306",
+        "rtl:stop:307",
+        "rtl:stop:11306",
+        "rtl:stop:117",
+        "rtl:stop:118",
+        "rtl:stop:11103"
+      ],
+      "stopCount": 9,
+      "stopsWithAnyReturnedTiming": 4,
+      "rawCompleteTimingOrderCount": 0,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    },
+    {
+      "id": "rtl:route:124",
+      "routeNumber": "R4",
+      "name": "HM Phase 1 to VIA",
+      "stopIds": [
+        "rtl:stop:114",
+        "rtl:stop:106",
+        "rtl:stop:306",
+        "rtl:stop:307",
+        "rtl:stop:11306",
+        "rtl:stop:11106",
+        "rtl:stop:108",
+        "rtl:stop:401",
+        "rtl:stop:11401"
+      ],
+      "stopCount": 9,
+      "stopsWithAnyReturnedTiming": 7,
+      "rawCompleteTimingOrderCount": 0,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    },
+    {
+      "id": "rtl:route:125",
+      "routeNumber": "R5",
+      "name": "HM Internal",
+      "stopIds": [
+        "rtl:stop:601",
+        "rtl:stop:11309",
+        "rtl:stop:602",
+        "rtl:stop:32001",
+        "rtl:stop:11003",
+        "rtl:stop:11201",
+        "rtl:stop:507",
+        "rtl:stop:509",
+        "rtl:stop:33035",
+        "rtl:stop:1207",
+        "rtl:stop:106",
+        "rtl:stop:121",
+        "rtl:stop:110",
+        "rtl:stop:111",
+        "rtl:stop:604"
+      ],
+      "stopCount": 15,
+      "stopsWithAnyReturnedTiming": 0,
+      "rawCompleteTimingOrderCount": 0,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    },
+    {
+      "id": "rtl:route:126",
+      "routeNumber": "R6",
+      "name": "HM Phase 2 to HM Phase 1",
+      "stopIds": [
+        "rtl:stop:601",
+        "rtl:stop:11309",
+        "rtl:stop:602",
+        "rtl:stop:32001",
+        "rtl:stop:11003",
+        "rtl:stop:112",
+        "rtl:stop:503",
+        "rtl:stop:114",
+        "rtl:stop:606",
+        "rtl:stop:203",
+        "rtl:stop:108",
+        "rtl:stop:109",
+        "rtl:stop:110",
+        "rtl:stop:610",
+        "rtl:stop:111",
+        "rtl:stop:604"
+      ],
+      "stopCount": 16,
+      "stopsWithAnyReturnedTiming": 16,
+      "rawCompleteTimingOrderCount": 0,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    },
+    {
+      "id": "rtl:route:127",
+      "routeNumber": "R7",
+      "name": "HM Phase 2 to West Park",
+      "stopIds": [
+        "rtl:stop:602",
+        "rtl:stop:32001",
+        "rtl:stop:11003",
+        "rtl:stop:117",
+        "rtl:stop:118",
+        "rtl:stop:103",
+        "rtl:stop:304",
+        "rtl:stop:105",
+        "rtl:stop:32000",
+        "rtl:stop:604",
+        "rtl:stop:601",
+        "rtl:stop:11309"
+      ],
+      "stopCount": 12,
+      "stopsWithAnyReturnedTiming": 10,
+      "rawCompleteTimingOrderCount": 0,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    },
+    {
+      "id": "rtl:route:128",
+      "routeNumber": "R8",
+      "name": "HM Phase 2 to Carnival",
+      "stopIds": [
+        "rtl:stop:602",
+        "rtl:stop:32001",
+        "rtl:stop:11003",
+        "rtl:stop:204",
+        "rtl:stop:208",
+        "rtl:stop:201",
+        "rtl:stop:20002",
+        "rtl:stop:32000",
+        "rtl:stop:604",
+        "rtl:stop:601",
+        "rtl:stop:11309"
+      ],
+      "stopCount": 11,
+      "stopsWithAnyReturnedTiming": 9,
+      "rawCompleteTimingOrderCount": 0,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    },
+    {
+      "id": "rtl:route:129",
+      "routeNumber": "R9",
+      "name": "HM Phase 2 to VIA",
+      "stopIds": [
+        "rtl:stop:601",
+        "rtl:stop:11309",
+        "rtl:stop:602",
+        "rtl:stop:32001",
+        "rtl:stop:11003",
+        "rtl:stop:306",
+        "rtl:stop:307",
+        "rtl:stop:11306",
+        "rtl:stop:32000",
+        "rtl:stop:604"
+      ],
+      "stopCount": 10,
+      "stopsWithAnyReturnedTiming": 8,
+      "rawCompleteTimingOrderCount": 0,
+      "qualification": "Raw timing-order intersection only; not a recurring calendar, verified trajectory or substituted planning service."
+    }
+  ],
+  "stops": [
+    {
+      "id": "rtl:stop:103",
+      "name": "Maafannu Bus Terminal",
+      "islandId": "male",
+      "operatorCode": "103",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:123",
+        "rtl:route:127",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R3",
+        "R7"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:123:published-direction",
+        "rtl:route:127:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:304",
+      "name": "Tow Yard",
+      "islandId": "male",
+      "operatorCode": "304",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:123",
+        "rtl:route:127",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R3",
+        "R7"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:123:published-direction",
+        "rtl:route:127:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:105",
+      "name": "STELCO",
+      "islandId": "male",
+      "operatorCode": "105",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:123",
+        "rtl:route:127",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R3",
+        "R7"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:123:published-direction",
+        "rtl:route:127:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:106",
+      "name": "Hulhumale' Cemetery",
+      "islandId": "hulhumale",
+      "operatorCode": "106",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:124",
+        "rtl:route:125",
+        "rtl:route:132",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R2",
+        "R4",
+        "R5"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:124:published-direction",
+        "rtl:route:125:published-direction",
+        "rtl:route:132:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:107",
+      "name": "Skate Park",
+      "islandId": "hulhumale",
+      "operatorCode": "107",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:121",
+      "name": "Flat No. 137",
+      "islandId": "hulhumale",
+      "operatorCode": "121",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:125",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R5"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:125:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:108",
+      "name": "Fehires Park",
+      "islandId": "hulhumale",
+      "operatorCode": "108",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:124",
+        "rtl:route:126",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R4",
+        "R6"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:124:published-direction",
+        "rtl:route:126:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:109",
+      "name": "Flat No. 147",
+      "islandId": "hulhumale",
+      "operatorCode": "109",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:126",
+        "rtl:route:132",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R2",
+        "R6"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:126:published-direction",
+        "rtl:route:132:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:110",
+      "name": "Ruhgandu 1",
+      "islandId": "hulhumale",
+      "operatorCode": "110",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:125",
+        "rtl:route:126",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R5",
+        "R6"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:125:published-direction",
+        "rtl:route:126:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:111",
+      "name": "Dhiraagu",
+      "islandId": "hulhumale",
+      "operatorCode": "111",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:125",
+        "rtl:route:126",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R5",
+        "R6"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:125:published-direction",
+        "rtl:route:126:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:112",
+      "name": "Hulhumale' Synthetic Track",
+      "islandId": "hulhumale",
+      "operatorCode": "112",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:126",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R6"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:126:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:113",
+      "name": "Hulhumale' Police Station",
+      "islandId": "hulhumale",
+      "operatorCode": "113",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:114",
+      "name": "Amin Avenue",
+      "islandId": "hulhumale",
+      "operatorCode": "114",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:124",
+        "rtl:route:126",
+        "rtl:route:132",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R2",
+        "R4",
+        "R6"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:124:published-direction",
+        "rtl:route:126:published-direction",
+        "rtl:route:132:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:115",
+      "name": "MNDF Flat",
+      "islandId": "hulhumale",
+      "operatorCode": "115",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:132",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R2"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:132:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:11106",
+      "name": "Hulhumale' Cemetery OPP",
+      "islandId": "hulhumale",
+      "operatorCode": "11106",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:124",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R4"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:124:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:117",
+      "name": "Male' Swimming Track",
+      "islandId": "male",
+      "operatorCode": "117",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:123",
+        "rtl:route:127",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R3",
+        "R7"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:123:published-direction",
+        "rtl:route:127:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:118",
+      "name": "Dharumavantha School",
+      "islandId": "male",
+      "operatorCode": "118",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:123",
+        "rtl:route:127",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R3",
+        "R7"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:123:published-direction",
+        "rtl:route:127:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:11103",
+      "name": "Maafannu Bus Terminal OPP",
+      "islandId": "male",
+      "operatorCode": "11103",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:123",
+        "rtl:route:133"
+      ],
+      "currentRouteNumbers": [
+        "R1",
+        "R3"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:123:published-direction",
+        "rtl:route:133:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1102",
+      "name": "Maafannu Madharusa",
+      "islandId": "male",
+      "operatorCode": "1102",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121",
+        "rtl:route:122",
+        "rtl:route:146"
+      ],
+      "currentRouteNumbers": [
+        "R10",
+        "R11",
+        "R15"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1103",
+      "name": "Maafannu Sahara",
+      "islandId": "male",
+      "operatorCode": "1103",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121",
+        "rtl:route:122",
+        "rtl:route:146"
+      ],
+      "currentRouteNumbers": [
+        "R10",
+        "R11",
+        "R15"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1004",
+      "name": "Maaveyo Maizaan",
+      "islandId": "male",
+      "operatorCode": "1004",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122"
+      ],
+      "currentRouteNumbers": [
+        "R10"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1005",
+      "name": "Hilaaleege",
+      "islandId": "male",
+      "operatorCode": "1005",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122"
+      ],
+      "currentRouteNumbers": [
+        "R10"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1006",
+      "name": "Justice Building",
+      "islandId": "male",
+      "operatorCode": "1006",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122"
+      ],
+      "currentRouteNumbers": [
+        "R10"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1007",
+      "name": "Jumhooree Maidhaan",
+      "islandId": "male",
+      "operatorCode": "1007",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122",
+        "rtl:route:130"
+      ],
+      "currentRouteNumbers": [
+        "R10",
+        "R12"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1008",
+      "name": "Jetty NO5",
+      "islandId": "male",
+      "operatorCode": "1008",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122"
+      ],
+      "currentRouteNumbers": [
+        "R10"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1009",
+      "name": "MTCC Tower",
+      "islandId": "male",
+      "operatorCode": "1009",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122"
+      ],
+      "currentRouteNumbers": [
+        "R10"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:201",
+      "name": "Carnival",
+      "islandId": "male",
+      "operatorCode": "201",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122",
+        "rtl:route:128",
+        "rtl:route:132"
+      ],
+      "currentRouteNumbers": [
+        "R10",
+        "R2",
+        "R8"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:128:published-direction",
+        "rtl:route:132:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1011",
+      "name": "Artificial Beach",
+      "islandId": "male",
+      "operatorCode": "1011",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122",
+        "rtl:route:132"
+      ],
+      "currentRouteNumbers": [
+        "R10",
+        "R2"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:132:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1012",
+      "name": "Muni Ufaa",
+      "islandId": "male",
+      "operatorCode": "1012",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122",
+        "rtl:route:146"
+      ],
+      "currentRouteNumbers": [
+        "R10",
+        "R15"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1013",
+      "name": "Ibrahim Mosque",
+      "islandId": "male",
+      "operatorCode": "1013",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122",
+        "rtl:route:146"
+      ],
+      "currentRouteNumbers": [
+        "R10",
+        "R15"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1014",
+      "name": "Olympus",
+      "islandId": "male",
+      "operatorCode": "1014",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122"
+      ],
+      "currentRouteNumbers": [
+        "R10"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1106",
+      "name": "City Square (North Side)",
+      "islandId": "male",
+      "operatorCode": "1106",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122",
+        "rtl:route:146"
+      ],
+      "currentRouteNumbers": [
+        "R10",
+        "R15"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1016",
+      "name": "Maaveyo Magu",
+      "islandId": "male",
+      "operatorCode": "1016",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122"
+      ],
+      "currentRouteNumbers": [
+        "R10"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1017",
+      "name": "Fini Park",
+      "islandId": "male",
+      "operatorCode": "1017",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122",
+        "rtl:route:146"
+      ],
+      "currentRouteNumbers": [
+        "R10",
+        "R15"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1018",
+      "name": "Social Centre",
+      "islandId": "male",
+      "operatorCode": "1018",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:122",
+        "rtl:route:146"
+      ],
+      "currentRouteNumbers": [
+        "R10",
+        "R15"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:202",
+      "name": "Raalhugandu (Mini Bus)",
+      "islandId": "male",
+      "operatorCode": "202",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121"
+      ],
+      "currentRouteNumbers": [
+        "R11"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1111",
+      "name": "Dharubaaruge",
+      "islandId": "male",
+      "operatorCode": "1111",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121"
+      ],
+      "currentRouteNumbers": [
+        "R11"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1112",
+      "name": "Kudakudhinge Bageecha",
+      "islandId": "male",
+      "operatorCode": "1112",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121"
+      ],
+      "currentRouteNumbers": [
+        "R11"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1113",
+      "name": "Male' Hiya Flat",
+      "islandId": "male",
+      "operatorCode": "1113",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121"
+      ],
+      "currentRouteNumbers": [
+        "R11"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1114",
+      "name": "Rehendhi Flat",
+      "islandId": "male",
+      "operatorCode": "1114",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121"
+      ],
+      "currentRouteNumbers": [
+        "R11"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1115",
+      "name": "MIRA",
+      "islandId": "male",
+      "operatorCode": "1115",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121"
+      ],
+      "currentRouteNumbers": [
+        "R11"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1116",
+      "name": "Maafannu Stadium",
+      "islandId": "male",
+      "operatorCode": "1116",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121"
+      ],
+      "currentRouteNumbers": [
+        "R11"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1117",
+      "name": "Ministry of Environment",
+      "islandId": "male",
+      "operatorCode": "1117",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121"
+      ],
+      "currentRouteNumbers": [
+        "R11"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1101",
+      "name": "Maafannu Ferry Terminal",
+      "islandId": "male",
+      "operatorCode": "1101",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121"
+      ],
+      "currentRouteNumbers": [
+        "R11"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:120",
+      "name": "Dharumavantha Hospital (West Side)",
+      "islandId": "male",
+      "operatorCode": "120",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121"
+      ],
+      "currentRouteNumbers": [
+        "R11"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1104",
+      "name": "Odeon",
+      "islandId": "male",
+      "operatorCode": "1104",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121"
+      ],
+      "currentRouteNumbers": [
+        "R11"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1105",
+      "name": "Zikura Mosque",
+      "islandId": "male",
+      "operatorCode": "1105",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121"
+      ],
+      "currentRouteNumbers": [
+        "R11"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1015",
+      "name": "City Square",
+      "islandId": "male",
+      "operatorCode": "1015",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121",
+        "rtl:route:146"
+      ],
+      "currentRouteNumbers": [
+        "R11",
+        "R15"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1107",
+      "name": "Billoori Jehige",
+      "islandId": "male",
+      "operatorCode": "1107",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121"
+      ],
+      "currentRouteNumbers": [
+        "R11"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1119",
+      "name": "Heenaamage",
+      "islandId": "male",
+      "operatorCode": "1119",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121",
+        "rtl:route:146"
+      ],
+      "currentRouteNumbers": [
+        "R11",
+        "R15"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1108",
+      "name": "Dhamanaveshi",
+      "islandId": "male",
+      "operatorCode": "1108",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121",
+        "rtl:route:130"
+      ],
+      "currentRouteNumbers": [
+        "R11",
+        "R12"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1109",
+      "name": "Henveiru Stadium",
+      "islandId": "male",
+      "operatorCode": "1109",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:121",
+        "rtl:route:130",
+        "rtl:route:146"
+      ],
+      "currentRouteNumbers": [
+        "R11",
+        "R12",
+        "R15"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1201",
+      "name": "MTCC Sawmill",
+      "islandId": "male",
+      "operatorCode": "1201",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:130"
+      ],
+      "currentRouteNumbers": [
+        "R12"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1202",
+      "name": "Ministry of Foreign Affairs",
+      "islandId": "male",
+      "operatorCode": "1202",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:130"
+      ],
+      "currentRouteNumbers": [
+        "R12"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1204",
+      "name": "Velaanaage",
+      "islandId": "male",
+      "operatorCode": "1204",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:130"
+      ],
+      "currentRouteNumbers": [
+        "R12"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:32006",
+      "name": "ISRAHVEHINGE NAADHEE STOP",
+      "islandId": "male",
+      "operatorCode": "32006",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:130"
+      ],
+      "currentRouteNumbers": [
+        "R12"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1205",
+      "name": "Majeedhiyya School",
+      "islandId": "male",
+      "operatorCode": "1205",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:130"
+      ],
+      "currentRouteNumbers": [
+        "R12"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1206",
+      "name": "Islamic University of Maldives",
+      "islandId": "male",
+      "operatorCode": "1206",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:130"
+      ],
+      "currentRouteNumbers": [
+        "R12"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [],
+      "loadedPlanningServiceAvailable": false,
+      "defaultMarkerEligible": false,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed route membership exists, but this bundle has no complete departure timing. Hide from default service map; retain in optional catalogue."
+    },
+    {
+      "id": "rtl:stop:1301",
+      "name": "Villimale Ferry Terminal",
+      "islandId": "vilimale",
+      "operatorCode": "1301",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:131",
+        "rtl:route:145"
+      ],
+      "currentRouteNumbers": [
+        "R13",
+        "R14"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:131:published-direction",
+        "rtl:route:145:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1302",
+      "name": "BML Villimale Branch",
+      "islandId": "vilimale",
+      "operatorCode": "1302",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:131"
+      ],
+      "currentRouteNumbers": [
+        "R13"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:131:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1303",
+      "name": "Muhyiddin School",
+      "islandId": "vilimale",
+      "operatorCode": "1303",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:131"
+      ],
+      "currentRouteNumbers": [
+        "R13"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:131:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1304",
+      "name": "MNDF Flats",
+      "islandId": "vilimale",
+      "operatorCode": "1304",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:131",
+        "rtl:route:145"
+      ],
+      "currentRouteNumbers": [
+        "R13",
+        "R14"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:131:published-direction",
+        "rtl:route:145:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1305",
+      "name": "Sinaai Sarahadhu",
+      "islandId": "vilimale",
+      "operatorCode": "1305",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:131",
+        "rtl:route:145"
+      ],
+      "currentRouteNumbers": [
+        "R13",
+        "R14"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:131:published-direction",
+        "rtl:route:145:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1306",
+      "name": "Salaam Miskiy",
+      "islandId": "vilimale",
+      "operatorCode": "1306",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:131",
+        "rtl:route:145"
+      ],
+      "currentRouteNumbers": [
+        "R13",
+        "R14"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:131:published-direction",
+        "rtl:route:145:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1307",
+      "name": "Boalha Dhandu",
+      "islandId": "vilimale",
+      "operatorCode": "1307",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:131",
+        "rtl:route:145"
+      ],
+      "currentRouteNumbers": [
+        "R13",
+        "R14"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:131:published-direction",
+        "rtl:route:145:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1308",
+      "name": "Vaaru Hingun",
+      "islandId": "vilimale",
+      "operatorCode": "1308",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:131"
+      ],
+      "currentRouteNumbers": [
+        "R13"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:131:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1309",
+      "name": "Viludhooni Park",
+      "islandId": "vilimale",
+      "operatorCode": "1309",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:131"
+      ],
+      "currentRouteNumbers": [
+        "R13"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:131:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1310",
+      "name": "Jumhooree Hingun",
+      "islandId": "vilimale",
+      "operatorCode": "1310",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:131"
+      ],
+      "currentRouteNumbers": [
+        "R13"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:131:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1311",
+      "name": "Villimale Beach",
+      "islandId": "vilimale",
+      "operatorCode": "1311",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:131",
+        "rtl:route:145"
+      ],
+      "currentRouteNumbers": [
+        "R13",
+        "R14"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:131:published-direction",
+        "rtl:route:145:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1312",
+      "name": "Villimale Harbor",
+      "islandId": "vilimale",
+      "operatorCode": "1312",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:131",
+        "rtl:route:145"
+      ],
+      "currentRouteNumbers": [
+        "R13",
+        "R14"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:131:published-direction",
+        "rtl:route:145:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1313",
+      "name": "Villimale Hospital",
+      "islandId": "vilimale",
+      "operatorCode": "1313",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:131",
+        "rtl:route:145"
+      ],
+      "currentRouteNumbers": [
+        "R13",
+        "R14"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:131:published-direction",
+        "rtl:route:145:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:32003",
+      "name": "Masjidh Al Ikhlaas Stop",
+      "islandId": "vilimale",
+      "operatorCode": "32003",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:145"
+      ],
+      "currentRouteNumbers": [
+        "R14"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:145:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:33051",
+      "name": "Edhuruvehi Bus Stop",
+      "islandId": "vilimale",
+      "operatorCode": "33051",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:145"
+      ],
+      "currentRouteNumbers": [
+        "R14"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:145:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:33052",
+      "name": "Sinamale' Bus Stop",
+      "islandId": "vilimale",
+      "operatorCode": "33052",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:145"
+      ],
+      "currentRouteNumbers": [
+        "R14"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:145:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:32005",
+      "name": "Villimale' Ferry Termial Op",
+      "islandId": "vilimale",
+      "operatorCode": "32005",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:145"
+      ],
+      "currentRouteNumbers": [
+        "R14"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:145:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:20002",
+      "name": "Raalhugandu (Schedule Bus)",
+      "islandId": "male",
+      "operatorCode": "20002",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:128",
+        "rtl:route:132",
+        "rtl:route:146"
+      ],
+      "currentRouteNumbers": [
+        "R15",
+        "R2",
+        "R8"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:128:published-direction",
+        "rtl:route:132:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:1207",
+      "name": "Orange Hiya Bus Stop",
+      "islandId": "hulhumale",
+      "operatorCode": "1207",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:125",
+        "rtl:route:146"
+      ],
+      "currentRouteNumbers": [
+        "R15",
+        "R5"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:125:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:204",
+      "name": "Senahiya",
+      "islandId": "male",
+      "operatorCode": "204",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:128",
+        "rtl:route:132",
+        "rtl:route:146"
+      ],
+      "currentRouteNumbers": [
+        "R15",
+        "R2",
+        "R8"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:128:published-direction",
+        "rtl:route:132:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:203",
+      "name": "Flat No. 120",
+      "islandId": "hulhumale",
+      "operatorCode": "203",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:126",
+        "rtl:route:132"
+      ],
+      "currentRouteNumbers": [
+        "R2",
+        "R6"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:126:published-direction",
+        "rtl:route:132:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:401",
+      "name": "Centro Mall",
+      "islandId": "hulhumale",
+      "operatorCode": "401",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:124",
+        "rtl:route:132"
+      ],
+      "currentRouteNumbers": [
+        "R2",
+        "R4"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:124:published-direction",
+        "rtl:route:132:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:11201",
+      "name": "CHSE",
+      "islandId": "hulhumale",
+      "operatorCode": "11201",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:125",
+        "rtl:route:132"
+      ],
+      "currentRouteNumbers": [
+        "R2",
+        "R5"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:125:published-direction",
+        "rtl:route:132:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:306",
+      "name": "VIA Domestic Terminal",
+      "islandId": "hulhule",
+      "operatorCode": "306",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:123",
+        "rtl:route:124",
+        "rtl:route:129"
+      ],
+      "currentRouteNumbers": [
+        "R3",
+        "R4",
+        "R9"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:123:published-direction",
+        "rtl:route:124:published-direction",
+        "rtl:route:129:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:307",
+      "name": "MACL Office",
+      "islandId": "hulhule",
+      "operatorCode": "307",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:123",
+        "rtl:route:124",
+        "rtl:route:129"
+      ],
+      "currentRouteNumbers": [
+        "R3",
+        "R4",
+        "R9"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:123:published-direction",
+        "rtl:route:124:published-direction",
+        "rtl:route:129:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:11306",
+      "name": "VIA Domestic Terminal OPP",
+      "islandId": "hulhule",
+      "operatorCode": "11306",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:123",
+        "rtl:route:124",
+        "rtl:route:129"
+      ],
+      "currentRouteNumbers": [
+        "R3",
+        "R4",
+        "R9"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:123:published-direction",
+        "rtl:route:124:published-direction",
+        "rtl:route:129:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:11401",
+      "name": "Amin Avenue Opp",
+      "islandId": "hulhumale",
+      "operatorCode": "11401",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:124"
+      ],
+      "currentRouteNumbers": [
+        "R4"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:124:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:601",
+      "name": "Hiya Flats Stop 1",
+      "islandId": "hulhumale",
+      "operatorCode": "601",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:125",
+        "rtl:route:126",
+        "rtl:route:127",
+        "rtl:route:128",
+        "rtl:route:129"
+      ],
+      "currentRouteNumbers": [
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:125:published-direction",
+        "rtl:route:126:published-direction",
+        "rtl:route:127:published-direction",
+        "rtl:route:128:published-direction",
+        "rtl:route:129:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:11309",
+      "name": "H 16 Bus Stop",
+      "islandId": "hulhumale",
+      "operatorCode": "11309",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:125",
+        "rtl:route:126",
+        "rtl:route:127",
+        "rtl:route:128",
+        "rtl:route:129"
+      ],
+      "currentRouteNumbers": [
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:125:published-direction",
+        "rtl:route:126:published-direction",
+        "rtl:route:127:published-direction",
+        "rtl:route:128:published-direction",
+        "rtl:route:129:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:602",
+      "name": "Hiya Flats Stop 2",
+      "islandId": "hulhumale",
+      "operatorCode": "602",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:125",
+        "rtl:route:126",
+        "rtl:route:127",
+        "rtl:route:128",
+        "rtl:route:129"
+      ],
+      "currentRouteNumbers": [
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:125:published-direction",
+        "rtl:route:126:published-direction",
+        "rtl:route:127:published-direction",
+        "rtl:route:128:published-direction",
+        "rtl:route:129:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:32001",
+      "name": "VINARES BUS STOP",
+      "islandId": "hulhumale",
+      "operatorCode": "32001",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:125",
+        "rtl:route:126",
+        "rtl:route:127",
+        "rtl:route:128",
+        "rtl:route:129"
+      ],
+      "currentRouteNumbers": [
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:125:published-direction",
+        "rtl:route:126:published-direction",
+        "rtl:route:127:published-direction",
+        "rtl:route:128:published-direction",
+        "rtl:route:129:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:11003",
+      "name": "MACL Flat Stop",
+      "islandId": "hulhumale",
+      "operatorCode": "11003",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:125",
+        "rtl:route:126",
+        "rtl:route:127",
+        "rtl:route:128",
+        "rtl:route:129"
+      ],
+      "currentRouteNumbers": [
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:125:published-direction",
+        "rtl:route:126:published-direction",
+        "rtl:route:127:published-direction",
+        "rtl:route:128:published-direction",
+        "rtl:route:129:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:507",
+      "name": "Hulhumalé Ferry Terminal",
+      "islandId": "hulhumale",
+      "operatorCode": "507",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:125"
+      ],
+      "currentRouteNumbers": [
+        "R5"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:125:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:509",
+      "name": "Umar Zahir Building",
+      "islandId": "hulhumale",
+      "operatorCode": "509",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:125"
+      ],
+      "currentRouteNumbers": [
+        "R5"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:125:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:33035",
+      "name": "Court Complex Bus Stop",
+      "islandId": "hulhumale",
+      "operatorCode": "33035",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:125"
+      ],
+      "currentRouteNumbers": [
+        "R5"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:125:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:604",
+      "name": "Masjid Ameel Jaleel",
+      "islandId": "hulhumale",
+      "operatorCode": "604",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:125",
+        "rtl:route:126",
+        "rtl:route:127",
+        "rtl:route:128",
+        "rtl:route:129"
+      ],
+      "currentRouteNumbers": [
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:125:published-direction",
+        "rtl:route:126:published-direction",
+        "rtl:route:127:published-direction",
+        "rtl:route:128:published-direction",
+        "rtl:route:129:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:503",
+      "name": "Hulhumalé Police Station",
+      "islandId": "hulhumale",
+      "operatorCode": "503",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:126"
+      ],
+      "currentRouteNumbers": [
+        "R6"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:126:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:606",
+      "name": "Tree Top Hospital",
+      "islandId": "hulhumale",
+      "operatorCode": "606",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:126"
+      ],
+      "currentRouteNumbers": [
+        "R6"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:126:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:610",
+      "name": "Flat No. 2",
+      "islandId": "hulhumale",
+      "operatorCode": "610",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:126"
+      ],
+      "currentRouteNumbers": [
+        "R6"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:126:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:32000",
+      "name": "MWSC FLAT BUS STOP (DROP-OFF ONLY)",
+      "islandId": "hulhumale",
+      "operatorCode": "32000",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:127",
+        "rtl:route:128",
+        "rtl:route:129"
+      ],
+      "currentRouteNumbers": [
+        "R7",
+        "R8",
+        "R9"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:127:published-direction",
+        "rtl:route:128:published-direction",
+        "rtl:route:129:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": false,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    },
+    {
+      "id": "rtl:stop:208",
+      "name": "Artificial Beach West",
+      "islandId": "male",
+      "operatorCode": "208",
+      "currentOperatorListed": true,
+      "currentRouteIds": [
+        "rtl:route:128"
+      ],
+      "currentRouteNumbers": [
+        "R8"
+      ],
+      "publishedCoordinateMatchesBaseline": true,
+      "currentNameMatchesBaseline": true,
+      "loadedPlanningPatternIds": [
+        "rtl:route:128:published-direction"
+      ],
+      "loadedPlanningServiceAvailable": true,
+      "defaultMarkerEligible": true,
+      "physicalOperatingStatus": "unverified",
+      "pickupAllowed": true,
+      "reason": "Operator-listed with a loaded dated service snapshot; physical boarding conditions are unverified."
+    }
+  ],
+  "defaultHiddenStopIds": [
+    "rtl:stop:1102",
+    "rtl:stop:1103",
+    "rtl:stop:1004",
+    "rtl:stop:1005",
+    "rtl:stop:1006",
+    "rtl:stop:1007",
+    "rtl:stop:1008",
+    "rtl:stop:1009",
+    "rtl:stop:1012",
+    "rtl:stop:1013",
+    "rtl:stop:1014",
+    "rtl:stop:1106",
+    "rtl:stop:1016",
+    "rtl:stop:1017",
+    "rtl:stop:1018",
+    "rtl:stop:202",
+    "rtl:stop:1111",
+    "rtl:stop:1112",
+    "rtl:stop:1113",
+    "rtl:stop:1114",
+    "rtl:stop:1115",
+    "rtl:stop:1116",
+    "rtl:stop:1117",
+    "rtl:stop:1101",
+    "rtl:stop:120",
+    "rtl:stop:1104",
+    "rtl:stop:1105",
+    "rtl:stop:1015",
+    "rtl:stop:1107",
+    "rtl:stop:1119",
+    "rtl:stop:1108",
+    "rtl:stop:1109",
+    "rtl:stop:1201",
+    "rtl:stop:1202",
+    "rtl:stop:1204",
+    "rtl:stop:32006",
+    "rtl:stop:1205",
+    "rtl:stop:1206"
+  ],
+  "departureCoverage": {
+    "validatedSnapshotFetchedAt": "2026-10-10T10:17:17.207847+00:00",
+    "validatedSnapshotDate": "2026-10-10",
+    "validatedRecordedWindowMinutes": [
+      920.0,
+      1439.0
+    ],
+    "freshCaptureReplacesPlanningSnapshot": false,
+    "qualification": "The earlier validated capture has 11 dated service patterns. Fresh late-evening timings are fewer and incomplete: absence from the remaining-departure response cannot establish non-operation. No full-day or recurring calendar is verified."
+  },
+  "operationalCautions": [
+    {
+      "id": "westpark-september2026",
+      "reportedDate": "2026-09-23",
+      "reviewedAt": "2026-10-10T11:26:47.200583+00:00",
+      "status": "reported-temporary-diversion-unresolved",
+      "routeNumbers": [
+        "R10",
+        "R15"
+      ],
+      "primaryNoticeUrl": "https://x.com/MTCCPlc/status/2102457648574812644",
+      "primaryNoticeAccess": "403/inaccessible during review",
+      "sourceIds": [
+        "mtcc-westpark-notice-report"
+      ],
+      "note": "Report says Orchid and Orange Hiyaa temporarily bypass West Park and start/end near Maafannu Madharusa, with return diversion via Social Centre. Current route catalogue already begins those directions at Maafannu Madharusa; their timings remain unavailable. Reopening date and current driving path not verified. No stop is marked permanently closed or silently removed."
+    }
+  ],
+  "sources": [
+    {
+      "id": "rtl-transit-operation-review",
+      "url": "https://bo.rtl.mv:4455/maldives/api/booking/v2/bus/routedetails",
+      "publisher": "MTCC / RTL",
+      "referencePeriod": "remaining departures at capture time",
+      "retrievedAt": "2026-10-10T18:31:18.729001+00:00",
+      "sha256": "a0176902bf027571272c4ee05dd90f0509fe71258610fe73c0a94d0106ff7893",
+      "rawPath": "data/raw/transit-operation-review/rtl-routes-current.json",
+      "geographicCoverage": "Greater Malé bus route catalogue",
+      "license": "Public unauthenticated website endpoint; redistribution/feed reuse license not stated",
+      "transformationVersion": "transit-operation-review-1"
+    },
+    {
+      "id": "rtl-loaded-planning-snapshot",
+      "url": "https://bo.rtl.mv:4455/maldives/api/booking/v2/bus/routedetails",
+      "publisher": "MTCC / RTL",
+      "referencePeriod": "2026-10-10",
+      "retrievedAt": "2026-10-10T10:17:17.207847+00:00",
+      "geographicCoverage": "Greater Malé",
+      "qualification": "Last validated remaining-departure snapshot; preserved rather than overwritten by the late-evening review."
+    },
+    {
+      "id": "mtcc-temporary-diversion-primary",
+      "url": "https://x.com/MTCCPlc/status/2102457648574812644",
+      "publisher": "MTCC",
+      "checkedAt": "2026-10-10T18:31:18.729001+00:00",
+      "status": "inaccessible",
+      "qualification": "403 during fresh review. Secondary report retained as a caution, not confirmation of physical closure or an independently verified route path."
+    }
+  ],
+  "version": "rtl-transit-operation-review-e2455376a7f9"
+}
