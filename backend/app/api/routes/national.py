@@ -101,6 +101,7 @@ def map_features(
     island_id: str | None = None,
     category: str | None = None,
     include_unlocated: bool = False,
+    simplify_m: float = Query(default=0, ge=0, le=100),
     repository: NormalizedRepository = Depends(get_repository),
 ) -> JSONResponse:
     if island_id and island_id not in repository.islands_by_id:
@@ -113,6 +114,7 @@ def map_features(
             island_id=island_id,
             category=category,
             include_unlocated=include_unlocated,
+            simplify_m=simplify_m,
         )
     )
 

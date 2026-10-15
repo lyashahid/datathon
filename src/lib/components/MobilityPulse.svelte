@@ -159,7 +159,11 @@
 		loading = true;
 		error = '';
 		try {
-			const result = await api<PassengerBundle>('forecasts', undefined, request.signal);
+			const result = await api<PassengerBundle>(
+				'forecasts?history_only=true',
+				undefined,
+				request.signal
+			);
 			if (request.signal.aborted) return;
 			bundle = result;
 			if (!result.monthly.some((item) => item.seriesId === seriesId))

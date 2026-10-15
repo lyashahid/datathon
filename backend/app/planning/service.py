@@ -10,6 +10,7 @@ from datetime import timedelta
 from threading import RLock
 from typing import Any
 
+from app.data.computed_cache import ComputedCache, model_code_version
 from app.planning.economics import COST_DEFAULTS, economics
 from app.planning.models import JourneyRequest, PlanningAssumptions, PlanningRequest
 from app.planning.repository import IDENTITY_BRIDGE, PlanningRepository
@@ -18,8 +19,11 @@ from app.planning.world import apply_operations, baseline_world
 
 
 class PlanningService:
-    def __init__(self, repository: PlanningRepository) -> None:
+    def __init__(
+        self, repository: PlanningRepository, *, cache: ComputedCache | None = None
+    ) -> None:
         self.repository = repository
+        self.computed_cache = cache
         self._cache_lock = RLock()
         self._networks: OrderedDict[tuple[str, bool], WalkingNetwork] = OrderedDict()
         self._routers: OrderedDict[tuple[str, str], JourneyRouter] = OrderedDict()
@@ -186,6 +190,35 @@ class PlanningService:
         }
 
     def evaluate(self, request: PlanningRequest) -> dict[str, Any]:
+        if self.computed_cache is not None:
+            # Hash all source content, including origins/calendar mutations and
+            # every model input. Compact/full representations never collide.
+            public_fields = {
+                "goal",
+                "include_origin_geometry",
+                "include_journey_geometry",
+                "include_world",
+            }
+            public_baseline = (
+                not request.operations
+                and request.scenario is None
+                and request.assumptions.model_dump(exclude=public_fields)
+                == PlanningAssumptions().model_dump(exclude=public_fields)
+            )
+            return self.computed_cache.get_or_compute(
+                "planning-public-baseline" if public_baseline else "planning-evaluation",
+                [
+                    model_code_version(),
+                    self.repository.baseline,
+                    self.repository.calendars,
+                    self.repository.receipts,
+                    request.model_dump(mode="json"),
+                ],
+                lambda: self._evaluate(request),
+            )
+        return self._evaluate(request)
+
+    def _evaluate(self, request: PlanningRequest) -> dict[str, Any]:
         before_world = self._baseline_view()
         after_world, operation_warnings = apply_operations(
             self.repository, request, share_unchanged_network=True

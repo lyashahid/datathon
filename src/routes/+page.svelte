@@ -42,9 +42,6 @@
 		CalendarDays
 	} from '@lucide/svelte';
 	import { CloudSun } from '@lucide/svelte';
-	import ExploreJourneyPanel from '#lib/components/ExploreJourneyPanel.svelte';
-	import MapPolicyWorkspace from '#lib/components/MapPolicyWorkspace.svelte';
-	import MapConditionsPanel from '#lib/components/MapConditionsPanel.svelte';
 	import CountryAccessibilityExplorer from '#lib/components/CountryAccessibilityExplorer.svelte';
 	import type { NationalAccessibility } from '#lib/analytics.js';
 	import { emptyFeatures, type MapPolicyState, type PlacementKind } from '#lib/map-policy.js';
@@ -87,6 +84,9 @@
 		conditions: () => import('#lib/components/OperationsWorkspace.svelte'),
 		schedules: () => import('#lib/components/SourceUpdatesWorkspace.svelte'),
 		atlas: () => import('#lib/components/NationalMap.svelte'),
+		mapPolicy: () => import('#lib/components/MapPolicyWorkspace.svelte'),
+		journey: () => import('#lib/components/ExploreJourneyPanel.svelte'),
+		mapConditions: () => import('#lib/components/MapConditionsPanel.svelte'),
 		evidence: () => import('#lib/components/EvidenceWorkspace.svelte')
 	};
 	type WorkspaceKey = keyof typeof workspaceLoaders;
@@ -102,6 +102,9 @@
 		conditions: 'weather, traffic and notices',
 		schedules: 'timetables',
 		atlas: 'island map',
+		mapPolicy: 'map proposal tools',
+		journey: 'journey planner',
+		mapConditions: 'nearby conditions',
 		evidence: 'evidence workspace'
 	};
 	// Keep visited workspaces mounted so drafts and filters survive navigation.
@@ -191,10 +194,34 @@
 	let panelOpen = $state(false);
 	let panelExpanded = $state(false);
 	let detailsElement = $state<HTMLElement>();
-	let features = $state.raw<MapFeatures | null>(null);
+	let selectedId = $state<string | null>(null);
+	let overviewFeatures = $state.raw<MapFeatures | null>(null);
+	let detailedFeatures = $state.raw<{ islandId: string; data: MapFeatures } | null>(null);
+	let detailError = $state('');
+	let detailVersion = $state(0);
+	const selectedBoundaryFeatures = $derived<MapFeatures | null>(
+		detailedFeatures?.islandId === selectedId
+			? {
+					type: 'FeatureCollection',
+					features: detailedFeatures.data.features.filter(
+						(feature) => feature.properties?.id === selectedId && !feature.properties?.island_id
+					)
+				}
+			: null
+	);
+	const features = $derived.by(() => {
+		if (!overviewFeatures) return null;
+		if (!selectedId || detailedFeatures?.islandId !== selectedId) return overviewFeatures;
+		return {
+			...overviewFeatures,
+			features: [
+				...overviewFeatures.features.filter((feature) => feature.properties?.id !== selectedId),
+				...detailedFeatures.data.features
+			]
+		};
+	});
 	let summary = $state.raw<NationalSummary | null>(null);
 	let profile = $state.raw<IslandProfile | null>(null);
-	let selectedId = $state<string | null>(null);
 	let focusVersion = $state(0);
 	let loading = $state(true);
 	let profileLoading = $state(false);
@@ -244,6 +271,7 @@
 	let controller: AbortController | undefined;
 	let profileController: AbortController | undefined;
 	let actionController: AbortController | undefined;
+	let detailController: AbortController | undefined;
 	let initialized = $state(false);
 	const showAccessExplorer = $derived(
 		isMapWorkspace &&
@@ -280,9 +308,43 @@
 	$effect(() => {
 		if (initialized && isMapWorkspace) untrack(() => void loadWorkspace('atlas'));
 	});
+	$effect(() => {
+		if (!initialized || !isMapWorkspace) return;
+		if (
+			!accessExplorerOpen ||
+			(policyCommand && policyCommand.kind !== 'close') ||
+			incomingPlacement ||
+			incomingOperation
+		)
+			untrack(() => void loadWorkspace('mapPolicy'));
+		if (profileView === 'route') untrack(() => void loadWorkspace('journey'));
+		if (exploreView === 'conditions') untrack(() => void loadWorkspace('mapConditions'));
+	});
+	$effect(() => {
+		const id = selectedId;
+		void detailVersion;
+		if (!initialized || !overviewFeatures || !isMapWorkspace || !id) return;
+		const active = new AbortController();
+		detailController?.abort();
+		detailController = active;
+		detailError = '';
+		void api<MapFeatures>(
+			`map/features?layer=all&island_id=${encodeURIComponent(id)}`,
+			undefined,
+			active.signal
+		)
+			.then((data) => {
+				if (!active.signal.aborted) detailedFeatures = { islandId: id, data };
+			})
+			.catch(() => {
+				if (!active.signal.aborted)
+					detailError = 'Detailed map evidence could not load. Retry before placing a proposal.';
+			});
+		return () => active.abort();
+	});
 	let importInput = $state<HTMLInputElement | null>(null);
 	const islands = $derived(
-		(features?.features.filter(
+		(overviewFeatures?.features.filter(
 			(feature) =>
 				typeof feature.properties?.id === 'string' && feature.properties.id.startsWith('island:')
 		) ?? []) as IslandFeature[]
@@ -383,6 +445,21 @@
 	const liveSnapshot = $derived(
 		liveObservedScope === selectedMovementKey ? liveObservedSnapshot : null
 	);
+	const emptyOperations: MapPolicyState['operations'] = [];
+	const emptyLiveEvents: LiveSnapshot['events'] = [];
+	const emptyProviders: NonNullable<LiveSnapshot['providers']> = [];
+	const displayedScores = $derived.by(() => {
+		const fullScore = profile?.island.id === selectedId ? profile.accessibility : null;
+		return fullScore && accessScores
+			? accessScores.scores.map((score) => (score.island_id === selectedId ? fullScore : score))
+			: (accessScores?.scores ?? null);
+	});
+	const displayedLiveStatus = $derived({
+		loading: liveBusy,
+		retrieved_at: liveSnapshot?.retrieved_at,
+		providers: liveSnapshot?.providers ?? emptyProviders,
+		message: liveError || (!movementVisible ? 'Updates paused · observed positions only' : '')
+	});
 	const movementSession = new MovementSession(
 		(scope, signal) => api<LiveSnapshot>(`live/snapshot?${scope.query}`, undefined, signal),
 		(state) => {
@@ -440,20 +517,27 @@
 		loading = true;
 		fatalError = '';
 		connection = 'Connecting';
+		void loadAccessScores();
+		// Metadata and provider availability must not delay drawing the supplied geography.
+		void api<NationalSummary>('national/summary', undefined, active.signal)
+			.then((national) => {
+				if (!active.signal.aborted) summary = national;
+			})
+			.catch(() => {});
+		void api<LiveStatus>('live/status', undefined, active.signal)
+			.then((status) => {
+				if (!active.signal.aborted) liveStatus = status;
+			})
+			.catch(() => {});
 		try {
-			await api('health', undefined, active.signal);
+			const map = await api<MapFeatures>(
+				'map/features?layer=islands&simplify_m=25',
+				undefined,
+				active.signal
+			);
 			if (active.signal.aborted) return;
 			connection = 'Backend connected';
-			void loadAccessScores();
-			const [national, map, status] = await Promise.all([
-				api<NationalSummary>('national/summary', undefined, active.signal),
-				api<MapFeatures>('map/features?layer=all', undefined, active.signal),
-				api<LiveStatus>('live/status', undefined, active.signal)
-			]);
-			if (active.signal.aborted) return;
-			summary = national;
-			features = map;
-			liveStatus = status;
+			overviewFeatures = map;
 			const initial =
 				islands.find((island) => island.properties.id === selectedId) ??
 				(tab === 'scenarios' || tab === 'recommendations'
@@ -480,7 +564,7 @@
 		accessError = '';
 		try {
 			const result = await api<NationalAccessibility>(
-				'accessibility/summary',
+				'accessibility/summary?compact=true',
 				undefined,
 				active.signal
 			);
@@ -915,6 +999,7 @@
 			accessController?.abort();
 			profileController?.abort();
 			transitStopController?.abort();
+			detailController?.abort();
 			cancelAction();
 			document.removeEventListener('visibilitychange', updateVisibility);
 			movementSession.dispose();
@@ -1191,7 +1276,7 @@
 		{#if workspaces.national}<div class="analytics-page" hidden={activeWorkspace !== 'national'}>
 				<workspaces.national
 					{summary}
-					{features}
+					features={overviewFeatures}
 					onExplore={exploreFromOverview}
 					onForecast={() => setOverviewView('passengers')}
 				/>
@@ -1273,7 +1358,7 @@
 						{features}
 						{selectedId}
 						atollScope={countryAtoll}
-						accessibilityScores={accessScores?.scores ?? null}
+						accessibilityScores={displayedScores}
 						onnational={showCountry}
 						{focusVersion}
 						{focusPoint}
@@ -1284,7 +1369,7 @@
 						gapFeatures={accessExplorerOpen ? emptyPolicyMap : policyState.gapFeatures}
 						impactFeatures={accessExplorerOpen ? emptyPolicyMap : policyState.impactFeatures}
 						gapLens={policyLens}
-						policyOperations={accessExplorerOpen ? [] : policyState.operations}
+						policyOperations={accessExplorerOpen ? emptyOperations : policyState.operations}
 						pendingProposal={accessExplorerOpen ? null : policyState.pending}
 						pendingPlacementDecision={accessExplorerOpen ? null : policyState.pendingDecision}
 						onconfirmproposal={() => policyAction('confirm')}
@@ -1314,14 +1399,8 @@
 						{routeStart}
 						{journeyFocusVersion}
 						{routeEnd}
-						liveEvents={liveSnapshot?.events ?? []}
-						liveStatus={{
-							loading: liveBusy,
-							retrieved_at: liveSnapshot?.retrieved_at,
-							providers: liveSnapshot?.providers ?? [],
-							message:
-								liveError || (!movementVisible ? 'Updates paused · observed positions only' : '')
-						}}
+						liveEvents={liveSnapshot?.events ?? emptyLiveEvents}
+						liveStatus={displayedLiveStatus}
 					/>
 				{/if}
 				{#if workspaceErrors.atlas}<div class="map-loading" role="alert">
@@ -1339,8 +1418,8 @@
 			{#if showAccessExplorer}
 				<div class="accessibility-map-overlay">
 					<CountryAccessibilityExplorer
-						{features}
-						scores={accessScores?.scores ?? null}
+						features={overviewFeatures}
+						scores={displayedScores}
 						loading={accessLoading || loading}
 						error={accessError}
 						{selectedId}
@@ -1355,37 +1434,41 @@
 					/>
 				</div>
 			{/if}
-			<MapPolicyWorkspace
-				islandId={selectedId}
-				islandName={selected?.properties.name ?? 'Selected island'}
-				active={isMapWorkspace &&
-					tab === 'explore' &&
-					exploreView === 'map' &&
-					!panelOpen &&
-					!!selectedId &&
-					!accessExplorerOpen}
-				lens={policyLens}
-				command={policyCommand}
-				placement={incomingPlacement}
-				{incomingOperation}
-				onConsume={() => (incomingOperation = null)}
-				moved={policyMove}
-				cell={inspectedCell}
-				onLensChange={(lens) => {
-					policyLens = lens;
-					writeLocation(true);
-				}}
-				onState={(state) => (policyState = state)}
-				onPickKind={(kind) => {
-					policyPickKind = kind;
-					if (kind) pickMode = 'proposal';
-					else if (pickMode === 'proposal') pickMode = null;
-				}}
-				onCloseOthers={() => (panelOpen = false)}
-				onFocus={focusPolicyPoint}
-				onDetails={() => setProfileView('baseline')}
-			/>
-			{#if tab === 'explore' && exploreView === 'conditions' && !pickMode}<MapConditionsPanel
+			{#if workspaces.mapPolicy}<workspaces.mapPolicy
+					islandId={selectedId}
+					islandName={selected?.properties.name ?? 'Selected island'}
+					mapFeatures={features}
+					boundaryFeatures={selectedBoundaryFeatures}
+					boundaryError={detailError}
+					onRetryBoundary={() => (detailVersion += 1)}
+					active={isMapWorkspace &&
+						tab === 'explore' &&
+						exploreView === 'map' &&
+						!panelOpen &&
+						!!selectedId &&
+						!accessExplorerOpen}
+					lens={policyLens}
+					command={policyCommand}
+					placement={incomingPlacement}
+					{incomingOperation}
+					onConsume={() => (incomingOperation = null)}
+					moved={policyMove}
+					cell={inspectedCell}
+					onLensChange={(lens) => {
+						policyLens = lens;
+						writeLocation(true);
+					}}
+					onState={(state) => (policyState = state)}
+					onPickKind={(kind) => {
+						policyPickKind = kind;
+						if (kind) pickMode = 'proposal';
+						else if (pickMode === 'proposal') pickMode = null;
+					}}
+					onCloseOthers={() => (panelOpen = false)}
+					onFocus={focusPolicyPoint}
+					onDetails={() => setProfileView('baseline')}
+				/>{/if}
+			{#if workspaces.mapConditions && tab === 'explore' && exploreView === 'conditions' && !pickMode}<workspaces.mapConditions
 					coordinates={selectedCoordinates}
 					islandName={selected?.properties.name ?? 'Selected island'}
 					start={routeStart}
@@ -1648,27 +1731,27 @@
 									</p>{/if}
 							</Tabs.Content>
 							<Tabs.Content value="route" class="context-tab-content">
-								<ExploreJourneyPanel
-									start={routeStart}
-									end={routeEnd}
-									startLabel={routeStartLabel}
-									endLabel={routeEndLabel}
-									bind:mode={routeMode}
-									bind:serviceDate={routeDate}
-									bind:departureTime={routeTime}
-									result={route}
-									busy={busy === 'route'}
-									onPick={chooseJourneyPoint}
-									onClear={clearJourneyPoint}
-									onReset={resetJourney}
-									onSwap={swapJourney}
-									onBack={closeJourney}
-									onFind={requestRoute}
-									onChange={() => {
-										cancelAction();
-										route = null;
-									}}
-								/>
+								{#if workspaces.journey}<workspaces.journey
+										start={routeStart}
+										end={routeEnd}
+										startLabel={routeStartLabel}
+										endLabel={routeEndLabel}
+										bind:mode={routeMode}
+										bind:serviceDate={routeDate}
+										bind:departureTime={routeTime}
+										result={route}
+										busy={busy === 'route'}
+										onPick={chooseJourneyPoint}
+										onClear={clearJourneyPoint}
+										onReset={resetJourney}
+										onSwap={swapJourney}
+										onBack={closeJourney}
+										onFind={requestRoute}
+										onChange={() => {
+											cancelAction();
+											route = null;
+										}}
+									/>{:else}<p class="empty-state" role="status">Opening journey planner…</p>{/if}
 							</Tabs.Content>
 						</Tabs.Root>
 					{:else if tab === 'scenarios' || tab === 'recommendations'}

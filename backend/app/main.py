@@ -1,5 +1,6 @@
 """FastAPI application entry point."""
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
@@ -9,6 +10,7 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.gzip import GZipMiddleware
 
+from app.accessibility.config import DEFAULT_ACCESSIBILITY_CONFIG
 from app.accessibility.service import AccessibilityService
 from app.api.errors import (
     http_exception_handler,
@@ -30,11 +32,15 @@ from app.api.routes.planning_reports import router as planning_reports_router
 from app.api.routes.recommendations import router as recommendations_router
 from app.api.routes.routing import router as routing_router
 from app.api.routes.simulation import router as simulation_router
+from app.api.snapshot_cache import SnapshotCacheMiddleware
+from app.cli.precompute import warm_application
 from app.conditions.service import ConditionsService
 from app.config.settings import Settings
+from app.data.computed_cache import ComputedCache, SourceVersion
 from app.live.config import LiveConfig
 from app.live.service import LiveService
 from app.operations.service import NoticeStore
+from app.planning.models import PlanningAssumptions
 from app.planning.repository import PlanningRepository
 from app.planning.service import PlanningService
 from app.recommendation.service import RecommendationService
@@ -64,12 +70,26 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.simulation.reload()
         app.state.recommendations.reload()
         app.state.live.reload()
+        app.state.source_version.reset()
+        app.state.source_version.version()
         logger.info("Starting %s in %s mode", app_settings.app_name, app_settings.environment)
         try:
             async with places_lifespan(_app):
-                yield
+                warmup = (
+                    asyncio.create_task(warm_application(app))
+                    if app_settings.computed_cache_prewarm and app_settings.environment != "test"
+                    else None
+                )
+                try:
+                    yield
+                finally:
+                    if warmup is not None:
+                        if not warmup.done():
+                            warmup.cancel()
+                        await asyncio.gather(warmup, return_exceptions=True)
         finally:
             await app.state.conditions.close()
+            app.state.computed_cache.close()
         logger.info("Stopping %s", app_settings.app_name)
 
     app = FastAPI(
@@ -78,14 +98,40 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         description="Local API for Mobility Sandbox MV.",
         lifespan=lifespan,
     )
-    app.add_middleware(GZipMiddleware, minimum_size=2048, compresslevel=5)
     app.state.settings = app_settings
-    app.state.planning = PlanningService(PlanningRepository(app_settings.public_data_dir))
+    app.state.computed_cache = ComputedCache(
+        app_settings.data_dir / "runtime",
+        memory_bytes=app_settings.computed_cache_memory_mb * 1024 * 1024,
+        disk_bytes=app_settings.computed_cache_disk_mb * 1024 * 1024,
+        max_entries=app_settings.computed_cache_max_entries,
+        database_url=app_settings.database_url.get_secret_value()
+        if app_settings.environment != "test"
+        else "",
+    )
+    app.state.source_version = SourceVersion(
+        app_settings.data_dir,
+        app_settings.public_data_dir,
+        configuration={
+            "accessibility": DEFAULT_ACCESSIBILITY_CONFIG.model_dump(mode="json"),
+            "planning": PlanningAssumptions().model_dump(mode="json"),
+        },
+    )
+    app.add_middleware(
+        SnapshotCacheMiddleware,
+        cache=app.state.computed_cache,
+        source=app.state.source_version,
+    )
+    app.add_middleware(GZipMiddleware, minimum_size=2048, compresslevel=5)
+    app.state.planning = PlanningService(
+        PlanningRepository(app_settings.public_data_dir), cache=app.state.computed_cache
+    )
     app.state.conditions = ConditionsService()
     app.state.notices = NoticeStore(app_settings.data_dir / "runtime", app_settings.public_data_dir)
     app.state.repository = NormalizedRepository(app_settings.data_dir)
     app.state.routing = RoutingRepository(app_settings.data_dir)
-    app.state.accessibility = AccessibilityService(app_settings.data_dir, app.state.routing)
+    app.state.accessibility = AccessibilityService(
+        app_settings.data_dir, app.state.routing, computed_cache=app.state.computed_cache
+    )
     app.state.simulation = ScenarioEngine(app_settings.data_dir, app.state.routing)
     app.state.recommendations = RecommendationService(
         app_settings.data_dir,

@@ -8,11 +8,17 @@
 	let {
 		island,
 		onclose,
-		onExplore
+		onExplore,
+		loading = false,
+		error = '',
+		onRetry
 	}: {
 		island: IslandAnalytics;
 		onclose: () => void;
 		onExplore: (islandId: string, atoll: string) => void;
+		loading?: boolean;
+		error?: string;
+		onRetry?: () => void;
 	} = $props();
 	const decimal = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
 	const number = new Intl.NumberFormat('en-US');
@@ -68,11 +74,22 @@
 					: number.format(island.population.total)}</strong
 			>
 		</div>
-		<section class="score-reasons" aria-label="Reasons for this accessibility score">
+		<section
+			class="score-reasons"
+			aria-label="Reasons for this accessibility score"
+			aria-busy={loading}
+		>
 			<h2>Why this score?</h2>
+			{#if loading}<p class="explanation-status" role="status">
+					Loading the island's score explanation…
+				</p>
+			{:else if error}<div class="explanation-status" role="alert">
+					<p>{error}</p>
+					{#if onRetry}<Button variant="outline" size="sm" onclick={onRetry}>Try again</Button>{/if}
+				</div>{/if}
 			<div data-testid="island-accessibility-reasons">
 				{#each domains as domain (domain.id)}
-					{@const reason = assessment?.reasons.find((item) => item.domain === domain.id)}
+					{@const reason = assessment?.reasons?.find((item) => item.domain === domain.id)}
 					{@const component = assessment?.components[domain.id]}
 					<div class="domain-reason" style:--domain-color={domain.color}>
 						<div class="domain-heading">
@@ -83,9 +100,10 @@
 						<div class="domain-track" aria-hidden="true">
 							<span style:width={`${Math.min(100, Math.max(0, component?.score ?? 0))}%`}></span>
 						</div>
-						<p>
-							{reason?.text ?? 'There is not enough information to explain this part of the score.'}
-						</p>
+						{#if !loading && !error}<p>
+								{reason?.text ??
+									'There is not enough information to explain this part of the score.'}
+							</p>{/if}
 					</div>
 				{/each}
 			</div>
@@ -102,7 +120,9 @@
 		<details class="score-data-details">
 			<summary>Data details</summary>
 			{#if assessment}<ul>
-					{#each assessment.limitations as limitation (limitation)}<li>{limitation}</li>{/each}
+					{#each assessment.limitations ?? [] as limitation (limitation)}<li>
+							{limitation}
+						</li>{/each}
 				</ul>{/if}
 			<dl>
 				<div>
@@ -203,6 +223,15 @@
 		font-size: 17px;
 		font-weight: 600;
 		margin: 0 0 5px;
+	}
+	.explanation-status {
+		font-size: 12px;
+		line-height: 1.6;
+		color: #71687e;
+		padding: 12px 0;
+	}
+	.explanation-status p {
+		margin: 0 0 10px;
 	}
 	.domain-reason {
 		padding: 18px 0;

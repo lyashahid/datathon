@@ -37,7 +37,7 @@ Traffic-aware duration is nullable. The second positional duration field is pres
 - All app responses use `Cache-Control: no-store`. No tile, route, duration, or geometry response is stored in a server cache. Short-lived rate-limit and request timestamps contain metadata only.
 - Per process: at most 12 directions/minute/client and 60 globally; 180 tiles/minute/client and 1,000 globally. Identical route requests from a client are throttled for five minutes. Upstream blocking, rate limits, and format errors pause all provider calls for at least five minutes. Cancellation of an obsolete client request does not trigger provider backoff.
 - These in-memory limits protect a single server process. A production deployment with several workers or serverless instances needs a shared edge/infrastructure rate limiter before enabling traffic. Configure trusted client-address handling in the deployment adapter; application code does not trust forwarding headers itself.
-- The project currently uses `adapter-auto`; no specific production host was identified. These endpoints require a server-capable adapter/runtime with outbound HTTPS. A purely static deployment cannot provide them. Confirm permissions, shared rate limits, client address handling, and timeout behavior for the selected host.
+- The project uses the Node adapter. These endpoints require its server runtime with outbound HTTPS. A purely static deployment cannot provide them. Public hosting still requires deployment-specific permissions, shared rate limits, client address handling and timeout behavior. See [runtime setup](clone-and-run.md).
 
 ## Verification: live diagnostics versus mocked tests
 

@@ -19,7 +19,9 @@ def get_service(request: Request) -> ForecastService:
     if not hasattr(request.app.state, "forecasts"):
         settings = request.app.state.settings
         request.app.state.forecasts = ForecastService(
-            public_data_directory(settings), settings.data_dir
+            public_data_directory(settings),
+            settings.data_dir,
+            cache=getattr(request.app.state, "computed_cache", None),
         )
     return request.app.state.forecasts
 
@@ -38,9 +40,12 @@ def _invoke(method: Any, *args: Any, **kwargs: Any) -> Any:
 @router.get("")
 def forecast_bundle(
     target_month: str | None = Query(default=None, pattern=r"^\d{4}-(0[1-9]|1[0-2])$"),
+    history_only: bool = False,
     service: ForecastService = Depends(get_service),
 ) -> dict[str, Any]:
-    return _invoke(service.bundle, target_month)
+    return (
+        _invoke(service.history_bundle) if history_only else _invoke(service.bundle, target_month)
+    )
 
 
 @router.get("/series")

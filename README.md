@@ -17,7 +17,7 @@ npm start
 
 **No environment variables, `.env` file, API key, database server or data-acquisition step is required.** Safe local defaults and the planning/analytics snapshots are included in Git. First startup downloads the locked Python dependencies and Chromium for the Vela review collector; allow internet access for those downloads.
 
-Open http://localhost:5173. `npm start` prepares the backend, starts FastAPI on http://127.0.0.1:8000, waits for its health response, and starts the frontend. `npm run dev` is the same workflow. It can reuse an already running Mobility Sandbox API at the configured address. Stop services started by the launcher with Ctrl+C.
+Open http://localhost:5173. `npm start` prepares FastAPI on http://127.0.0.1:8000 and serves an optimized Node frontend. The first start builds it; later starts reuse the build until source, dependencies or build settings change. `npm run dev` starts both services with Vite hot reload for editing. Both launchers can reuse a healthy Mobility Sandbox API. Stop services started by the launcher with Ctrl+C.
 
 On a minimal Linux installation, Chromium may also need operating-system libraries. Install them once with `npm run setup -- --with-system-deps` (the package manager may ask for sudo). See [Playwright's system-dependency documentation](https://playwright.dev/python/docs/browsers#install-system-dependencies).
 
@@ -127,4 +127,6 @@ npm run test:browser:map-first-places
 
 Browser harnesses default to http://127.0.0.1:5173, matching `npm start`. Set `MOBILITY_QA_URL` only to test another frontend URL. For production-preview verification, run `npm run build`, start `npm run preview -- --host 127.0.0.1 --port 5180`, keep FastAPI running, and set the harness URL to http://127.0.0.1:5180.
 
-The current adapter supports local preview; deploying requires an adapter appropriate to the target host and a reachable FastAPI service. Private source caches and environment files remain ignored.
+The frontend uses SvelteKit's Node adapter with precompressed static assets. `npm start -- --port 5180` serves the optimized application at another port; `--force-build` rebuilds it explicitly. Hosting requires managed Node/FastAPI processes and deployment access controls. Private source caches and environment files remain ignored.
+
+See [performance architecture and repeatable measurements](docs/performance.md) for compact country loading, persistent computed results, browser caching and the optional PostgreSQL cache. A fresh clone uses local caching automatically; database credentials remain private.

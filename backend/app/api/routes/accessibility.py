@@ -41,6 +41,40 @@ def score_accessibility(
     summary="Access indices, reasons and evidence coverage for every island",
 )
 def accessibility_summary(
+    compact: bool = False,
     service: AccessibilityService = Depends(get_accessibility),
 ) -> dict[str, Any]:
-    return service.default_artifact()
+    artifact = service.default_artifact()
+    if not compact:
+        return artifact
+    return {
+        **{key: value for key, value in artifact.items() if key != "scores"},
+        "representation": "compact",
+        "scores": [
+            {
+                "island_id": row["island_id"],
+                "score": row["score"],
+                "confidence": row["confidence"],
+                "domain_weights": row["domain_weights"],
+                "domains": {
+                    key: {
+                        field: value
+                        for field, value in details.items()
+                        if field in {"score", "mapped_counts"}
+                    }
+                    for key, details in row["domains"].items()
+                },
+                "population": {
+                    key: value
+                    for key, value in row["population"].items()
+                    if key in {"total", "status", "year"}
+                },
+                "assessment": {
+                    key: value
+                    for key, value in row["assessment"].items()
+                    if key in {"score", "out_of", "label", "summary", "components", "coverage"}
+                },
+            }
+            for row in artifact["scores"]
+        ],
+    }

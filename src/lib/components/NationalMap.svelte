@@ -39,6 +39,7 @@
 	import { validPoint as validCoordinates } from '#lib/planning-map.js';
 	import type { PlanningOperation } from '#lib/planning-map.js';
 	import type { PendingPlacementDecision, PlacementKind } from '#lib/map-policy.js';
+	import { api } from '#lib/api.js';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
 	import {
 		DEFAULT_OVERLAY_OPACITY,
@@ -207,6 +208,9 @@
 	const gapOpacity = $derived(impactFeatures.features.length ? 0 : overlayOpacity / 100);
 	const impactOpacity = $derived(
 		impactFeatures.features.length ? (overlayOpacity / 100) * (policyStale ? 0.4 : 1) : 0
+	);
+	const hasPolicyOverlay = $derived(
+		gapFeatures.features.length > 0 || impactFeatures.features.length > 0
 	);
 	const policyHitLayers = $derived(
 		impactFeatures.features.length
@@ -1228,11 +1232,12 @@
 		contextLoading = true;
 		contextError = '';
 		try {
-			const response = await fetch(`/api/backend/map/context?bbox=${bbox.join(',')}`, {
-				signal: contextRequest.signal
-			});
-			if (!response.ok) throw new Error('Street context could not load.');
-			const data = await response.json();
+			const data = await api<
+				FeatureCollection & {
+					summary: typeof contextSummary & { status?: string };
+					metadata?: { retrieved_at?: string };
+				}
+			>(`map/context?bbox=${key}`, undefined, contextRequest.signal);
 			if (generation !== contextGeneration || !map) return;
 			contextLoadedKey = key;
 			contextData = data;
@@ -2789,7 +2794,17 @@
 	$effect(() => {
 		if (!ready || !active || !map) return;
 		setData('policy-gaps', gapFeatures);
+	});
+	$effect(() => {
+		if (!ready || !active || !map) return;
 		setData('policy-impact', impactFeatures);
+	});
+	$effect(() => {
+		if (!ready || !active || !map) return;
+		setData('policy-service', policyServiceFeatures);
+	});
+	$effect(() => {
+		if (!ready || !active || !map) return;
 		const key = `${gapLens}_gap`;
 		const color: import('maplibre-gl').ExpressionSpecification = [
 			'case',
@@ -2809,8 +2824,14 @@
 		];
 		map.setPaintProperty('policy-gaps-fill', 'fill-color', color);
 		map.setPaintProperty('policy-gaps-points', 'circle-color', color);
-		syncPolicyMarkers();
-		setData('policy-service', policyServiceFeatures);
+	});
+	$effect(() => {
+		if (!ready || !active || !map) return;
+		// Quotes and impact-source updates do not recreate or rewrite placement markers.
+		void policyOperations;
+		void pendingProposal;
+		void placementTitle;
+		untrack(syncPolicyMarkers);
 	});
 	$effect(() => {
 		if (!ready || !active || !map) return;
@@ -2821,11 +2842,7 @@
 		map.setPaintProperty('policy-gaps-outline', 'line-opacity', gapOpacity * 0.7);
 		map.setPaintProperty('policy-impact-fill', 'fill-opacity', impactOpacity);
 		map.setPaintProperty('policy-impact-outline', 'line-opacity', impactOpacity * 0.7);
-		map.setPaintProperty(
-			'selected-island',
-			'fill-opacity',
-			gapFeatures.features.length || impactFeatures.features.length ? 0 : 0.09
-		);
+		map.setPaintProperty('selected-island', 'fill-opacity', hasPolicyOverlay ? 0 : 0.09);
 	});
 	$effect(() => {
 		if (!overlayPreferenceLoaded) return;
@@ -3013,12 +3030,14 @@
 		const instance = map;
 		if (
 			requestedId === lastFocusedId &&
-			requestedIsland === lastFocusedIsland &&
+			Boolean(requestedIsland) === Boolean(lastFocusedIsland) &&
 			requestedAtoll === lastFocusedAtoll &&
-			requestedAtollBounds === lastFocusedAtollBounds &&
+			(requestedId || Boolean(requestedAtollBounds) === Boolean(lastFocusedAtollBounds)) &&
 			requestedVersion === lastFocusVersion
 		)
 			return;
+		// A detail response may replace the simplified polygon. Keep the user's current
+		// camera unless the selected scope or explicit focus request actually changed.
 		// Parent panels change camera insets. Read their styles after the DOM has settled.
 		const frame = requestAnimationFrame(() => {
 			if (

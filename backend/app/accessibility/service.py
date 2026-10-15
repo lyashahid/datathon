@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -11,12 +12,19 @@ from app.accessibility.assessment import ASSESSMENT_VERSION, island_assessment
 from app.accessibility.config import DEFAULT_ACCESSIBILITY_CONFIG, AccessibilityConfig
 from app.accessibility.evidence import scored_facilities
 from app.data.cache import FileCache
+from app.data.computed_cache import ComputedCache, model_code_version
 from app.data.population import POPULATION_TRANSFORM_VERSION, attach_population, population_summary
 from app.routing.engine import RoutingRepository
 
 
 class AccessibilityService:
-    def __init__(self, data_dir: Path, routing: RoutingRepository) -> None:
+    def __init__(
+        self,
+        data_dir: Path,
+        routing: RoutingRepository,
+        *,
+        computed_cache: ComputedCache | None = None,
+    ) -> None:
         self.cache = FileCache(data_dir / "cache")
         self.routing = routing
         self.islands: dict[str, dict[str, Any]] = {}
@@ -26,9 +34,14 @@ class AccessibilityService:
         self.population: list[dict[str, Any]] = []
         self.source_fingerprint: dict[str, str] = {}
         self._default_artifact: dict[str, Any] | None = None
+        self._default_by_id: dict[str, dict[str, Any]] = {}
+        self.computed_cache = computed_cache
+        self._loaded = False
+        self._captured_fingerprint: str | None = None
 
     def reload(self) -> None:
         self._default_artifact = None
+        self._default_by_id = {}
         self.source_fingerprint = {}
         for relative in (
             "normalized/islands.geojson",
@@ -58,6 +71,11 @@ class AccessibilityService:
         self.transport = transport_data.get("features", [])
         demand_data = self._read_json("derived/demand-anchors.json", {"anchors": []})
         self.anchors = demand_data.get("anchors", [])
+        captured = self.cache.path("derived/accessibility-default.json")
+        self._captured_fingerprint = (
+            hashlib.sha256(captured.read_bytes()).hexdigest() if captured.exists() else None
+        )
+        self._loaded = True
 
     def config(self) -> dict[str, Any]:
         return DEFAULT_ACCESSIBILITY_CONFIG.model_dump(mode="json")
@@ -65,39 +83,57 @@ class AccessibilityService:
     def default_artifact(self) -> dict[str, Any]:
         """Reuse only scores calculated from this source snapshot and census mapping."""
         if self._default_artifact is None:
-            captured = self._read_json("derived/accessibility-default.json", {})
-            valid = (
-                captured.get("population_transform_version") == POPULATION_TRANSFORM_VERSION
-                and captured.get("source_fingerprint") == self.source_fingerprint
-                and captured.get("config") == self.config()
-                and isinstance(captured.get("scores"), list)
-                and len(captured["scores"]) == len(self.islands)
-                and {row.get("island_id") for row in captured["scores"]} == set(self.islands)
-                and all(
-                    isinstance(row.get("population"), dict)
-                    and {"health", "education"}.issubset(row.get("domains", {}))
-                    for row in captured["scores"]
-                )
-            )
-            if valid:
-                # Frozen route results remain valid. Refresh transport evidence and
-                # human explanations in memory; never rewrite the source snapshot.
-                results = [
-                    self._build_result(
-                        row["island_id"],
-                        DEFAULT_ACCESSIBILITY_CONFIG,
-                        row["population"],
-                        row["domains"]["health"],
-                        row["domains"]["education"],
-                    )
-                    for row in captured["scores"]
-                ]
-                self._default_artifact = self._national_artifact(
-                    results, DEFAULT_ACCESSIBILITY_CONFIG
+            if self.computed_cache is not None and self._loaded:
+                self._default_artifact = self.computed_cache.get_or_compute(
+                    "accessibility-default",
+                    [
+                        model_code_version(),
+                        self.source_fingerprint,
+                        self._captured_fingerprint,
+                        self.config(),
+                        POPULATION_TRANSFORM_VERSION,
+                    ],
+                    self._build_default_artifact,
                 )
             else:
-                self._default_artifact = self.score_national()
+                self._default_artifact = self._build_default_artifact()
+            self._default_by_id = {
+                row["island_id"]: row for row in self._default_artifact["scores"]
+            }
         return self._default_artifact
+
+    def _build_default_artifact(self) -> dict[str, Any]:
+        captured = self._read_json("derived/accessibility-default.json", {})
+        valid = (
+            captured.get("population_transform_version") == POPULATION_TRANSFORM_VERSION
+            and captured.get("source_fingerprint") == self.source_fingerprint
+            and captured.get("config") == self.config()
+            and isinstance(captured.get("scores"), list)
+            and len(captured["scores"]) == len(self.islands)
+            and {row.get("island_id") for row in captured["scores"]} == set(self.islands)
+            and all(
+                isinstance(row.get("population"), dict)
+                and {"health", "education"}.issubset(row.get("domains", {}))
+                for row in captured["scores"]
+            )
+        )
+        if valid:
+            # Frozen route results remain valid. Refresh transport evidence and
+            # human explanations in memory; never rewrite the source snapshot.
+            results = [
+                self._build_result(
+                    row["island_id"],
+                    DEFAULT_ACCESSIBILITY_CONFIG,
+                    row["population"],
+                    row["domains"]["health"],
+                    row["domains"]["education"],
+                )
+                for row in captured["scores"]
+            ]
+            result = self._national_artifact(results, DEFAULT_ACCESSIBILITY_CONFIG)
+        else:
+            result = self.score_national()
+        return result
 
     def score_island(
         self, island_id: str, config: AccessibilityConfig | None = None
@@ -105,6 +141,10 @@ class AccessibilityService:
         if island_id not in self.islands:
             return None
         policy = config or DEFAULT_ACCESSIBILITY_CONFIG
+        if self._loaded and policy == DEFAULT_ACCESSIBILITY_CONFIG and self._default_by_id:
+            # Same immutable source snapshot and default policy: island profiles
+            # reuse validated national results instead of rerouting each click.
+            return deepcopy(self._default_by_id[island_id])
         island_facilities = [item for item in self.facilities if item.get("island_id") == island_id]
         island_anchors = [item for item in self.anchors if item.get("island_id") == island_id]
         if not island_anchors:

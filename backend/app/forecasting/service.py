@@ -11,6 +11,7 @@ from threading import RLock
 from typing import Any
 
 from app.analytics.sources import file_receipt, read_json
+from app.data.computed_cache import ComputedCache, SourceVersion, model_code_version
 from app.forecasting.analysis import EvidenceAnalysis
 from app.forecasting.engine import (
     MODEL_VERSION,
@@ -50,7 +51,7 @@ def content_hash(value: Any, *, legacy: bool = False) -> str:
 
 
 class ForecastService:
-    def __init__(self, public_dir: Path, runtime_dir: Path):
+    def __init__(self, public_dir: Path, runtime_dir: Path, *, cache: ComputedCache | None = None):
         self.public_dir = Path(public_dir)
         self.runtime_dir = Path(runtime_dir) / "metadata" / "forecast-issues"
         self.source_versions = PassengerSourceVersions(
@@ -58,6 +59,8 @@ class ForecastService:
         )
         self.evidence_analysis = EvidenceAnalysis(self.public_dir, Path(runtime_dir))
         self._lock = RLock()
+        self.computed_cache = cache
+        self._analysis_version = SourceVersion(Path(runtime_dir), self.public_dir)
 
     def source(self) -> dict[str, Any]:
         path = self.public_dir / "prediction-source.json"
@@ -84,7 +87,27 @@ class ForecastService:
         return source
 
     def analysis(self) -> dict[str, Any]:
-        return self.evidence_analysis.report(self.source())
+        source = self.source()
+        if self.computed_cache is None:
+            return self.evidence_analysis.report(source)
+        result = self.computed_cache.get_or_compute(
+            "evidence-analysis",
+            [self._analysis_version.version(dynamic=True), source],
+            lambda: self.evidence_analysis.report(source),
+        )
+        # This is the response's generation time, not a fabricated new source
+        # timestamp. Model/source receipts and actual observation dates stay exact.
+        result["generatedAt"] = datetime.now(timezone.utc).isoformat()
+        return result
+
+    def _forecast(self, series: dict[str, Any], target: str) -> dict[str, Any]:
+        if self.computed_cache is None:
+            return forecast_series(series, target)
+        return self.computed_cache.get_or_compute(
+            "passenger-forecast",
+            [model_code_version(), MODEL_VERSION, series, target],
+            lambda: forecast_series(series, target),
+        )
 
     def stage_source(self, source: dict[str, Any]) -> dict[str, Any]:
         with self._lock:
@@ -131,6 +154,37 @@ class ForecastService:
             "receipt": source["receipt"],
         }
 
+    def history_bundle(self) -> dict[str, Any]:
+        """Published observations for the analytics landing view; no model fitting."""
+        source = self.source()
+        return {
+            "generatedAt": datetime.now(timezone.utc).isoformat(),
+            "sourceAsOf": source.get("asOf"),
+            "sourceIds": source.get("sourceIds", []),
+            "dataQualityNotes": source.get("dataQualityNotes", []),
+            "representation": "history_only",
+            "monthly": [
+                {
+                    **{
+                        key: item.get(key)
+                        for key in (
+                            "name",
+                            "mode",
+                            "geography",
+                            "unit",
+                            "sourceUrl",
+                            "lastActualMonth",
+                            "qualification",
+                        )
+                    },
+                    "seriesId": item["id"],
+                    "history": item["points"],
+                }
+                for item in source["series"]
+            ],
+            "provenance": self._provenance(source),
+        }
+
     def bundle(
         self,
         target_month: str | None = None,
@@ -161,7 +215,7 @@ class ForecastService:
             "sourceIds": source.get("sourceIds", []),
             "dataQualityNotes": source.get("dataQualityNotes", []),
             "target": {"month": target_month, "currentMonthMvt": current_month, "kind": kind},
-            "monthly": [forecast_series(item, target_month) for item in selected],
+            "monthly": [self._forecast(item, target_month) for item in selected],
             "provenance": self._provenance(source),
             "bus": {
                 "status": "capture-evidence-only" if capture else "unavailable",
@@ -180,7 +234,7 @@ class ForecastService:
         if series is None:
             raise KeyError(f"Passenger series not found: {series_id}")
         target = index_month(month_index(series["lastActualMonth"]) + horizon)
-        forecast = forecast_series(series, target)
+        forecast = self._forecast(series, target)
         return {
             "seriesId": series_id,
             "horizonMonths": horizon,

@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 from typing import Any
+
+from shapely.affinity import scale
+from shapely.geometry import mapping, shape
 
 from app.data.cache import FileCache
 from app.data.map_context import MapContext
@@ -133,6 +137,7 @@ class NormalizedRepository:
         island_id: str | None = None,
         category: str | None = None,
         include_unlocated: bool = False,
+        simplify_m: float = 0,
     ) -> dict[str, Any]:
         """Return map-ready GeoJSON without inventing missing coordinates."""
 
@@ -143,7 +148,20 @@ class NormalizedRepository:
             for island in self.islands:
                 if island_id and island.get("properties", {}).get("id") != island_id:
                     continue
-                features.append(island)
+                if simplify_m and island.get("geometry"):
+                    # Rendering-only simplification in a local metre scale.
+                    # The stored polygon and all policy/routing inputs stay exact.
+                    geometry = shape(island["geometry"])
+                    if geometry.is_empty:
+                        features.append(island)
+                        continue
+                    longitude_scale = max(1e-6, math.cos(math.radians(geometry.centroid.y)))
+                    projected = scale(geometry, xfact=longitude_scale, yfact=1, origin=(0, 0))
+                    simplified = projected.simplify(simplify_m / 111_320, preserve_topology=True)
+                    restored = scale(simplified, xfact=1 / longitude_scale, yfact=1, origin=(0, 0))
+                    features.append({**island, "geometry": mapping(restored)})
+                else:
+                    features.append(island)
         if layer in {"all", "infrastructure"}:
             osm_by_id = {item.get("id"): item for item in self.transport.get("features", [])}
             for facility in self.infrastructure(island_id=island_id, category=category):
@@ -220,6 +238,7 @@ class NormalizedRepository:
                 "matched_osm_count": matched_osm_count,
                 "coordinates": "[longitude, latitude]",
                 "island_id": island_id,
+                "render_simplification_m": simplify_m,
             },
         }
 

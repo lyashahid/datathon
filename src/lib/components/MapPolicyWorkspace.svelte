@@ -47,7 +47,7 @@
 		PolicyOpportunities,
 		PolicyDomain
 	} from '#lib/policy-opportunities.js';
-	import type { Coordinates } from '#lib/types.js';
+	import type { Coordinates, MapFeatures } from '#lib/types.js';
 	import type { FeatureCollection } from 'geojson';
 	import ProposalCostStrip from './ProposalCostStrip.svelte';
 	import ProposalForecastReview from './ProposalForecastReview.svelte';
@@ -90,6 +90,10 @@
 	let {
 		islandId,
 		islandName,
+		mapFeatures = null,
+		boundaryFeatures = null,
+		boundaryError = '',
+		onRetryBoundary,
 		active,
 		lens = 'overall',
 		command = null,
@@ -107,6 +111,10 @@
 	}: {
 		islandId: string | null;
 		islandName: string;
+		mapFeatures?: MapFeatures | null;
+		boundaryFeatures?: MapFeatures | null;
+		boundaryError?: string;
+		onRetryBoundary?: () => void;
 		active: boolean;
 		lens?: PolicyLens;
 		command?: Command;
@@ -227,9 +235,7 @@
 		pending && baseline ? distanceToRoad(pending.coordinates, baseline.graph_edges) : null
 	);
 	const pendingWithin = $derived(
-		pending && islandId
-			? pointWithinIsland(pending.coordinates, national?.features, islandId)
-			: null
+		pending && islandId ? pointWithinIsland(pending.coordinates, boundaryFeatures, islandId) : null
 	);
 	const placementKey = $derived(`${costModelKey}:${JSON.stringify(pending)}`);
 	const quotedPlacement = $derived(
@@ -263,6 +269,7 @@
 					annual: pendingCosts?.annual ?? null,
 					allowed:
 						!!baseline &&
+						!!boundaryFeatures &&
 						!loading &&
 						operations.length < 100 &&
 						pendingWithin !== false &&
@@ -273,13 +280,15 @@
 					reason:
 						loading || !baseline
 							? 'Loading the island cost and site evidence…'
-							: operations.length >= 100
-								? 'This proposal has reached the 100-change limit.'
-								: pendingWithin === false
-									? `Move this pin onto ${islandName}. Water and other islands cannot be used.`
-									: !budgetLimits.allowed
-										? budgetLimits.reason
-										: placementError || quotedPlacement?.budget.reasons.join(' '),
+							: !boundaryFeatures
+								? boundaryError || 'Loading the detailed island boundary…'
+								: operations.length >= 100
+									? 'This proposal has reached the 100-change limit.'
+									: pendingWithin === false
+										? `Move this pin onto ${islandName}. Water and other islands cannot be used.`
+										: !budgetLimits.allowed
+											? budgetLimits.reason
+											: placementError || quotedPlacement?.budget.reasons.join(' '),
 					remaining: quotedPlacement?.budget.capital.remaining_mvr,
 					note:
 						roadDistance !== null
@@ -289,6 +298,7 @@
 								: undefined,
 					checking:
 						loading ||
+						(!boundaryFeatures && !boundaryError) ||
 						checkingBudget ||
 						(!quotedPlacement && !placementError && budgetLimits.allowed && pendingWithin !== false)
 				}
@@ -307,10 +317,44 @@
 					]
 				: operations
 	);
+	const nationalScreening = $derived.by(() => {
+		const byId = new Map(national?.islands.map((island) => [island.island_id, island]));
+		return {
+			type: 'FeatureCollection' as const,
+			features: (mapFeatures?.features ?? []).flatMap((feature) => {
+				const island = byId.get(String(feature.properties?.id));
+				if (!island || !feature.geometry) return [];
+				return [
+					{
+						type: 'Feature' as const,
+						geometry: feature.geometry,
+						properties: {
+							island_id: island.island_id,
+							name: island.name,
+							overall_gap: island.priority_score === null ? null : island.priority_score / 100,
+							...Object.fromEntries(
+								(['transport', 'health', 'education'] as const).map((domain) => [
+									`${domain}_gap`,
+									island.domains[domain].score === null
+										? null
+										: Number((1 - island.domains[domain].score! / 100).toFixed(4))
+								])
+							),
+							status: Object.values(island.domains).some((domain) => domain.status === 'review')
+								? 'review'
+								: Object.values(island.domains).every((domain) => domain.status === 'unknown')
+									? 'unknown'
+									: 'stronger_evidence'
+						}
+					}
+				];
+			})
+		};
+	});
 	const mapGaps = $derived({
 		type: 'FeatureCollection' as const,
 		features: [
-			...(national?.features.features ?? []).filter(
+			...nationalScreening.features.filter(
 				(feature) =>
 					restoredScope !== scopedKey ||
 					!displayGrid.features.length ||
@@ -372,7 +416,7 @@
 		dataError = '';
 		try {
 			const value = await api<PolicyOpportunities>(
-				'planning/opportunities',
+				'planning/opportunities?include_geometry=false',
 				undefined,
 				controller.signal
 			);
@@ -384,7 +428,7 @@
 	}
 	$effect(() => {
 		const scope = scopedKey;
-		if (!mounted || !scope || !active || !national || restoredScope === scope) return;
+		if (!mounted || !scope || !active || restoredScope === scope) return;
 		untrack(() => void loadScope(scope));
 	});
 	async function loadScope(scope: string, restore = restoredScope !== scope) {
@@ -412,7 +456,7 @@
 			displayGrid = emptyFeatures();
 			operations = [];
 			history = [];
-			title = `${current?.name ?? 'Selected island'} service improvement`;
+			title = `${islandName} service improvement`;
 			capitalBudget = 150_000_000;
 			annualBudget = 25_000_000;
 			goal = 'healthcare';
@@ -595,10 +639,7 @@
 		if (!moved || moved.id === consumedMove) return;
 		untrack(() => {
 			consumedMove = moved!.id;
-			if (
-				islandId &&
-				pointWithinIsland(moved!.coordinates, national?.features, islandId) === false
-			) {
+			if (islandId && pointWithinIsland(moved!.coordinates, boundaryFeatures, islandId) === false) {
 				error =
 					'Choose a site inside the selected island. Water and other islands cannot be used for this proposal.';
 				operations = [...operations];
@@ -903,10 +944,7 @@
 			error = pendingDecision?.reason || 'Verify this site and its budget before adding it.';
 			return;
 		}
-		if (
-			!islandId ||
-			pointWithinIsland(pending.coordinates, national?.features, islandId) === false
-		) {
+		if (!islandId || pointWithinIsland(pending.coordinates, boundaryFeatures, islandId) === false) {
 			error =
 				'Choose a site inside the selected island. Water and other islands cannot be used for this proposal.';
 			return;
@@ -1174,6 +1212,11 @@
 					</p>{/if}
 				{#if loading || !national}<p class="policy-working" role="status">
 						<RefreshCw size={15} class="spin" />Loading island evidence…
+					</p>{/if}
+				{#if boundaryError}<p class="policy-error" role="alert">
+						{boundaryError}<Button variant="link" onclick={onRetryBoundary}
+							>Retry map details</Button
+						>
 					</p>{/if}
 				{#if error}<p class="policy-error" role="alert">
 						{error}{#if scopeError}<Button variant="link" onclick={retryScope}

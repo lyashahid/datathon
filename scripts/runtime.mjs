@@ -73,6 +73,53 @@ export async function backendStatus(address) {
 	}
 }
 
+/** Start only a missing local backend; preserve separately managed services.
+ * @param {ReturnType<typeof processRunner>} runner
+ */
+export async function prepareBackend(runner) {
+	const address = backendAddress(process.env.MOBILITY_BACKEND_URL ?? defaultBackendUrl);
+	const status = await backendStatus(address);
+	if (status === 'occupied')
+		throw new Error(
+			`Port ${address.port} is occupied by a different or unhealthy service. Stop that service, then retry. The launcher will not replace an existing process.`
+		);
+	if (status === 'ready') {
+		console.log(`Using running mobility backend at ${address.url}`);
+		return undefined;
+	}
+	if (!address.local)
+		throw new Error('The configured remote backend is unavailable. Check its service and URL.');
+	await setupBackend(runner);
+	if ((await backendStatus(address)) !== 'unavailable')
+		throw new Error(`Port ${address.port} became occupied during setup. Retry startup.`);
+	const backend = runner.start('uv', [
+		'run',
+		'--directory',
+		'backend',
+		'--no-sync',
+		'uvicorn',
+		'app.main:app',
+		'--host',
+		address.host,
+		'--port',
+		String(address.port)
+	]);
+	let backendExited = false;
+	backend.completed.catch(() => {}).finally(() => (backendExited = true));
+	const deadline = Date.now() + 120_000;
+	while ((await backendStatus(address)) !== 'ready') {
+		if (backendExited) {
+			await backend.completed;
+			throw new Error('The backend exited before becoming ready. See its output above.');
+		}
+		if (Date.now() > deadline)
+			throw new Error('The backend did not become ready within two minutes. See its output above.');
+		await new Promise((resolve) => setTimeout(resolve, 500));
+	}
+	console.log(`Mobility backend ready at ${address.url}`);
+	return backend;
+}
+
 // Every spawned process has its own group on Unix so Ctrl+C also stops uv's Python child.
 export function processRunner() {
 	/** @type {Set<import('node:child_process').ChildProcess>} */

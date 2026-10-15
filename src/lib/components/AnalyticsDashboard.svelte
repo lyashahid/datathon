@@ -35,7 +35,7 @@
 		scoreDistribution,
 		type NationalAccessibility
 	} from '#lib/analytics.js';
-	import type { MapFeatures, NationalSummary } from '#lib/types.js';
+	import type { Accessibility, IslandProfile, MapFeatures, NationalSummary } from '#lib/types.js';
 
 	let {
 		summary,
@@ -63,6 +63,10 @@
 	let page = $state(0);
 	let showMethod = $state(false);
 	let selectedScoreId = $state<string | null>(null);
+	let scoreDetails = $state<Accessibility | null>(null);
+	let scoreDetailsLoading = $state(false);
+	let scoreDetailsError = $state('');
+	let scoreController: AbortController | undefined;
 	let controller: AbortController;
 
 	const numberFormatter = new Intl.NumberFormat('en-US');
@@ -81,7 +85,12 @@
 
 	const inventory = $derived(inventoryFromFeatures(infrastructure));
 	const rows = $derived(islandAnalytics(features, inventory, accessibility));
-	const selectedScore = $derived(rows.find((row) => row.id === selectedScoreId));
+	const selectedScore = $derived.by(() => {
+		const row = rows.find((item) => item.id === selectedScoreId);
+		return row && scoreDetails?.island_id === row.id
+			? { ...row, assessment: scoreDetails.assessment ?? null }
+			: row;
+	});
 	const atolls = $derived([...new Set(rows.map((row) => row.atoll))].sort());
 	const cohortRows = $derived(
 		rows.filter((row) => cohort === 'all' || row.category === 'Residential Island')
@@ -187,7 +196,11 @@
 		error = '';
 		try {
 			const result = await Promise.all([
-				api<NationalAccessibility>('accessibility/summary', undefined, requestController.signal),
+				api<NationalAccessibility>(
+					'accessibility/summary?compact=true',
+					undefined,
+					requestController.signal
+				),
 				api<MapFeatures>(
 					'map/features?layer=infrastructure&include_unlocated=true',
 					undefined,
@@ -204,6 +217,38 @@
 		} finally {
 			if (controller === requestController) loading = false;
 		}
+	}
+
+	async function openScoreDetails(id: string) {
+		scoreController?.abort();
+		const requestController = new AbortController();
+		scoreController = requestController;
+		selectedScoreId = id;
+		scoreDetails = null;
+		scoreDetailsLoading = true;
+		scoreDetailsError = '';
+		try {
+			const profile = await api<IslandProfile>(
+				`islands/${encodeURIComponent(id)}/profile`,
+				undefined,
+				requestController.signal
+			);
+			if (!requestController.signal.aborted && scoreController === requestController) {
+				if (!profile.accessibility) throw new Error('The score explanation is not available yet.');
+				scoreDetails = profile.accessibility;
+			}
+		} catch (caught) {
+			if (!requestController.signal.aborted && scoreController === requestController)
+				scoreDetailsError =
+					caught instanceof Error ? caught.message : 'The score explanation could not be loaded.';
+		} finally {
+			if (scoreController === requestController) scoreDetailsLoading = false;
+		}
+	}
+	function closeScoreDetails() {
+		scoreController?.abort();
+		selectedScoreId = null;
+		scoreDetails = null;
 	}
 
 	function selectAtoll(name: string) {
@@ -272,7 +317,10 @@
 
 	onMount(() => {
 		void load();
-		return () => controller?.abort();
+		return () => {
+			controller?.abort();
+			scoreController?.abort();
+		};
 	});
 </script>
 
@@ -754,7 +802,7 @@
 										class="score-explanation"
 										aria-label={`Why this score for ${row.name}`}
 										aria-describedby={`score-number-${row.id}`}
-										onclick={() => (selectedScoreId = row.id)}
+										onclick={() => void openScoreDetails(row.id)}
 										><span class="score-value" id={`score-number-${row.id}`}
 											>{row.score === null ? '—' : decimal(row.score)}<small>/100</small></span
 										><CircleHelp size={13} /></Button
@@ -827,7 +875,10 @@
 {#if selectedScore}
 	<IslandAccessibilityDetails
 		island={selectedScore}
-		onclose={() => (selectedScoreId = null)}
+		onclose={closeScoreDetails}
+		loading={scoreDetailsLoading}
+		error={scoreDetailsError}
+		onRetry={() => selectedScoreId && void openScoreDetails(selectedScoreId)}
 		{onExplore}
 	/>
 {/if}

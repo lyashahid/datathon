@@ -22,7 +22,7 @@ npm ci
 npm start
 ```
 
-`npm ci` installs the exact JavaScript versions in `package-lock.json`. `npm start` performs the runtime setup, using `backend/uv.lock` for Python packages, prepares the Chromium version required by the backend review collector, checks readiness and launches both services. You do not need to copy the example environment files.
+`npm ci` installs the exact JavaScript versions in `package-lock.json`. `npm start` builds and serves an optimized Node frontend, prepares the backend using `backend/uv.lock`, prepares Chromium for the backend review collector and checks readiness. Subsequent starts reuse the frontend build until its inputs change. You do not need to copy the example environment files.
 
 | Service                                | Default address                               |
 | -------------------------------------- | --------------------------------------------- |
@@ -100,7 +100,7 @@ npm run lint:backend
 npm run build
 ```
 
-For independent terminals, run `npm run setup`, then `npm run dev:backend` in one terminal and `npm run dev:frontend -- --host 127.0.0.1` in another.
+Use `npm run dev` to start both services with frontend hot reload while editing. For independent terminals, run `npm run setup`, then `npm run dev:backend` in one terminal and `npm run dev:frontend -- --host 127.0.0.1` in another.
 
 The frontend browser-test tooling uses its own Playwright version. For those tests, install that version's Chromium with `npx playwright install chromium`; this is separate from the backend browser prepared by startup. Existing browser verification scripts are under `scripts/`.
 
@@ -111,7 +111,9 @@ npm run build
 npm run preview -- --host 127.0.0.1 --port 5181 --strictPort
 ```
 
-This is a local preview. Hosting the application publicly requires an appropriate SvelteKit deployment adapter, a managed FastAPI process and deployment-specific access controls.
+For normal optimized use, `npm start -- --port 5181` builds only when needed and runs the Node adapter directly. `npm start -- --force-build` forces a fresh build. Listener ports are strict; startup never silently moves to another port. The Node adapter precompresses static assets. Hosting publicly requires managed Node and FastAPI processes plus deployment access controls.
+
+Optional PostgreSQL stores reusable computed results across restarts. Put `MOBILITY_DATABASE_URL` in ignored `backend/.env` to enable it. It is unnecessary for a fresh clone: memory and local disk caches work automatically. The database is server-side only and is never included in the browser bundle or Git. See [the performance guide](performance.md) for cache behavior, invalidation and measurements.
 
 ## Troubleshooting
 
@@ -121,7 +123,7 @@ This is a local preview. Hosting the application publicly requires an appropriat
 | Python or dependencies cannot download       | Check internet/proxy access, then retry `npm run setup`. Avoid changing the lockfiles to work around a network failure.               |
 | Chromium cannot launch on Linux              | Run `npm run setup -- --with-system-deps`, then retry.                                                                                |
 | Port 8000 belongs to another service         | Stop that service or deliberately configure a separate backend. The launcher checks the health response before reusing a process.     |
-| The frontend selects a later port            | Use the URL printed by Vite, or stop the process occupying 5173. For an exact port, use `npm start -- --port 5173 --strictPort`.      |
+| The frontend port is occupied                | Stop the process occupying 5173, or select another with `npm start -- --port 5181`. Production startup uses a strict port.            |
 | Frontend reports the backend is unavailable  | Start with `npm start` from the repository root and check http://127.0.0.1:8000/health.                                               |
 | A live feed is empty or unavailable          | Check its in-app source/freshness status; captured planning and analytics remain available.                                           |
 | Source data is missing after copying folders | Use a complete Git clone. Do not exclude `backend/data` or `data/public`.                                                             |

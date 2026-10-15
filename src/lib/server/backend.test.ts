@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { forwardBackend } from './backend';
+import { gunzipSync } from 'node:zlib';
 
 describe('backend integration boundary', () => {
 	it('forwards a scenario body and preserves backend validation responses', async () => {
@@ -160,5 +161,144 @@ describe('backend integration boundary', () => {
 		expect(result.status).toBe(429);
 		expect(result.headers.get('retry-after')).toBe('30');
 		expect(result.headers.get('content-disposition')).toContain('source.csv');
+	});
+	it('returns public snapshot validators and a body-free conditional response', async () => {
+		const fetcher = vi
+			.fn<typeof fetch>()
+			.mockImplementation(async () => Response.json({ features: [1, 2] }));
+		const first = await forwardBackend(
+			new Request('http://localhost/api/backend/map/features?layer=islands'),
+			'map/features',
+			'http://127.0.0.1:8000',
+			fetcher
+		);
+		const etag = first.headers.get('etag')!;
+		expect(etag).toMatch(/^W\/"[a-f0-9]{64}"$/);
+		expect(first.headers.get('cache-control')).toContain('max-age=60');
+		const second = await forwardBackend(
+			new Request('http://localhost/api/backend/map/features?layer=islands', {
+				headers: { 'if-none-match': etag }
+			}),
+			'map/features',
+			'http://127.0.0.1:8000',
+			fetcher
+		);
+		expect(second.status).toBe(304);
+		expect(await second.text()).toBe('');
+		expect(fetcher.mock.calls[1][1]?.headers).toMatchObject({
+			'if-none-match': etag,
+			'accept-encoding': 'identity'
+		});
+		expect(second.headers.get('vary')).toContain('Accept-Encoding');
+	});
+
+	it('forwards backend 304/source-version metadata without consuming or inventing a body', async () => {
+		const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
+			new Response(null, {
+				status: 304,
+				headers: {
+					etag: 'W/"source-a"',
+					'x-data-version': 'sources-v2',
+					'cache-control': 'private, max-age=0, must-revalidate'
+				}
+			})
+		);
+		const result = await forwardBackend(
+			new Request('http://localhost/api/backend/accessibility/summary', {
+				headers: { 'if-none-match': 'W/"source-a"' }
+			}),
+			'accessibility/summary',
+			'http://127.0.0.1:8000',
+			fetcher
+		);
+		expect(result.status).toBe(304);
+		expect(result.headers.get('x-data-version')).toBe('sources-v2');
+		expect(result.headers.get('cache-control')).toContain('max-age=0');
+		expect(result.body).toBeNull();
+	});
+
+	it('adds snapshot validators only for the explicit published-history forecast query', async () => {
+		const fetcher = vi
+			.fn<typeof fetch>()
+			.mockImplementation(async () => Response.json({ monthly: [] }));
+		for (const query of [
+			'',
+			'?history_only=false',
+			'?target_month=2026-12',
+			'?history_only=true'
+		]) {
+			const result = await forwardBackend(
+				new Request(`http://localhost/api/backend/forecasts${query}`),
+				'forecasts',
+				'http://127.0.0.1:8000',
+				fetcher
+			);
+			if (query === '?history_only=true') {
+				expect(result.headers.get('etag')).toMatch(/^W\/"[a-f0-9]{64}"$/);
+				expect(result.headers.get('cache-control')).toContain('max-age=60');
+			} else {
+				expect(result.headers.get('etag')).toBeNull();
+				expect(result.headers.get('cache-control')).toBe('no-store');
+			}
+		}
+	});
+
+	it('compresses large JSON for the browser and preserves exact data', async () => {
+		const source = {
+			features: Array.from({ length: 2_000 }, (_, index) => ({
+				id: index,
+				name: 'Island source polygon'
+			}))
+		};
+		const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json(source));
+		const result = await forwardBackend(
+			new Request('http://localhost/api/backend/map/features', {
+				headers: { 'accept-encoding': 'gzip, deflate, br' }
+			}),
+			'map/features',
+			'http://127.0.0.1:8000',
+			fetcher
+		);
+		const compressed = new Uint8Array(await result.arrayBuffer());
+		expect(result.headers.get('content-encoding')).toBe('gzip');
+		expect(JSON.parse(gunzipSync(compressed).toString())).toEqual(source);
+		expect(compressed.byteLength).toBeLessThan(JSON.stringify(source).length / 3);
+	});
+
+	it.each(['identity', 'gzip;q=0, br'])(
+		'does not send gzip to browsers that refuse it: %s',
+		async (encoding) => {
+			const source = { values: 'a'.repeat(3_000) };
+			const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json(source));
+			const result = await forwardBackend(
+				new Request('http://localhost/api/backend/map/features', {
+					headers: { 'accept-encoding': encoding }
+				}),
+				'map/features',
+				'http://127.0.0.1:8000',
+				fetcher
+			);
+			expect(result.headers.get('content-encoding')).toBeNull();
+			expect(await result.json()).toEqual(source);
+		}
+	);
+
+	it('does not apply static cache headers to live feeds or proposal responses', async () => {
+		const fetcher = vi
+			.fn<typeof fetch>()
+			.mockImplementation(async () => Response.json({ score: 40 }));
+		for (const [path, method] of [
+			['live/snapshot', 'GET'],
+			['planning/evaluate', 'POST']
+		]) {
+			const result = await forwardBackend(
+				new Request(`http://localhost/api/backend/${path}`, { method }),
+				path,
+				'http://127.0.0.1:8000',
+				fetcher
+			);
+			expect(result.headers.get('etag')).toBeNull();
+			expect(result.headers.get('cache-control')).toBe('no-store');
+		}
 	});
 });

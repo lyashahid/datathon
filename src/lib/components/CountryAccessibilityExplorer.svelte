@@ -271,7 +271,7 @@
 					</dl>
 					<div class="island-reasons" data-testid="island-accessibility-reasons">
 						{#each accessibilityDomains as domain (domain)}
-							{@const reason = selectedIsland?.assessment?.reasons.find(
+							{@const reason = selectedIsland?.assessment?.reasons?.find(
 								(item) => item.domain === domain
 							)}
 							<div>

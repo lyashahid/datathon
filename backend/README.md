@@ -71,6 +71,11 @@ MOBILITY_PORT=8000
 MOBILITY_LOG_LEVEL=DEBUG|INFO|WARNING|ERROR|CRITICAL
 MOBILITY_DATA_DIR=path/to/data
 MOBILITY_PUBLIC_DATA_DIR=path/to/project/data/public
+MOBILITY_DATABASE_URL=optional-server-only-postgresql-connection-string
+MOBILITY_COMPUTED_CACHE_MEMORY_MB=64
+MOBILITY_COMPUTED_CACHE_DISK_MB=512
+MOBILITY_COMPUTED_CACHE_MAX_ENTRIES=256
+MOBILITY_COMPUTED_CACHE_PREWARM=true|false
 MOBILITY_LIVE_AIRCRAFT_ENABLED=true|false
 MOBILITY_LIVE_VESSEL_ENABLED=true|false
 MOBILITY_LIVE_BUS_ENABLED=true|false
@@ -88,6 +93,78 @@ Default source data is under `data/public/` and backend caches are under
 `backend/data/`. No path refers to the original developer's Downloads or project
 directory. Do not commit a private `.env` file or credentials; the example files
 contain only public, optional settings.
+
+### Computed results and optional PostgreSQL
+
+The API reuses exact calculations in bounded memory and compressed files under
+ignored `backend/data/runtime/computed-json-v1/`. A fresh clone works with those
+local caches automatically. Canonical country geometry, scores and published
+passenger history warm in the background after startup. To prepare the full
+analytics and three supported island planning views before using them, run from
+the repository root:
+
+```powershell
+npm run precompute
+```
+
+Or from `backend/`:
+
+```powershell
+uv run python -m app.cli.precompute --include-planning
+```
+
+The command prepares 23 public views, including country snapshots, forecasts,
+data analysis, planning opportunities, island profiles and six default health/
+education impact calculations. It reports timings and cache status without
+printing credentials. `--skip-analysis` omits fitted forecasts and data analysis.
+Normal startup warms only the four small country/history views.
+
+For cross-machine reuse, optionally set `MOBILITY_DATABASE_URL` in ignored
+`backend/.env`. The example file intentionally contains no connection string.
+The optional `psycopg` dependency is installed by normal setup. A Prisma-style
+`schema` option becomes a validated PostgreSQL search path; connections require
+TLS and have connection/query time limits. The API creates only its own
+`mobility_computed_cache` table in that schema and does not require a new
+database. Only public snapshot/model results and unchanged baseline impacts
+are mirrored. User proposal operations, scenario content, names, budgets and
+custom assumptions stay in local caches. Authenticated or cookie-bearing HTTP
+requests bypass the public snapshot cache.
+
+Defaults bound memory to 64 MiB/256 entries and compressed disk to 512 MiB/1,024
+entries. Each item is at most 32 MiB before compression. Shared storage retains
+at most 512 MiB/4,096 entries with a seven-day age limit. Interactive remote
+lookups wait at most 10 ms; background mirroring handles slower connections.
+A failed database uses local calculations and a 60-second retry cooldown.
+Database exceptions and connection strings are not logged. Tests disable the
+shared database even when a developer has a local `.env`.
+
+Keys include source content, model implementation, scoring configuration and
+all calculation inputs; exact source receipts participate in planning keys.
+Different geometry flags, budgets and proposal operations cannot share the
+wrong result. Concurrent identical calculations share one computation, including
+when the first browser disconnects. Serialized public GETs use `ETag`,
+`X-Data-Version` and `private, max-age=0, must-revalidate` for validated browser
+reuse. Errors and live weather, traffic, movement and provider responses do not
+enter this persistent snapshot cache.
+
+National/graph/planning files are loaded at startup: **restart the backend after
+replacing bundled sources or changing model configuration**. Reviewed passenger
+source acceptance immediately changes the active source pointer; catalogue,
+history, forecasts and analysis then use the new generation. Importing a transit
+schedule remains an explicit scenario operation and is never a cached mutation.
+Precomputation does not update source dates or fetch new evidence.
+
+The country map uses `GET /api/v1/map/features?layer=islands&simplify_m=25` and
+`GET /api/v1/accessibility/summary?compact=true`. The simplified geometry is for
+display only; detailed island maps and placement use the original boundary.
+Compact scores preserve numeric components and evidence coverage. Fetch
+`/api/v1/islands/{id}/profile` for full explanations. Published passenger charts
+use `/api/v1/forecasts?history_only=true`, which performs no prediction fitting.
+
+For reproducible cold, repeated and local-disk timings without contacting the
+shared database, run `uv run python scripts/benchmark_backend.py` from `backend/`.
+It writes ignored `artifacts/qa/backend-performance-after.json`. The broader
+runtime/browser method is documented in [the performance guide](../docs/performance.md).
 
 ### Included snapshots and local state
 

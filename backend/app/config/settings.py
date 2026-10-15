@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
@@ -34,6 +34,11 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     data_dir: Path = BACKEND_ROOT / "data"
     public_data_dir: Path = BACKEND_ROOT.parent / "data" / "public"
+    database_url: SecretStr = Field(default=SecretStr(""), repr=False)
+    computed_cache_memory_mb: int = Field(default=64, ge=0, le=1024)
+    computed_cache_disk_mb: int = Field(default=512, ge=0, le=8192)
+    computed_cache_max_entries: int = Field(default=256, ge=1, le=10000)
+    computed_cache_prewarm: bool = True
     live_user_agent: str = "MobilitySandboxMV/0.1 (live layer; contact: unset)"
     live_cache_ttl_seconds: int = Field(default=60, ge=1, le=3600)
     live_request_timeout_seconds: float = Field(default=10.0, gt=0, le=60)
