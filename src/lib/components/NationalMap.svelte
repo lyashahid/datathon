@@ -5023,7 +5023,8 @@
 		height: 8px;
 	}
 	:global(.national-map .maplibregl-ctrl-top-right) {
-		top: 82px;
+		top: auto;
+		bottom: var(--map-zoom-bottom, 24px);
 		right: calc(var(--map-controls-right, 18px) - 10px);
 	}
 	:global(.national-map .maplibregl-ctrl-group) {
@@ -5076,7 +5077,28 @@
 			background: #edf5f1;
 		}
 	}
+	@container atlas (max-width: 900px) {
+		:global(.map-workspace:not(.panel-hidden) .national-map .maplibregl-ctrl-top-right) {
+			visibility: hidden;
+		}
+	}
+	@container atlas (max-width: 700px) {
+		:global(.national-map[data-accessibility-overview='true'] .maplibregl-ctrl-top-right) {
+			bottom: calc(42dvh + 24px);
+		}
+		:global(.national-map[data-accessibility-overview='false'] .maplibregl-ctrl-top-right) {
+			bottom: calc(var(--map-controls-bottom, 68px) + 119px);
+		}
+		.map-footer {
+			bottom: calc(var(--map-controls-bottom, 68px) + 119px);
+		}
+	}
 	@container atlas (max-width: 620px) {
+		:global(.map-workspace.policy-panel-open .national-map .maplibregl-ctrl-top-right),
+		:global(.map-workspace.conditions-panel-open .national-map .maplibregl-ctrl-top-right),
+		:global(.national-map:has(.map-information-card.mobile-expanded) .maplibregl-ctrl-top-right) {
+			visibility: hidden;
+		}
 		/* Keep selected records and their close button clear of the mobile search strip. */
 		:global(.national-map .map-source-record-popup) {
 			inset: auto 14px 76px;
@@ -5143,7 +5165,7 @@
 		}
 		.map-controls {
 			left: 16px;
-			max-width: calc(100% - 32px);
+			max-width: calc(100% - 76px);
 		}
 		.map-toolbar {
 			padding: 5px;
@@ -5151,12 +5173,13 @@
 			gap: 1px;
 		}
 		:global(.national-map .map-tool-button) {
-			padding: 0 9px;
+			padding: 0 7px;
 			font-size: 11px;
 			gap: 6px;
 		}
-		.atlas-mark {
-			width: 25px;
+		.atlas-mark,
+		.atlas-mark + .toolbar-divider {
+			display: none;
 		}
 		.toolbar-divider {
 			margin: 0 2px;

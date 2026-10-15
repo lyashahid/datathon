@@ -451,8 +451,7 @@
 .map-workspace.policy-panel-open .map-action-dock {
 	display: none;
 }
-.map-workspace:has(.map-source-record-popup) .policy-lens-bar,
-.map-workspace:has(.map-source-record-popup) .policy-inspect-trigger {
+.map-workspace:has(.map-source-record-popup) .policy-map-controls {
 	visibility: hidden;
 }
 .policy-proposal-marker {
@@ -1443,64 +1442,75 @@ td {
 		transform: rotate(360deg);
 	}
 }
-.island-search-sheet[data-slot='sheet-content'] {
-	width: 330px;
-	max-width: calc(100vw - 24px);
-	padding: 28px 22px 0;
-	gap: 0;
+.island-search-popover {
+	z-index: 50;
+	display: flex;
+	flex-direction: column;
+	width: min(360px, calc(100vw - 24px));
+	max-height: min(480px, var(--bits-popover-content-available-height, calc(100dvh - 24px)));
+	padding: 12px;
+	border: 1px solid #d7e3dd;
+	border-radius: 18px;
 	background: #fcfdfb;
+	box-shadow:
+		0 14px 45px #1d414d26,
+		0 2px 6px #1d414d12;
+	outline: none;
 }
-.island-search-sheet [data-slot='sheet-header'] {
-	padding: 0 15px 0 0;
+.island-search-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding-left: 3px;
+	color: #304e44;
 }
-.island-search-sheet [data-slot='sheet-title'] {
-	font-size: 21px;
-	font-weight: 550;
-	letter-spacing: -0.6px;
-}
-.island-search-sheet [data-slot='sheet-description'] {
+.island-search-heading strong {
 	font-size: 12px;
-	margin: 9px 0 0;
-	line-height: 1.7;
-	color: #5e7065;
+	font-weight: 600;
 }
-.search-field {
+.island-search-heading > button {
+	width: 30px;
+	height: 30px;
+}
+.island-search-popover .search-field {
 	position: relative;
 	display: flex;
 	align-items: center;
-	margin: 24px 0 10px;
+	margin: 8px 0;
 }
-.search-field > svg {
+.island-search-popover .search-field > svg {
 	position: absolute;
 	left: 11px;
 	color: #5f7161;
 	z-index: 1;
 }
-.search-field input {
+.island-search-popover .search-field input {
 	padding-left: 36px;
 }
-.list-heading {
+.island-search-popover .list-heading {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 20px 0 10px;
+	min-height: 36px;
+	padding: 4px 3px;
 	color: #617061;
 	font-size: 10px;
 }
-.island-list {
+.island-search-popover .island-list {
 	min-height: 0;
-	flex: 1;
+	max-height: 276px;
 	overflow-y: auto;
 	scrollbar-width: thin;
 	scrollbar-color: #d4dfd0 transparent;
-	margin: 0 -9px;
-	padding: 0 7px;
+	overscroll-behavior: contain;
+	scroll-padding: 3px;
 }
-.island-list > button {
+.island-search-popover .island-list > button {
 	width: 100%;
 	height: auto;
-	min-height: 62px;
-	padding: 12px 11px;
+	min-height: 52px;
+	padding: 9px 10px;
 	display: flex;
 	justify-content: start;
 	text-align: left;
@@ -1510,52 +1520,45 @@ td {
 	box-shadow: none;
 	background: transparent;
 	color: #425e50;
-	margin: 3px 0;
+	margin: 2px 0;
 }
-.island-list > button:hover {
+.island-search-popover .island-list > button:hover,
+.island-search-popover .island-list > button:focus-visible {
 	background: #edf4eb;
 }
-.island-list > button.selected {
+.island-search-popover .island-list > button.selected {
 	background: #e7f0e3;
 }
-.island-dot {
-	width: 6px;
-	height: 6px;
-	border-radius: 50%;
-	background: #b4c6ae;
+.island-search-popover .island-result-pin {
 	flex-shrink: 0;
+	color: #6c8e7c;
 }
-.island-info {
+.island-search-popover .island-info {
 	flex: 1;
 	min-width: 0;
 }
-.island-info strong {
+.island-search-popover .island-info strong {
 	display: block;
 	font-weight: 550;
 	font-size: 12px;
 	white-space: normal;
 	overflow-wrap: anywhere;
 }
-.island-info small {
+.island-search-popover .island-info small {
 	display: block;
 	font-size: 10px;
 	color: #62705d;
-	margin-top: 4px;
+	margin-top: 3px;
 	font-weight: 400;
 }
-.list-note {
-	padding: 16px 9px;
-	font-size: 11px;
+.island-search-popover .list-note {
+	padding: 10px;
+	font-size: 10px;
 	color: #65705e;
 }
-.sidebar-footer {
-	font-size: 9px;
-	padding: 20px 0;
-	border-top: 1px solid var(--border);
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	color: #617061;
+.island-search-popover .empty-state {
+	padding: 24px 12px;
+	font-size: 12px;
 }
 .source-dot {
 	display: inline-block;
@@ -2025,7 +2028,7 @@ td {
 }
 .map-first-shell .access-exploring .national-map .map-controls {
 	left: auto;
-	right: 20px;
+	right: 132px;
 	bottom: 30px;
 }
 .map-first-shell .country-overview .map-movement-status {
@@ -2035,11 +2038,17 @@ td {
 	display: none;
 }
 .map-first-shell .map-search-dock {
-	top: calc(20px + var(--map-navigation-offset));
+	top: max(20px, env(safe-area-inset-top));
 	left: 20px;
 }
 .map-first-shell .nearby-movement-controls {
-	top: calc(84px + var(--map-navigation-offset));
+	top: 76px;
+	left: 20px;
+	align-items: center;
+	max-width: 370px;
+}
+.map-first-shell .nearby-movement-controls .movement-settings {
+	margin-top: 0;
 }
 .map-first-shell .pick-banner {
 	top: calc(86px + var(--map-navigation-offset));
@@ -2056,14 +2065,12 @@ td {
 		top: calc(24px + var(--map-navigation-offset));
 	}
 }
-@media (min-width: 641px) {
-	.map-first-shell .policy-inspect-trigger {
-		right: 68px;
+@media (max-width: 1100px) {
+	.map-first-shell .map-search-dock {
+		top: 86px;
 	}
-}
-@media (max-width: 1200px) {
 	.map-first-shell .nearby-movement-controls {
-		top: calc(115px + var(--map-navigation-offset));
+		top: 140px;
 	}
 }
 @media (max-width: 700px) {
@@ -2119,7 +2126,14 @@ td {
 }
 @media (max-width: 640px) {
 	.map-first-shell .nearby-movement-controls {
-		top: calc(156px + var(--map-navigation-offset));
+		top: 134px;
+		left: 14px;
+		max-width: calc(100% - 28px);
+	}
+	.map-first-shell .nearby-movement-controls .movement-settings > summary {
+		min-height: 32px;
+		padding: 0 9px;
+		font-size: 10px;
 	}
 	.map-first-shell .pick-banner {
 		top: calc(74px + var(--map-navigation-offset));
@@ -2130,5 +2144,19 @@ td {
 		gap: 4px;
 		padding-inline: 8px;
 		font-size: 10px;
+	}
+	.map-first-shell .map-action-dock {
+		gap: 2px;
+		padding: 5px;
+	}
+	.map-first-shell .map-action-dock button {
+		min-width: 0;
+		flex: 1;
+		gap: 4px;
+		padding-inline: 5px;
+		font-size: 9px;
+	}
+	.map-first-shell .map-action-dock .dock-divider {
+		margin-inline: 0;
 	}
 }

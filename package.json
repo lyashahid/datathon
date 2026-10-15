@@ -27,6 +27,7 @@
 		"test:browser": "node scripts/verify-browser.mjs",
 		"test:browser:accessibility": "node scripts/verify-island-accessibility.mjs",
 		"test:browser:country": "node scripts/verify-country-map-journey.mjs",
+		"test:browser:map-controls": "node scripts/verify-map-floating-controls.mjs",
 		"test:browser:navigation": "node scripts/verify-restored-navigation.mjs",
 		"test:policy-api": "node scripts/verify-policy-api.mjs",
 		"test:browser:forecasts": "node scripts/verify-forecast-data-browser.mjs",

@@ -1127,47 +1127,67 @@
 			? 'Inspect local service gaps, then test a funded option.'
 			: 'National evidence screening. Detailed journey modeling is not available for this island.';
 	}
+	const coverageLenses: { id: PolicyLens; label: string }[] = [
+		{ id: 'overall', label: 'All services' },
+		{ id: 'transport', label: 'Transport' },
+		{ id: 'health', label: 'Health' },
+		{ id: 'education', label: 'Education' }
+	];
+	function selectLens(value: PolicyLens) {
+		showImpact = false;
+		onLensChange(value);
+	}
 </script>
 
 {#if active}
-	<div class="policy-lens-bar" aria-label="Service coverage map">
-		{#if operations.length}
+	<div class="policy-map-controls" class:panel-open={opened}>
+		{#if !opened}<Button
+				variant="ghost"
+				class="policy-inspect-trigger"
+				title={`${islandName} · ${impact.features.length ? 'proposal impact' : 'service gaps'}`}
+				onclick={() => open('needs')}
+				><MapPin size={15} /><span
+					>{islandName} · {impact.features.length ? 'proposal impact' : 'service gaps'}</span
+				></Button
+			>{/if}
+		<div class="policy-lens-bar" aria-label="Service coverage map">
+			{#if operations.length}
+				<select
+					aria-label="Map colours"
+					title="Current service gaps or proposed access changes"
+					value={impact.features.length ? 'impact' : 'gaps'}
+					onchange={(event) => (showImpact = event.currentTarget.value === 'impact')}
+				>
+					<option value="gaps">Gaps</option>
+					<option value="impact" disabled={!evaluation || stale}>Impact</option>
+				</select>
+			{:else}<span><Layers size={15} />Service gaps</span>{/if}
+			{#each coverageLenses as option (option.id)}
+				<button
+					class="coverage-lens-option"
+					class:active={lens === option.id && !impact.features.length}
+					aria-pressed={lens === option.id && !impact.features.length}
+					onclick={() => selectLens(option.id)}>{option.label}</button
+				>
+			{/each}
 			<select
-				aria-label="Map colours"
-				title="Current service gaps or proposed access changes"
-				value={impact.features.length ? 'impact' : 'gaps'}
-				onchange={(event) => (showImpact = event.currentTarget.value === 'impact')}
+				class="compact-coverage-lens"
+				aria-label="Service coverage"
+				value={lens}
+				onchange={(event) => selectLens(event.currentTarget.value as PolicyLens)}
 			>
-				<option value="gaps">Gaps</option>
-				<option value="impact" disabled={!evaluation || stale}>Impact</option>
+				{#each coverageLenses as option (option.id)}<option value={option.id}>{option.label}</option
+					>{/each}
 			</select>
-		{:else}<span><Layers size={15} />Service gaps</span>{/if}
-		{#each [{ id: 'overall', label: 'All services' }, { id: 'transport', label: 'Transport' }, { id: 'health', label: 'Health' }, { id: 'education', label: 'Education' }] as option (option.id)}
 			<button
-				class:active={lens === option.id && !impact.features.length}
-				aria-pressed={lens === option.id && !impact.features.length}
-				onclick={() => {
-					showImpact = false;
-					onLensChange(option.id as PolicyLens);
-				}}>{option.label}</button
+				class="lens-info"
+				aria-label={impact.features.length
+					? 'Explain proposal impact colours'
+					: 'Explain service gap colours'}
+				onclick={() => open('needs')}><ChevronDown size={16} /></button
 			>
-		{/each}
-		<button
-			class="lens-info"
-			aria-label={impact.features.length
-				? 'Explain proposal impact colours'
-				: 'Explain service gap colours'}
-			onclick={() => open('needs')}><ChevronDown size={16} /></button
-		>
+		</div>
 	</div>
-	{#if !opened}<Button
-			variant="outline"
-			class="policy-inspect-trigger"
-			onclick={() => open('needs')}
-			><MapPin size={15} />{islandName} · {impact.features.length
-				? 'proposal impact'
-				: 'service gaps'}</Button
-		>{/if}
 	{#if opened}<section
 			class="policy-map-panel"
 			class:placing={!!pending}
@@ -1635,20 +1655,27 @@
 {/if}
 
 <style>
-	.policy-lens-bar {
+	.policy-map-controls {
 		position: absolute;
-		top: calc(15px + var(--map-navigation-offset, 0px));
-		left: 50%;
-		transform: translateX(-50%);
+		right: calc(var(--map-controls-right, 18px) + 108px);
+		bottom: 24px;
 		z-index: 5;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		max-width: calc(100% - var(--map-controls-right, 18px) - 88px);
+		padding: 4px;
+		border: 1px solid #d7e2dc;
+		border-radius: 14px;
+		background: #fffffff5;
+		box-shadow: 0 4px 22px #1a433f12;
+		backdrop-filter: blur(10px);
+	}
+	.policy-lens-bar {
 		display: flex;
 		align-items: center;
 		gap: 3px;
-		padding: 5px;
-		border: 1px solid #d9e2dd;
-		border-radius: 12px;
-		background: #fffffff5;
-		box-shadow: 0 3px 12px #183d3210;
+		padding: 2px;
 		white-space: nowrap;
 	}
 	.policy-lens-bar > span {
@@ -1681,6 +1708,9 @@
 		background: #f5f8f3;
 		color: #185943;
 		font-size: 11px;
+	}
+	.policy-lens-bar .compact-coverage-lens {
+		display: none;
 	}
 	.policy-map-panel {
 		position: absolute;
@@ -2219,12 +2249,20 @@
 		color: #366144;
 	}
 	:global(.policy-inspect-trigger) {
-		position: absolute;
-		right: 18px;
-		top: calc(15px + var(--map-navigation-offset, 0px));
-		z-index: 5;
+		max-width: 100%;
+		justify-content: flex-start;
+		height: 32px;
+		padding-inline: 10px;
 		font-size: 12px;
-		box-shadow: 0 3px 10px #24402412;
+		color: #48665d;
+		background: transparent;
+		box-shadow: none;
+	}
+	:global(.policy-inspect-trigger span) {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	@keyframes spin {
 		to {
@@ -2246,21 +2284,28 @@
 		outline-offset: 3px;
 	}
 	@media (max-width: 1100px) {
-		.policy-lens-bar {
-			left: 18px;
-			transform: none;
-			top: calc(65px + var(--map-navigation-offset, 0px));
+		.policy-map-controls {
+			max-width: 260px;
+		}
+		.policy-map-controls.panel-open {
+			display: none;
 		}
 		.policy-lens-bar > span {
 			display: none;
+		}
+		.policy-lens-bar .coverage-lens-option {
+			display: none;
+		}
+		.policy-lens-bar .compact-coverage-lens {
+			display: block;
+			width: 145px;
+			padding: 7px 9px;
+			font-size: 12px;
 		}
 		.policy-map-panel {
 			top: calc(116px + var(--map-navigation-offset, 0px));
 			bottom: 16px;
 			width: 340px;
-		}
-		:global(.policy-inspect-trigger) {
-			top: calc(15px + var(--map-navigation-offset, 0px));
 		}
 		.policy-recalculating {
 			left: 20px;
@@ -2268,18 +2313,31 @@
 			bottom: 82px;
 		}
 	}
-	@media (max-width: 640px) {
-		:global(.policy-inspect-trigger) {
-			top: calc(116px + var(--map-navigation-offset, 0px));
-			left: 12px;
-			right: auto;
-		}
-		.policy-lens-bar {
-			top: calc(64px + var(--map-navigation-offset, 0px));
+	@media (max-width: 700px) {
+		.policy-map-controls {
 			left: 12px;
 			right: 12px;
-			justify-content: space-between;
+			bottom: 154px;
+			max-width: none;
+			flex-direction: row;
+			align-items: center;
+			gap: 2px;
 		}
+		.policy-lens-bar {
+			flex-shrink: 0;
+			gap: 1px;
+			padding: 0;
+		}
+		:global(.policy-inspect-trigger) {
+			flex: 1;
+			min-width: 0;
+			max-width: none;
+			padding-inline: 6px;
+			gap: 5px;
+			font-size: 11px;
+		}
+	}
+	@media (max-width: 640px) {
 		.policy-lens-bar button {
 			font-size: 10px;
 			padding: 6px;
@@ -2288,6 +2346,11 @@
 			width: 62px;
 			padding: 5px 2px;
 			font-size: 10px;
+		}
+		.policy-lens-bar .compact-coverage-lens {
+			width: 116px;
+			font-size: 11px;
+			padding: 7px 5px;
 		}
 		.policy-map-panel {
 			right: 10px;
@@ -2341,12 +2404,6 @@
 		}
 		.policy-recalculating small {
 			display: none;
-		}
-		:global(.policy-inspect-trigger) {
-			top: calc(116px + var(--map-navigation-offset, 0px));
-			right: auto;
-			max-width: calc(100% - 72px);
-			font-size: 11px;
 		}
 		.policy-map-panel > footer {
 			padding: 8px 12px;

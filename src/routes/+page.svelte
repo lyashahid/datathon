@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onMount, untrack } from 'svelte';
+	import { onMount, tick, untrack } from 'svelte';
+	import { Popover } from 'bits-ui';
 	import { goto } from '$app/navigation';
 	import {
 		Map as MapIcon,
@@ -30,7 +31,6 @@
 	import * as Card from '#lib/components/ui/card/index.js';
 	import * as NativeSelect from '#lib/components/ui/native-select/index.js';
 	import * as Tabs from '#lib/components/ui/tabs/index.js';
-	import * as Sheet from '#lib/components/ui/sheet/index.js';
 	import {
 		ChartNoAxesCombined,
 		ChevronRight,
@@ -229,7 +229,36 @@
 	let notice = $state('');
 	let search = $state('');
 	let atoll = $state('');
-	let sidebarOpen = $state(false);
+	let islandSearchOpen = $state(false);
+	let islandSearchAnchor = $state<HTMLElement | null>(null);
+	let islandSearchInput = $state<HTMLInputElement | null>(null);
+	let islandSearchContent = $state<HTMLDivElement | null>(null);
+	async function openIslandSearch(event?: MouseEvent) {
+		const trigger = event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+		await tick();
+		islandSearchAnchor =
+			trigger ??
+			document.querySelector<HTMLElement>('[data-island-search-trigger]') ??
+			document.querySelector<HTMLElement>('.accessibility-map-overlay');
+		islandSearchOpen = !islandSearchOpen;
+	}
+	function searchKeydown(event: KeyboardEvent) {
+		const results = Array.from(
+			islandSearchContent?.querySelectorAll<HTMLButtonElement>('[data-island-id]') ?? []
+		);
+		const index = results.indexOf(event.target as HTMLButtonElement);
+		if (event.key === 'ArrowDown' && (event.target === islandSearchInput || index >= 0)) {
+			event.preventDefault();
+			results[Math.min(index + 1, results.length - 1)]?.focus();
+		} else if (event.key === 'ArrowUp' && index >= 0) {
+			event.preventDefault();
+			if (index === 0) islandSearchInput?.focus();
+			else results[index - 1]?.focus();
+		} else if (event.key === 'Enter' && event.target === islandSearchInput && search.trim()) {
+			event.preventDefault();
+			results[0]?.click();
+		}
+	}
 	let busy = $state('');
 	let scenario = $state.raw<Scenario>(newScenario());
 	let history = $state.raw<Scenario[]>([]);
@@ -357,17 +386,22 @@
 			)
 		].sort()
 	);
+	const searchTerm = $derived(search.trim().toLocaleLowerCase());
 	const filtered = $derived(
 		islands
 			.filter(
 				(island) =>
 					(!atoll || island.properties.atoll === atoll) &&
-					(!search ||
-						`${island.properties.name} ${island.properties.atoll ?? ''}`
+					(!searchTerm ||
+						`${island.properties.name ?? ''} ${island.properties.atoll ?? ''}`
 							.toLocaleLowerCase()
-							.includes(search.toLocaleLowerCase()))
+							.includes(searchTerm))
 			)
-			.sort((a, b) => (a.properties.name ?? '').localeCompare(b.properties.name ?? ''))
+			.sort((a, b) => {
+				const aName = a.properties.name?.trim() ?? '';
+				const bName = b.properties.name?.trim() ?? '';
+				return Number(!aName) - Number(!bName) || aName.localeCompare(bName);
+			})
 	);
 	const selected = $derived(islands.find((island) => island.properties.id === selectedId));
 	const selectedCoordinates = $derived(
@@ -612,13 +646,13 @@
 		countryAtoll = islands.find((island) => island.properties.id === id)?.properties.atoll ?? null;
 		accessExplorerOpen = false;
 		if (id === selectedId) {
-			sidebarOpen = false;
+			islandSearchOpen = false;
 			focusVersion += 1;
 			if (!profile && !profileLoading) void loadProfile(id);
 			return;
 		}
 		selectedId = id;
-		sidebarOpen = false;
+		islandSearchOpen = false;
 		pickMode = null;
 		error = '';
 		simulation = null;
@@ -1032,7 +1066,7 @@
 		if (next === 'recommendations') proposalView = 'candidates';
 		if (next === 'scenarios' && proposalView === 'candidates') proposalView = 'edit';
 		pickMode = null;
-		sidebarOpen = false;
+		islandSearchOpen = false;
 		error = '';
 		panelOpen = next !== 'explore';
 		panelExpanded = false;
@@ -1123,7 +1157,7 @@
 		if (lens) policyAction('gaps');
 		else policyAction('close');
 		writeLocation(false);
-		if (!id && selectedAtoll) sidebarOpen = true;
+		if (!id && selectedAtoll) void openIslandSearch();
 	}
 	function exportBrief() {
 		const brief = {
@@ -1164,7 +1198,7 @@
 >
 <svelte:window
 	onkeydown={(event) => {
-		if (event.key === 'Escape') cancelPick();
+		if (event.key === 'Escape' && !event.defaultPrevented && !islandSearchOpen) cancelPick();
 	}}
 />
 <div class="app-shell" class:map-first-shell={isMapWorkspace}>
@@ -1412,7 +1446,8 @@
 						onIsland={inspectIsland}
 						onPlan={startIslandProposal}
 						onAnalytics={() => go('overview')}
-						onSearch={() => (sidebarOpen = true)}
+						onSearch={openIslandSearch}
+						searchOpen={islandSearchOpen}
 					/>
 				</div>
 			{/if}
@@ -1473,7 +1508,11 @@
 					<Button
 						variant="outline"
 						class="island-search-trigger"
-						onclick={() => (sidebarOpen = true)}
+						onclick={openIslandSearch}
+						data-island-search-trigger
+						aria-haspopup="dialog"
+						aria-expanded={islandSearchOpen}
+						aria-controls={islandSearchOpen ? 'island-search-results' : undefined}
 						><Search size={18} /><span>Find an island or atoll</span></Button
 					><Button
 						variant="outline"
@@ -2213,55 +2252,93 @@
 			</div>{/if}
 	</main>
 </div>
-<Sheet.Root bind:open={sidebarOpen}
-	><Sheet.Content side="left" class="island-search-sheet"
-		><Sheet.Header
-			><Sheet.Title>Find an island</Sheet.Title><Sheet.Description
-				>Choose a place to understand its baseline and plan a connection.</Sheet.Description
-			></Sheet.Header
+<Popover.Root bind:open={islandSearchOpen}>
+	<Popover.Portal>
+		<Popover.Content
+			id="island-search-results"
+			bind:ref={islandSearchContent}
+			class="island-search-popover"
+			role="dialog"
+			aria-label="Find an island or atoll"
+			customAnchor={islandSearchAnchor}
+			side="bottom"
+			align="start"
+			sideOffset={8}
+			collisionPadding={12}
+			trapFocus={false}
+			onOpenAutoFocus={(event) => {
+				event.preventDefault();
+				islandSearchInput?.focus();
+			}}
+			onCloseAutoFocus={(event) => {
+				event.preventDefault();
+				if (islandSearchAnchor?.isConnected) islandSearchAnchor.focus();
+			}}
+			onEscapeKeydown={(event) => {
+				event.preventDefault();
+				event.stopPropagation();
+				islandSearchOpen = false;
+			}}
+			onkeydown={searchKeydown}
 		>
-		<div class="search-field">
-			<Search size={16} /><Input
-				aria-label="Search islands"
-				placeholder="Search islands or atolls"
-				bind:value={search}
-			/>
-		</div>
-		<NativeSelect.Root aria-label="Filter by atoll" bind:value={atoll}
-			><NativeSelect.Option value="">All atolls</NativeSelect.Option
-			>{#each atolls as name (name)}<NativeSelect.Option value={name}>{name}</NativeSelect.Option
-				>{/each}</NativeSelect.Root
-		>
-		<div class="list-heading">
-			<span>{loading ? 'Loading national coverage…' : `${fmt(filtered.length)} islands`}</span
-			>{#if atoll || search}<Button
+			<div class="island-search-heading">
+				<strong>Find an island or atoll</strong>
+				<Button
 					variant="ghost"
-					class="text-button"
-					onclick={() => {
-						search = '';
-						atoll = '';
-					}}>Clear</Button
-				>{/if}
-		</div>
-		<div class="island-list">
-			{#each filtered.slice(0, 150) as island (island.properties.id)}<Button
-					data-island-id={island.properties.id}
-					variant="ghost"
-					class={selectedId === island.properties.id ? 'selected' : ''}
-					onclick={() => selectIsland(island.properties.id)}
-					><span class="island-dot"></span><span class="island-info"
-						><strong>{islandName(island.properties.name, island.properties.id)}</strong><small
-							>{island.properties.atoll || 'Atoll not recorded'}</small
-						></span
-					>{#if selectedId === island.properties.id}<ArrowUpRight size={17} />{/if}</Button
-				>{/each}{#if !loading && !filtered.length}<p class="empty-state">
-					No islands match this search.
-				</p>{:else if filtered.length > 150}<p class="list-note">
-					Showing the first 150. Search or choose an atoll to narrow the list.
-				</p>{/if}
-		</div>
-		<div class="sidebar-footer">
-			<span class="source-dot"></span>OneMap geography · Official records · OSM
-		</div></Sheet.Content
-	></Sheet.Root
->
+					size="icon"
+					aria-label="Close island search"
+					onclick={() => (islandSearchOpen = false)}><X size={15} /></Button
+				>
+			</div>
+			<div class="search-field">
+				<Search size={16} /><Input
+					bind:ref={islandSearchInput}
+					aria-label="Search islands"
+					placeholder="Search islands or atolls"
+					autocomplete="off"
+					bind:value={search}
+				/>
+			</div>
+			<NativeSelect.Root aria-label="Filter by atoll" bind:value={atoll}>
+				<NativeSelect.Option value="">All atolls</NativeSelect.Option>
+				{#each atolls as name (name)}<NativeSelect.Option value={name}>{name}</NativeSelect.Option
+					>{/each}
+			</NativeSelect.Root>
+			<div class="list-heading" aria-live="polite">
+				<span>{loading ? 'Loading national coverage…' : `${fmt(filtered.length)} islands`}</span>
+				{#if atoll || search}<Button
+						variant="ghost"
+						class="text-button"
+						onclick={() => {
+							search = '';
+							atoll = '';
+							islandSearchInput?.focus();
+						}}>Clear</Button
+					>{/if}
+			</div>
+			<div class="island-list">
+				{#each filtered.slice(0, 100) as island (island.properties.id)}
+					<Button
+						data-island-id={island.properties.id}
+						variant="ghost"
+						class={selectedId === island.properties.id ? 'selected' : ''}
+						onclick={() => inspectIsland(island.properties.id)}
+					>
+						<MapPin size={15} class="island-result-pin" />
+						<span class="island-info"
+							><strong>{islandName(island.properties.name, island.properties.id)}</strong><small
+								>{island.properties.atoll || 'Atoll not recorded'}</small
+							></span
+						>
+						<ArrowUpRight size={15} />
+					</Button>
+				{/each}
+				{#if !loading && !filtered.length}<p class="empty-state">
+						No islands match this search.
+					</p>{:else if filtered.length > 100}<p class="list-note">
+						Search or choose an atoll to narrow the list.
+					</p>{/if}
+			</div>
+		</Popover.Content>
+	</Popover.Portal>
+</Popover.Root>

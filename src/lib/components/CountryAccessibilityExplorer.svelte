@@ -22,7 +22,8 @@
 		onIsland,
 		onPlan,
 		onAnalytics,
-		onSearch
+		onSearch,
+		searchOpen = false
 	}: {
 		features: MapFeatures | null;
 		scores: Accessibility[] | null;
@@ -36,7 +37,8 @@
 		onIsland: (id: string) => void;
 		onPlan: () => void;
 		onAnalytics: () => void;
-		onSearch: () => void;
+		onSearch: (event: MouseEvent) => void;
+		searchOpen?: boolean;
 	} = $props();
 
 	const decimal = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
@@ -173,10 +175,19 @@
 				>
 					Find out why <ArrowRight size={15} />
 				</Button>
-				<Button variant="ghost" size="sm" class="search-action" onclick={onSearch}>
-					<Search size={13} /> Find an island
-				</Button>
 			{/if}
+			<Button
+				variant="ghost"
+				size="sm"
+				class="search-action"
+				data-island-search-trigger
+				aria-haspopup="dialog"
+				aria-expanded={searchOpen}
+				aria-controls={searchOpen ? 'island-search-results' : undefined}
+				onclick={onSearch}
+			>
+				<Search size={13} /> Find an island
+			</Button>
 		</div>
 
 		{#if expanded}
