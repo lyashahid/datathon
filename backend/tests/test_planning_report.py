@@ -1,5 +1,6 @@
 """Canonical PDF export, unknown-safe fiscal arithmetic, and readable evidence receipts."""
 
+import json
 from io import BytesIO
 
 from fastapi import FastAPI
@@ -8,7 +9,15 @@ from pypdf import PdfReader
 
 from app.api.routes.planning_reports import router
 from app.planning.models import PlanningRequest
-from app.planning.report import build_planning_report, factor_amount, fiscal_projection
+from app.planning.report import (
+    build_planning_report,
+    compact_amount,
+    factor_amount,
+    finite,
+    fiscal_chart,
+    fiscal_projection,
+    travel_band_chart,
+)
 
 
 def evaluation():
@@ -120,3 +129,62 @@ def test_export_recalculates_canonical_results_and_rejects_supplied_totals():
     invalid = client.post("/api/v1/planning/report.pdf", json={"evaluation": evaluation()})
     assert invalid.status_code == 422
     assert service.calls == 1
+
+
+def test_visual_report_leads_with_outcomes_and_preserves_exact_chart_evidence():
+    result = evaluation()
+    result["summary"]["gained_residents"] = 50.125
+    result["economics"]["budget"]["annual_operating_budget_mvr"] = 6_000_000
+    reader = PdfReader(BytesIO(build_planning_report(PlanningRequest(), result, "A better island")))
+    assert len(reader.pages) >= 5
+    pages = [page.extract_text() for page in reader.pages]
+    assert "RESIDENTS GAINING TARGET ACCESS" in pages[0]
+    assert "Current services" in pages[0] and "With proposal" in pages[0]
+    assert "Travel-time distribution" in pages[1]
+    assert "Known access lost".upper() in pages[1]
+    assert "Capital budget" in pages[2] and "5,000,000 remaining" in pages[2]
+    assert "Fiscal outlook: 1, 5 and 10 years" in pages[2]
+    assert "75,000,000" in pages[2]
+    evidence = json.loads(reader.attachments["evaluation-evidence.json"][0])
+    assert evidence["summary"]["gained_residents"] == 50.125
+    assert evidence["travel_time_bands"] == result["travel_time_bands"]
+    assert evidence["economics"] == result["economics"]
+    # Charts remain sharp at any zoom and do not depend on a screenshot service.
+    assert all("/XObject" not in page["/Resources"] for page in reader.pages[:3])
+
+
+def test_report_distinguishes_missing_inputs_budget_overruns_and_operating_savings():
+    result = evaluation()
+    result["summary"] = dict.fromkeys(result["summary"], None)
+    result["economics"]["delta"] = {"capital_mvr": 100_000, "annual_operating_mvr": -20_000}
+    result["economics"]["budget"] = {"capital_budget_mvr": 0}
+    result["travel_time_bands"] = {}
+    reader = PdfReader(BytesIO(build_planning_report(PlanningRequest(), result, "Savings review")))
+    text = " ".join(page.extract_text() for page in reader.pages)
+    assert "Over budget by MVR 100,000" in text
+    assert "-100,000" in text
+    assert "Travel-time distribution unavailable" in text
+    assert "Unavailable" in reader.pages[0].extract_text()
+    assert finite(True) is None
+    assert compact_amount(None) == "Unavailable"
+    assert compact_amount(0) == "0"
+    assert compact_amount(25_000_000) == "25m"
+
+
+def test_chart_unknowns_remain_visible_and_bar_geometry_has_no_inverted_corners():
+    missing = fiscal_chart(100_000, None, 480)
+    assert any(
+        getattr(item, "text", "") == "Fiscal projection unavailable" for item in missing.contents
+    )
+    chart = travel_band_chart(
+        {
+            "before": [{"label": "0-15 min", "residents": 100}],
+            "after": [{"label": "0-15 min", "residents": None}],
+        },
+        480,
+    )
+    assert any(getattr(item, "text", "") == "Unavailable" for item in chart.contents)
+    for item in chart.contents:
+        if hasattr(item, "rx"):
+            assert item.rx <= item.width / 2
+            assert item.ry <= item.height / 2

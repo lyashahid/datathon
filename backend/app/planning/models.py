@@ -59,6 +59,8 @@ class PlanningAssumptions(BaseModel):
     fleet_resources: list[FleetResources] = Field(default_factory=list, max_length=100)
     require_audited_wheelchair: bool = False
     include_origin_geometry: bool = False
+    include_journey_geometry: bool = True
+    include_world: bool = True
 
     @model_validator(mode="after")
     def validate_costs(self) -> PlanningAssumptions:

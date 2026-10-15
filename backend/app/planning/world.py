@@ -15,16 +15,20 @@ from app.planning.routing import WalkingNetwork
 from app.routing.engine import _distance_m
 
 
-def baseline_world(repository: PlanningRepository) -> dict[str, Any]:
+def baseline_world(
+    repository: PlanningRepository, *, share_network: bool = False
+) -> dict[str, Any]:
     baseline = repository.baseline
-    return copy.deepcopy(
+    world = copy.deepcopy(
         {
-            "network": baseline.get("network", {"nodes": [], "edges": []}),
             "facilities": baseline.get("facilities", []),
             "stops": baseline.get("transit", {}).get("stops", []),
             "patterns": baseline.get("transit", {}).get("patterns", []),
         }
     )
+    network = baseline.get("network", {"nodes": [], "edges": []})
+    world["network"] = network if share_network else copy.deepcopy(network)
+    return world
 
 
 def validate_service(pattern: dict[str, Any], stops: list[dict[str, Any]]) -> dict[str, Any]:
@@ -190,8 +194,12 @@ def validate_service(pattern: dict[str, Any], stops: list[dict[str, Any]]) -> di
     return pattern
 
 
-def apply_operations(repository: PlanningRepository, request: PlanningRequest) -> tuple[Any, Any]:
-    world = baseline_world(repository)
+def apply_operations(
+    repository: PlanningRepository,
+    request: PlanningRequest,
+    *,
+    share_unchanged_network: bool = False,
+) -> tuple[Any, Any]:
     warnings = []
     operations = list(request.operations)
     structural_operations = (request.scenario or {}).get("operations", [])
@@ -221,6 +229,15 @@ def apply_operations(repository: PlanningRepository, request: PlanningRequest) -
                 f"Structural operation {kind} has no scheduled service/financial "
                 "effect without explicit service or cost inputs"
             )
+    changes_graph = any(
+        operation.type in {"road_closure", "pedestrian_connection"}
+        or (operation.type == "weather_disruption" and "walk" in operation.disabled_modes)
+        for operation in operations
+    )
+    # Service evaluation never exposes this network and can share it while
+    # adding facilities/stops/services. Mutating graph operations and all other
+    # callers retain a fully isolated copy, including structural scenario edits.
+    world = baseline_world(repository, share_network=share_unchanged_network and not changes_graph)
     closure_applied = False
     proposed_pattern_ids: set[str] = set()
     for index, operation in enumerate(operations):

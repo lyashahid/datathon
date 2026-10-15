@@ -2,19 +2,143 @@
 
 from __future__ import annotations
 
+import copy
+import hashlib
+import json
+from collections import OrderedDict
 from datetime import timedelta
+from threading import RLock
 from typing import Any
 
 from app.planning.economics import COST_DEFAULTS, economics
-from app.planning.models import JourneyRequest, PlanningRequest
+from app.planning.models import JourneyRequest, PlanningAssumptions, PlanningRequest
 from app.planning.repository import IDENTITY_BRIDGE, PlanningRepository
-from app.planning.routing import JourneyRouter, pattern_trips
+from app.planning.routing import JourneyRouter, WalkingNetwork, pattern_trips
 from app.planning.world import apply_operations, baseline_world
 
 
 class PlanningService:
     def __init__(self, repository: PlanningRepository) -> None:
         self.repository = repository
+        self._cache_lock = RLock()
+        self._networks: OrderedDict[tuple[str, bool], WalkingNetwork] = OrderedDict()
+        self._routers: OrderedDict[tuple[str, str], JourneyRouter] = OrderedDict()
+
+    @staticmethod
+    def _digest(value: Any) -> str:
+        return hashlib.sha256(
+            json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+
+    def _baseline_view(self) -> dict[str, Any]:
+        """Internal read-only view; scenario overlays still copy before changing data."""
+        baseline = self.repository.baseline
+        return {
+            "network": baseline.get("network", {"nodes": [], "edges": []}),
+            "facilities": baseline.get("facilities", []),
+            "stops": baseline.get("transit", {}).get("stops", []),
+            "patterns": baseline.get("transit", {}).get("patterns", []),
+        }
+
+    def _router(self, world: dict[str, Any], assumptions: PlanningAssumptions) -> JourneyRouter:
+        # Content keys invalidate closures, stop moves, calendars, facility edits
+        # and in-process snapshot changes. Budget/geometry changes do not alter a
+        # journey, and consequently reuse the same exact routing calculations.
+        routing_inputs = assumptions.model_dump(
+            mode="json",
+            include={
+                "date",
+                "departure_minutes",
+                "goal",
+                "walk_m_per_minute",
+                "max_journey_minutes",
+                "max_access_walk_minutes",
+                "max_transfer_walk_minutes",
+                "max_transfers",
+                "max_snap_m",
+                "boarding_buffer_minutes",
+                "require_audited_wheelchair",
+            },
+        )
+        key = self._digest(world), self._digest(routing_inputs)
+        with self._cache_lock:
+            if key in self._routers:
+                self._routers.move_to_end(key)
+                return self._routers[key]
+            network_key = self._digest(world["network"]), assumptions.require_audited_wheelchair
+            if network_key not in self._networks:
+                self._networks[network_key] = WalkingNetwork(
+                    world["network"],
+                    assumptions.require_audited_wheelchair,
+                    cache_tree_nodes=150_000,
+                )
+                while len(self._networks) > 2:
+                    self._networks.popitem(last=False)
+            self._networks.move_to_end(network_key)
+            router = JourneyRouter(world, assumptions, network=self._networks[network_key])
+            self._routers[key] = router
+            while len(self._routers) > 4:
+                self._routers.popitem(last=False)
+            return router
+
+    def quote(self, request: PlanningRequest) -> dict[str, Any]:
+        """Authoritative project cost gate without any resident access searches."""
+        world, warnings = apply_operations(self.repository, request, share_unchanged_network=True)
+        financial = economics(self._baseline_view(), world, request.assumptions)
+        checks = {}
+        reasons = []
+        over_budget = False
+        unavailable = False
+        for key, label, limit, projected in (
+            (
+                "capital",
+                "Capital",
+                request.assumptions.capital_budget_mvr,
+                financial["delta"]["capital_mvr"],
+            ),
+            (
+                "annual_operating",
+                "Annual operating",
+                request.assumptions.annual_operating_budget_mvr,
+                financial["delta"]["annual_operating_mvr"],
+            ),
+        ):
+            within = projected <= limit if limit is not None and projected is not None else None
+            checks[key] = {
+                "limit_mvr": limit,
+                "projected_mvr": projected,
+                "remaining_mvr": round(limit - projected, 3)
+                if limit is not None and projected is not None
+                else None,
+                "within_budget": within,
+            }
+            if limit is not None and projected is None:
+                unavailable = True
+                reasons.append(f"{label} costs are unavailable; this budget cannot be verified.")
+            elif within is False:
+                over_budget = True
+                reasons.append(f"{label} cost exceeds the budget by MVR {projected - limit:,.2f}.")
+        bounded = (
+            request.assumptions.capital_budget_mvr is not None
+            or request.assumptions.annual_operating_budget_mvr is not None
+        )
+        return {
+            "economics": financial,
+            "budget": {
+                "allowed": not over_budget and not unavailable,
+                "status": "over_budget"
+                if over_budget
+                else "unavailable"
+                if unavailable
+                else "within_budget"
+                if bounded
+                else "unbounded",
+                "reasons": reasons,
+                **checks,
+            },
+            "coverage": self.coverage(request),
+            "warnings": sorted(set(warnings + financial["warnings"])),
+        }
 
     def baseline(self, island_id: str | None = None) -> dict[str, Any]:
         result = self.repository.summary(island_id)
@@ -62,11 +186,13 @@ class PlanningService:
         }
 
     def evaluate(self, request: PlanningRequest) -> dict[str, Any]:
-        before_world = baseline_world(self.repository)
-        after_world, operation_warnings = apply_operations(self.repository, request)
+        before_world = self._baseline_view()
+        after_world, operation_warnings = apply_operations(
+            self.repository, request, share_unchanged_network=True
+        )
         origins = self._origins(request)
-        before = JourneyRouter(before_world, request.assumptions)
-        after = JourneyRouter(after_world, request.assumptions)
+        before = self._router(before_world, request.assumptions)
+        after = self._router(after_world, request.assumptions)
         comparisons = []
         summary = {
             key: 0.0
@@ -88,7 +214,12 @@ class PlanningService:
             if population is None:
                 continue
             population = float(population)
-            first, second = before.route(origin), after.route(origin)
+            first = before.route(
+                origin, include_geometry=request.assumptions.include_journey_geometry
+            )
+            second = after.route(
+                origin, include_geometry=request.assumptions.include_journey_geometry
+            )
             within_first = first["minutes"] is not None and (
                 first["minutes"] <= request.assumptions.target_minutes
             )
@@ -196,7 +327,13 @@ class PlanningService:
             "origins": comparisons,
             "island_summaries": island_summaries,
             "economics": financial,
-            "world": {k: after_world[k] for k in ("facilities", "stops", "patterns")},
+            "world": copy.deepcopy({k: after_world[k] for k in ("facilities", "stops", "patterns")})
+            if request.assumptions.include_world
+            else {
+                "facilities": [],
+                "stops": [],
+                "patterns": [],
+            },
             "coverage": coverage,
             "assumptions": request.assumptions.model_dump(mode="json"),
             "warnings": sorted(set(warnings)),
@@ -231,7 +368,9 @@ class PlanningService:
             ]
             if not destinations:
                 raise ValueError("Destination is not eligible/open for this goal and scenario date")
-        outward = JourneyRouter(world, request.assumptions, destinations).route(origin)
+        outward = JourneyRouter(world, request.assumptions, destinations).route(
+            origin, include_geometry=request.assumptions.include_journey_geometry
+        )
         result = {
             "status": outward["status"],
             "origin_id": origin["id"],
@@ -263,7 +402,9 @@ class PlanningService:
         return_request = request.model_copy(update={"assumptions": assumptions})
         return_world, return_warnings = apply_operations(self.repository, return_request)
         result["warnings"].extend(f"Return journey: {warning}" for warning in return_warnings)
-        inward = JourneyRouter(return_world, assumptions, [home_target]).route(return_origin)
+        inward = JourneyRouter(return_world, assumptions, [home_target]).route(
+            return_origin, include_geometry=assumptions.include_journey_geometry
+        )
         result["return_journey"] = inward
         result["return_departure_minutes"] = return_departure
         result["destination"] = destination

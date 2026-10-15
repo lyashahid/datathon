@@ -47,6 +47,7 @@ export type PlanningOperation = {
 	island_id?: string;
 	coordinates?: number[];
 	name?: string;
+	opening_date?: string;
 	service?: Record<string, unknown>;
 	metadata?: Record<string, unknown>;
 };

@@ -24,6 +24,7 @@
 	import { displayGapHexes, displayImpactHexes } from '#lib/display-grid.js';
 	import { GAP_PALETTE } from '#lib/map-overlay.js';
 	import {
+		assessDraftBudget,
 		draftCosts,
 		distanceToRoad,
 		emptyFeatures,
@@ -31,6 +32,7 @@
 		type MapBaseline,
 		type MapEvaluation,
 		type MapPolicyState,
+		type PendingPlacementDecision,
 		type PlacementKind
 	} from '#lib/map-policy.js';
 	import {
@@ -73,7 +75,18 @@
 		eligibility?: Record<string, unknown>;
 		map_features?: FeatureCollection;
 	};
-	type Command = { id: number; kind: 'inspect' | 'gaps' | 'compose' | 'close' } | null;
+	type Command = {
+		id: number;
+		kind: 'inspect' | 'gaps' | 'compose' | 'close' | 'confirm' | 'cancel-placement';
+	} | null;
+	type BudgetQuote = {
+		economics: PlanningEconomics;
+		budget: {
+			allowed: boolean;
+			reasons: string[];
+			capital: { remaining_mvr: number | null };
+		};
+	};
 	let {
 		islandId,
 		islandName,
@@ -134,6 +147,14 @@
 	let extraAssumptions = $state.raw<Record<string, unknown>>({});
 	let suggested = $state.raw<SuggestedDraft | null>(null);
 	let suggesting = $state(false);
+	let checkingBudget = $state(false);
+	let placementRejection = $state<{ key: string; reason: string } | null>(null);
+	let placementQuote = $state.raw<{ key: string; value: BudgetQuote } | null>(null);
+	let financialQuote = $state.raw<{
+		key: string;
+		capital: number | null;
+		annual: number | null;
+	} | null>(null);
 	let evaluation = $state.raw<MapEvaluation | null>(null);
 	let evaluationQueued = $state(false);
 	let evaluating = $state(false);
@@ -149,7 +170,10 @@
 	let nationalController: AbortController | undefined;
 	let scopeController: AbortController | undefined;
 	let evaluateController: AbortController | undefined;
+	let evaluatingSignature = '';
 	let suggestionController: AbortController | undefined;
+	let quoteController: AbortController | undefined;
+	let placementQuoteController: AbortController | undefined;
 	let suggestionContext = '';
 	let evaluateTimer: ReturnType<typeof setTimeout> | undefined;
 	const current = $derived(national?.islands.find((row) => row.island_id === islandId));
@@ -159,16 +183,14 @@
 	});
 	const supported = $derived(current?.planning_supported ?? false);
 	const scopedKey = $derived(islandId ?? '');
-	const costs = $derived(
-		draftCosts(operations, {
-			...(baseline?.cost_defaults ?? {}),
-			...(extraAssumptions.cost_overrides &&
-			typeof extraAssumptions.cost_overrides === 'object' &&
-			!Array.isArray(extraAssumptions.cost_overrides)
-				? (extraAssumptions.cost_overrides as Record<string, number>)
-				: {})
-		})
-	);
+	const costDefaults = $derived({
+		...(baseline?.cost_defaults ?? {}),
+		...(extraAssumptions.cost_overrides &&
+		typeof extraAssumptions.cost_overrides === 'object' &&
+		!Array.isArray(extraAssumptions.cost_overrides)
+			? (extraAssumptions.cost_overrides as Record<string, number>)
+			: {})
+	});
 	const request = $derived<PlanningReviewRequest>({
 		island_id: islandId,
 		operations,
@@ -179,11 +201,25 @@
 			target_minutes: Number(targetMinutes),
 			goal,
 			population_year: extraAssumptions.population_year === 2030 ? 2030 : 2026,
-			capital_budget_mvr: Number(capitalBudget),
-			annual_operating_budget_mvr: Number(annualBudget),
-			include_origin_geometry: true
+			capital_budget_mvr: budgetNumber(capitalBudget),
+			annual_operating_budget_mvr: budgetNumber(annualBudget),
+			include_origin_geometry: false,
+			include_journey_geometry: false,
+			include_world: false
 		}
 	});
+	const costModelKey = $derived(financialKey(request));
+	const rawCosts = $derived(draftCosts(operations, costDefaults));
+	const costs = $derived(
+		financialQuote?.key === costModelKey
+			? financialQuote
+			: requiresQuote(operations)
+				? { capital: null, annual: null }
+				: rawCosts
+	);
+	const budgetDecision = $derived(
+		assessDraftBudget(costs, budgetNumber(capitalBudget), budgetNumber(annualBudget))
+	);
 	const signature = $derived(JSON.stringify(request));
 	const suggestionSignature = $derived(JSON.stringify({ request, priorities, costs }));
 	const stale = $derived(!!evaluation && evaluatedSignature !== signature);
@@ -193,6 +229,69 @@
 	const pendingWithin = $derived(
 		pending && islandId
 			? pointWithinIsland(pending.coordinates, national?.features, islandId)
+			: null
+	);
+	const placementKey = $derived(`${costModelKey}:${JSON.stringify(pending)}`);
+	const quotedPlacement = $derived(
+		placementQuote?.key === placementKey ? placementQuote.value : null
+	);
+	const pendingCosts = $derived(
+		pending
+			? draftCosts([{ type: pending.kind }], quotedPlacement?.economics.assumptions ?? costDefaults)
+			: null
+	);
+	const budgetLimits = $derived(
+		assessDraftBudget(
+			{ capital: 0, annual: 0 },
+			budgetNumber(capitalBudget),
+			budgetNumber(annualBudget)
+		)
+	);
+	const placementError = $derived(
+		placementRejection?.key === placementKey ? placementRejection.reason : ''
+	);
+	const pendingDecision = $derived<PendingPlacementDecision | null>(
+		pending
+			? {
+					label:
+						pending.kind === 'add_stop'
+							? 'Bus stop'
+							: pending.kind === 'add_school'
+								? 'School'
+								: 'Hospital',
+					capital: pendingCosts?.capital ?? null,
+					annual: pendingCosts?.annual ?? null,
+					allowed:
+						!!baseline &&
+						!loading &&
+						operations.length < 100 &&
+						pendingWithin !== false &&
+						budgetLimits.allowed &&
+						!!quotedPlacement?.budget.allowed &&
+						!placementError &&
+						!checkingBudget,
+					reason:
+						loading || !baseline
+							? 'Loading the island cost and site evidence…'
+							: operations.length >= 100
+								? 'This proposal has reached the 100-change limit.'
+								: pendingWithin === false
+									? `Move this pin onto ${islandName}. Water and other islands cannot be used.`
+									: !budgetLimits.allowed
+										? budgetLimits.reason
+										: placementError || quotedPlacement?.budget.reasons.join(' '),
+					remaining: quotedPlacement?.budget.capital.remaining_mvr,
+					note:
+						roadDistance !== null
+							? `${Math.round(roadDistance)} m from mapped roads.${roadDistance > 100 ? ' Outside the 100 m modeled connection limit.' : ' Within the modeled connection limit.'}`
+							: pendingWithin === null
+								? 'Land boundary unavailable; verify this site before proceeding.'
+								: undefined,
+					checking:
+						loading ||
+						checkingBudget ||
+						(!quotedPlacement && !placementError && budgetLimits.allowed && pendingWithin !== false)
+				}
 			: null
 	);
 	const displayOperations = $derived(
@@ -258,6 +357,8 @@
 			scopeController?.abort();
 			evaluateController?.abort();
 			suggestionController?.abort();
+			quoteController?.abort();
+			placementQuoteController?.abort();
 		};
 	});
 	$effect(() => {
@@ -289,6 +390,8 @@
 	async function loadScope(scope: string, restore = restoredScope !== scope) {
 		scopeController?.abort();
 		evaluateController?.abort();
+		quoteController?.abort();
+		checkingBudget = false;
 		clearTimeout(evaluateTimer);
 		cancelSuggestions();
 		const controller = new AbortController();
@@ -374,22 +477,24 @@
 			}
 		}
 		try {
-			const detail = await api<{
-				gap_cells?: FeatureCollection;
-				features?: FeatureCollection;
-				hex_grid?: FeatureCollection;
-			}>(`planning/opportunities/${encodeURIComponent(scope)}`, undefined, controller.signal);
+			const [detail, data] = await Promise.all([
+				api<{
+					gap_cells?: FeatureCollection;
+					features?: FeatureCollection;
+					hex_grid?: FeatureCollection;
+				}>(`planning/opportunities/${encodeURIComponent(scope)}`, undefined, controller.signal),
+				api<MapBaseline>(
+					`planning/baseline?island_id=${encodeURIComponent(scope)}`,
+					undefined,
+					controller.signal
+				)
+			]);
 			if (controller.signal.aborted) return;
 			displayGrid = detail.hex_grid ?? emptyFeatures();
 			const sourceCells = detail.gap_cells ?? detail.features ?? emptyFeatures();
 			gapCells = displayGrid.features.length
 				? displayGapHexes(sourceCells, displayGrid)
 				: emptyFeatures();
-			const data = await api<MapBaseline>(
-				`planning/baseline?island_id=${encodeURIComponent(scope)}`,
-				undefined,
-				controller.signal
-			);
 			if (!controller.signal.aborted) baseline = data;
 		} catch (cause) {
 			if (!controller.signal.aborted) {
@@ -425,6 +530,14 @@
 		if (!command || command.id === consumedCommand || (!active && command.kind !== 'close')) return;
 		untrack(() => {
 			consumedCommand = command!.id;
+			if (command!.kind === 'confirm') {
+				confirm();
+				return;
+			}
+			if (command!.kind === 'cancel-placement') {
+				cancelPending();
+				return;
+			}
 			opened = command!.kind !== 'close';
 			if (opened) {
 				section = command!.kind === 'compose' ? 'proposal' : 'needs';
@@ -437,6 +550,8 @@
 		if (!active || !placement || placement.id === consumedPlacement) return;
 		untrack(() => {
 			consumedPlacement = placement!.id;
+			quoteController?.abort();
+			checkingBudget = false;
 			pending = {
 				coordinates: [placement!.longitude, placement!.latitude],
 				kind: placement!.kind ?? 'add_school'
@@ -490,8 +605,11 @@
 				if (pending) pending = { ...pending };
 				return;
 			}
-			if (moved!.index === -1 && pending) pending = { ...pending, coordinates: moved!.coordinates };
-			else if (operations[moved!.index])
+			if (moved!.index === -1 && pending) {
+				quoteController?.abort();
+				checkingBudget = false;
+				pending = { ...pending, coordinates: moved!.coordinates };
+			} else if (operations[moved!.index])
 				change(
 					operations.map((operation, i) =>
 						i === moved!.index ? { ...operation, coordinates: moved!.coordinates } : operation
@@ -525,7 +643,7 @@
 		});
 		const timer = setTimeout(() => {
 			untrack(() => void evaluate(input));
-		}, 650);
+		}, 160);
 		evaluateTimer = timer;
 		return () => {
 			clearTimeout(timer);
@@ -540,6 +658,7 @@
 		const value: MapPolicyState = {
 			operations: displayOperations,
 			pending: restoredScope === scopedKey ? pending : null,
+			pendingDecision: restoredScope === scopedKey ? pendingDecision : null,
 			gapFeatures: mapGaps,
 			impactFeatures: impact,
 			serviceFeatures,
@@ -549,13 +668,60 @@
 		};
 		untrack(() => onState(value));
 	});
+	$effect(() => {
+		const key = placementKey;
+		const site = pending;
+		if (
+			!active ||
+			!site ||
+			!baseline ||
+			loading ||
+			!budgetLimits.allowed ||
+			pendingWithin === false
+		)
+			return;
+		const controller = new AbortController();
+		placementQuoteController = controller;
+		const payload: PlanningReviewRequest = {
+			...request,
+			operations: [
+				...operations,
+				{ type: site.kind, island_id: islandId ?? undefined, coordinates: site.coordinates }
+			]
+		};
+		const timer = setTimeout(async () => {
+			try {
+				const value = await api<BudgetQuote>('planning/quote', payload, controller.signal);
+				if (!controller.signal.aborted && key === placementKey) {
+					placementQuote = { key, value };
+					placementRejection = null;
+				}
+			} catch (cause) {
+				if (!controller.signal.aborted && key === placementKey)
+					placementRejection = {
+						key,
+						reason:
+							cause instanceof Error
+								? cause.message
+								: 'The cost could not be verified. Cancel and try this placement again.'
+					};
+			}
+		}, 120);
+		return () => {
+			clearTimeout(timer);
+			controller.abort();
+		};
+	});
 	async function evaluate(expected = signature) {
 		clearTimeout(evaluateTimer);
 		evaluationQueued = false;
 		if (!operations.length || expected !== signature || restoredScope !== scopedKey) return;
+		if (evaluatingSignature === expected && !evaluateController?.signal.aborted && evaluating)
+			return;
 		evaluateController?.abort();
 		const controller = new AbortController();
 		evaluateController = controller;
+		evaluatingSignature = expected;
 		evaluating = true;
 		error = '';
 		try {
@@ -566,6 +732,11 @@
 			);
 			if (!controller.signal.aborted && signature === expected) {
 				evaluation = value;
+				financialQuote = {
+					key: costModelKey,
+					capital: value.economics.delta.capital_mvr ?? null,
+					annual: value.economics.delta.annual_operating_mvr ?? null
+				};
 				evaluatedSignature = expected;
 				showImpact = section === 'proposal';
 			}
@@ -576,18 +747,133 @@
 			if (evaluateController === controller) evaluating = false;
 		}
 	}
-	function change(next: PlanningOperation[]) {
-		history = [...history.slice(-29), operations];
+	function budgetNumber(value: number | string) {
+		return value === '' ? NaN : Number(value);
+	}
+	function requiresQuote(changes: PlanningOperation[]) {
+		const calibrated =
+			(Array.isArray(extraAssumptions.calibration_records) &&
+				extraAssumptions.calibration_records.length > 0) ||
+			(extraAssumptions.calibration_selection &&
+				typeof extraAssumptions.calibration_selection === 'object' &&
+				Object.keys(extraAssumptions.calibration_selection).length > 0);
+		return changes.some(
+			(operation) =>
+				calibrated ||
+				operation.opening_date ||
+				operation.metadata?.valid_from ||
+				operation.metadata?.valid_until ||
+				operation.metadata?.costs ||
+				operation.metadata?.ui_package ||
+				!['add_stop', 'add_school', 'add_hospital'].includes(operation.type)
+		);
+	}
+	function financialKey(value: PlanningReviewRequest) {
+		// Journey display settings do not change costs; every economic assumption does.
+		return JSON.stringify({
+			...value,
+			assumptions: {
+				...value.assumptions,
+				goal: undefined,
+				target_minutes: undefined,
+				include_origin_geometry: undefined,
+				include_journey_geometry: undefined,
+				include_world: undefined
+			}
+		});
+	}
+	function commitChange(next: PlanningOperation[], undoing = false) {
+		history = undoing ? history.slice(0, -1) : [...history.slice(-29), operations];
 		operations = next;
+		inferGoal(next);
 		suggested = null;
 		error = '';
 	}
+	function change(next: PlanningOperation[], undoing = false) {
+		quoteController?.abort();
+		checkingBudget = false;
+		const removal =
+			next.length < operations.length && next.every((operation) => operations.includes(operation));
+		if (removal) {
+			commitChange(next, undoing);
+			return true;
+		}
+		const limits = assessDraftBudget(
+			{ capital: 0, annual: 0 },
+			budgetNumber(capitalBudget),
+			budgetNumber(annualBudget)
+		);
+		if (!limits.allowed) {
+			error = limits.reason;
+			operations = [...operations];
+			return false;
+		}
+		// Package display estimates never authorize spending. Verify routed changes on the backend.
+		if (requiresQuote(next)) {
+			void quoteChange(next, undoing);
+			return false;
+		}
+		const estimate = draftCosts(next, costDefaults);
+		const decision = assessDraftBudget(
+			estimate,
+			budgetNumber(capitalBudget),
+			budgetNumber(annualBudget)
+		);
+		if (decision.allowed) {
+			commitChange(next, undoing);
+			return true;
+		}
+		if (decision.known) {
+			error = decision.reason;
+			operations = [...operations];
+			return false;
+		}
+		void quoteChange(next, undoing);
+		return false;
+	}
+	async function quoteChange(next: PlanningOperation[], undoing: boolean) {
+		const controller = new AbortController();
+		let committed = false;
+		quoteController = controller;
+		const context = signature;
+		const siteContext = placementKey;
+		checkingBudget = true;
+		error = '';
+		try {
+			const result = await api<{
+				economics: PlanningEconomics;
+				budget: { allowed: boolean; reasons: string[] };
+			}>('planning/quote', { ...request, operations: next }, controller.signal);
+			if (controller.signal.aborted || context !== signature) return;
+			if (!result.budget.allowed) {
+				error =
+					result.budget.reasons.join(' ') ||
+					'This change cannot be funded within the current budgets.';
+				if (pending) placementRejection = { key: siteContext, reason: error };
+				return;
+			}
+			financialQuote = {
+				key: financialKey({ ...request, operations: next }),
+				capital: result.economics.delta.capital_mvr ?? null,
+				annual: result.economics.delta.annual_operating_mvr ?? null
+			};
+			commitChange(next, undoing);
+			committed = true;
+		} catch (cause) {
+			if (!controller.signal.aborted)
+				error =
+					cause instanceof Error ? cause.message : 'The budget could not be checked. Try again.';
+		} finally {
+			if (quoteController === controller) {
+				checkingBudget = false;
+				// A dragged marker must return to its saved site when its change is rejected.
+				if (!committed) operations = [...operations];
+			}
+		}
+	}
 	function undo() {
 		if (!history.length) return;
-		operations = history.at(-1)!;
-		history = history.slice(0, -1);
-		suggested = null;
-		pending = null;
+		if (change(history.at(-1)!, true)) pending = null;
 	}
 	function open(mode: 'needs' | 'proposal') {
 		opened = true;
@@ -595,6 +881,8 @@
 		onCloseOthers();
 	}
 	function close() {
+		quoteController?.abort();
+		checkingBudget = false;
 		opened = false;
 		pending = null;
 		review = false;
@@ -602,6 +890,8 @@
 		onPickKind(null);
 	}
 	function begin(kind: PlacementKind) {
+		quoteController?.abort();
+		checkingBudget = false;
 		open('proposal');
 		pending = null;
 		suggested = null;
@@ -609,6 +899,10 @@
 	}
 	function confirm() {
 		if (!pending || operations.length >= 100) return;
+		if (!pendingDecision?.allowed) {
+			error = pendingDecision?.reason || 'Verify this site and its budget before adding it.';
+			return;
+		}
 		if (
 			!islandId ||
 			pointWithinIsland(pending.coordinates, national?.features, islandId) === false
@@ -628,8 +922,13 @@
 				metadata: { proposal_id: `proposal:${kind}:${crypto.randomUUID()}` }
 			}
 		];
-		if (kind === 'add_school' || kind === 'add_hospital') inferGoal(next);
-		change(next);
+		if (!quotedPlacement) return;
+		financialQuote = {
+			key: financialKey({ ...request, operations: next }),
+			capital: quotedPlacement.economics.delta.capital_mvr ?? null,
+			annual: quotedPlacement.economics.delta.annual_operating_mvr ?? null
+		};
+		commitChange(next);
 		pending = null;
 	}
 	function inferGoal(next: PlanningOperation[]) {
@@ -645,6 +944,8 @@
 		);
 	}
 	function cancelPending() {
+		quoteController?.abort();
+		checkingBudget = false;
 		pending = null;
 		onPickKind(null);
 	}
@@ -773,9 +1074,7 @@
 			return;
 		}
 		const next = [...operations, ...items];
-		inferGoal(next);
-		change(next);
-		cancelSuggestions();
+		if (change(next)) cancelSuggestions();
 	}
 	function focusOperation(index: number) {
 		const coordinates = operations[index]?.coordinates;
@@ -833,6 +1132,7 @@
 		>{/if}
 	{#if opened}<section
 			class="policy-map-panel"
+			class:placing={!!pending}
 			aria-label="Island needs and proposal"
 			data-policy-section={section}
 		>
@@ -1064,6 +1364,15 @@
 							/>
 						</div>
 					</div>
+					{#if !budgetDecision.allowed && budgetDecision.known}<p
+							class="policy-budget-alert"
+							role="alert"
+						>
+							{budgetDecision.reason}
+						</p>{/if}
+					{#if checkingBudget}<p class="policy-budget-check" role="status">
+							Checking the cost against both budgets…
+						</p>{/if}
 					<div class="policy-priorities">
 						<span>Priorities</span
 						>{#each ['transport', 'health', 'education'] as domain (domain)}<button
@@ -1083,6 +1392,8 @@
 						disabled={!supported ||
 							loading ||
 							suggesting ||
+							checkingBudget ||
+							!budgetDecision.allowed ||
 							!priorities.length ||
 							operations.length >= 90}
 						onclick={suggest}
@@ -1128,48 +1439,27 @@
 					</div>
 					<div class="policy-palette">
 						{#each [{ kind: 'add_stop', label: 'Bus stop', icon: BusFront }, { kind: 'add_school', label: 'School', icon: GraduationCap }, { kind: 'add_hospital', label: 'Hospital', icon: Hospital }] as item (item.kind)}<button
-								draggable={operations.length < 100}
-								disabled={operations.length >= 100}
+								draggable={!!baseline && !loading && !checkingBudget && operations.length < 100}
+								disabled={!baseline || loading || checkingBudget || operations.length >= 100}
 								ondragstart={(event) => {
 									event.dataTransfer?.setData('application/x-policy-placement', item.kind);
-									if (event.dataTransfer) event.dataTransfer.effectAllowed = 'copy';
+									if (event.dataTransfer) {
+										event.dataTransfer.effectAllowed = 'copy';
+										const icon =
+											event.currentTarget.querySelector<HTMLElement>('.palette-drag-icon');
+										if (icon) event.dataTransfer.setDragImage(icon, 22, 22);
+									}
 								}}
 								onclick={() => begin(item.kind as PlacementKind)}
-								><item.icon size={22} /><span>{item.label}</span><Plus size={12} /></button
+								><span class="palette-drag-icon" data-placement-icon={item.kind}
+									><item.icon size={24} /></span
+								><span>{item.label}</span><Plus size={12} /></button
 							>{/each}
 					</div>
-					{#if pending}<div class="policy-placement-confirm" role="status">
-							<strong
-								>Confirm this {pending.kind === 'add_stop'
-									? 'bus stop'
-									: pending.kind === 'add_school'
-										? 'school'
-										: 'hospital'}?</strong
-							>
-							<p>The outlined pin is your proposed location. Drag it to adjust.</p>
-							{#if pendingWithin === false}<small class="site-warning"
-									>Choose a site inside {islandName}. Move this pin onto the selected island.</small
-								>{:else if pendingWithin === null}<small
-									>Mapped land boundary is unavailable; verify this site before proceeding.</small
-								>{/if}
-							<Label for="pending-kind">What would you add here?</Label><select
-								id="pending-kind"
-								bind:value={pending.kind}
-								><option value="add_stop">Bus stop</option><option value="add_school">School</option
-								><option value="add_hospital">Hospital</option></select
-							>{#if roadDistance != null}<small class:site-warning={roadDistance > 100}
-									>{Math.round(roadDistance)} m from the mapped road network.{roadDistance > 100
-										? ' Outside the current 100 m connection limit; choose a connected site for access modeling.'
-										: ' Within the modeled connection limit.'}</small
-								>{/if}
-							<div>
-								<Button
-									size="sm"
-									disabled={pendingWithin === false || operations.length >= 100}
-									onclick={confirm}><Check size={14} />Add to proposal</Button
-								><Button size="sm" variant="ghost" onclick={cancelPending}>Cancel</Button>
-							</div>
-						</div>{/if}
+					{#if pending}<p class="policy-placement-hint" role="status">
+							Your {pendingDecision?.label.toLowerCase()} is on the map. Drag its pin to adjust, then
+							confirm or cancel above it.
+						</p>{/if}
 					{#if operations.length}<div class="policy-draft-heading">
 							<h3>On your map · {operations.length} changes</h3>
 							<Button
@@ -1265,8 +1555,12 @@
 					</div>
 					<ProposalCostStrip
 						economics={evaluation && !stale ? evaluation.economics : draftEconomics}
-						capitalBudget={Number(capitalBudget)}
-						annualBudget={Number(annualBudget)}
+						capitalBudget={Number.isFinite(budgetNumber(capitalBudget))
+							? budgetNumber(capitalBudget)
+							: null}
+						annualBudget={Number.isFinite(budgetNumber(annualBudget))
+							? budgetNumber(annualBudget)
+							: null}
 						pending={calculating}
 						{stale}
 						operationCount={operations.length}
@@ -1592,6 +1886,26 @@
 	.policy-palette button:active {
 		cursor: grabbing;
 	}
+	.policy-palette .palette-drag-icon {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border: 2px solid #fff;
+		border-radius: 14px;
+		background: #176c61;
+		color: #fff;
+		box-shadow: 0 3px 8px #123d3429;
+		flex-shrink: 0;
+	}
+	.policy-palette button:disabled {
+		cursor: default;
+		opacity: 0.5;
+	}
+	.policy-palette button:focus-visible {
+		outline: 2px solid #176c61;
+		outline-offset: 3px;
+	}
 	.policy-palette button > :global(svg:last-child) {
 		position: absolute;
 		top: 5px;
@@ -1600,31 +1914,20 @@
 	.policy-palette span {
 		font-size: 10px;
 	}
-	.policy-placement-confirm {
-		padding: 13px;
-		border-radius: 10px;
-		border: 1px solid #b5caa0;
-		background: #f0f6e7;
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-	}
-	.policy-placement-confirm strong {
-		font-size: 13px;
-	}
-	.policy-placement-confirm p,
-	.policy-placement-confirm small {
+	.policy-placement-hint,
+	.policy-budget-alert,
+	.policy-budget-check {
 		font-size: 11px;
-		color: #6d7e59;
 		line-height: 1.5;
 		margin: 0;
+		padding: 10px 12px;
+		border-radius: 9px;
+		background: #edf5f0;
+		color: #315f51;
 	}
-	.policy-placement-confirm .site-warning {
-		color: #9b6547;
-	}
-	.policy-placement-confirm > div {
-		display: flex;
-		gap: 5px;
+	.policy-budget-alert {
+		background: #fff1ed;
+		color: #a14431;
 	}
 	.policy-map-panel select {
 		background: #fff;
@@ -2009,8 +2312,11 @@
 		.policy-palette button {
 			padding: 9px 5px;
 		}
-		.policy-map-panel:has(.policy-placement-confirm) {
-			max-height: 57%;
+		.policy-map-panel.placing {
+			max-height: 76px;
+		}
+		.policy-map-panel.placing > :not(header) {
+			display: none;
 		}
 	}
 	@media (prefers-reduced-motion: reduce) {

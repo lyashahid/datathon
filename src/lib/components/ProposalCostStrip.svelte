@@ -34,6 +34,11 @@
 		annualBudget ?? finiteValue(economics?.budget.annual_operating_budget_mvr)
 	);
 	const capitalShare = $derived(budgetUse(capital, resolvedCapitalBudget));
+	const annualShare = $derived(budgetUse(annual, resolvedAnnualBudget));
+	const budgets = $derived([
+		{ label: 'Capital', cost: capital, limit: resolvedCapitalBudget, share: capitalShare },
+		{ label: 'Yearly running', cost: annual, limit: resolvedAnnualBudget, share: annualShare }
+	]);
 	const over = $derived(
 		(capital !== null && resolvedCapitalBudget !== null && capital > resolvedCapitalBudget) ||
 			(annual !== null && resolvedAnnualBudget !== null && annual > resolvedAnnualBudget)
@@ -45,27 +50,40 @@
 		<span class="draft-label"
 			>{operationCount} {operationCount === 1 ? 'change' : 'changes'} in your proposal</span
 		>
-		{#if pending}<span class="cost-status" role="status"
+		{#if over}<span class="cost-status over"><CircleAlert size={13} /> Over budget</span>
+		{:else if pending}<span class="cost-status" role="status"
 				><LoaderCircle size={13} class="cost-spinner" /> Recalculating</span
 			>
 		{:else if stale}<span class="cost-status">Changes need recalculation</span>
-		{:else if over}<span class="cost-status over"><CircleAlert size={13} /> Over budget</span>
 		{:else if economics}<span class="cost-status">Planning estimate</span>{/if}
 	</div>
-	<div class="cost-values" class:outdated={pending || stale}>
+	<div class="cost-values">
 		<div><small>One-time investment</small><strong>MVR {formatAmount(capital, true)}</strong></div>
 		<div>
 			<small>Added yearly running cost</small><strong>MVR {formatAmount(annual, true)}</strong>
 		</div>
 	</div>
-	{#if resolvedCapitalBudget !== null}
-		<div class="budget-line">
-			<span>Capital budget</span><span>MVR {formatAmount(resolvedCapitalBudget, true)}</span>
-		</div>
-		<div class="budget-track" class:over aria-hidden="true">
-			<span style:width={`${capitalShare ?? 0}%`}></span>
-		</div>
-	{/if}
+	{#each budgets as budget (budget.label)}
+		{#if budget.limit !== null}
+			<div class="budget-summary" class:over={budget.cost !== null && budget.cost > budget.limit}>
+				<div class="budget-line">
+					<span>{budget.label} budget</span><span>MVR {formatAmount(budget.limit, true)}</span>
+				</div>
+				<div
+					class="budget-track"
+					class:over={budget.cost !== null && budget.cost > budget.limit}
+					aria-hidden="true"
+				>
+					<span style:width={`${budget.share ?? 0}%`}></span>
+				</div>
+				<small
+					>{budget.cost === null
+						? 'Cost needs confirmation'
+						: `MVR ${formatAmount(Math.abs(budget.limit - budget.cost), true)} ${budget.cost > budget.limit ? 'over budget' : 'remaining'}`}</small
+				>
+			</div>
+		{/if}
+	{/each}
 	<Button class="review-button" onclick={onReview} disabled={!operationCount || pending}>
 		Review full impact <ArrowUpRight size={15} />
 	</Button>
@@ -123,8 +141,16 @@
 		letter-spacing: -0.6px;
 		font-variant-numeric: tabular-nums;
 	}
-	.outdated strong {
+	.budget-summary {
+		display: grid;
+		gap: 5px;
+	}
+	.budget-summary small {
+		font-size: 10px;
 		color: var(--muted-foreground);
+	}
+	.budget-summary.over small {
+		color: var(--destructive);
 	}
 	.budget-track {
 		height: 5px;

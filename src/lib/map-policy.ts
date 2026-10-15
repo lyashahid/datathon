@@ -4,9 +4,20 @@ import type { PlanningComparison, PlanningOperation, PlanningPlace } from './pla
 import type { PlanningEvaluation } from './proposal-review.js';
 
 export type PlacementKind = 'add_school' | 'add_hospital' | 'add_stop';
+export type PendingPlacementDecision = {
+	label: string;
+	capital: number | null;
+	annual: number | null;
+	allowed: boolean;
+	reason?: string;
+	remaining?: number | null;
+	note?: string;
+	checking?: boolean;
+};
 export type MapPolicyState = {
 	operations: PlanningOperation[];
 	pending: { coordinates: Coordinates; kind: PlacementKind } | null;
+	pendingDecision: PendingPlacementDecision | null;
 	gapFeatures: FeatureCollection;
 	impactFeatures: FeatureCollection;
 	serviceFeatures: FeatureCollection;
@@ -22,6 +33,61 @@ export type MapBaseline = {
 	warnings: string[];
 };
 export const emptyFeatures = (): FeatureCollection => ({ type: 'FeatureCollection', features: [] });
+
+export type DraftBudgetDecision = {
+	allowed: boolean;
+	known: boolean;
+	reason: string;
+	capitalRemaining: number | null;
+	annualRemaining: number | null;
+};
+
+/** Both limits are commitments: unknown costs cannot be treated as free additions. */
+export function assessDraftBudget(
+	costs: { capital: number | null; annual: number | null },
+	capitalBudget: unknown,
+	annualBudget: unknown
+): DraftBudgetDecision {
+	const validLimit = (value: unknown): value is number =>
+		typeof value === 'number' && Number.isFinite(value) && value >= 0;
+	const result = {
+		allowed: false,
+		known: false,
+		reason: '',
+		capitalRemaining: null as number | null,
+		annualRemaining: null as number | null
+	};
+	if (!validLimit(capitalBudget) || !validLimit(annualBudget))
+		return {
+			...result,
+			known: true,
+			reason: 'Enter a valid capital budget and yearly running budget.'
+		};
+	if (costs.capital === null || costs.annual === null)
+		return { ...result, reason: 'Checking the full cost before adding this change.' };
+	if (![costs.capital, costs.annual].every(Number.isFinite))
+		return { ...result, reason: 'A complete cost estimate is needed before adding this change.' };
+	const capitalRemaining = Math.round((capitalBudget - costs.capital) * 100) / 100;
+	const annualRemaining = Math.round((annualBudget - costs.annual) * 100) / 100;
+	const format = new Intl.NumberFormat('en-GB', { maximumFractionDigits: 2 });
+	const reasons = [
+		...(capitalRemaining < 0
+			? [`MVR ${format.format(-capitalRemaining)} over your capital budget`]
+			: []),
+		...(annualRemaining < 0
+			? [`MVR ${format.format(-annualRemaining)} over your yearly running budget`]
+			: [])
+	];
+	return {
+		allowed: reasons.length === 0,
+		known: true,
+		reason: reasons.length
+			? `${reasons.join(' and ')}. Increase the budget or remove another change.`
+			: '',
+		capitalRemaining,
+		annualRemaining
+	};
+}
 
 /** Source-boundary screen only: being on mapped land does not establish a suitable building site. */
 export function pointWithinIsland(

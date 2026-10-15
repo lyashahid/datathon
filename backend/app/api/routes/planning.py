@@ -138,6 +138,13 @@ def evaluate(
     return invoke(service, "evaluate", payload)
 
 
+@router.post("/quote")
+def quote(
+    payload: PlanningRequest, service: PlanningService = Depends(get_planning)
+) -> dict[str, Any]:
+    return invoke(service, "quote", payload)
+
+
 @router.post("/journey")
 def journey(
     payload: JourneyRequest, service: PlanningService = Depends(get_planning)

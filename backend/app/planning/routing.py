@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import copy
 import heapq
 import math
+from collections import OrderedDict
 from datetime import date, timedelta
+from threading import RLock
 from typing import Any
 
 from app.planning.models import PlanningAssumptions
@@ -69,7 +72,12 @@ def pattern_trips(pattern: dict[str, Any], day: date) -> list[dict[str, Any]]:
 
 class WalkingNetwork:
     def __init__(
-        self, network: dict[str, Any], wheelchair: bool = False, drive: bool = False
+        self,
+        network: dict[str, Any],
+        wheelchair: bool = False,
+        drive: bool = False,
+        *,
+        cache_tree_nodes: int = 0,
     ) -> None:
         self.nodes = {node["id"]: node for node in network["nodes"]}
         self.adjacency: dict[str, list[tuple[str, float, dict[str, Any], bool]]] = {}
@@ -97,25 +105,94 @@ class WalkingNetwork:
             if drive
             else set(self.nodes)
         )
-        self._snap_cache: dict[tuple[float, float, str | None], tuple[str, float] | None] = {}
+        # A conservative geographic window filters candidates; haversine distance
+        # still selects the exact nearest node, including the original tie order.
+        self._snap_grid: dict[tuple[str | None, int, int], list[str]] = {}
+        self._node_order = {node_id: index for index, node_id in enumerate(self.nodes)}
+        for node_id, node in self.nodes.items():
+            if node_id not in self.snap_node_ids:
+                continue
+            cell = (math.floor(node["lon"] * 1000), math.floor(node["lat"] * 1000))
+            for scope in dict.fromkeys((None, node.get("islandId"))):
+                self._snap_grid.setdefault((scope, *cell), []).append(node_id)
+        self.reverse_adjacency: dict[str, list[tuple[str, float, dict[str, Any], bool]]] = {}
+        for source, edges in self.adjacency.items():
+            for target, metres, edge, reverse in edges:
+                self.reverse_adjacency.setdefault(target, []).append(
+                    (source, metres, edge, not reverse)
+                )
+        self._snap_cache: OrderedDict[
+            tuple[float, float, str | None, float], tuple[str, float] | None
+        ] = OrderedDict()
+        self._tree_cache: OrderedDict[
+            tuple[str, float, bool], tuple[dict[str, float], dict[str, Any]]
+        ] = OrderedDict()
+        self._cache_tree_nodes = cache_tree_nodes
+        self._cached_nodes = 0
+        self._cache_lock = RLock()
 
     def snap(self, point: dict[str, Any], max_distance: float) -> tuple[str, float] | None:
-        key = (float(point["lon"]), float(point["lat"]), point.get("islandId"))
-        if key not in self._snap_cache:
+        key = (
+            float(point["lon"]),
+            float(point["lat"]),
+            point.get("islandId") or None,
+            max_distance,
+        )
+        with self._cache_lock:
+            if key in self._snap_cache:
+                self._snap_cache.move_to_end(key)
+                return self._snap_cache[key]
+            angular = max_distance / 6371000
+            latitude_radius = math.degrees(angular) + 1e-9
+            longitude_radius = (
+                180.0
+                if abs(key[1]) + latitude_radius >= 90
+                else math.degrees(
+                    math.asin(min(1.0, math.sin(angular) / math.cos(math.radians(key[1]))))
+                )
+                + 1e-9
+            )
+            candidates = []
+            if (
+                longitude_radius >= 180
+                or key[0] - longitude_radius < -180
+                or key[0] + longitude_radius > 180
+            ):
+                candidates = list(self.nodes)
+            else:
+                for x in range(
+                    math.floor((key[0] - longitude_radius) * 1000),
+                    math.floor((key[0] + longitude_radius) * 1000) + 1,
+                ):
+                    for y in range(
+                        math.floor((key[1] - latitude_radius) * 1000),
+                        math.floor((key[1] + latitude_radius) * 1000) + 1,
+                    ):
+                        candidates.extend(self._snap_grid.get((key[2], x, y), []))
             best: tuple[str, float] | None = None
-            for node_id, node in self.nodes.items():
+            for node_id in sorted(candidates, key=self._node_order.__getitem__):
+                node = self.nodes[node_id]
                 if node_id not in self.snap_node_ids:
                     continue
                 if point.get("islandId") and node.get("islandId") != point["islandId"]:
                     continue
                 distance = _distance_m([key[0], key[1]], [node["lon"], node["lat"]])
-                if best is None or distance < best[1]:
+                if distance <= max_distance and (best is None or distance < best[1]):
                     best = node_id, distance
             self._snap_cache[key] = best
-        best = self._snap_cache[key]
-        return best if best and best[1] <= max_distance else None
+            if len(self._snap_cache) > 2048:
+                self._snap_cache.popitem(last=False)
+            return best
 
-    def tree(self, start: str, horizon_m: float) -> tuple[dict[str, float], dict[str, Any]]:
+    def tree(
+        self, start: str, horizon_m: float, *, reverse: bool = False
+    ) -> tuple[dict[str, float], dict[str, Any]]:
+        key = start, horizon_m, reverse
+        with self._cache_lock:
+            if key in self._tree_cache:
+                self._tree_cache.move_to_end(key)
+                return self._tree_cache[key]
+        adjacency = self.reverse_adjacency if reverse else self.adjacency
         queue = [(0.0, start)]
         distances = {start: 0.0}
         previous = {}
@@ -123,12 +200,20 @@ class WalkingNetwork:
             distance, node = heapq.heappop(queue)
             if distance != distances[node]:
                 continue
-            for next_id, metres, edge, reverse in self.adjacency.get(node, []):
+            for next_id, metres, edge, reversed_edge in adjacency.get(node, []):
                 candidate = distance + metres
                 if candidate <= horizon_m and candidate < distances.get(next_id, math.inf):
                     distances[next_id] = candidate
-                    previous[next_id] = node, edge, reverse
+                    previous[next_id] = node, edge, reversed_edge
                     heapq.heappush(queue, (candidate, next_id))
+        if self._cache_tree_nodes and len(distances) <= self._cache_tree_nodes:
+            with self._cache_lock:
+                if key not in self._tree_cache:
+                    self._tree_cache[key] = distances, previous
+                    self._cached_nodes += len(distances)
+                    while self._cached_nodes > self._cache_tree_nodes:
+                        _, (old_distances, _) = self._tree_cache.popitem(last=False)
+                        self._cached_nodes -= len(old_distances)
         return distances, previous
 
     def geometry(self, previous: dict[str, Any], start: str, end: str) -> list[list[float]]:
@@ -175,9 +260,17 @@ class JourneyRouter:
         world: dict[str, Any],
         assumptions: PlanningAssumptions,
         destinations: list[dict[str, Any]] | None = None,
+        *,
+        network: WalkingNetwork | None = None,
     ) -> None:
-        self.world, self.a = world, assumptions
-        self.network = WalkingNetwork(world["network"], assumptions.require_audited_wheelchair)
+        self.world, self.a = world, assumptions.model_copy(deep=True)
+        self._routes: OrderedDict[tuple[str, float, float, str | None], dict[str, Any]] = (
+            OrderedDict()
+        )
+        self._routes_lock = RLock()
+        self.network = network or WalkingNetwork(
+            world["network"], assumptions.require_audited_wheelchair
+        )
         self.stops = {stop["id"]: stop for stop in world["stops"] if not stop.get("disabled")}
         self.stop_snaps = {
             key: self.network.snap(stop, assumptions.max_snap_m) for key, stop in self.stops.items()
@@ -189,6 +282,27 @@ class JourneyRouter:
         )
         self.facility_snaps = {
             f["id"]: self.network.snap(f, assumptions.max_snap_m) for f in self.facilities
+        }
+        # Searching toward fixed destinations avoids repeating a whole graph
+        # traversal for every resident cell. Reverse adjacency retains one-way
+        # restrictions; route lengths and endpoint offsets remain unchanged.
+        self.access_trees = {
+            stop_id: self.network.tree(
+                snap[0],
+                assumptions.max_access_walk_minutes * assumptions.walk_m_per_minute,
+                reverse=True,
+            )
+            for stop_id, snap in self.stop_snaps.items()
+            if snap
+        }
+        self.destination_trees = {
+            facility_id: self.network.tree(
+                snap[0],
+                assumptions.max_journey_minutes * assumptions.walk_m_per_minute,
+                reverse=True,
+            )
+            for facility_id, snap in self.facility_snaps.items()
+            if snap
         }
         self.patterns_at: dict[str, list[tuple[dict[str, Any], int]]] = {}
         self.trips = {}
@@ -250,7 +364,33 @@ class JourneyRouter:
                 best = minutes, facility, self.network.geometry(previous, snap[0], target[0])
         return best
 
-    def route(self, origin: dict[str, Any]) -> dict[str, Any]:
+    @staticmethod
+    def _response(result: dict[str, Any], include_geometry: bool) -> dict[str, Any]:
+        if include_geometry:
+            return copy.deepcopy(result)
+        # Map impact needs resident IDs and travel times, not hundreds of copies
+        # of the same street coordinates. Preserve leg metadata and defaults for
+        # detailed journey/PDF consumers; cached canonical paths stay untouched.
+        return {
+            **result,
+            "geometry": [],
+            "path": [{**leg, "geometry": []} for leg in result["path"]],
+        }
+
+    def route(self, origin: dict[str, Any], *, include_geometry: bool = True) -> dict[str, Any]:
+        key = origin["id"], float(origin["lon"]), float(origin["lat"]), origin.get("islandId")
+        with self._routes_lock:
+            if key in self._routes:
+                self._routes.move_to_end(key)
+                return self._response(self._routes[key], include_geometry)
+            result = self._route(origin)
+            # Copies keep consumers of a response from changing future results.
+            self._routes[key] = result
+            if len(self._routes) > 768:
+                self._routes.popitem(last=False)
+            return self._response(result, include_geometry)
+
+    def _route(self, origin: dict[str, Any]) -> dict[str, Any]:
         a = self.a
         snap = self.network.snap(origin, a.max_snap_m)
         if not snap:
@@ -259,10 +399,17 @@ class JourneyRouter:
                 "Resident/destination location does not snap to a supported "
                 "walking network within the selected tolerance",
             )
-        distances, previous = self.network.tree(
-            snap[0], a.max_journey_minutes * a.walk_m_per_minute
-        )
-        direct = self._best_destination(snap, distances, previous, a.max_journey_minutes)
+        direct = None
+        for facility in self.facilities:
+            target = self.facility_snaps[facility["id"]]
+            if not target:
+                continue
+            distances, previous = self.destination_trees[facility["id"]]
+            metres = snap[1] + distances.get(snap[0], math.inf) + target[1]
+            minutes = metres / a.walk_m_per_minute
+            if minutes <= a.max_journey_minutes and (direct is None or minutes < direct[0]):
+                geometry = list(reversed(self.network.geometry(previous, target[0], snap[0])))
+                direct = minutes, facility, geometry
         best_time = a.departure_minutes + direct[0] if direct else math.inf
         best_path = (
             [walk_leg(origin["id"], direct[1]["id"], direct[0], direct[2])] if direct else []
@@ -274,7 +421,8 @@ class JourneyRouter:
         for stop_id, stop_snap in self.stop_snaps.items():
             if not stop_snap:
                 continue
-            metres = snap[1] + distances.get(stop_snap[0], math.inf) + stop_snap[1]
+            distances, previous = self.access_trees[stop_id]
+            metres = snap[1] + distances.get(snap[0], math.inf) + stop_snap[1]
             minutes = metres / a.walk_m_per_minute
             if minutes <= a.max_access_walk_minutes:
                 arrival = a.departure_minutes + minutes
@@ -284,7 +432,7 @@ class JourneyRouter:
                         origin["id"],
                         stop_id,
                         minutes,
-                        self.network.geometry(previous, snap[0], stop_snap[0]),
+                        list(reversed(self.network.geometry(previous, stop_snap[0], snap[0]))),
                     )
                 ]
                 heapq.heappush(queue, (arrival, stop_id, 0))

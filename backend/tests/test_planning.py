@@ -2,6 +2,8 @@
 
 import copy
 import json
+import random
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 
 import pytest
@@ -13,9 +15,10 @@ from app.api.routes.planning import router
 from app.planning.economics import economics, fleet_activity
 from app.planning.models import JourneyRequest, PlanningAssumptions, PlanningRequest
 from app.planning.repository import PlanningRepository
-from app.planning.routing import WalkingNetwork, calendar_runs, pattern_trips
+from app.planning.routing import JourneyRouter, WalkingNetwork, calendar_runs, pattern_trips
 from app.planning.service import PlanningService
 from app.planning.world import apply_operations, baseline_world, validate_service
+from app.routing.engine import _distance_m
 
 
 @pytest.fixture
@@ -506,3 +509,311 @@ def test_reviewed_notice_is_applied_only_within_mvt_validity_window(service):
     )
     assert world["network"]["edges"][0]["walkAllowed"] is True
     assert any("outside its validity" in warning for warning in warnings)
+
+
+def test_quote_gates_exact_capital_and_operating_budgets_without_access_routing(
+    service, monkeypatch
+):
+    def no_routing(*args, **kwargs):
+        pytest.fail("A budget quote must not calculate resident journeys")
+
+    monkeypatch.setattr(service, "_router", no_routing)
+    operation = {"type": "add_school", "coordinates": [73.5, 4.17]}
+    request = PlanningRequest(
+        island_id="island:1443",
+        operations=[operation],
+        assumptions={"capital_budget_mvr": 25_000_000, "annual_operating_budget_mvr": 5_000_000},
+    )
+    quote = service.quote(request)
+    assert quote["budget"]["allowed"] is True
+    assert quote["budget"]["capital"]["remaining_mvr"] == 0
+    assert quote["budget"]["annual_operating"]["remaining_mvr"] == 0
+    limited = request.model_copy(
+        update={
+            "assumptions": request.assumptions.model_copy(
+                update={"capital_budget_mvr": 24_999_999, "annual_operating_budget_mvr": 4_999_999}
+            )
+        }
+    )
+    quote = service.quote(limited)
+    assert quote["budget"]["status"] == "over_budget"
+    assert quote["budget"]["allowed"] is False
+    assert len(quote["budget"]["reasons"]) == 2
+    assert quote["budget"]["capital"]["remaining_mvr"] == -1
+
+
+def test_quote_blocks_unavailable_limited_costs_and_preserves_unbounded_status(service):
+    service.repository.baseline["transit"]["patterns"][0]["distanceM"] = None
+    limited = service.quote(
+        PlanningRequest(assumptions={"departure_minutes": 470, "annual_operating_budget_mvr": 0})
+    )
+    assert limited["budget"]["allowed"] is False
+    assert limited["budget"]["status"] == "unavailable"
+    assert limited["budget"]["annual_operating"]["projected_mvr"] is None
+    unbounded = service.quote(PlanningRequest(assumptions={"departure_minutes": 470}))
+    assert unbounded["budget"]["allowed"] is True
+    assert unbounded["budget"]["status"] == "unbounded"
+
+
+def test_quote_uses_same_financial_model_and_keeps_legacy_overbudget_evaluation(service):
+    request = PlanningRequest(
+        island_id="island:1443",
+        assumptions={"capital_budget_mvr": 0},
+        operations=[{"type": "add_stop", "coordinates": [73.5, 4.17]}],
+    )
+    quote = service.quote(request)
+    evaluation = service.evaluate(request)
+    assert quote["economics"] == evaluation["economics"]
+    assert quote["budget"]["allowed"] is False
+    assert evaluation["economics"]["budget"]["capital_within_budget"] is False
+    app = FastAPI()
+    app.state.planning = service
+    app.include_router(router)
+    response = TestClient(app).post("/api/v1/planning/quote", json=request.model_dump(mode="json"))
+    assert response.status_code == 200
+    assert response.json()["budget"] == quote["budget"]
+
+
+def test_routing_cache_reuses_budget_target_geometry_changes_and_isolates_responses(
+    service, monkeypatch
+):
+    request = PlanningRequest(assumptions={"departure_minutes": 470})
+    original = service.evaluate(request)
+    assert len(service._routers) == 1  # An unchanged scenario shares its baseline router.
+    before_pin = copy.deepcopy(service.repository.baseline)
+    original["origins"][0]["before"]["geometry"][0][0] = -999
+    original["world"]["facilities"][0]["operatingStatus"] = "closed"
+    assert service.repository.baseline == before_pin
+
+    def no_graph_search(*args, **kwargs):
+        pytest.fail("Known resident journeys must be reused for presentation/cost changes")
+
+    for network in service._networks.values():
+        monkeypatch.setattr(network, "tree", no_graph_search)
+    changed = request.model_copy(
+        update={
+            "assumptions": request.assumptions.model_copy(
+                update={
+                    "capital_budget_mvr": 10,
+                    "target_minutes": 15,
+                    "include_origin_geometry": True,
+                    "population_year": 2030,
+                }
+            )
+        }
+    )
+    result = service.evaluate(changed)
+    assert len(service._routers) == 1
+    assert result["origins"][0]["before"]["geometry"][0][0] != -999
+    assert result["world"]["facilities"][0]["operatingStatus"] == "open"
+    assert result["summary"]["population"] == 180
+    assert result["target_minutes"] == 15
+    # A caller may reuse its Pydantic input object after an evaluation.
+    request.assumptions.departure_minutes = 600
+    assert (
+        service.evaluate(PlanningRequest(assumptions={"departure_minutes": 470}))["origins"][0][
+            "before"
+        ]["minutes"]
+        == 20
+    )
+
+
+def test_routing_cache_does_not_cross_goals_calendars_closures_or_stop_moves(service):
+    request = PlanningRequest(assumptions={"departure_minutes": 470})
+    assert service.evaluate(request)["origins"][0]["after"]["minutes"] == 20
+    next_day = request.model_copy(
+        update={"assumptions": request.assumptions.model_copy(update={"date": date(2026, 10, 11)})}
+    )
+    assert service.evaluate(next_day)["origins"][0]["after"]["status"] == "unavailable"
+    school = request.model_copy(
+        update={"assumptions": request.assumptions.model_copy(update={"goal": "education"})}
+    )
+    assert service.evaluate(school)["origins"][0]["after"]["status"] == "unavailable"
+    moved = request.model_copy(
+        update={
+            "operations": PlanningRequest(
+                operations=[
+                    {
+                        "type": "move_stop",
+                        "target_id": "stop:a",
+                        "coordinates": [73.6, 4.17],
+                    }
+                ]
+            ).operations
+        }
+    )
+    assert service.evaluate(moved)["origins"][0]["after"]["status"] == "unavailable"
+    # Snapshot edits invalidate content keys even if a version string was not changed.
+    service.repository.baseline["transit"]["patterns"][0]["enabled"] = False
+    assert service.evaluate(request)["origins"][0]["after"]["status"] == "unavailable"
+    assert len(service._routers) <= 4
+    assert len(service._networks) <= 2
+
+
+def test_reverse_destination_search_preserves_directed_walking_paths(service):
+    world = baseline_world(service.repository)
+    world["network"]["edges"][0]["walkReverseAllowed"] = False
+    world["stops"] = []
+    world["patterns"] = []
+    first, second = world["network"]["nodes"][:2]
+    world["facilities"] = [
+        dict(
+            second,
+            id="hospital:b",
+            kind="hospital",
+            operatingStatus="open",
+            verification="official",
+            careScope="general",
+        )
+    ]
+    router = JourneyRouter(world, PlanningAssumptions())
+    route = router.route(dict(first, id="origin:a"))
+    assert route["minutes"] == 12.5
+    assert route["geometry"] == [[73.5, 4.17], [73.501, 4.17]]
+    world["facilities"][0].update(first, id="hospital:a")
+    reverse = JourneyRouter(world, PlanningAssumptions()).route(dict(second, id="origin:b"))
+    assert reverse["status"] == "unavailable"
+
+
+def test_spatial_snap_index_matches_brute_force_and_keeps_tolerance_independent():
+    rng = random.Random(61)
+    nodes = [
+        {
+            "id": f"node:{i}",
+            "islandId": "a" if i % 2 else "b",
+            "lon": 73.5 + rng.uniform(-0.02, 0.02),
+            "lat": 4.17 + rng.uniform(-0.02, 0.02),
+        }
+        for i in range(200)
+    ]
+    nodes.extend(
+        [
+            {"id": "date-line", "lon": -179.9999, "lat": 1.0},
+            {"id": "pole", "lon": 40.0, "lat": 89.9999},
+        ]
+    )
+    network = WalkingNetwork({"nodes": nodes, "edges": []})
+    points = [
+        {
+            "lon": 73.5 + rng.uniform(-0.02, 0.02),
+            "lat": 4.17 + rng.uniform(-0.02, 0.02),
+            "islandId": rng.choice([None, "a", "b", ""]),
+        }
+        for _ in range(50)
+    ]
+    points.extend([{"lon": 179.9999, "lat": 1.0}, {"lon": 60.0, "lat": 89.9999}])
+    for point in points:
+        for tolerance in (1, 1000, 100):
+            candidates = [
+                (node["id"], _distance_m([point["lon"], point["lat"]], [node["lon"], node["lat"]]))
+                for node in nodes
+                if not point.get("islandId") or node.get("islandId") == point["islandId"]
+            ]
+            expected = min(candidates, key=lambda item: item[1], default=None)
+            if expected and expected[1] > tolerance:
+                expected = None
+            assert network.snap(point, tolerance) == expected
+
+
+def test_tree_cache_preserves_direction_and_horizon_and_is_bounded(service):
+    raw = copy.deepcopy(service.repository.baseline["network"])
+    raw["edges"][0]["walkReverseAllowed"] = False
+    network = WalkingNetwork(raw, cache_tree_nodes=3)
+    assert network.tree("a", 1000)[0]["b"] == 1000
+    assert "b" not in network.tree("a", 999)[0]
+    assert "a" not in network.tree("b", 1000)[0]
+    assert network.tree("b", 1000, reverse=True)[0]["a"] == 1000
+    assert network._cached_nodes <= 3
+
+
+@pytest.mark.parametrize(
+    "operation",
+    [
+        {"type": "road_closure", "target_id": "edge:a-b", "disabled_modes": ["walk"]},
+        {"type": "weather_disruption", "disabled_modes": ["walk"]},
+        {"type": "pedestrian_connection", "from_node_id": "a", "to_node_id": "c"},
+    ],
+)
+def test_service_overlay_shares_only_unchanged_graphs(service, operation):
+    baseline = copy.deepcopy(service.repository.baseline)
+    plain, _ = apply_operations(service.repository, PlanningRequest(), share_unchanged_network=True)
+    assert plain["network"] is service.repository.baseline["network"]
+    changed, _ = apply_operations(
+        service.repository, PlanningRequest(operations=[operation]), share_unchanged_network=True
+    )
+    assert changed["network"] is not service.repository.baseline["network"]
+    assert service.repository.baseline == baseline
+    default, _ = apply_operations(service.repository, PlanningRequest())
+    default["network"]["nodes"][0]["lon"] = -999
+    assert service.repository.baseline == baseline
+
+
+def test_concurrent_quotes_and_evaluations_keep_draft_budgets_and_access_separate(service):
+    pin = copy.deepcopy(service.repository.baseline)
+    school = PlanningRequest(
+        island_id="island:1443",
+        assumptions={
+            "goal": "education",
+            "departure_minutes": 470,
+            "capital_budget_mvr": 25_000_000,
+        },
+        operations=[{"type": "add_school", "coordinates": [73.5, 4.17]}],
+    )
+    stop = PlanningRequest(
+        island_id="island:1443",
+        assumptions={"capital_budget_mvr": 0},
+        operations=[{"type": "add_stop", "coordinates": [73.5, 4.17]}],
+    )
+    baseline = PlanningRequest(assumptions={"departure_minutes": 470})
+    tasks = [
+        (service.quote, stop),
+        (service.quote, school),
+        (service.evaluate, school),
+        (service.evaluate, baseline),
+    ] * 3
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        futures = [pool.submit(method, request) for method, request in tasks]
+        results = [future.result(timeout=10) for future in futures]
+    for start in range(0, len(results), 4):
+        assert results[start]["budget"]["allowed"] is False
+        assert results[start + 1]["budget"]["allowed"] is True
+        assert results[start + 2]["summary"]["gained_residents"] == 100
+        assert results[start + 2]["economics"]["delta"]["capital_mvr"] == 25_000_000
+        assert results[start + 3]["origins"][0]["after"]["minutes"] == 20
+        assert results[start + 3]["economics"]["delta"]["capital_mvr"] == 0
+    assert service.repository.baseline == pin
+
+
+def test_compact_impact_reuses_full_routes_and_preserves_detail_for_later_journeys(service):
+    request = PlanningRequest(assumptions={"departure_minutes": 470})
+    detailed = service.evaluate(request)
+    compact = request.model_copy(
+        update={
+            "assumptions": request.assumptions.model_copy(
+                update={"include_journey_geometry": False, "include_world": False}
+            )
+        }
+    )
+    result = service.evaluate(compact)
+    assert len(service._routers) == 1
+    assert result["summary"] == detailed["summary"]
+    assert result["economics"] == detailed["economics"]
+    assert result["world"] == {"facilities": [], "stops": [], "patterns": []}
+    for origin in result["origins"]:
+        for side in ("before", "after"):
+            assert origin[side]["geometry"] == []
+            assert all(leg["geometry"] == [] for leg in origin[side]["path"])
+    result["origins"][0]["before"]["path"][0]["minutes"] = 9999
+    assert service.evaluate(request)["origins"] == detailed["origins"]
+    assert (
+        service.journey(
+            JourneyRequest(
+                origin_id="origin:a",
+                assumptions={
+                    "departure_minutes": 470,
+                    "include_journey_geometry": False,
+                },
+            )
+        )["outward"]["geometry"]
+        == []
+    )

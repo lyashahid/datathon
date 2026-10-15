@@ -2,8 +2,10 @@
 
 The planning API reads the pinned `data/public/planning-baseline.json` and
 `policy-evidence/service-calendars.json` files. Responses contain their SHA-256
-receipts and the model version. Each evaluation deep-copies the same baseline,
-applies an overlay, and compares both networks at the same date and departure.
+receipts and the model version. Each evaluation applies an isolated overlay to
+the same baseline and compares both networks at the same date and departure.
+The internal baseline view is read-only; scenario and response changes cannot
+mutate the pinned source data.
 
 ## Coverage and resident calculations
 
@@ -24,6 +26,29 @@ and a known proposed route above that threshold. Routes that become unavailable
 are reported separately because incomplete evidence is not proof of lost access.
 
 Walking uses the supplied graph, snap distances, and bounded shortest paths.
+Exact haversine snapping first filters nodes through a conservative geographic
+index. Walking access uses reversed directed shortest-path trees from each stop
+and destination, shared across resident origins. It produces the same modeled
+travel times while avoiding a new full graph search for every resident cell.
+Content-keyed routing caches retain up to four world/assumption combinations and
+two recently used walking networks. Each network's shortest-path cache is
+bounded to 150,000 visited-node entries; resident results are bounded to 768 per
+router. Closures, moved stops, changed calendars, goals, wheelchair restrictions,
+and other routing inputs invalidate the relevant keys. Budget, target band,
+population year and response geometry changes reuse exact journeys but still
+recompute their financial account, cohort totals and threshold comparisons.
+Caches are local to the process and repository, with no cross-user draft state.
+Map impact requests set `assumptions.include_journey_geometry=false`, retaining
+every resident's outcome and leg metadata while omitting repeated street path
+coordinates. This reduces transfer/serialization and cached result-copy costs.
+The default is `true` for compatibility with detailed journeys and reports;
+switching it does not invalidate canonical cached paths. Resident-cell polygons
+remain separately controlled by `include_origin_geometry`.
+`assumptions.include_world=false` also skips the unused facilities, stops and
+full service timetable/geometry snapshot in a map impact response. The `world`
+object retains its three array keys with empty values; defaults and detailed
+reports retain the complete snapshot. Neither option removes the resident
+results, financial model, travel-time bands, source receipts or warnings.
 Walking can reverse motor one-way edges when walking is allowed. Driving honors
 the one-way restriction. Wheelchair audit mode excludes edges without explicit
 wheelchair evidence. Healthcare destinations require verified, open general-care
@@ -119,3 +144,28 @@ Capital budgets apply to incremental capital; annual budgets apply to added
 annual operation. The displayed -30%/+40% cost sensitivity is illustrative,
 not a statistical confidence interval. Land, staffing detail, hospital/school
 embodied carbon, service capacity, and lifecycle maintenance are unmeasured.
+
+`POST /api/v1/planning/quote` accepts the same `PlanningRequest` as evaluation
+and returns the authoritative economics plus a `budget` verdict without
+calculating resident access. `budget.allowed` is false when either supplied
+limit is exceeded, or a limited cost cannot be calculated from the available
+inputs. A zero limit is enforced and exact equality is allowed. With no limits,
+the verdict is `unbounded`. Each capital/annual component reports its projected
+cost, limit, remainder and `within_budget`; `reasons` explains failed checks.
+The frontend uses this gate before confirming every new map placement and
+accepting routed, calibrated or date-sensitive changes. Evaluation and PDF
+reporting remain able to describe an existing
+over-budget draft so a user can inspect and repair it.
+
+Reproduce shipped-data latency and equality checks from the repository root:
+
+```powershell
+backend/.venv/Scripts/python.exe backend/scripts/benchmark_planning.py --reference-ref 90eb177a1a610e935bc42d01cc99cdeb9bc9a9ad
+```
+
+The benchmark compares real Malé and Hulhumalé baseline, stop and school
+proposals with the prior implementation, checks every resident's access result
+and financial/summary totals, and saves an inspectable JSON receipt under
+`artifacts/qa`. Timings exclude HTTP transfer, browser rendering and debounce;
+equal-cost alternative paths can have different geometry without changing
+modeled access. Use `--iterations` to control repeat samples.

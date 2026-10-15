@@ -38,7 +38,7 @@
 	import { atlasSymbols, atlasClusterSymbol, atlasVesselClusterSymbol } from './map/symbols.js';
 	import { validPoint as validCoordinates } from '#lib/planning-map.js';
 	import type { PlanningOperation } from '#lib/planning-map.js';
-	import type { PlacementKind } from '#lib/map-policy.js';
+	import type { PendingPlacementDecision, PlacementKind } from '#lib/map-policy.js';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
 	import {
 		DEFAULT_OVERLAY_OPACITY,
@@ -105,6 +105,9 @@
 		gapLens?: PolicyLens;
 		policyOperations?: PlanningOperation[];
 		pendingProposal?: { coordinates: Coordinates; kind: PlacementKind } | null;
+		pendingPlacementDecision?: PendingPlacementDecision | null;
+		onconfirmproposal?: () => void;
+		oncancelproposal?: () => void;
 		onmoveproposal?: (index: number, coordinates: Coordinates) => void;
 		onfocusproposal?: (index: number) => void;
 		ondropplacement?: (coordinates: Coordinates, kind: PlacementKind) => void;
@@ -145,6 +148,9 @@
 		gapLens = 'overall',
 		policyOperations = [],
 		pendingProposal = null,
+		pendingPlacementDecision = null,
+		onconfirmproposal,
+		oncancelproposal,
 		onmoveproposal,
 		onfocusproposal,
 		ondropplacement,
@@ -158,6 +164,32 @@
 	let container: HTMLDivElement;
 	let map = $state.raw<LibreMap | null>(null);
 	const policyMarkers = new SvelteMap<number, Marker>();
+	let placementAnchor = $state<{
+		x: number;
+		y: number;
+		below: boolean;
+		arrow: number;
+		width: number;
+	} | null>(null);
+	let placementDragging = $state(false);
+	let placementCard = $state.raw<HTMLElement | null>(null);
+	let placementPositionFrame = 0;
+	let pendingPlacementFocused = false;
+	const placementTitle = $derived(
+		pendingPlacementDecision?.label ??
+			(pendingProposal?.kind === 'add_hospital'
+				? 'New hospital'
+				: pendingProposal?.kind === 'add_school'
+					? 'New school'
+					: 'New bus stop')
+	);
+	const placementAllowed = $derived(
+		!!pendingPlacementDecision?.allowed && !pendingPlacementDecision?.checking
+	);
+	const placementMoney = (value: number | null | undefined) =>
+		value === null || value === undefined || !Number.isFinite(value)
+			? 'Checking…'
+			: `MVR ${new Intl.NumberFormat('en', { maximumFractionDigits: 0 }).format(value)}`;
 	let ready = $state(false);
 	let islandsDataReady = $state(false);
 	let islandsDataVersion = 0;
@@ -1305,8 +1337,12 @@
 	}
 
 	function controlsKeydown(event: KeyboardEvent) {
-		if (event.key !== 'Escape' || !controlsPanel) return;
-		closeControls(true);
+		if (event.key !== 'Escape') return;
+		if (pendingProposal && oncancelproposal) {
+			event.preventDefault();
+			oncancelproposal();
+			map?.getCanvas().focus({ preventScroll: true });
+		} else if (controlsPanel) closeControls(true);
 	}
 
 	function setData(name: string, data: FeatureCollection) {
@@ -1647,6 +1683,57 @@
 		}
 	}
 
+	function updatePlacementAnchor() {
+		if (!map || !active || !pendingProposal) {
+			placementAnchor = null;
+			return;
+		}
+		const marker = policyMarkers.get(-1);
+		const point = map.project(marker?.getLngLat() ?? pendingProposal.coordinates);
+		const width = container.clientWidth;
+		const height = container.clientHeight;
+		if (point.x < -40 || point.x > width + 40 || point.y < -40 || point.y > height + 40) {
+			placementAnchor = null;
+			return;
+		}
+		let right = width - 12;
+		let bottom = height - 12;
+		const panel = container.closest('.map-workspace')?.querySelector('.policy-map-panel');
+		if (panel instanceof HTMLElement && panel.offsetHeight) {
+			const mapBounds = container.getBoundingClientRect();
+			const panelBounds = panel.getBoundingClientRect();
+			if (panelBounds.width < width * 0.65 && panelBounds.left > mapBounds.left + width / 2) {
+				right = Math.min(right, panelBounds.left - mapBounds.left - 12);
+			} else if (panelBounds.width > width * 0.65 && panelBounds.top > mapBounds.top) {
+				bottom = Math.min(bottom, panelBounds.top - mapBounds.top - 12);
+			}
+		}
+		const cardWidth = Math.min(288, right - 12);
+		const cardHeight = placementCard?.offsetHeight || 235;
+		const x = Math.max(cardWidth / 2 + 12, Math.min(right - cardWidth / 2, point.x));
+		const below = point.y - 60 - cardHeight < 12;
+		placementAnchor = {
+			x,
+			y: below
+				? Math.max(12, Math.min(bottom - cardHeight, point.y + 16))
+				: Math.max(cardHeight + 12, Math.min(bottom, point.y - 60)),
+			below,
+			arrow: Math.max(18, Math.min(cardWidth - 18, cardWidth / 2 + point.x - x)),
+			width: cardWidth
+		};
+	}
+	function schedulePlacementAnchor() {
+		if (!pendingProposal || placementPositionFrame) return;
+		placementPositionFrame = requestAnimationFrame(() => {
+			placementPositionFrame = 0;
+			updatePlacementAnchor();
+		});
+	}
+	function focusPlacementDecision() {
+		placementCard?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus({
+			preventScroll: true
+		});
+	}
 	function syncPolicyMarkers() {
 		if (!map || !makeMarker) return;
 		const entries = policyOperations.flatMap((operation, index) =>
@@ -1683,26 +1770,47 @@
 			if (!marker) {
 				const element = document.createElement('button');
 				element.type = 'button';
+				let lastDragged = 0;
 				element.addEventListener('click', (event) => {
 					event.stopPropagation();
-					onfocusproposal?.(entry.index);
+					if (performance.now() - lastDragged < 200) return;
+					if (entry.index === -1) focusPlacementDecision();
+					else onfocusproposal?.(entry.index);
 				});
 				marker = new makeMarker({ element, draggable: !entry.locked, anchor: 'bottom' })
 					.setLngLat(entry.coordinates)
 					.addTo(map);
 				const current = marker;
-				marker.on('dragend', () =>
-					onmoveproposal?.(entry.index, [current.getLngLat().lng, current.getLngLat().lat])
-				);
+				marker.on('dragstart', () => {
+					closeInspection();
+					element.classList.add('is-dragging');
+					if (entry.index === -1) placementDragging = true;
+				});
+				marker.on('drag', () => {
+					if (entry.index === -1) schedulePlacementAnchor();
+				});
+				marker.on('dragend', () => {
+					lastDragged = performance.now();
+					element.classList.remove('is-dragging');
+					if (entry.index === -1) placementDragging = false;
+					onmoveproposal?.(entry.index, [current.getLngLat().lng, current.getLngLat().lat]);
+					schedulePlacementAnchor();
+				});
 				policyMarkers.set(entry.index, marker);
 			}
 			marker.setDraggable(!entry.locked);
-			marker.setLngLat(entry.coordinates);
+			const location = marker.getLngLat();
+			if (location.lng !== entry.coordinates[0] || location.lat !== entry.coordinates[1])
+				marker.setLngLat(entry.coordinates);
 			const element = marker.getElement();
-			element.className = `policy-proposal-marker ${entry.index === -1 ? 'pending' : 'confirmed'}`;
+			// Keep MapLibre's marker classes and the active drag state when updating a draft.
+			element.classList.add('policy-proposal-marker');
+			element.classList.toggle('pending', entry.index === -1);
+			element.classList.toggle('confirmed', entry.index !== -1);
+			element.dataset.kind = entry.kind;
 			element.setAttribute(
 				'aria-label',
-				`${entry.name}${entry.locked ? '. Routed service package. Remove and regenerate to change its site.' : '. Drag to move.'}`
+				`${entry.index === -1 ? placementTitle : entry.name}${entry.locked ? '. Routed service package. Remove and regenerate to change its site.' : '. Drag to move.'}${entry.index === -1 ? ' Confirm or cancel above this pin.' : ''}`
 			);
 			element.title = element.getAttribute('aria-label')!;
 			const symbol =
@@ -1711,8 +1819,13 @@
 					: entry.kind === 'add_school'
 						? '<path d="m2 9 10-5 10 5-10 5L2 9Zm4 4v5c4 3 8 3 12 0v-5l-6 3-6-3Zm15-2v7h1v-7h-1Z"/>'
 						: '<path d="M6 3h12c2 0 3 2 3 4v11h-2v3h-3v-3H8v3H5v-3H3V7c0-2 1-4 3-4Zm0 3v6h12V6H6Zm1 8a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm10 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/>';
-			element.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${symbol}</svg><span>${entry.index === -1 ? '?' : entry.index + 1}</span>`;
+			const symbolKey = `${entry.kind}:${entry.index}`;
+			if (element.dataset.symbol !== symbolKey) {
+				element.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${symbol}</svg><span aria-hidden="true">${entry.index === -1 ? '+' : entry.index + 1}</span>`;
+				element.dataset.symbol = symbolKey;
+			}
 		}
+		schedulePlacementAnchor();
 	}
 	function dropPlacement(event: DragEvent) {
 		const kind = event.dataTransfer?.getData('application/x-policy-placement');
@@ -2540,6 +2653,8 @@
 					zoomLevel = instance.getZoom();
 				});
 				instance.on('click', handleClick);
+				instance.on('move', schedulePlacementAnchor);
+				instance.on('resize', schedulePlacementAnchor);
 				instance.on('moveend', () => syncCameraView(instance));
 				instance.on('idle', () => {
 					if (!ready || !active) return;
@@ -2619,6 +2734,7 @@
 			cancelAnimationFrame(liveFrame);
 			cancelAnimationFrame(activationFrame);
 			cancelAnimationFrame(scopeFocusFrame);
+			cancelAnimationFrame(placementPositionFrame);
 			sourceData.clear();
 			clearTimeout(contextTimer);
 			contextGeneration++;
@@ -2639,6 +2755,35 @@
 			map?.remove();
 			map = null;
 		};
+	});
+
+	$effect(() => {
+		if (!ready || !active || !pendingProposal) {
+			placementAnchor = null;
+			pendingPlacementFocused = false;
+			placementDragging = false;
+			return;
+		}
+		// The decision can change as costs or the land check resolve; keep the card anchored.
+		void pendingProposal.coordinates;
+		void pendingPlacementDecision;
+		schedulePlacementAnchor();
+		if (!pendingPlacementFocused) {
+			pendingPlacementFocused = true;
+			closeInspection();
+			void tick()
+				.then(() => {
+					updatePlacementAnchor();
+					return tick();
+				})
+				.then(focusPlacementDecision);
+		}
+	});
+	$effect(() => {
+		if (!placementCard) return;
+		const observer = new ResizeObserver(schedulePlacementAnchor);
+		observer.observe(placementCard);
+		return () => observer.disconnect();
 	});
 
 	$effect(() => {
@@ -3023,6 +3168,86 @@
 		role="region"
 		aria-label="Interactive Maldives map. Select an island or a source record. Use arrow keys to pan and plus or minus to zoom. When placing a point, press Enter to use the map center."
 	></div>
+	{#if pendingProposal && placementAnchor && active && onconfirmproposal && oncancelproposal}
+		<div
+			class="placement-confirmation-anchor"
+			class:below={placementAnchor.below}
+			class:dragging={placementDragging}
+			style:left={`${placementAnchor.x}px`}
+			style:top={`${placementAnchor.y}px`}
+			style:width={`${placementAnchor.width}px`}
+			style:--placement-arrow={`${placementAnchor.arrow}px`}
+		>
+			<section
+				bind:this={placementCard}
+				class="placement-confirmation"
+				aria-label="Confirm map placement"
+				aria-busy={!!pendingPlacementDecision?.checking}
+				data-testid="map-placement-confirmation"
+				data-placement-kind={pendingProposal.kind}
+				data-placement-allowed={placementAllowed}
+			>
+				<div class="placement-card-heading">
+					<span class="placement-card-symbol" aria-hidden="true">
+						{#if pendingProposal.kind === 'add_hospital'}<Hospital size={21} />
+						{:else if pendingProposal.kind === 'add_school'}<GraduationCap size={21} />
+						{:else}<BusFront size={21} />{/if}
+					</span>
+					<div><span>Review placement</span><strong>{placementTitle}</strong></div>
+				</div>
+				<div class="placement-card-costs">
+					<div>
+						<span>Capital cost</span><strong
+							>{placementMoney(pendingPlacementDecision?.capital)}</strong
+						>
+					</div>
+					<div>
+						<span>Yearly operation</span><strong
+							>{placementMoney(pendingPlacementDecision?.annual)}</strong
+						>
+					</div>
+				</div>
+				{#if pendingPlacementDecision?.remaining !== null && pendingPlacementDecision?.remaining !== undefined && pendingPlacementDecision.remaining >= 0}
+					<p class="placement-budget-remaining">
+						Budget after adding <strong>{placementMoney(pendingPlacementDecision.remaining)}</strong
+						>
+					</p>
+				{/if}
+				{#if pendingPlacementDecision?.checking}
+					<p class="placement-card-message" role="status">
+						<span class="loading-spinner" aria-hidden="true"></span>Checking this location…
+					</p>
+				{:else if pendingPlacementDecision?.reason}
+					<p
+						class="placement-card-message"
+						class:blocked={!placementAllowed}
+						role={placementAllowed ? 'status' : 'alert'}
+					>
+						{pendingPlacementDecision.reason}
+					</p>
+				{/if}
+				{#if pendingPlacementDecision?.note}<p class="placement-card-note">
+						{pendingPlacementDecision.note}
+					</p>{/if}
+				<div class="placement-card-actions">
+					<Button
+						variant="outline"
+						onclick={() => {
+							oncancelproposal?.();
+							map?.getCanvas().focus({ preventScroll: true });
+						}}>Cancel</Button
+					>
+					<Button
+						disabled={!placementAllowed || placementDragging}
+						onclick={() => {
+							if (placementAllowed && !placementDragging) onconfirmproposal?.();
+						}}><Check size={15} />Confirm placement</Button
+					>
+				</div>
+				<small class="placement-card-hint">Drag the pin to adjust · Esc to cancel</small>
+			</section>
+		</div>
+	{/if}
 	{#if error}
 		<div class="map-fallback" role="status">
 			<MapIcon size={32} strokeWidth={1.4} />
@@ -3477,6 +3702,217 @@
 	.map-canvas {
 		position: absolute;
 		inset: 0;
+	}
+	.placement-confirmation-anchor {
+		position: absolute;
+		z-index: 15;
+		width: min(288px, calc(100% - 24px));
+		transform: translate(-50%, -100%);
+		pointer-events: none;
+	}
+	.placement-confirmation-anchor.below {
+		transform: translateX(-50%);
+	}
+	.placement-confirmation {
+		position: relative;
+		padding: 15px;
+		border: 1px solid #d1dfd9;
+		border-radius: 17px;
+		background: #fffefa;
+		box-shadow:
+			0 6px 18px #173c4020,
+			0 18px 48px -16px #173c4055;
+		color: #294b4c;
+		pointer-events: auto;
+		transform-origin: var(--placement-arrow) bottom;
+		transition: opacity 140ms ease;
+	}
+	.placement-confirmation::after {
+		position: absolute;
+		left: var(--placement-arrow);
+		bottom: -7px;
+		width: 13px;
+		height: 13px;
+		border-right: 1px solid #d1dfd9;
+		border-bottom: 1px solid #d1dfd9;
+		background: #fffefa;
+		transform: translateX(-50%) rotate(45deg);
+		content: '';
+	}
+	.below .placement-confirmation {
+		transform-origin: var(--placement-arrow) top;
+	}
+	.below .placement-confirmation::after {
+		top: -7px;
+		bottom: auto;
+		transform: translateX(-50%) rotate(225deg);
+	}
+	.dragging .placement-confirmation {
+		opacity: 0.5;
+		pointer-events: none;
+	}
+	.placement-card-heading {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin-bottom: 14px;
+	}
+	.placement-card-heading > div {
+		display: grid;
+		gap: 2px;
+	}
+	.placement-card-heading > div > span {
+		color: #758880;
+		font-size: 10px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+	.placement-card-heading strong {
+		font-size: 15px;
+		font-weight: 650;
+		line-height: 1.3;
+	}
+	.placement-card-symbol {
+		display: grid;
+		place-items: center;
+		flex-shrink: 0;
+		width: 38px;
+		height: 38px;
+		border: 1px solid #d7e5dd;
+		border-radius: 11px;
+		background: #edf5ee;
+		color: #397065;
+	}
+	.placement-card-costs {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 10px;
+		padding-bottom: 12px;
+		border-bottom: 1px solid #e7ece7;
+	}
+	.placement-card-costs > div {
+		display: grid;
+		gap: 3px;
+	}
+	.placement-card-costs span,
+	.placement-budget-remaining {
+		color: #78877e;
+		font-size: 10px;
+		line-height: 1.45;
+	}
+	.placement-card-costs strong {
+		font-size: 12px;
+		font-weight: 650;
+		font-variant-numeric: tabular-nums;
+	}
+	.placement-budget-remaining {
+		display: flex;
+		justify-content: space-between;
+		gap: 8px;
+		margin: 9px 0 0;
+	}
+	.placement-budget-remaining strong {
+		color: #397065;
+		font-weight: 650;
+	}
+	.placement-card-message {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		margin: 10px 0 0;
+		font-size: 11px;
+		line-height: 1.5;
+	}
+	.placement-card-message.blocked {
+		padding: 8px 10px;
+		border-radius: 9px;
+		background: #fff1e8;
+		color: #a5552f;
+	}
+	.placement-card-note {
+		margin: 8px 0 0;
+		color: #75857b;
+		font-size: 10px;
+		line-height: 1.5;
+	}
+	.placement-card-actions {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 7px;
+		margin-top: 13px;
+	}
+	.placement-card-actions :global(button) {
+		height: 38px;
+		min-width: 0;
+		padding: 0 12px;
+		border-radius: 10px;
+		font-size: 11px;
+		transition:
+			transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
+			background-color 130ms ease;
+	}
+	.placement-card-actions :global(button:active:not(:disabled)) {
+		transform: scale(0.97);
+	}
+	.placement-card-actions :global(button:focus-visible) {
+		outline: 3px solid #087f7c;
+		outline-offset: 3px;
+	}
+	.placement-card-hint {
+		display: block;
+		margin-top: 10px;
+		color: #829087;
+		font-size: 10px;
+		text-align: center;
+	}
+	:global(.national-map .policy-proposal-marker) {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 43px;
+		height: 46px;
+		border-radius: 13px;
+		box-shadow:
+			0 3px 6px #173d4229,
+			0 0 0 1px #65579930;
+		transition: box-shadow 140ms ease;
+	}
+	:global(.national-map .policy-proposal-marker.pending) {
+		border: 2px solid #fffefa;
+		background: #286d63;
+		color: white;
+		box-shadow:
+			0 0 0 4px #286d632b,
+			0 5px 12px #173d4240;
+	}
+	:global(.national-map .policy-proposal-marker.pending span) {
+		top: -6px;
+		right: -6px;
+		min-width: 19px;
+		height: 19px;
+		background: #fffefa;
+		color: #286d63;
+		font-size: 15px;
+		line-height: 14px;
+	}
+	:global(.national-map .policy-proposal-marker.is-dragging) {
+		cursor: grabbing;
+		box-shadow:
+			0 0 0 6px #286d6320,
+			0 12px 20px #173d4255;
+	}
+	@media (max-width: 700px) {
+		.placement-card-actions :global(button) {
+			height: 44px;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.placement-confirmation,
+		.placement-card-actions :global(button),
+		:global(.national-map .policy-proposal-marker) {
+			transition: none;
+		}
 	}
 	:global(.national-map canvas:focus-visible) {
 		outline: 2px solid #087f7c;

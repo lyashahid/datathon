@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FeatureCollection, Position } from 'geojson';
-import { distanceToRoad, draftCosts, pointWithinIsland } from './map-policy.js';
+import { assessDraftBudget, distanceToRoad, draftCosts, pointWithinIsland } from './map-policy.js';
 
 const defaults = {
 	school_capital_mvr: 25_000_000,
@@ -9,6 +9,58 @@ const defaults = {
 	hospital_annual_operating_mvr: 20_000_000,
 	stop_capital_mvr: 100_000
 };
+
+describe('proposal budget commitments', () => {
+	it('permits the exact capital and annual limits, including zero-cost changes', () => {
+		expect(
+			assessDraftBudget({ capital: 100_000, annual: 5_000_000 }, 100_000, 5_000_000)
+		).toMatchObject({
+			allowed: true,
+			known: true,
+			capitalRemaining: 0,
+			annualRemaining: 0
+		});
+		expect(assessDraftBudget({ capital: 0, annual: 0 }, 0, 0).allowed).toBe(true);
+	});
+	it('rejects capital or operating overspend and explains both shortfalls', () => {
+		const result = assessDraftBudget({ capital: 120_000, annual: 5_000_000 }, 100_000, 4_000_000);
+		expect(result).toMatchObject({
+			allowed: false,
+			known: true,
+			capitalRemaining: -20_000,
+			annualRemaining: -1_000_000
+		});
+		expect(result.reason).toContain('MVR 20,000 over your capital budget');
+		expect(result.reason).toContain('MVR 1,000,000 over your yearly running budget');
+		expect(assessDraftBudget({ capital: 1, annual: 0 }, 0, 0).allowed).toBe(false);
+		expect(assessDraftBudget({ capital: 0, annual: 1 }, 0, 0).allowed).toBe(false);
+	});
+	it('requires a complete finite cost and valid limits before any commitment', () => {
+		for (const costs of [
+			{ capital: null, annual: 0 },
+			{ capital: 0, annual: null },
+			{ capital: Infinity, annual: 0 }
+		])
+			expect(assessDraftBudget(costs, 100_000, 100_000)).toMatchObject({
+				allowed: false,
+				known: false
+			});
+		for (const invalid of [undefined, null, '', '100000', -1, NaN, Infinity]) {
+			expect(assessDraftBudget({ capital: 0, annual: 0 }, invalid, 100_000)).toMatchObject({
+				allowed: false,
+				known: true
+			});
+			expect(assessDraftBudget({ capital: 0, annual: 0 }, 100_000, invalid).allowed).toBe(false);
+		}
+	});
+	it('keeps verified operating savings and rounds money without a floating-point overspend', () => {
+		expect(assessDraftBudget({ capital: 0.1 + 0.2, annual: -50 }, 0.3, 0)).toMatchObject({
+			allowed: true,
+			capitalRemaining: -0,
+			annualRemaining: 50
+		});
+	});
+});
 
 describe('mapped land placement screen', () => {
 	const square = (x: number, y: number): Position[] => [

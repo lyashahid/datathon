@@ -351,12 +351,16 @@ try {
 				.click();
 			const location = await chooseVisibleRoad(baseline.graph_edges);
 			await page.mouse.click(location.point.x, location.point.y);
-			await expect(panel.locator('.policy-placement-confirm')).toBeVisible();
+			await expect(atlas.getByTestId('map-placement-confirmation')).toBeVisible();
+			await expect(atlas.getByTestId('map-placement-confirmation')).toHaveAttribute(
+				'data-placement-kind',
+				'add_stop'
+			);
 			await expect(atlas).toHaveAttribute('data-policy-pending-points', '1');
 			await expect(atlas.locator('.policy-proposal-marker.pending')).toBeAttached();
-			await panel
-				.locator('.policy-placement-confirm')
-				.getByRole('button', { name: 'Add to proposal', exact: true })
+			await atlas
+				.getByTestId('map-placement-confirmation')
+				.getByRole('button', { name: 'Confirm placement', exact: true })
 				.click();
 			await expect(panel.locator('.policy-operation-list li')).toHaveCount(previousCount + 1);
 			await expect(atlas).toHaveAttribute('data-policy-pending-points', '0');
@@ -435,6 +439,14 @@ try {
 			);
 			const location = await chooseVisibleRoad([{ geometry: residentLocations }]);
 			const before = await mapView();
+			// Counts update before MapLibre's worker has rendered a newly selected source.
+			// Wait for the real, visible impact-cell hover affordance before inspecting it.
+			await expect
+				.poll(async () => {
+					await page.mouse.move(location.point.x, location.point.y);
+					return atlas.locator('.map-hint').textContent();
+				})
+				.toContain('Select to compare resident access here');
 			await page.mouse.click(location.point.x, location.point.y);
 			const selected = panel.getByLabel('Selected neighbourhood impact', { exact: true });
 			await expect(selected).toBeVisible();
@@ -504,7 +516,7 @@ try {
 			await expect(panel.getByLabel('Service date', { exact: true })).toHaveValue('2026-10-12');
 			await page.reload({ waitUntil: 'domcontentloaded' });
 			await expect(atlas).toBeVisible();
-			await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
+			await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
 			await expect(panel.locator('.policy-operation-list li')).toHaveCount(count);
 			await expect(panel.getByLabel('Proposal name', { exact: true })).toHaveValue(
 				'Hulhumale policy investment QA'

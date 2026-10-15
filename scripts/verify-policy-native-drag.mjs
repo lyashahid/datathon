@@ -20,6 +20,23 @@ const page = await browser.newPage({
 	reducedMotion: 'reduce'
 });
 page.setDefaultTimeout(90000);
+await page.addInitScript(() => {
+	const original = DataTransfer.prototype.setDragImage;
+	/** @param {Element} element @param {number} x @param {number} y */
+	DataTransfer.prototype.setDragImage = function (element, x, y) {
+		const bounds = element.getBoundingClientRect();
+		Reflect.set(window, '__policyDragPreview', {
+			kind: element.getAttribute('data-placement-icon'),
+			width: bounds.width,
+			height: bounds.height,
+			hasIcon: !!element.querySelector('svg'),
+			text: element.textContent?.trim(),
+			x,
+			y
+		});
+		original.call(this, element, x, y);
+	};
+});
 page.on('pageerror', (error) => report.errors.push(error.message));
 /** @type {EvaluationRequest[]} */
 const requests = [];
@@ -30,7 +47,7 @@ page.on('request', (request) => {
 const atlas = page.locator('.national-map');
 const panel = page.getByRole('region', { name: 'Island needs and proposal', exact: true });
 const budget = page.getByRole('region', { name: 'Proposal budget', exact: true });
-const confirmation = panel.locator('.policy-placement-confirm');
+const confirmation = atlas.getByTestId('map-placement-confirmation');
 const operations = panel.locator('.policy-operation-list li');
 /** @param {string} name @param {()=>Promise<unknown>} action */
 async function check(name, action) {
@@ -54,11 +71,23 @@ async function project(coordinates) {
 		const longitude = Number(element.getAttribute('data-center-longitude'));
 		const latitude = Number(element.getAttribute('data-center-latitude'));
 		const world = 512 * 2 ** zoom;
+		const padding = Object.fromEntries(
+			['top', 'right', 'bottom', 'left'].map((side) => [
+				side,
+				Number(element.getAttribute(`data-camera-padding-${side}`))
+			])
+		);
 		/** @param {number} lat */
 		const y = (lat) => (1 - Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) / Math.PI) / 2;
 		return {
-			x: box.x + box.width / 2 + ((location[0] - longitude) * world) / 360,
-			y: box.y + box.height / 2 + (y(location[1]) - y(latitude)) * world
+			x:
+				box.x +
+				(box.width + padding.left - padding.right) / 2 +
+				((location[0] - longitude) * world) / 360,
+			y:
+				box.y +
+				(box.height + padding.top - padding.bottom) / 2 +
+				(y(location[1]) - y(latitude)) * world
 		};
 	}, coordinates);
 }
@@ -97,9 +126,10 @@ async function mouseDrag(from, to) {
 	await page.mouse.move(to.x, to.y, { steps: 2 });
 	await page.mouse.up();
 }
-/** @param {string} name @param {RoadSite} site */
-async function paletteDrag(name, site) {
+/** @param {string} name @param {RoadSite} site @param {boolean} allowed */
+async function paletteDrag(name, site, allowed = true) {
 	const source = panel.locator('.policy-palette').getByRole('button', { name, exact: true });
+	await expect(source).toBeEnabled();
 	await source.scrollIntoViewIfNeeded();
 	const box = await source.boundingBox();
 	assert.ok(box);
@@ -107,9 +137,12 @@ async function paletteDrag(name, site) {
 	await expect(confirmation).toBeVisible();
 	await expect(atlas).toHaveAttribute('data-policy-pending-points', '1');
 	await expect(atlas.locator('.policy-proposal-marker.pending')).toBeAttached();
+	await expect(confirmation).toHaveAttribute('aria-busy', 'false');
+	await expect(confirmation).toHaveAttribute('data-placement-allowed', String(allowed));
 	await expect(
-		confirmation.getByRole('button', { name: 'Add to proposal', exact: true })
-	).toBeEnabled();
+		confirmation.getByRole('button', { name: 'Confirm placement', exact: true })
+	).toBeEnabled({ enabled: allowed });
+	await expect(panel.getByRole('button', { name: 'Add to proposal', exact: true })).toHaveCount(0);
 }
 async function completedEstimate() {
 	await expect(budget).toHaveAttribute('aria-busy', 'false');
@@ -131,19 +164,105 @@ try {
 	});
 	await expect(atlas).toBeVisible();
 	await expect(atlas).toHaveAttribute('aria-busy', 'false');
-	await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
+	await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
 	await expect(panel.locator('.policy-palette')).toBeVisible();
+	await expect(
+		panel.locator('.policy-palette').getByRole('button', { name: 'Bus stop', exact: true })
+	).toBeEnabled();
 	await expect(operations).toHaveCount(0);
 	const site = await roadSite(baseline.graph_edges);
+	await check(
+		'Capital budget blocks a bus stop at its map pin; raising the limit enables confirmation',
+		async () => {
+			await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('1');
+			await panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('50000000');
+			const before = requests.length;
+			await paletteDrag('Bus stop', site, false);
+			await expect(confirmation).toHaveAttribute('data-placement-kind', 'add_stop');
+			await expect(confirmation.getByRole('alert')).toContainText(/capital|budget/i);
+			await expect(operations).toHaveCount(0);
+			assert.equal(
+				requests.length,
+				before,
+				'Rejected placement must not start an impact calculation'
+			);
+			const preview = await page.evaluate(() => Reflect.get(window, '__policyDragPreview'));
+			assert.equal(preview.kind, 'add_stop');
+			assert.equal(preview.hasIcon, true);
+			assert.equal(preview.text, '');
+			assert.ok(
+				preview.width >= 30 && preview.width <= 60,
+				'Native drag preview must be the compact icon, not the full palette card'
+			);
+			assert.ok(preview.height >= 30 && preview.height <= 60);
+			await page.screenshot({ path: path.join(output, 'bus-over-budget-map-tooltip.png') });
+			await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('150000000');
+			await expect(
+				confirmation.getByRole('button', { name: 'Confirm placement', exact: true })
+			).toBeEnabled();
+			await confirmation.getByRole('button', { name: 'Cancel', exact: true }).click();
+			await expect(operations).toHaveCount(0);
+			return { dragPreview: preview, rejectedImpactRequests: requests.length - before };
+		}
+	);
+	await check(
+		'Annual operating budget blocks a school independently of the capital budget',
+		async () => {
+			await panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('0');
+			const before = requests.length;
+			await paletteDrag('School', site, false);
+			await expect(confirmation).toHaveAttribute('data-placement-kind', 'add_school');
+			await expect(confirmation.getByRole('alert')).toContainText(/annual|running|operating/i);
+			await expect(operations).toHaveCount(0);
+			assert.equal(requests.length, before);
+			await panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('25000000');
+			await expect(
+				confirmation.getByRole('button', { name: 'Confirm placement', exact: true })
+			).toBeEnabled();
+			await page.keyboard.press('Escape');
+			await expect(confirmation).toHaveCount(0);
+			await expect(operations).toHaveCount(0);
+			return { rejectedImpactRequests: requests.length - before, escapeCancelled: true };
+		}
+	);
 	await check(
 		'Native School palette drag creates a pending pin; Cancel leaves the empty proposal unchanged',
 		async () => {
 			await paletteDrag('School', site);
-			await expect(
-				confirmation.getByLabel('What would you add here?', { exact: true })
-			).toHaveValue('add_school');
+			await expect(confirmation).toHaveAttribute('data-placement-kind', 'add_school');
 			await expect(operations).toHaveCount(0);
 			await expect(budget).toHaveCount(0);
+			const marker = atlas.locator('.policy-proposal-marker.pending');
+			const pin = await marker.boundingBox();
+			assert.ok(pin);
+			const beforePosition = await marker.getAttribute('style');
+			const beforeView = await atlas.evaluate((element) => [
+				element.getAttribute('data-center-longitude'),
+				element.getAttribute('data-center-latitude'),
+				element.getAttribute('data-zoom')
+			]);
+			const moved = await roadSite(baseline.graph_edges, { x: pin.x, y: pin.y });
+			await mouseDrag({ x: pin.x + pin.width / 2, y: pin.y + pin.height / 2 }, moved.point);
+			await expect.poll(() => marker.getAttribute('style')).not.toBe(beforePosition);
+			await expect(
+				confirmation.getByRole('button', { name: 'Confirm placement', exact: true })
+			).toBeEnabled();
+			assert.deepEqual(
+				await atlas.evaluate((element) => [
+					element.getAttribute('data-center-longitude'),
+					element.getAttribute('data-center-latitude'),
+					element.getAttribute('data-zoom')
+				]),
+				beforeView,
+				'Moving the preview and its confirmation must preserve the camera'
+			);
+			const tooltip = await confirmation.boundingBox();
+			const sidebar = await panel.boundingBox();
+			assert.ok(tooltip && sidebar);
+			assert.ok(
+				tooltip.x >= 0 && tooltip.y >= 0 && tooltip.x + tooltip.width <= sidebar.x,
+				'The map confirmation must fit in the exposed map beside the planner'
+			);
 			await page.screenshot({ path: path.join(output, 'school-native-drag-pending.png') });
 			await confirmation.getByRole('button', { name: 'Cancel', exact: true }).click();
 			await expect(confirmation).toHaveCount(0);
@@ -151,17 +270,22 @@ try {
 			await expect(atlas).toHaveAttribute('data-policy-proposal-points', '0');
 			await expect(operations).toHaveCount(0);
 			await expect(budget).toHaveCount(0);
-			return { coordinates: site.coordinates, operationCount: 0, budgetCommitted: false };
+			return {
+				coordinates: site.coordinates,
+				movedPreview: moved.coordinates,
+				operationCount: 0,
+				budgetCommitted: false
+			};
 		}
 	);
 	await check(
 		'Native Hospital palette drag confirms a mapped, costed proposal and fresh resident impact',
 		async () => {
 			await paletteDrag('Hospital', site);
-			await expect(
-				confirmation.getByLabel('What would you add here?', { exact: true })
-			).toHaveValue('add_hospital');
-			await confirmation.getByRole('button', { name: 'Add to proposal', exact: true }).click();
+			await expect(confirmation).toHaveAttribute('data-placement-kind', 'add_hospital');
+			const started = performance.now();
+			const beforeRequests = requests.length;
+			await confirmation.getByRole('button', { name: 'Confirm placement', exact: true }).click();
 			await expect(operations).toHaveCount(1);
 			await expect(atlas).toHaveAttribute('data-policy-pending-points', '0');
 			await expect(atlas).toHaveAttribute('data-policy-proposal-points', '1');
@@ -169,6 +293,8 @@ try {
 			await page.screenshot({ path: path.join(output, 'hospital-native-drag-confirmed.png') });
 			return {
 				coordinates: site.coordinates,
+				impactReadyMs: Math.round(performance.now() - started),
+				evaluationRequests: requests.length - beforeRequests,
 				costs: await budget.locator('.cost-values').innerText(),
 				impactCells: Number(await atlas.getAttribute('data-policy-impact-cells'))
 			};
@@ -224,6 +350,85 @@ try {
 			await expect(operations).toHaveCount(1);
 			assert.equal(await budget.locator('.cost-values').innerText(), costs);
 			return { operationCount: 1, unchangedCosts: costs };
+		}
+	);
+	await check(
+		'Mobile bus placement keeps its on-map confirmation reachable above the compact planner',
+		async () => {
+			await page.setViewportSize({ width: 390, height: 844 });
+			await page.goto(`${baseURL}/?view=map&tool=explore&island=island%3A1442`, {
+				waitUntil: 'domcontentloaded'
+			});
+			await expect(atlas).toHaveAttribute('aria-busy', 'false');
+			await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
+			await expect(
+				panel.locator('.policy-palette').getByRole('button', { name: 'Bus stop', exact: true })
+			).toBeEnabled();
+			const visibleSite = await roadSite(baseline.graph_edges);
+			await paletteDrag('Bus stop', visibleSite);
+			await expect(panel).toHaveClass(/placing/);
+			const tooltip = await confirmation.boundingBox();
+			const compactPanel = await panel.boundingBox();
+			assert.ok(tooltip && compactPanel);
+			assert.ok(
+				tooltip.x >= 0 &&
+					tooltip.y >= 0 &&
+					tooltip.x + tooltip.width <= 390 &&
+					tooltip.y + tooltip.height <= compactPanel.y,
+				'Mobile placement card must fit in the map above the planner'
+			);
+			await expect(
+				confirmation.getByRole('button', { name: 'Confirm placement', exact: true })
+			).toBeInViewport();
+			await expect(
+				confirmation.getByRole('button', { name: 'Cancel', exact: true })
+			).toBeInViewport();
+			assert.equal(
+				await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+				true
+			);
+			await page.screenshot({ path: path.join(output, 'bus-map-tooltip-mobile.png') });
+			await confirmation.getByRole('button', { name: 'Cancel', exact: true }).click();
+			await expect(confirmation).toHaveCount(0);
+			await expect(operations).toHaveCount(1);
+			return { viewport: 390, tooltip, compactPanel, preservedChanges: 1 };
+		}
+	);
+	await check(
+		'A placement cannot be confirmed until its real backend budget quote has resolved',
+		async () => {
+			// Change the quote key so an earlier verified placement cannot satisfy this check.
+			await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('151000000');
+			const visibleSite = await roadSite(baseline.graph_edges);
+			let releaseQuote = () => {};
+			let quoteHeld = false;
+			const quoteGate = new Promise((resolve) => {
+				releaseQuote = () => resolve(undefined);
+			});
+			await page.route(
+				'**/api/backend/planning/quote',
+				async (route) => {
+					quoteHeld = true;
+					await quoteGate;
+					await route.continue();
+				},
+				{ times: 1 }
+			);
+			const placement = paletteDrag('Bus stop', visibleSite);
+			try {
+				await expect.poll(() => quoteHeld).toBe(true);
+				await expect(confirmation).toHaveAttribute('aria-busy', 'true');
+				await expect(
+					confirmation.getByRole('button', { name: 'Confirm placement', exact: true })
+				).toBeDisabled();
+				await expect(operations).toHaveCount(1);
+			} finally {
+				releaseQuote();
+			}
+			await placement;
+			await confirmation.getByRole('button', { name: 'Cancel', exact: true }).click();
+			await expect(operations).toHaveCount(1);
+			return { heldRealQuote: true, confirmationBlockedUntilVerified: true, preservedChanges: 1 };
 		}
 	);
 	assert.deepEqual(report.errors, []);

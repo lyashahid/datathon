@@ -115,14 +115,16 @@
 		{ id: 'evidence', label: 'Evidence', icon: BookOpen }
 	];
 	let policyLens = $state<PolicyLens>('overall');
-	let policyCommand = $state<{ id: number; kind: 'inspect' | 'gaps' | 'compose' | 'close' } | null>(
-		null
-	);
+	let policyCommand = $state<{
+		id: number;
+		kind: 'inspect' | 'gaps' | 'compose' | 'close' | 'confirm' | 'cancel-placement';
+	} | null>(null);
 	let policyMove = $state<{ id: number; index: number; coordinates: Coordinates } | null>(null);
 	let policyPickKind = $state<PlacementKind | null>(null);
 	let policyState = $state.raw<MapPolicyState>({
 		operations: [],
 		pending: null,
+		pendingDecision: null,
 		gapFeatures: emptyFeatures(),
 		impactFeatures: emptyFeatures(),
 		serviceFeatures: emptyFeatures(),
@@ -134,7 +136,9 @@
 	let focusPoint = $state<{ id: number; coordinates: Coordinates } | null>(null);
 	let inspectedCell = $state<Record<string, unknown> | null>(null);
 	let policySequence = 0;
-	function policyAction(kind: 'inspect' | 'gaps' | 'compose' | 'close') {
+	function policyAction(
+		kind: 'inspect' | 'gaps' | 'compose' | 'close' | 'confirm' | 'cancel-placement'
+	) {
 		policyCommand = { id: ++policySequence, kind };
 	}
 	function focusPolicyPoint(coordinates: Coordinates) {
@@ -1282,6 +1286,9 @@
 						gapLens={policyLens}
 						policyOperations={accessExplorerOpen ? [] : policyState.operations}
 						pendingProposal={accessExplorerOpen ? null : policyState.pending}
+						pendingPlacementDecision={accessExplorerOpen ? null : policyState.pendingDecision}
+						onconfirmproposal={() => policyAction('confirm')}
+						oncancelproposal={() => policyAction('cancel-placement')}
 						policyCalculating={policyState.calculating}
 						policyStale={policyState.stale}
 						onmoveproposal={(index, coordinates) =>

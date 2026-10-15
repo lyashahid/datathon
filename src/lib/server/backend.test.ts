@@ -46,6 +46,7 @@ describe('backend integration boundary', () => {
 		'planning/opportunities/island%3A1442',
 		'planning/opportunities/suggest',
 		'planning/report.pdf',
+		'planning/quote',
 		'forecasts/analysis',
 		'forecasts/sources',
 		'forecasts/sources/template',
@@ -75,6 +76,7 @@ describe('backend integration boundary', () => {
 		'planning/calibration/delete',
 		'planning/opportunities/island%3A1442/extra',
 		'planning/report.pdf/extra',
+		'planning/quote/extra',
 		'forecasts/sources/stage/extra',
 		'map/context/extra'
 	])('rejects malformed new endpoint paths: %s', async (path) => {
