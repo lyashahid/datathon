@@ -4,6 +4,10 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
+	// Runtime captures and QA outputs are not frontend source; changes must not reload the map.
+	server: {
+		watch: { ignored: ['**/backend/**', '**/artifacts/**', '**/legacy/**', '**/scripts/**'] }
+	},
 	// MapLibre starts its worker as an ES module.
 	worker: { format: 'es' },
 	plugins: [

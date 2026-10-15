@@ -1963,3 +1963,150 @@ td {
 .workspace-load-state strong {
 	font-weight: 500;
 }
+
+.map-first-shell .workspace-body {
+	min-height: 100dvh;
+}
+.workspace-menu {
+	position: fixed;
+	top: 20px;
+	left: 20px;
+	z-index: 30;
+}
+.workspace-menu > summary {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	list-style: none;
+	cursor: pointer;
+	border: 1px solid #dbe5e1;
+	border-radius: 14px;
+	color: #25453c;
+	background: #fffffff5;
+	box-shadow: 0 5px 20px #16392b12;
+}
+.workspace-menu > summary::-webkit-details-marker {
+	display: none;
+}
+.workspace-menu-content {
+	position: absolute;
+	top: 54px;
+	left: 0;
+	width: 260px;
+	padding: 16px;
+	border: 1px solid #dbe5e1;
+	border-radius: 16px;
+	background: #fff;
+	box-shadow: 0 12px 40px #193b3024;
+}
+.workspace-menu-content > strong {
+	display: block;
+	margin: 0 4px 12px;
+	font-size: 12px;
+	color: #597368;
+}
+.workspace-menu-content nav {
+	display: grid;
+	gap: 3px;
+}
+.workspace-menu-content nav button {
+	justify-content: flex-start;
+	min-height: 44px;
+}
+.workspace-menu-content .connection {
+	margin: 12px 4px 0;
+	font-size: 11px;
+}
+.map-first-shell .map-workspace {
+	height: 100dvh;
+	min-height: 0;
+	--map-focus-top: 80px;
+}
+.map-first-shell .map-workspace.access-exploring {
+	--map-focus-left: 370px;
+	--map-focus-right: 80px;
+	--map-focus-top: 65px;
+	--map-focus-bottom: 75px;
+}
+.accessibility-map-overlay {
+	position: absolute;
+	top: 84px;
+	left: 20px;
+	z-index: 6;
+	width: 310px;
+	max-height: calc(100dvh - 110px);
+}
+.map-first-shell .accessibility-map-overlay > .country-accessibility-explorer {
+	max-height: inherit;
+}
+.map-first-shell .access-exploring .national-map .map-controls {
+	left: auto;
+	right: 20px;
+	bottom: 30px;
+}
+.map-first-shell .country-overview .map-movement-status {
+	display: none;
+}
+.map-first-shell .access-exploring:not(.country-overview) .national-map .map-footer {
+	display: none;
+}
+.map-first-shell .map-search-dock {
+	top: 20px;
+	left: 78px;
+}
+.map-first-shell .map-tool-sheet {
+	top: 76px;
+	bottom: 20px;
+}
+.map-first-shell .workspace-subnav {
+	padding-left: 84px;
+	min-height: 84px;
+}
+.map-first-shell .evidence-page {
+	padding-top: 88px;
+}
+@media (max-width: 700px) {
+	.workspace-menu {
+		top: 14px;
+		left: 14px;
+	}
+	.map-first-shell .map-workspace.access-exploring {
+		--map-focus-left: 24px;
+		--map-focus-right: 54px;
+		--map-focus-top: 115px;
+		--map-focus-bottom: 43dvh;
+	}
+	.accessibility-map-overlay {
+		top: auto;
+		bottom: 12px;
+		left: 12px;
+		right: 12px;
+		width: auto;
+		max-height: 42dvh;
+	}
+	.map-first-shell .access-exploring .national-map .map-controls {
+		display: none;
+	}
+	.map-first-shell .access-exploring.country-overview .national-map .map-footer {
+		top: 14px;
+		bottom: auto;
+		left: 72px;
+		right: auto;
+		max-width: 215px;
+	}
+	.map-first-shell .map-search-dock {
+		top: 14px;
+		left: 68px;
+		right: 14px;
+	}
+	.map-first-shell .map-search-dock .island-search-trigger {
+		min-width: 0;
+	}
+	.map-first-shell .map-search-dock > button[aria-label='Nationwide schedules'] {
+		display: none;
+	}
+	.map-first-shell .workspace-subnav {
+		padding: 72px 14px 14px;
+	}
+}

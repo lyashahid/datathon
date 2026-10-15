@@ -49,6 +49,7 @@
 	} from '#lib/map-overlay.js';
 	import { exploreJourneyFeatures, journeyClock } from '#lib/explore-journey.js';
 	import type {
+		Accessibility,
 		Coordinates,
 		MapFeatures,
 		ScenarioOperation,
@@ -60,7 +61,10 @@
 	interface Props {
 		features: MapFeatures | null;
 		selectedId: string | null;
+		atollScope?: string | null;
+		accessibilityScores?: Accessibility[] | null;
 		onselect: (id: string) => void;
+		onnational?: () => void;
 		onpick: (coordinates: Coordinates) => void;
 		onplanpoint?: (coordinates: Coordinates) => void;
 		onmovejourneypoint?: (endpoint: 'start' | 'end') => void;
@@ -115,7 +119,10 @@
 	let {
 		features,
 		selectedId,
+		atollScope = null,
+		accessibilityScores = null,
 		onselect,
+		onnational,
 		onpick,
 		onplanpoint,
 		onmovejourneypoint,
@@ -178,6 +185,7 @@
 	let legendVisible = $state(true);
 	let mobileLegendOpen = $state(false);
 	let centerCoordinates = $state<Coordinates>([73.2, 3.5]);
+	let cameraPadding = $state({ top: 0, right: 0, bottom: 0, left: 0 });
 	let zoomLevel = $state(4);
 	let streetsVisible = $state(true);
 	let buildingsVisible = $state(true);
@@ -219,16 +227,20 @@
 	let pickerTrigger: HTMLElement | null = null;
 	let liveFrame = 0;
 	let activationFrame = 0;
+	let scopeFocusFrame = 0;
 	let journeyFocusFrame = 0;
 	const sourceData = new SvelteMap<string, FeatureCollection>();
 	let lastFocusedIsland: Feature<Geometry> | undefined;
+	let lastFocusedId: string | null | undefined;
+	let lastFocusedAtoll: string | null | undefined;
+	let lastFocusedAtollBounds: [Coordinates, Coordinates] | null = null;
 	let lastFocusVersion = -1;
 	let lastFittedRoute: LandRoute | null = null;
 	let lastJourneyFocusVersion = 0;
 	let liveAnimating = $state(false);
 	let displayedLive = { type: 'FeatureCollection', features: [] } as FeatureCollection;
 	const nationalBounds: [Coordinates, Coordinates] = [
-		[72, -0.3],
+		[72, -0.9],
 		[74.4, 7.3]
 	];
 	const interactiveLayers = [
@@ -242,6 +254,7 @@
 		'live-vessel-symbols',
 		'poi-clusters',
 		'island-centroids',
+		'accessibility-centroids',
 		'islands-fill',
 		'facilities-fill',
 		'transport-fill',
@@ -252,6 +265,15 @@
 		features: []
 	};
 	const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	function cameraInsets(instance: LibreMap) {
+		const padding = instance.getPadding();
+		return {
+			top: padding.top ?? 0,
+			right: padding.right ?? 0,
+			bottom: padding.bottom ?? 0,
+			left: padding.left ?? 0
+		};
+	}
 
 	function collection(items: Feature<Geometry>[]): FeatureCollection {
 		return { type: 'FeatureCollection', features: items };
@@ -299,6 +321,50 @@
 	const selectedIsland = $derived(
 		layers.islands.features.find((feature) => feature.properties?.id === selectedId)
 	);
+	const atollBounds = $derived(
+		atollScope
+			? boundsOf({
+					type: 'GeometryCollection',
+					geometries: layers.islands.features
+						.filter((feature) => feature.properties?.atoll === atollScope)
+						.map((feature) => feature.geometry)
+				})
+			: null
+	);
+	const accessibilityOverview = $derived(!selectedId && accessibilityScores !== null);
+	const accessibilityCentroids = $derived.by(() => {
+		if (!accessibilityOverview) return emptyCollection;
+		const scores = new Map(accessibilityScores?.map((score) => [score.island_id, score]));
+		const included = new SvelteSet<string>();
+		return collection(
+			layers.centroids.features.flatMap((feature) => {
+				const properties = feature.properties ?? {};
+				const id = String(properties.id ?? '');
+				if (
+					properties.category !== 'Residential Island' ||
+					(atollScope && properties.atoll !== atollScope) ||
+					included.has(id)
+				)
+					return [];
+				included.add(id);
+				const score = scores.get(id);
+				const coverage = score?.assessment?.coverage;
+				const limited =
+					!score || !Number.isFinite(score.score) || !coverage || coverage.status === 'limited';
+				return [
+					{
+						...feature,
+						properties: {
+							...properties,
+							accessibility_score: limited ? null : score.score,
+							limited_evidence: limited,
+							label: `${properties.name ?? 'Island'} · ${limited ? 'Limited evidence' : `${score.score.toFixed(1)}/100 accessibility`} · select to explore`
+						}
+					}
+				];
+			})
+		);
+	});
 	const selectedName = $derived(
 		String(selectedIsland?.properties?.name ?? '').trim() ||
 			(selectedId ? `Unnamed island (${selectedId})` : 'Selected island')
@@ -855,6 +921,7 @@
 		const bounds = boundsOf({ type: 'MultiPoint', coordinates: positions });
 		if (bounds)
 			map.fitBounds(bounds, {
+				absolutePadding: true,
 				padding: focusPadding(),
 				maxZoom: 16,
 				duration: reducedMotion() ? 0 : 280
@@ -873,6 +940,7 @@
 		const bounds = boundsOf({ type: 'MultiPoint', coordinates });
 		if (bounds)
 			map.fitBounds(bounds, {
+				absolutePadding: true,
 				padding: focusPadding(),
 				maxZoom: 13,
 				duration: reducedMotion() ? 0 : 280
@@ -913,24 +981,45 @@
 		const width = container.clientWidth;
 		const height = container.clientHeight;
 		const inset = (side: string, fallback: number, maximum: number) => {
-			const value = Number.parseFloat(style.getPropertyValue(`--map-focus-${side}`));
-			return Math.min(Number.isFinite(value) ? value : fallback, maximum);
+			const setting = style.getPropertyValue(`--map-focus-${side}`).trim();
+			let value = Number.parseFloat(setting);
+			if (setting.endsWith('%')) {
+				value = (value / 100) * (side === 'top' || side === 'bottom' ? height : width);
+			} else if (/(?:dvh|svh|vh)$/i.test(setting)) {
+				// Resolve viewport units through CSS so small and dynamic mobile viewports stay distinct.
+				const measure = document.createElement('div');
+				measure.style.position = 'fixed';
+				measure.style.visibility = 'hidden';
+				measure.style.pointerEvents = 'none';
+				measure.style.width = '0';
+				measure.style.height = setting;
+				// eslint-disable-next-line svelte/no-dom-manipulating -- This temporary CSS probe belongs to MapLibre's imperative subtree and is immediately removed.
+				container.append(measure);
+				value = measure.getBoundingClientRect().height;
+				measure.remove();
+			}
+			return Math.max(0, Math.min(Number.isFinite(value) ? value : fallback, maximum));
 		};
 		return {
 			top: inset('top', 100, height * 0.35),
 			right: inset('right', 65, width * 0.48),
-			bottom: inset('bottom', 110, height * 0.35),
-			left: inset('left', 40, width * 0.4)
+			bottom: inset('bottom', 110, height * 0.48),
+			left: inset('left', 40, width * 0.48)
 		};
 	}
 
-	function nationalView() {
-		closeInspection();
-		closeControls(true);
+	function fitNational() {
 		map?.fitBounds(nationalBounds, {
+			absolutePadding: true,
 			padding: focusPadding(),
 			duration: reducedMotion() ? 0 : 280
 		});
+	}
+	function nationalView() {
+		closeInspection();
+		closeControls(true);
+		if (onnational) onnational();
+		else fitNational();
 	}
 
 	function focusIsland() {
@@ -938,6 +1027,7 @@
 		const bounds = boundsOf(selectedIsland.geometry);
 		if (bounds)
 			map.fitBounds(bounds, {
+				absolutePadding: true,
 				padding: focusPadding(),
 				maxZoom: 16,
 				duration: reducedMotion() ? 0 : 280
@@ -1711,6 +1801,12 @@
 			oninspectgap?.(gap.properties);
 			return;
 		}
+		const scoredIsland = rendered.find((feature) => feature.source === 'accessibility-centroids');
+		if (scoredIsland) {
+			closeInspection();
+			onselect(String(scoredIsland.properties.id));
+			return;
+		}
 		closeInspection();
 		const hit = rendered.find((feature) => feature.properties?.island_id || feature.properties?.id);
 		if (hit) {
@@ -1735,6 +1831,7 @@
 			if (!active) return;
 			nationalScale = instance.getZoom() < 9;
 			centerCoordinates = [instance.getCenter().lng, instance.getCenter().lat];
+			cameraPadding = cameraInsets(instance);
 			zoomLevel = instance.getZoom();
 			syncIslandLabels();
 			syncStreetLabels();
@@ -1783,7 +1880,7 @@
 						]
 					},
 					bounds: nationalBounds,
-					fitBoundsOptions: { padding: focusPadding() },
+					fitBoundsOptions: { absolutePadding: true, padding: focusPadding() },
 					minZoom: 4,
 					maxZoom: 19,
 					maxPitch: 0,
@@ -1845,6 +1942,7 @@
 					for (const name of [
 						'islands',
 						'centroids',
+						'accessibility-centroids',
 						'facilities',
 						'transport',
 						'bus-stops',
@@ -1960,6 +2058,32 @@
 							'circle-color': '#6ba99c',
 							'circle-stroke-color': '#edf7f6',
 							'circle-stroke-width': 0.5
+						}
+					});
+					instance.addLayer({
+						id: 'accessibility-centroids',
+						type: 'circle',
+						source: 'accessibility-centroids',
+						paint: {
+							'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 4, 9, 6, 13, 8],
+							'circle-color': [
+								'case',
+								['get', 'limited_evidence'],
+								'#8d9da1',
+								[
+									'interpolate',
+									['linear'],
+									['to-number', ['get', 'accessibility_score']],
+									0,
+									'#e6a24a',
+									50,
+									'#30969a',
+									100,
+									'#153f6f'
+								]
+							],
+							'circle-stroke-color': '#ffffff',
+							'circle-stroke-width': 1.3
 						}
 					});
 					instance.addLayer({
@@ -2412,6 +2536,7 @@
 					ready = true;
 					scheduleStreetContext();
 					centerCoordinates = [instance.getCenter().lng, instance.getCenter().lat];
+					cameraPadding = cameraInsets(instance);
 					zoomLevel = instance.getZoom();
 				});
 				instance.on('click', handleClick);
@@ -2493,6 +2618,7 @@
 			document.removeEventListener('mouseup', finishOutsidePan, true);
 			cancelAnimationFrame(liveFrame);
 			cancelAnimationFrame(activationFrame);
+			cancelAnimationFrame(scopeFocusFrame);
 			sourceData.clear();
 			clearTimeout(contextTimer);
 			contextGeneration++;
@@ -2602,6 +2728,15 @@
 		setData('centroids', layers.centroids);
 		setData('facilities', layers.facilities);
 		setData('transport', layers.transport);
+	});
+	$effect(() => {
+		if (!ready || !active || !map) return;
+		setData('accessibility-centroids', accessibilityCentroids);
+		map.setLayoutProperty(
+			'island-centroids',
+			'visibility',
+			accessibilityOverview ? 'none' : 'visible'
+		);
 	});
 	$effect(() => {
 		if (!ready || !active) return;
@@ -2725,11 +2860,52 @@
 	});
 	$effect(() => {
 		if (!ready || !map || !active) return;
-		if (selectedIsland === lastFocusedIsland && focusVersion === lastFocusVersion) return;
-		lastFocusedIsland = selectedIsland;
-		lastFocusVersion = focusVersion;
-		// fitBounds dispatches move-end synchronously; those handlers read unrelated map state.
-		untrack(focusIsland);
+		const requestedId = selectedId;
+		const requestedIsland = selectedIsland;
+		const requestedAtoll = atollScope;
+		const requestedAtollBounds = atollBounds;
+		const requestedVersion = focusVersion;
+		const instance = map;
+		if (
+			requestedId === lastFocusedId &&
+			requestedIsland === lastFocusedIsland &&
+			requestedAtoll === lastFocusedAtoll &&
+			requestedAtollBounds === lastFocusedAtollBounds &&
+			requestedVersion === lastFocusVersion
+		)
+			return;
+		// Parent panels change camera insets. Read their styles after the DOM has settled.
+		const frame = requestAnimationFrame(() => {
+			if (
+				!ready ||
+				!active ||
+				map !== instance ||
+				selectedId !== requestedId ||
+				selectedIsland !== requestedIsland ||
+				atollScope !== requestedAtoll ||
+				atollBounds !== requestedAtollBounds ||
+				focusVersion !== requestedVersion
+			)
+				return;
+			instance.resize();
+			mapHeight = container.clientHeight;
+			if (requestedId) focusIsland();
+			else if (requestedAtollBounds)
+				instance.fitBounds(requestedAtollBounds, {
+					absolutePadding: true,
+					padding: focusPadding(),
+					maxZoom: 11,
+					duration: reducedMotion() ? 0 : 280
+				});
+			else fitNational();
+			lastFocusedId = requestedId;
+			lastFocusedIsland = requestedIsland;
+			lastFocusedAtoll = requestedAtoll;
+			lastFocusedAtollBounds = requestedAtollBounds;
+			lastFocusVersion = requestedVersion;
+		});
+		scopeFocusFrame = frame;
+		return () => cancelAnimationFrame(frame);
 	});
 	$effect(() => {
 		if (!ready || !map) return;
@@ -2783,6 +2959,9 @@
 	class="national-map"
 	class:is-picking={picking}
 	data-active={active}
+	data-atoll-scope={atollScope ?? ''}
+	data-accessibility-overview={accessibilityOverview}
+	data-accessibility-points={accessibilityCentroids.features.length}
 	aria-busy={mapBusy}
 	data-rendered-roads={renderedRoads}
 	data-rendered-buildings={renderedBuildings}
@@ -2798,6 +2977,10 @@
 	data-movement-transition={liveAnimating}
 	data-center-longitude={centerCoordinates[0]}
 	data-center-latitude={centerCoordinates[1]}
+	data-camera-padding-top={cameraPadding.top}
+	data-camera-padding-right={cameraPadding.right}
+	data-camera-padding-bottom={cameraPadding.bottom}
+	data-camera-padding-left={cameraPadding.left}
 	data-journey-endpoints={routeFeatures.features.filter(
 		(feature) => feature.geometry.type === 'Point'
 	).length}
@@ -3105,164 +3288,175 @@
 		{#if picking}<div class="placement-target" aria-hidden="true"><span></span></div>{/if}
 		<div class="map-footer" class:has-legend={legendVisible}>
 			<div class="map-information-card" class:mobile-expanded={mobileLegendOpen} id={mapKeyId}>
-				{#if gapFeatures.features.length && !impactFeatures.features.length}<div
-						class="policy-colour-key"
-						aria-label="Service gap colours"
-					>
-						<strong
-							>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
-								? 'Local journey time'
-								: 'Mapped service screening'}</strong
-						>
-						<span
-							><i class="policy-gap-gradient" style:background={GAP_GRADIENT}
-							></i>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
-								? 'Shorter → at / beyond target'
-								: 'More evidence → review need'}</span
-						>
-						<small>Grey: unknown · click a coloured area</small>
-					</div>{:else if impactFeatures.features.length}<div
-						class="policy-colour-key"
-						aria-label="Proposal impact colours"
-					>
-						<strong>Proposed access change</strong><span
-							><i class="policy-impact-gained"></i>Gained / faster
-							<i class="policy-impact-lost"></i>Lost / slower</span
-						><small>Grey: unchanged or unavailable · select a cell</small>
-					</div>{/if}
-				{#if scenarioPreview.unlocated}<div class="street-context-status" role="status">
-						<X size={12} />{scenarioPreview.unlocated}
-						{scenarioPreview.unlocated === 1 ? 'edit lacks' : 'edits lack'} mapped target geometry · enter
-						a mapped ID or move to its street view
-					</div>{/if}
-				{#if mode !== 'places'}
-					<details class="map-movement-status">
-						<summary class="movement-counts" aria-label="Provider positions by vehicle type">
-							<span title="Aircraft observations"><Plane size={14} />{activityKinds.aircraft}</span>
-							<span title="Vessel observations"><Ship size={14} />{activityKinds.vessel}</span>
-							<span title="Bus observations"><BusFront size={14} />{activityKinds.bus}</span>
-							<strong title="Visible observations / all positions received for this area"
-								>{renderedMovementObservations} visible / {liveFeatures.features.length} received</strong
-							>
-						</summary>
-						<small>Provider observations · expand for freshness and coverage</small>
-						<small>{activityMessage}</small>
-						{#if liveStatus.message && liveFeatures.features.length}<small
-								>{liveStatus.message}</small
-							>{/if}
-						{#if liveStatus.retrieved_at}<small
-								>Received {new Date(liveStatus.retrieved_at).toLocaleString('en', {
-									month: 'short',
-									day: 'numeric',
-									hour: '2-digit',
-									minute: '2-digit',
-									hour12: false
-								})} · provider observation times vary</small
-							>{/if}
-						{#if renderedVesselGroups}<small
-								>Ship badges group nearby vessel observations. Select one to zoom in.</small
-							>{/if}
-						{#if liveFeatures.features.length && !renderedMovementObservations}<small
-								>Positions are beyond this street view · View → Show nearby movement</small
-							>{/if}
-						{#if freshMovement.length && renderedMovementObservations < freshMovement.length}<Button
-								variant="ghost"
-								size="sm"
-								class="movement-fit-button"
-								onclick={focusMovement}><LocateFixed size={13} />View nearby</Button
-							>{/if}
-					</details>
-				{/if}
-				<div class="street-context-status" role="status">
-					<span class:loading={contextLoading}></span>
-					{#if contextLoading}Loading streets & buildings
-					{:else if contextError}{contextError}
-					{:else if zoomLevel < 10}Nationwide atlas · zoom in for streets
-					{:else if contextSummary.roads || contextSummary.buildings}Streets · OpenStreetMap
-					{:else}No mapped streets in this view{/if}
-					{#if contextSummary.truncated}
-						· Zoom in for all features{/if}
-				</div>
-				{#if picking || hoverDescription}<div class="map-hint" class:picking>
-						{#if picking}<Crosshair size={15} />{:else}<MousePointer2 size={15} />{/if}
-						<span
-							>{picking
-								? 'Click to place · Enter at map center'
-								: hoverDescription ||
-									(nationalScale
-										? 'Select an island to explore'
-										: 'Click a place to inspect, plan a journey or propose a change')}</span
-						>
-					</div>{/if}
-				{#if legendVisible && zoomLevel >= 12}
-					<div class="compact-map-key" aria-label="Place symbols">
-						{#if transportVisible}<span><BusFront size={13} class="transport-key" />Bus stop</span
-							><span><Ship size={13} class="marine-key" />Ferry terminal</span>{/if}
-						{#if facilitiesVisible}<span><Hospital size={13} class="health-key" />Healthcare</span
-							><span><GraduationCap size={13} class="school-key" />School</span>{/if}
+				{#if accessibilityOverview}
+					<div class="accessibility-key" aria-label="Island accessibility score colours">
+						<strong>Accessibility /100</strong>
+						<span><span>Low</span><i aria-hidden="true"></i><span>High</span></span>
+						<small>Residential islands · Grey: limited evidence</small>
 					</div>
-				{/if}
-				<div class="mobile-key-toggle">
-					<Button
-						variant="outline"
-						size="sm"
-						aria-expanded={mobileLegendOpen}
-						aria-controls={mapKeyId}
-						onclick={() => (mobileLegendOpen = !mobileLegendOpen)}
-						><Info size={13} />Map key & live coverage<ChevronDown size={12} /></Button
-					>
-				</div>
-				{#if legendVisible}<div
-						class="map-legend"
-						class:mobile-expanded={mobileLegendOpen}
-						aria-label="Map key"
-					>
-						<span><i class="legend-land"></i>Islands</span>
-						{#if streetsVisible}<span><i class="legend-street"></i>Streets</span>{/if}
-						{#if buildingsVisible}<span><i class="legend-building"></i>Buildings</span>{/if}
-						{#if facilitiesVisible}<span><Hospital size={12} class="health-key" />Health</span><span
-								><GraduationCap size={13} class="school-key" />Schools</span
-							>{/if}
-						{#if transportVisible}<span><BusFront size={12} class="transport-key" />Bus stops</span>
-							<span><Ship size={12} class="marine-key" />Ferry terminals</span>
-							<span><Anchor size={12} class="marine-key" />Piers</span>
-							<span><Plane size={12} class="transport-key" />Airports</span>{/if}
-						{#if facilitiesVisible || transportVisible}<span
-								><MapPin size={12} />Other mapped places</span
+				{:else}
+					{#if gapFeatures.features.length && !impactFeatures.features.length}<div
+							class="policy-colour-key"
+							aria-label="Service gap colours"
+						>
+							<strong
+								>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
+									? 'Local journey time'
+									: 'Mapped service screening'}</strong
 							>
-							<span><i class="legend-cluster">#</i>Grouped places · zoom in</span>{/if}
-						{#if mode !== 'places' && liveEvents.length}<span
-								><Radio size={12} />Vehicle icons = observations</span
-							>{/if}
-						{#if renderedVesselGroups}<span
-								><Ship size={12} class="marine-key" />Ship + count = grouped vessels · select to
-								zoom</span
-							>{/if}
-						{#if contextReceipt}<span>Street snapshot · {contextReceipt}</span>{/if}
-						{#if scenarioFeatures.features.length}<span
-								><i class="legend-proposed"></i>Proposed</span
-							>{/if}
-						{#if scenarioFeatures.features.some( (feature) => ['remove_bus_stop', 'disable_ferry_terminal', 'road_closure'].includes(feature.properties?.type) )}<span
-								><X size={12} />Removal / closure</span
-							>{/if}
-						{#if (!route?.journey && routeFeatures.features.some((feature) => feature.geometry.type === 'LineString')) || route?.journey?.legs.some((leg) => leg.mode === 'bus' && leg.geometry.length > 1)}<span
-								><i class="legend-route"></i>{route?.journey
-									? 'Bus journey'
-									: 'Journey route'}</span
-							>{/if}
-						{#if route?.journey?.legs.some((leg) => leg.mode === 'walk')}<span
-								><i class="legend-walk"></i>Walk to / from stop</span
-							>{/if}
-						{#if route?.journey?.legs.some((leg) => leg.mode === 'ferry')}<span
-								><i class="legend-ferry-route"></i>Ferry journey</span
-							>{/if}
-						{#if journeyStopFeatures.features.length}<span
-								><i class="legend-journey-stop"></i>Board / get off here</span
-							>{/if}
-						{#if routeStart || routeEnd}<span><b class="legend-origin">A</b>Start</span><span
-								><b class="legend-destination">B</b>Destination</span
-							>{/if}
-					</div>{/if}
+							<span
+								><i class="policy-gap-gradient" style:background={GAP_GRADIENT}
+								></i>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
+									? 'Shorter → at / beyond target'
+									: 'More evidence → review need'}</span
+							>
+							<small>Grey: unknown · click a coloured area</small>
+						</div>{:else if impactFeatures.features.length}<div
+							class="policy-colour-key"
+							aria-label="Proposal impact colours"
+						>
+							<strong>Proposed access change</strong><span
+								><i class="policy-impact-gained"></i>Gained / faster
+								<i class="policy-impact-lost"></i>Lost / slower</span
+							><small>Grey: unchanged or unavailable · select a cell</small>
+						</div>{/if}
+					{#if scenarioPreview.unlocated}<div class="street-context-status" role="status">
+							<X size={12} />{scenarioPreview.unlocated}
+							{scenarioPreview.unlocated === 1 ? 'edit lacks' : 'edits lack'} mapped target geometry ·
+							enter a mapped ID or move to its street view
+						</div>{/if}
+					{#if mode !== 'places'}
+						<details class="map-movement-status">
+							<summary class="movement-counts" aria-label="Provider positions by vehicle type">
+								<span title="Aircraft observations"
+									><Plane size={14} />{activityKinds.aircraft}</span
+								>
+								<span title="Vessel observations"><Ship size={14} />{activityKinds.vessel}</span>
+								<span title="Bus observations"><BusFront size={14} />{activityKinds.bus}</span>
+								<strong title="Visible observations / all positions received for this area"
+									>{renderedMovementObservations} visible / {liveFeatures.features.length} received</strong
+								>
+							</summary>
+							<small>Provider observations · expand for freshness and coverage</small>
+							<small>{activityMessage}</small>
+							{#if liveStatus.message && liveFeatures.features.length}<small
+									>{liveStatus.message}</small
+								>{/if}
+							{#if liveStatus.retrieved_at}<small
+									>Received {new Date(liveStatus.retrieved_at).toLocaleString('en', {
+										month: 'short',
+										day: 'numeric',
+										hour: '2-digit',
+										minute: '2-digit',
+										hour12: false
+									})} · provider observation times vary</small
+								>{/if}
+							{#if renderedVesselGroups}<small
+									>Ship badges group nearby vessel observations. Select one to zoom in.</small
+								>{/if}
+							{#if liveFeatures.features.length && !renderedMovementObservations}<small
+									>Positions are beyond this street view · View → Show nearby movement</small
+								>{/if}
+							{#if freshMovement.length && renderedMovementObservations < freshMovement.length}<Button
+									variant="ghost"
+									size="sm"
+									class="movement-fit-button"
+									onclick={focusMovement}><LocateFixed size={13} />View nearby</Button
+								>{/if}
+						</details>
+					{/if}
+					<div class="street-context-status" role="status">
+						<span class:loading={contextLoading}></span>
+						{#if contextLoading}Loading streets & buildings
+						{:else if contextError}{contextError}
+						{:else if zoomLevel < 10}Nationwide atlas · zoom in for streets
+						{:else if contextSummary.roads || contextSummary.buildings}Streets · OpenStreetMap
+						{:else}No mapped streets in this view{/if}
+						{#if contextSummary.truncated}
+							· Zoom in for all features{/if}
+					</div>
+					{#if picking || hoverDescription}<div class="map-hint" class:picking>
+							{#if picking}<Crosshair size={15} />{:else}<MousePointer2 size={15} />{/if}
+							<span
+								>{picking
+									? 'Click to place · Enter at map center'
+									: hoverDescription ||
+										(nationalScale
+											? 'Select an island to explore'
+											: 'Click a place to inspect, plan a journey or propose a change')}</span
+							>
+						</div>{/if}
+					{#if legendVisible && zoomLevel >= 12}
+						<div class="compact-map-key" aria-label="Place symbols">
+							{#if transportVisible}<span><BusFront size={13} class="transport-key" />Bus stop</span
+								><span><Ship size={13} class="marine-key" />Ferry terminal</span>{/if}
+							{#if facilitiesVisible}<span><Hospital size={13} class="health-key" />Healthcare</span
+								><span><GraduationCap size={13} class="school-key" />School</span>{/if}
+						</div>
+					{/if}
+					<div class="mobile-key-toggle">
+						<Button
+							variant="outline"
+							size="sm"
+							aria-expanded={mobileLegendOpen}
+							aria-controls={mapKeyId}
+							onclick={() => (mobileLegendOpen = !mobileLegendOpen)}
+							><Info size={13} />Map key & live coverage<ChevronDown size={12} /></Button
+						>
+					</div>
+					{#if legendVisible}<div
+							class="map-legend"
+							class:mobile-expanded={mobileLegendOpen}
+							aria-label="Map key"
+						>
+							<span><i class="legend-land"></i>Islands</span>
+							{#if streetsVisible}<span><i class="legend-street"></i>Streets</span>{/if}
+							{#if buildingsVisible}<span><i class="legend-building"></i>Buildings</span>{/if}
+							{#if facilitiesVisible}<span><Hospital size={12} class="health-key" />Health</span
+								><span><GraduationCap size={13} class="school-key" />Schools</span>{/if}
+							{#if transportVisible}<span
+									><BusFront size={12} class="transport-key" />Bus stops</span
+								>
+								<span><Ship size={12} class="marine-key" />Ferry terminals</span>
+								<span><Anchor size={12} class="marine-key" />Piers</span>
+								<span><Plane size={12} class="transport-key" />Airports</span>{/if}
+							{#if facilitiesVisible || transportVisible}<span
+									><MapPin size={12} />Other mapped places</span
+								>
+								<span><i class="legend-cluster">#</i>Grouped places · zoom in</span>{/if}
+							{#if mode !== 'places' && liveEvents.length}<span
+									><Radio size={12} />Vehicle icons = observations</span
+								>{/if}
+							{#if renderedVesselGroups}<span
+									><Ship size={12} class="marine-key" />Ship + count = grouped vessels · select to
+									zoom</span
+								>{/if}
+							{#if contextReceipt}<span>Street snapshot · {contextReceipt}</span>{/if}
+							{#if scenarioFeatures.features.length}<span
+									><i class="legend-proposed"></i>Proposed</span
+								>{/if}
+							{#if scenarioFeatures.features.some( (feature) => ['remove_bus_stop', 'disable_ferry_terminal', 'road_closure'].includes(feature.properties?.type) )}<span
+									><X size={12} />Removal / closure</span
+								>{/if}
+							{#if (!route?.journey && routeFeatures.features.some((feature) => feature.geometry.type === 'LineString')) || route?.journey?.legs.some((leg) => leg.mode === 'bus' && leg.geometry.length > 1)}<span
+									><i class="legend-route"></i>{route?.journey
+										? 'Bus journey'
+										: 'Journey route'}</span
+								>{/if}
+							{#if route?.journey?.legs.some((leg) => leg.mode === 'walk')}<span
+									><i class="legend-walk"></i>Walk to / from stop</span
+								>{/if}
+							{#if route?.journey?.legs.some((leg) => leg.mode === 'ferry')}<span
+									><i class="legend-ferry-route"></i>Ferry journey</span
+								>{/if}
+							{#if journeyStopFeatures.features.length}<span
+									><i class="legend-journey-stop"></i>Board / get off here</span
+								>{/if}
+							{#if routeStart || routeEnd}<span><b class="legend-origin">A</b>Start</span><span
+									><b class="legend-destination">B</b>Destination</span
+								>{/if}
+						</div>{/if}
+				{/if}
 			</div>
 		</div>
 	{/if}
@@ -3638,6 +3832,34 @@
 		gap: 6px;
 		padding-bottom: 8px;
 		border-bottom: 1px solid #dce7df;
+	}
+	.accessibility-key {
+		display: grid;
+		gap: 6px;
+		width: 230px;
+		max-width: 100%;
+		color: #34585d;
+	}
+	.accessibility-key strong {
+		font-size: 11px;
+		font-weight: 650;
+	}
+	.accessibility-key > span {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 10px;
+	}
+	.accessibility-key i {
+		height: 7px;
+		flex: 1;
+		border-radius: 4px;
+		background: linear-gradient(90deg, #e6a24a, #30969a, #153f6f);
+	}
+	.accessibility-key small {
+		font-size: 9px;
+		line-height: 1.4;
+		color: #5a6e72;
 	}
 	.policy-colour-key strong {
 		font-size: 11px;
@@ -4283,7 +4505,8 @@
 		.mobile-key-toggle {
 			display: block;
 		}
-		.map-information-card:not(.mobile-expanded) > :not(.mobile-key-toggle):not(.picking) {
+		.map-information-card:not(.mobile-expanded)
+			> :not(.mobile-key-toggle):not(.picking):not(.accessibility-key) {
 			display: none;
 		}
 		.map-information-card {

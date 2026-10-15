@@ -85,13 +85,25 @@ async function project(coordinates) {
 			Number(element.getAttribute('data-center-longitude')),
 			Number(element.getAttribute('data-center-latitude'))
 		];
+		const padding = Object.fromEntries(
+			['top', 'right', 'bottom', 'left'].map((side) => [
+				side,
+				Number(element.getAttribute(`data-camera-padding-${side}`))
+			])
+		);
 		const world = 512 * 2 ** zoom;
 		/** @param {number} latitude */
 		const y = (latitude) =>
 			(1 - Math.log(Math.tan(Math.PI / 4 + (latitude * Math.PI) / 360)) / Math.PI) / 2;
 		return {
-			x: box.x + box.width / 2 + ((location[0] - center[0]) * world) / 360,
-			y: box.y + box.height / 2 + (y(location[1]) - y(center[1])) * world
+			x:
+				box.x +
+				(box.width + padding.left - padding.right) / 2 +
+				((location[0] - center[0]) * world) / 360,
+			y:
+				box.y +
+				(box.height + padding.top - padding.bottom) / 2 +
+				(y(location[1]) - y(center[1])) * world
 		};
 	}, coordinates);
 }
@@ -588,6 +600,7 @@ try {
 			await page.screenshot({ path: path.join(output, 'forecast-review-mobile.png') });
 			await review.getByRole('button', { name: 'Back to map', exact: true }).click();
 			const existingCosts = await budget.locator('.cost-values').innerText();
+			await page.getByLabel('Open workspace menu', { exact: true }).click();
 			await page
 				.getByRole('navigation', { name: 'Workspace', exact: true })
 				.getByRole('button', { name: 'Analytics', exact: true })

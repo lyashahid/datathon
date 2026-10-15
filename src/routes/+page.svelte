@@ -19,10 +19,11 @@
 		LocateFixed,
 		Check,
 		Activity,
-		Layers,
 		Route,
 		X,
-		RefreshCw
+		RefreshCw,
+		Menu,
+		GitBranch
 	} from '@lucide/svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
@@ -44,6 +45,8 @@
 	import ExploreJourneyPanel from '#lib/components/ExploreJourneyPanel.svelte';
 	import MapPolicyWorkspace from '#lib/components/MapPolicyWorkspace.svelte';
 	import MapConditionsPanel from '#lib/components/MapConditionsPanel.svelte';
+	import CountryAccessibilityExplorer from '#lib/components/CountryAccessibilityExplorer.svelte';
+	import type { NationalAccessibility } from '#lib/analytics.js';
 	import { emptyFeatures, type MapPolicyState, type PlacementKind } from '#lib/map-policy.js';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
 	import { api } from '#lib/api.js';
@@ -137,7 +140,15 @@
 	function focusPolicyPoint(coordinates: Coordinates) {
 		focusPoint = { id: ++policySequence, coordinates };
 	}
-	let tab = $state('overview');
+	let tab = $state('explore');
+	let workspaceMenuOpen = $state(false);
+	let countryAtoll = $state<string | null>(null);
+	let accessExplorerOpen = $state(true);
+	let accessScores = $state.raw<NationalAccessibility | null>(null);
+	let accessLoading = $state(true);
+	let accessError = $state('');
+	let accessController: AbortController | undefined;
+	const emptyPolicyMap = emptyFeatures();
 	const isMapWorkspace = $derived(!['overview', 'evidence'].includes(tab));
 	let proposalView = $state('policy');
 	let profileView = $state('baseline');
@@ -230,6 +241,15 @@
 	let profileController: AbortController | undefined;
 	let actionController: AbortController | undefined;
 	let initialized = $state(false);
+	const showAccessExplorer = $derived(
+		isMapWorkspace &&
+			tab === 'explore' &&
+			exploreView === 'map' &&
+			accessExplorerOpen &&
+			!panelOpen &&
+			!pickMode &&
+			!policyState.panelOpen
+	);
 	const preparingIsland = $derived(
 		loading && ['policy', 'places', 'conditions'].includes(activeWorkspace)
 	);
@@ -420,6 +440,7 @@
 			await api('health', undefined, active.signal);
 			if (active.signal.aborted) return;
 			connection = 'Backend connected';
+			void loadAccessScores();
 			const [national, map, status] = await Promise.all([
 				api<NationalSummary>('national/summary', undefined, active.signal),
 				api<MapFeatures>('map/features?layer=all', undefined, active.signal),
@@ -431,13 +452,13 @@
 			liveStatus = status;
 			const initial =
 				islands.find((island) => island.properties.id === selectedId) ??
-				islands.find((island) => /^(mal[eé]|male.? city)$/i.test(island.properties.name ?? '')) ??
-				islands.find((island) => island.properties.name?.includes('Malé')) ??
-				islands[0];
+				(tab === 'scenarios' || tab === 'recommendations'
+					? islands.find((island) => /^(mal[eé]|male.? city)$/i.test(island.properties.name ?? ''))
+					: undefined);
 			if (initial) {
 				selectIsland(initial.properties.id, false);
 				writeLocation(false);
-			}
+			} else if (selectedId) resetIslandSelection();
 		} catch (cause) {
 			if (!active.signal.aborted) {
 				fatalError = message(cause);
@@ -447,7 +468,61 @@
 			if (!active.signal.aborted) loading = false;
 		}
 	}
+	async function loadAccessScores() {
+		accessController?.abort();
+		const active = new AbortController();
+		accessController = active;
+		accessLoading = true;
+		accessError = '';
+		try {
+			const result = await api<NationalAccessibility>(
+				'accessibility/summary',
+				undefined,
+				active.signal
+			);
+			if (!active.signal.aborted) accessScores = result;
+		} catch (cause) {
+			if (!active.signal.aborted) accessError = message(cause);
+		} finally {
+			if (!active.signal.aborted) accessLoading = false;
+		}
+	}
+	function resetIslandSelection() {
+		profileController?.abort();
+		profile = null;
+		profileLoading = false;
+		profileView = 'baseline';
+		focusPoint = null;
+		selectedId = null;
+		panelOpen = false;
+		pickMode = null;
+		inspectedCell = null;
+		accessExplorerOpen = true;
+		resetJourney();
+		policyAction('close');
+	}
+	function showCountry() {
+		resetIslandSelection();
+		policyLens = 'overall';
+		countryAtoll = null;
+		atoll = '';
+		search = '';
+		go('map', false);
+		focusVersion += 1;
+		writeLocation(true);
+	}
+	function showAtoll(name: string) {
+		resetIslandSelection();
+		policyLens = 'overall';
+		countryAtoll = name;
+		atoll = name;
+		search = '';
+		go('map', false);
+		focusVersion += 1;
+		writeLocation(true);
+	}
 	function selectIsland(id: string, push = true) {
+		countryAtoll = islands.find((island) => island.properties.id === id)?.properties.atoll ?? null;
 		if (id === selectedId) {
 			sidebarOpen = false;
 			focusVersion += 1;
@@ -520,6 +595,7 @@
 		coordinates: Coordinates,
 		kind?: 'add_hospital' | 'add_school' | 'add_stop'
 	) {
+		accessExplorerOpen = false;
 		incomingPlacement = {
 			id: ++placementSequence,
 			longitude: coordinates[0],
@@ -561,7 +637,8 @@
 		selectIsland(id, false);
 		panelOpen = false;
 		inspectedCell = null;
-		policyAction('inspect');
+		accessExplorerOpen = true;
+		policyAction('close');
 		writeLocation(true);
 	}
 	function chooseJourneyPoint(endpoint: 'start' | 'end') {
@@ -771,8 +848,10 @@
 			if (id && id !== selectedId) {
 				if (features) selectIsland(id, false);
 				else selectedId = id;
-			}
-			const requested = params.get('view') ?? 'overview';
+			} else if (!id && selectedId) resetIslandSelection();
+			countryAtoll = id ? countryAtoll : params.get('atoll');
+			accessExplorerOpen = !params.has('lens') && params.get('tool') !== 'proposals';
+			const requested = params.get('view') ?? 'map';
 			const tool = params.get('tool');
 			const next =
 				requested === 'map'
@@ -829,6 +908,7 @@
 		return () => {
 			window.removeEventListener('popstate', restoreView);
 			controller?.abort();
+			accessController?.abort();
 			profileController?.abort();
 			transitStopController?.abort();
 			cancelAction();
@@ -856,7 +936,7 @@
 			exploreView = 'conditions';
 		}
 		if (!['overview', 'explore', 'scenarios', 'recommendations', 'live', 'evidence'].includes(next))
-			next = 'overview';
+			next = 'explore';
 		const wasMapVisible = tab !== 'overview' && tab !== 'evidence';
 		tab = next;
 		if (!wasMapVisible && next !== 'overview' && next !== 'evidence') focusVersion += 1;
@@ -876,6 +956,9 @@
 		if (isMapWorkspace) url.searchParams.set('tool', mapTool);
 		else url.searchParams.delete('tool');
 		if (selectedId) url.searchParams.set('island', selectedId);
+		else url.searchParams.delete('island');
+		if (isMapWorkspace && !selectedId && countryAtoll) url.searchParams.set('atoll', countryAtoll);
+		else url.searchParams.delete('atoll');
 		if (tab === 'scenarios' || tab === 'recommendations')
 			url.searchParams.set('proposal', proposalView);
 		else url.searchParams.delete('proposal');
@@ -893,6 +976,7 @@
 		void goto(url, { shallow: true, replace: !push });
 	}
 	function setProposalView(value: string) {
+		accessExplorerOpen = false;
 		if (value === 'policy') {
 			go('explore', false);
 			exploreView = 'map';
@@ -903,6 +987,12 @@
 		go(value === 'candidates' ? 'recommendations' : 'scenarios', false);
 		proposalView = value;
 		writeLocation(true);
+	}
+	function startIslandProposal() {
+		if (!selectedId) return;
+		accessExplorerOpen = false;
+		panelOpen = false;
+		policyAction('compose');
 	}
 	function setOverviewView(value: string) {
 		overviewView = value;
@@ -927,6 +1017,11 @@
 		writeLocation(true);
 	}
 	function exploreFromOverview(id?: string, selectedAtoll?: string, lens?: PolicyLens) {
+		if (!id && !lens) {
+			if (selectedAtoll) showAtoll(selectedAtoll);
+			else showCountry();
+			return;
+		}
 		if (id) selectIsland(id, false);
 		if (selectedAtoll !== undefined) {
 			atoll = selectedAtoll;
@@ -935,7 +1030,9 @@
 		go('explore');
 		exploreView = 'map';
 		if (lens) policyLens = lens;
-		if (id || lens) policyAction('gaps');
+		accessExplorerOpen = !lens;
+		if (lens) policyAction('gaps');
+		else policyAction('close');
 		writeLocation(false);
 		if (!id && selectedAtoll) sidebarOpen = true;
 	}
@@ -978,42 +1075,66 @@
 >
 <svelte:window
 	onkeydown={(event) => {
-		if (event.key === 'Escape') cancelPick();
+		if (event.key === 'Escape') {
+			cancelPick();
+			workspaceMenuOpen = false;
+		}
+	}}
+	onclick={(event) => {
+		if (event.target instanceof Element && !event.target.closest('.workspace-menu'))
+			workspaceMenuOpen = false;
 	}}
 />
-<div class="app-shell">
+<div class="app-shell map-first-shell">
 	<a class="skip-link" href="#workspace-content">Skip to workspace</a>
-	<header class="app-header">
-		<a
-			class="brand"
-			href="/?view=overview"
-			aria-label="Mobility Sandbox home"
-			onclick={(event) => {
-				event.preventDefault();
-				go('overview');
-			}}
-			><span class="brand-icon"><Layers size={22} strokeWidth={1.7} /></span><span
-				>mobility<span class="brand-sub">SANDBOX / MALDIVES</span></span
-			></a
-		>
-		<nav aria-label="Workspace" class="navigation-island">
-			{#each tabs as item (item.id)}<Button
-					variant="ghost"
-					class={tab === item.id || (item.id === 'map' && isMapWorkspace)
-						? 'nav-item active'
-						: 'nav-item'}
-					aria-current={tab === item.id || (item.id === 'map' && isMapWorkspace)
-						? 'page'
-						: undefined}
-					onclick={() => go(item.id)}><item.icon size={16} /><span>{item.label}</span></Button
-				>{/each}
-		</nav>
-		<div class="connection" title={connection}>
-			<span class:online={connection === 'Backend connected'}></span><span
-				>{connection === 'Backend connected' ? 'Data connected' : connection}</span
-			>
+	<details class="workspace-menu" bind:open={workspaceMenuOpen}>
+		<summary aria-label="Open workspace menu"><Menu size={20} /></summary>
+		<div class="workspace-menu-content">
+			<strong>Maldives · Mobility Sandbox</strong>
+			<nav aria-label="Workspace">
+				{#each tabs as item (item.id)}<Button
+						variant="ghost"
+						aria-current={tab === item.id || (item.id === 'map' && isMapWorkspace)
+							? 'page'
+							: undefined}
+						onclick={() => {
+							if (item.id === 'map') showCountry();
+							else go(item.id);
+							workspaceMenuOpen = false;
+						}}><item.icon size={16} />{item.label}</Button
+					>{/each}
+				{#if selectedId && isMapWorkspace}
+					<Button
+						variant="ghost"
+						onclick={() => {
+							setProfileView('route');
+							workspaceMenuOpen = false;
+						}}><Route size={16} />Directions</Button
+					>
+					<Button
+						variant="ghost"
+						onclick={() => {
+							setExploreView('conditions');
+							workspaceMenuOpen = false;
+						}}><CloudSun size={16} />Weather & traffic</Button
+					>
+					<Button
+						variant="ghost"
+						onclick={() => {
+							setProposalView('edit');
+							workspaceMenuOpen = false;
+						}}><GitBranch size={16} />Network modelling</Button
+					>
+				{/if}
+			</nav>
+			<div class="connection" title={connection}>
+				<span class:online={connection === 'Backend connected'}></span>{connection ===
+				'Backend connected'
+					? 'Data connected'
+					: connection}
+			</div>
 		</div>
-	</header>
+	</details>
 	{#if fatalError}<div class="fatal" role="alert">
 			<Activity size={22} />
 			<div>
@@ -1032,26 +1153,7 @@
 					></Tabs.Root
 				><span>Understand demand and the evidence behind it</span>
 			</div>
-		{:else if isMapWorkspace}<div class="workspace-subnav map-tool-nav">
-				<span class="unified-map-title"><MapIcon size={16} />Explore & shape your islands</span>
-				<span class="map-purpose">Find a gap. Fund a change. Review the impact.</span>
-				<details class="network-tools-menu">
-					<summary>Advanced</summary><Button
-						variant="ghost"
-						size="sm"
-						onclick={() => setProposalView('edit')}>Network modelling</Button
-					>
-				</details>
-				<Button
-					variant="outline"
-					size="sm"
-					class="workspace-scope"
-					onclick={() => (sidebarOpen = true)}
-				>
-					<MapPin size={14} /><span>{selected?.properties.name ?? 'Choose an island'}</span
-					><ChevronRight size={14} />
-				</Button>
-			</div>{/if}
+		{/if}
 		{#if (tab === 'scenarios' || tab === 'recommendations') && proposalView !== 'policy'}<div
 				class="workspace-subnav tool-detail-nav"
 			>
@@ -1156,6 +1258,8 @@
 			class:panel-expanded={panelExpanded && panelOpen}
 			class:policy-panel-open={policyState.panelOpen}
 			class:conditions-panel-open={tab === 'explore' && exploreView === 'conditions'}
+			class:access-exploring={showAccessExplorer}
+			class:country-overview={!selectedId}
 			hidden={!isMapWorkspace || activeWorkspace === 'policy'}
 		>
 			<div class="map-region" aria-label="National planning map">
@@ -1164,22 +1268,28 @@
 						active={isMapWorkspace && activeWorkspace !== 'policy'}
 						{features}
 						{selectedId}
+						atollScope={countryAtoll}
+						accessibilityScores={accessScores?.scores ?? null}
+						onnational={showCountry}
 						{focusVersion}
 						{focusPoint}
 						{conditionRoute}
-						policyServiceFeatures={policyState.serviceFeatures}
-						gapFeatures={policyState.gapFeatures}
-						impactFeatures={policyState.impactFeatures}
+						policyServiceFeatures={accessExplorerOpen
+							? emptyPolicyMap
+							: policyState.serviceFeatures}
+						gapFeatures={accessExplorerOpen ? emptyPolicyMap : policyState.gapFeatures}
+						impactFeatures={accessExplorerOpen ? emptyPolicyMap : policyState.impactFeatures}
 						gapLens={policyLens}
-						policyOperations={policyState.operations}
-						pendingProposal={policyState.pending}
+						policyOperations={accessExplorerOpen ? [] : policyState.operations}
+						pendingProposal={accessExplorerOpen ? null : policyState.pending}
 						policyCalculating={policyState.calculating}
 						policyStale={policyState.stale}
 						onmoveproposal={(index, coordinates) =>
 							(policyMove = { id: ++policySequence, index, coordinates })}
-						onfocusproposal={() => policyAction('compose')}
+						onfocusproposal={startIslandProposal}
 						ondropplacement={(point, kind) => placeProposal(point, kind)}
 						oninspectgap={(properties) => {
+							accessExplorerOpen = false;
 							inspectedCell = properties;
 							policyAction('inspect');
 						}}
@@ -1219,10 +1329,34 @@
 						><span>Loading island geography and source records.</span>
 					</div>{/if}
 			</div>
+			{#if showAccessExplorer}
+				<div class="accessibility-map-overlay">
+					<CountryAccessibilityExplorer
+						{features}
+						scores={accessScores?.scores ?? null}
+						loading={accessLoading || loading}
+						error={accessError}
+						{selectedId}
+						atoll={countryAtoll}
+						onRetry={loadAccessScores}
+						onCountry={showCountry}
+						onAtoll={showAtoll}
+						onIsland={inspectIsland}
+						onPlan={startIslandProposal}
+						onAnalytics={() => go('overview')}
+						onSearch={() => (sidebarOpen = true)}
+					/>
+				</div>
+			{/if}
 			<MapPolicyWorkspace
 				islandId={selectedId}
 				islandName={selected?.properties.name ?? 'Selected island'}
-				active={isMapWorkspace && tab === 'explore' && exploreView === 'map' && !panelOpen}
+				active={isMapWorkspace &&
+					tab === 'explore' &&
+					exploreView === 'map' &&
+					!panelOpen &&
+					!!selectedId &&
+					!accessExplorerOpen}
 				lens={policyLens}
 				command={policyCommand}
 				placement={incomingPlacement}
@@ -1263,28 +1397,31 @@
 						exploreView = 'notices';
 					}}
 				/>{/if}
-			<div class="map-search-dock">
-				<Button variant="outline" class="island-search-trigger" onclick={() => (sidebarOpen = true)}
-					><Search size={18} /><span>Find an island or atoll</span></Button
-				><Button
-					variant="outline"
-					size="icon"
-					title="Focus selected island"
-					aria-label="Focus selected island"
-					onclick={() => (focusVersion += 1)}><LocateFixed size={17} /></Button
-				>
-				<Button
-					variant="outline"
-					size="icon"
-					title="Nationwide schedules"
-					aria-label="Nationwide schedules"
-					onclick={() => {
-						go('explore', false);
-						setExploreView('schedules');
-					}}><CalendarDays size={17} /></Button
-				>
-			</div>
-			{#if tab === 'explore' && !pickMode}<div
+			{#if !showAccessExplorer}<div class="map-search-dock">
+					<Button
+						variant="outline"
+						class="island-search-trigger"
+						onclick={() => (sidebarOpen = true)}
+						><Search size={18} /><span>Find an island or atoll</span></Button
+					><Button
+						variant="outline"
+						size="icon"
+						title="Focus selected island"
+						aria-label="Focus selected island"
+						onclick={() => (focusVersion += 1)}><LocateFixed size={17} /></Button
+					>
+					<Button
+						variant="outline"
+						size="icon"
+						title="Nationwide schedules"
+						aria-label="Nationwide schedules"
+						onclick={() => {
+							go('explore', false);
+							setExploreView('schedules');
+						}}><CalendarDays size={17} /></Button
+					>
+				</div>{/if}
+			{#if tab === 'explore' && selectedId && !showAccessExplorer && !pickMode}<div
 					class="nearby-movement-controls"
 					aria-label="Explore supporting tools"
 				>
@@ -1954,7 +2091,9 @@
 					{/if}
 				</Card.Root>
 			</aside>
-			{#if tab === 'explore' && !pickMode && !panelOpen}<div class="map-action-dock">
+			{#if tab === 'explore' && selectedId && !showAccessExplorer && !pickMode && !panelOpen}<div
+					class="map-action-dock"
+				>
 					<span class="dock-label">EXPLORE THIS PLACE</span><Button
 						variant="ghost"
 						disabled={loading || !selected}
@@ -1966,12 +2105,8 @@
 						variant="ghost"
 						disabled={loading || !selected}
 						onclick={() => setExploreView('places')}><Search size={17} />Find a place</Button
-					><Button
-						disabled={loading || !selected}
-						onclick={() => {
-							panelOpen = false;
-							policyAction('compose');
-						}}>Create proposal<Plus size={16} /></Button
+					><Button disabled={loading || !selected} onclick={startIslandProposal}
+						>Create proposal<Plus size={16} /></Button
 					>
 				</div>{:else if tab === 'scenarios' || tab === 'recommendations'}<div
 					class="map-action-dock proposal-dock"
