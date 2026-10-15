@@ -12,7 +12,6 @@
 		Search
 	} from '@lucide/svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
-	import { Badge } from '#lib/components/ui/badge/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
 	import * as Card from '#lib/components/ui/card/index.js';
 	import { api } from '#lib/api.js';
@@ -48,7 +47,8 @@
 	let page = $state(0);
 	let showEvidence = $state(false);
 	let controller: AbortController;
-	const number = (value: number) => new Intl.NumberFormat('en-US').format(value);
+	const numberFormatter = new Intl.NumberFormat('en-US');
+	const number = (value: number) => numberFormatter.format(value);
 	const referenceDate = $derived(
 		snapshot?.reference_date
 			? new Intl.DateTimeFormat('en-GB', {
@@ -68,9 +68,24 @@
 		scoped.filter((island) => opportunityMatches(island, lens, 'unknown')).length
 	);
 	const populationCount = $derived(scoped.filter((island) => island.population !== null).length);
+	const residentCount = $derived(
+		scoped.reduce((total, island) => total + (island.population ?? 0), 0)
+	);
+	const mappedCount = $derived(
+		scoped.reduce(
+			(total, island) =>
+				total +
+				policyDomains.reduce((count, domain) => count + island.domains[domain].mapped_count, 0),
+			0
+		)
+	);
 	const supportedCount = $derived(scoped.filter((island) => island.planning_supported).length);
 	const comparison = $derived(
-		policyDomains.map((domain) => ({ domain, ...opportunityStatusCounts(scoped, domain) }))
+		policyDomains.map((domain) => ({
+			domain,
+			...opportunityStatusCounts(scoped, domain),
+			mappedCount: scoped.reduce((total, island) => total + island.domains[domain].mapped_count, 0)
+		}))
 	);
 	const candidates = $derived(scoped.filter((island) => opportunityMatches(island, lens, queue)));
 	const searched = $derived(
@@ -88,8 +103,18 @@
 	const currentPage = $derived(Math.min(page, pageCount - 1));
 	const visible = $derived(matched.slice(currentPage * 5, currentPage * 5 + 5));
 	const scopeLabel = $derived(
-		atoll === 'all' ? (cohort === 'all' ? 'all island records' : 'residential islands') : atoll
+		atoll === 'all' ? (cohort === 'all' ? 'all islands' : 'residential islands') : atoll
 	);
+	const serviceLabels = {
+		transport: 'transport stops and terminals',
+		health: 'health facilities',
+		education: 'schools and colleges'
+	};
+	const singularServiceLabels = {
+		transport: 'stop or terminal',
+		health: 'health facility',
+		education: 'school or college'
+	};
 	const share = (count: number) => (count / Math.max(1, scoped.length)) * 100;
 
 	async function load() {
@@ -100,7 +125,7 @@
 		error = '';
 		try {
 			const result = await api<PolicyOpportunities>(
-				'planning/opportunities',
+				'planning/opportunities?include_geometry=false',
 				undefined,
 				request.signal
 			);
@@ -118,17 +143,16 @@
 		page = 0;
 	}
 	function issueSummary(island: OpportunityIsland, domain: PolicyDomain | undefined) {
-		if (!domain) return 'Inspect the available evidence before choosing an investment.';
+		if (!domain) return 'Explore the island to see where services could improve.';
 		const evidence = island.domains[domain];
-		const service =
-			domain === 'health' ? 'healthcare' : domain === 'education' ? 'education' : 'transport';
 		if (!evidence.mapped_count)
-			return `No accepted mapped ${service} locations in this snapshot. Verify local provision first.`;
+			return `No ${serviceLabels[domain]} are mapped yet. Check local services before planning.`;
+		const locations = `${number(evidence.mapped_count)} mapped ${evidence.mapped_count === 1 ? singularServiceLabels[domain] : serviceLabels[domain]}`;
 		if (evidence.status === 'unknown')
-			return `${number(evidence.mapped_count)} mapped ${service} locations, but comparable access evidence is incomplete.`;
+			return `${locations}. More information is needed to assess access.`;
 		return domain === 'transport'
-			? `Review connections and service frequency around ${number(evidence.mapped_count)} mapped transport ${evidence.mapped_count === 1 ? 'location' : 'locations'}.`
-			: `Investigate travel access and verify capacity at ${number(evidence.mapped_count)} mapped ${service} ${evidence.mapped_count === 1 ? 'location' : 'locations'}.`;
+			? `${locations}. Check connections and how often services run.`
+			: `${locations}. Check travel times and available capacity.`;
 	}
 	onMount(() => {
 		void load();
@@ -140,41 +164,50 @@
 	{#if error}
 		<div class="opportunity-error" role="alert">
 			<div>
-				<strong>Service-gap screening is unavailable.</strong>
-				<p>{error}</p>
+				<strong>Island priorities could not be loaded.</strong>
+				<p>Please try again to see the islands and services to review.</p>
+				<details>
+					<summary>Error details</summary>
+					<p>{error}</p>
+				</details>
 			</div>
-			<Button size="sm" variant="outline" onclick={load}>Retry screening</Button>
+			<Button size="sm" variant="outline" onclick={load}>Try again</Button>
 		</div>
 	{:else}
 		<div class="policy-section-heading">
 			<div>
-				<span class="section-eyebrow">From evidence to action</span>
-				<h2>Where should we look closer?</h2>
-				<p>Compare service signals, then explore the places behind the numbers.</p>
+				<span class="section-eyebrow">Where to focus</span>
+				<h2>Which islands need a closer look?</h2>
+				<p>See the numbers, then open an island on the map to plan improvements.</p>
 			</div>
 			<Button
 				variant="outline"
 				size="sm"
 				onclick={() => onExplore(undefined, atoll === 'all' ? undefined : atoll, lens)}
-				><MapPin size={14} /> See service-gap map</Button
+				><MapPin size={14} /> Explore on map</Button
 			>
 		</div>
 		<div class="policy-summary" aria-live="polite">
 			<div class="summary-primary">
-				<span class="summary-dot"></span>
 				<strong>{loading ? '—' : number(reviewCount)}</strong>
-				<span>islands to investigate</span>
+				<span>islands to review</span>
 			</div>
-			<div title="Islands with a resident estimate in this selection">
-				<strong>{loading ? '—' : `${number(populationCount)} / ${number(scoped.length)}`}</strong>
-				<span>with resident evidence</span>
+			<div>
+				<strong
+					>{loading
+						? '—'
+						: populationCount
+							? number(Math.round(residentCount))
+							: 'Not available'}</strong
+				>
+				<span>residents recorded</span>
 			</div>
-			<div title="Islands with resident origins and a planning network available">
-				<strong>{loading ? '—' : number(supportedCount)}</strong>
-				<span>ready for impact modeling</span>
+			<div>
+				<strong>{loading ? '—' : number(mappedCount)}</strong>
+				<span>service locations mapped</span>
 			</div>
 		</div>
-		<div class="sector-comparison" aria-label="Compare service screening evidence">
+		<div class="sector-comparison" aria-label="Compare island services">
 			{#each comparison as sector (sector.domain)}
 				{@const Icon = icons[sector.domain]}
 				<Card.Root
@@ -188,13 +221,13 @@
 					<div class="sector-visual">
 						<div class="sector-value">
 							<strong>{loading ? '—' : number(sector.review)}</strong>
-							<span>islands to<br />investigate</span>
+							<span>islands to review</span>
 						</div>
 						<div class="sector-donut">
 							<svg
 								viewBox="0 0 100 100"
 								role="img"
-								aria-label={`${policyDomainLabels[sector.domain]}: ${sector.review} review signals, ${sector.stronger_evidence} with stronger mapped evidence, ${sector.unknown} with insufficient evidence out of ${scoped.length} islands`}
+								aria-label={`${policyDomainLabels[sector.domain]}: ${sector.review} islands to review, ${sector.stronger_evidence} with no review flag, ${sector.unknown} needing more data out of ${scoped.length} islands`}
 							>
 								<circle class="donut-track" cx="50" cy="50" r="40" />
 								{#if !loading && scoped.length}
@@ -218,20 +251,27 @@
 								{/if}
 							</svg>
 							<div class="donut-center" aria-hidden="true">
-								<strong>{loading ? '—' : `${Math.round(share(sector.review))}%`}</strong><span
-									>review</span
-								>
+								<strong>{loading ? '—' : number(scoped.length)}</strong><span>islands</span>
 							</div>
 						</div>
 					</div>
 					<div class="sector-context">
 						<div>
-							<span><i class="strong-key"></i>Stronger evidence</span><strong
+							<span
+								>{sector.domain === 'transport'
+									? 'Mapped stops and terminals'
+									: sector.domain === 'health'
+										? 'Mapped health facilities'
+										: 'Mapped schools and colleges'}</span
+							><strong>{loading ? '—' : number(sector.mappedCount)}</strong>
+						</div>
+						<div>
+							<span><i class="strong-key"></i>No review flag</span><strong
 								>{loading ? '—' : number(sector.stronger_evidence)}</strong
 							>
 						</div>
 						<div>
-							<span><i class="unknown-key"></i>Insufficient evidence</span><strong
+							<span><i class="unknown-key"></i>Need more data</span><strong
 								>{loading ? '—' : number(sector.unknown)}</strong
 							>
 						</div>
@@ -252,21 +292,24 @@
 			{/each}
 		</div>
 		<div class="screening-legend">
-			<span><i class="review-key"></i> Review signal</span><span
-				><i class="strong-key"></i> Stronger mapped evidence</span
-			><span><i class="unknown-key"></i> Insufficient evidence</span>
+			<span><i class="review-key"></i> Review access</span><span
+				><i class="strong-key"></i> No review flag</span
+			><span><i class="unknown-key"></i> Need more data</span>
 		</div>
 		<p class="screening-definition">
-			A review signal is a modeled or mapped reason to investigate. It does not prove that a service
-			is missing. Unknown areas need better evidence before investment decisions.
+			These numbers highlight where to check access. Missing data does not mean a service is
+			missing.
+			{#if !loading && populationCount < scoped.length}
+				Resident totals cover {number(populationCount)} of {number(scoped.length)} islands.
+			{/if}
 		</p>
 
 		<Card.Root class="priority-card">
 			<div class="priority-heading">
 				<div>
-					<span class="section-eyebrow">Your investigation queue</span>
+					<span class="section-eyebrow">Choose an island</span>
 					<h2>
-						{queue === 'review' ? 'Investigate these islands' : 'Resolve these evidence gaps'}
+						{queue === 'review' ? 'Islands to review' : 'Islands needing more data'}
 					</h2>
 					<p>{lens === 'overall' ? 'All services' : policyDomainLabels[lens]} · {scopeLabel}</p>
 				</div>
@@ -277,7 +320,7 @@
 					>{/if}
 			</div>
 			<div class="priority-toolbar">
-				<div class="queue-controls" aria-label="Investigation type">
+				<div class="queue-controls" aria-label="Island priorities">
 					<Button
 						variant={queue === 'review' ? 'secondary' : 'ghost'}
 						size="sm"
@@ -285,7 +328,7 @@
 						onclick={() => {
 							queue = 'review';
 							page = 0;
-						}}>Review signals <span>{number(reviewCount)}</span></Button
+						}}>Review access <span>{number(reviewCount)}</span></Button
 					><Button
 						variant={queue === 'unknown' ? 'secondary' : 'ghost'}
 						size="sm"
@@ -293,7 +336,7 @@
 						onclick={() => {
 							queue = 'unknown';
 							page = 0;
-						}}>Missing evidence <span>{number(unknownCount)}</span></Button
+						}}>Need more data <span>{number(unknownCount)}</span></Button
 					>
 				</div>
 				<div class="priority-search">
@@ -305,23 +348,21 @@
 					/>
 				</div>
 			</div>
-			{#if loading}<div class="priority-empty" role="status">
-					Comparing service evidence across the islands…
-				</div>
+			{#if loading}<div class="priority-empty" role="status">Loading island services…</div>
 			{:else if !visible.length}<div class="priority-empty">
 					<strong
 						>{search
 							? 'No islands match your search.'
 							: queue === 'review'
-								? 'No review signals in this selection.'
-								: 'No evidence gaps in this selection.'}</strong
+								? 'No islands are flagged for review in this selection.'
+								: 'No islands need more data in this selection.'}</strong
 					>
 					<p>
 						{search
 							? 'Try another island or clear the search.'
 							: queue === 'review'
-								? 'Check missing evidence before drawing a conclusion about service coverage.'
-								: 'Inspect the map to examine the available service evidence.'}
+								? 'Check islands needing more data before deciding where services are sufficient.'
+								: 'Open the map to see the services available on each island.'}
 					</p>
 					{#if !search && queue === 'review' && unknownCount}<Button
 							variant="outline"
@@ -329,7 +370,7 @@
 							onclick={() => {
 								queue = 'unknown';
 								page = 0;
-							}}>Review missing evidence</Button
+							}}>See islands needing more data</Button
 						>{/if}
 				</div>
 			{:else}<div class="priority-rows">
@@ -337,29 +378,33 @@
 						{@const relevantDomains = (lens === 'overall' ? policyDomains : [lens]).filter(
 							(domain) => island.domains[domain].status === queue
 						)}
-						{@const reasons = relevantDomains.flatMap((domain) => island.domains[domain].reasons)}
 						<div class="priority-row" data-policy-opportunity-id={island.island_id}>
 							<div class="priority-island">
 								<span class="island-mark" aria-hidden="true"><MapPin size={17} /></span>
-								<div><strong>{island.name}</strong><span>{island.atoll}</span></div>
+								<div>
+									<strong>{island.name}</strong><span>{island.atoll}</span>
+									<span class="compact-residents"
+										>{island.population === null
+											? 'Resident count not available'
+											: `${number(Math.round(island.population))} recorded residents`}</span
+									>
+								</div>
 							</div>
 							<div class="priority-issue">
 								<div class="issue-labels">
 									{#each relevantDomains as domain (domain)}<span
 											class={`issue-chip ${queue === 'unknown' ? 'unknown-chip' : ''}`}
 											>{policyDomainLabels[domain]}
-											{queue === 'review' ? 'review' : 'unknown'}</span
+											{queue === 'review' ? 'access' : 'data needed'}</span
 										>{/each}
 								</div>
-								<p title={reasons.join(' ')}>{issueSummary(island, relevantDomains[0])}</p>
+								<p>{issueSummary(island, relevantDomains[0])}</p>
 							</div>
-							<div class="priority-context" title={island.population_basis}>
+							<div class="priority-context">
 								{#if island.population !== null}<strong
 										>{number(Math.round(island.population))}</strong
 									><span>recorded residents</span>{:else}<span
-										>Resident estimate<br />unavailable</span
-									>{/if}{#if island.planning_supported}<Badge variant="outline"
-										>Impact model available</Badge
+										>Resident count<br />not available</span
 									>{/if}
 							</div>
 							<Button
@@ -376,11 +421,7 @@
 				<span
 					>{matched.length
 						? `${number(currentPage * 5 + 1)}–${number(Math.min((currentPage + 1) * 5, matched.length))} of ${number(matched.length)} islands`
-						: 'No islands to display'}<span class="ordering-note">
-						· {ranked
-							? 'Higher screening signals first'
-							: 'Alphabetical; no meaningful score ranking'}</span
-					></span
+						: 'No islands to display'}</span
 				>
 				<div>
 					<Button
@@ -406,11 +447,16 @@
 				aria-expanded={showEvidence}
 				aria-controls="policy-screening-evidence"
 				onclick={() => (showEvidence = !showEvidence)}
-				><CircleHelp size={14} /> Sources and interpretation</Button
-			><span>Screening reference{referenceDate ? ` · ${referenceDate}` : ''}</span>
+				><CircleHelp size={14} /> How this is calculated</Button
+			>
 		</div>
 		{#if showEvidence}<div class="evidence-detail" id="policy-screening-evidence">
 				<h3>Use the map to investigate, then test the investment.</h3>
+				<p>
+					{number(scoped.length)} islands in this selection · {number(populationCount)} with resident
+					counts · {number(supportedCount)} with detailed proposal forecasts available.
+					{referenceDate ? `Data reference: ${referenceDate}.` : ''}
+				</p>
 				<p>
 					Screening combines mapped transport, health and education records with available resident
 					and planning evidence. A stronger evidence signal describes the available records; it does
@@ -421,6 +467,13 @@
 					An available service index below 60 out of 100 is flagged for review. The overall screen
 					uses the weakest known service index. Missing mapped records stay unknown and are not
 					counted as measured service failures.
+				</p>
+				<p>
+					{ranked
+						? 'Islands with higher review scores appear first.'
+						: 'Islands are listed alphabetically because the available scores do not support a useful ranking.'}
+					Mapped-location totals count recorded transport stops and terminals, health facilities, and
+					schools and colleges. They do not measure the number or quality of services running there.
 				</p>
 				<p>
 					Resident totals remain unavailable where the source does not supply an estimate. Detailed
@@ -485,32 +538,34 @@
 		box-shadow: 0 2px 3px #392b5903;
 	}
 	.policy-summary {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 12px 25px;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 12px;
 		margin-bottom: 21px;
 	}
 	.policy-summary > div {
 		display: flex;
-		align-items: center;
-		gap: 5px;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 7px;
+		padding: 18px 20px;
+		border: 1px solid var(--policy-line);
+		border-radius: 14px;
+		background: #fff;
 		font-size: 11px;
 		color: var(--policy-muted);
 	}
+	.policy-summary > .summary-primary {
+		border-color: #e7dcf8;
+		background: #f7f3fd;
+	}
 	.policy-summary strong {
 		color: #514563;
-		font-size: 12px;
-		font-weight: 550;
+		font-size: 28px;
+		font-weight: 450;
+		letter-spacing: -1px;
+		line-height: 1.2;
 		font-variant-numeric: tabular-nums;
-	}
-	.summary-dot {
-		width: 7px;
-		height: 7px;
-		margin-right: 2px;
-		border-radius: 50%;
-		background: var(--policy-purple);
-		box-shadow: 0 0 0 3px #8762d811;
 	}
 	.sector-comparison {
 		display: grid;
@@ -824,6 +879,9 @@
 		font-size: 10px;
 		margin-top: 4px;
 	}
+	.priority-island > div > .compact-residents {
+		display: none;
+	}
 	.issue-labels {
 		display: flex;
 		gap: 5px;
@@ -862,15 +920,6 @@
 	}
 	.priority-context > span {
 		display: block;
-	}
-	.priority-context :global([data-slot='badge']) {
-		font-size: 8px;
-		padding: 3px 5px;
-		margin-top: 5px;
-		white-space: normal;
-		border-color: #dfefe8;
-		color: #38977b;
-		background: #f3faf7;
 	}
 	:global(.policy-overview .priority-row > button) {
 		font-size: 10px;
@@ -930,9 +979,6 @@
 		color: var(--policy-muted);
 		font-size: 11px;
 	}
-	.policy-evidence > span {
-		font-size: 10px;
-	}
 	.evidence-detail {
 		padding: 22px 25px;
 		background: #f2edf9;
@@ -969,6 +1015,14 @@
 	.opportunity-error p {
 		margin: 6px 0 0;
 	}
+	.opportunity-error details {
+		margin-top: 10px;
+		font-size: 11px;
+		overflow-wrap: anywhere;
+	}
+	.opportunity-error summary {
+		cursor: pointer;
+	}
 	@media (max-width: 1100px) {
 		.priority-row {
 			grid-template-columns: minmax(125px, 0.9fr) minmax(130px, 1.7fr) auto;
@@ -976,6 +1030,9 @@
 		}
 		.priority-context {
 			display: none;
+		}
+		.priority-island > div > .compact-residents {
+			display: block;
 		}
 		:global(.policy-overview .sector-card) {
 			padding: 20px 18px 8px;
@@ -994,9 +1051,6 @@
 		.sector-context > div {
 			font-size: 10px;
 		}
-		.ordering-note {
-			display: none;
-		}
 	}
 	@media (max-width: 740px) {
 		.policy-overview {
@@ -1011,15 +1065,22 @@
 			font-size: 22px;
 		}
 		.policy-summary {
-			gap: 9px 17px;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 9px;
 			margin-bottom: 18px;
 		}
 		.policy-summary > .summary-primary {
-			width: 100%;
+			grid-column: 1 / -1;
+			flex-direction: row;
+			align-items: center;
+			gap: 10px;
 		}
-		.policy-summary > div,
-		.policy-summary strong {
+		.policy-summary > div {
+			padding: 15px 13px;
 			font-size: 10px;
+		}
+		.policy-summary strong {
+			font-size: 23px;
 		}
 		.sector-comparison {
 			grid-template-columns: minmax(0, 1fr);
@@ -1040,12 +1101,8 @@
 		.sector-value strong {
 			font-size: 43px;
 		}
-		.sector-value > span br {
-			display: none;
-		}
 		.sector-context {
-			grid-template-columns: 1fr 1fr;
-			gap: 17px;
+			gap: 9px;
 			padding-bottom: 12px;
 		}
 		.sector-context > div {
@@ -1107,11 +1164,6 @@
 		}
 		.priority-footer > div {
 			gap: 7px;
-		}
-		.policy-evidence > span {
-			text-align: right;
-			font-size: 9px;
-			max-width: 130px;
 		}
 		.evidence-detail {
 			padding: 19px;

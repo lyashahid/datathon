@@ -36,6 +36,32 @@ export interface Facility {
 export interface TransportFeature extends Facility {
 	geometry: Geometry;
 }
+export interface AccessibilityAssessment {
+	score: number;
+	out_of: number;
+	label: string;
+	summary: string;
+	reasons: { domain: string; score: number; text: string }[];
+	coverage: {
+		status: string;
+		label: string;
+		note: string;
+		population_available: boolean;
+		scored_domains: number;
+		total_domains: number;
+	};
+	components: Record<
+		string,
+		{
+			score: number;
+			facility_count?: number;
+			bus_stop_count?: number;
+			airport_count?: number;
+			marine_terminal_count?: number;
+		}
+	>;
+	limitations: string[];
+}
 export interface Accessibility {
 	island_id: string;
 	score: number;
@@ -44,6 +70,8 @@ export interface Accessibility {
 	missing_data: string[];
 	explanation: string[] | string;
 	config: Record<string, unknown>;
+	assessment?: AccessibilityAssessment;
+	population?: { total: number | null; year: number | null };
 }
 export interface IslandProfile {
 	island: {

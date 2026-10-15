@@ -7,7 +7,9 @@ import math
 from pathlib import Path
 from typing import Any
 
+from app.accessibility.assessment import ASSESSMENT_VERSION, island_assessment
 from app.accessibility.config import DEFAULT_ACCESSIBILITY_CONFIG, AccessibilityConfig
+from app.accessibility.evidence import scored_facilities
 from app.data.cache import FileCache
 from app.data.population import POPULATION_TRANSFORM_VERSION, attach_population, population_summary
 from app.routing.engine import RoutingRepository
@@ -29,9 +31,13 @@ class AccessibilityService:
         self._default_artifact = None
         self.source_fingerprint = {}
         for relative in (
-            "normalized/islands.geojson", "normalized/population.json",
-            "normalized/facilities.json", "normalized/transport.json",
-            "derived/demand-anchors.json", "graphs/land.json", "graphs/marine.json",
+            "normalized/islands.geojson",
+            "normalized/population.json",
+            "normalized/facilities.json",
+            "normalized/transport.json",
+            "derived/demand-anchors.json",
+            "graphs/land.json",
+            "graphs/marine.json",
         ):
             path = self.cache.path(relative)
             if path.exists():
@@ -66,8 +72,31 @@ class AccessibilityService:
                 and captured.get("config") == self.config()
                 and isinstance(captured.get("scores"), list)
                 and len(captured["scores"]) == len(self.islands)
+                and {row.get("island_id") for row in captured["scores"]} == set(self.islands)
+                and all(
+                    isinstance(row.get("population"), dict)
+                    and {"health", "education"}.issubset(row.get("domains", {}))
+                    for row in captured["scores"]
+                )
             )
-            self._default_artifact = captured if valid else self.score_national()
+            if valid:
+                # Frozen route results remain valid. Refresh transport evidence and
+                # human explanations in memory; never rewrite the source snapshot.
+                results = [
+                    self._build_result(
+                        row["island_id"],
+                        DEFAULT_ACCESSIBILITY_CONFIG,
+                        row["population"],
+                        row["domains"]["health"],
+                        row["domains"]["education"],
+                    )
+                    for row in captured["scores"]
+                ]
+                self._default_artifact = self._national_artifact(
+                    results, DEFAULT_ACCESSIBILITY_CONFIG
+                )
+            else:
+                self._default_artifact = self.score_national()
         return self._default_artifact
 
     def score_island(
@@ -99,6 +128,16 @@ class AccessibilityService:
             "education",
             population,
         )
+        return self._build_result(island_id, policy, population, health, education)
+
+    def _build_result(
+        self,
+        island_id: str,
+        policy: AccessibilityConfig,
+        population: dict[str, Any],
+        health: dict[str, Any],
+        education: dict[str, Any],
+    ) -> dict[str, Any]:
         transport = self._score_transport(island_id, policy, population)
         domain_weights = self._population_weighted_domain_weights(policy, population)
         overall = (
@@ -114,7 +153,7 @@ class AccessibilityService:
                 + (["resident_population"] if population["total"] is None else [])
             )
         )
-        return {
+        result = {
             "island_id": island_id,
             "score": round(overall, 2),
             "config": policy.model_dump(mode="json"),
@@ -129,14 +168,26 @@ class AccessibilityService:
             "confidence": round(max(0.0, 1.0 - 0.15 * len(missing_data)), 3),
             "explanation": self._explanation(health, education, transport, missing_data),
         }
+        result["assessment"] = island_assessment(
+            result,
+            policy,
+            [item for item in self.facilities if item.get("island_id") == island_id],
+        )
+        return result
 
     def score_national(self, config: AccessibilityConfig | None = None) -> dict[str, Any]:
         policy = config or DEFAULT_ACCESSIBILITY_CONFIG
         scores = [self.score_island(island_id, policy) for island_id in sorted(self.islands)]
         results = [score for score in scores if score is not None]
+        return self._national_artifact(results, policy)
+
+    def _national_artifact(
+        self, results: list[dict[str, Any]], policy: AccessibilityConfig
+    ) -> dict[str, Any]:
         values = [float(score["score"]) for score in results]
         return {
             "version": "accessibility-v1",
+            "assessment_version": ASSESSMENT_VERSION,
             "population_transform_version": POPULATION_TRANSFORM_VERSION,
             "source_fingerprint": self.source_fingerprint,
             "config": policy.model_dump(mode="json"),
@@ -146,6 +197,12 @@ class AccessibilityService:
                 "average_score": round(sum(values) / len(values), 2) if values else 0.0,
                 "zero_score_count": sum(value == 0 for value in values),
                 "missing_data_score_count": sum(bool(score["missing_data"]) for score in results),
+                "limited_evidence_island_count": sum(
+                    score["assessment"]["coverage"]["status"] == "limited" for score in results
+                ),
+                "population_available_island_count": sum(
+                    score["assessment"]["coverage"]["population_available"] for score in results
+                ),
             },
         }
 
@@ -159,13 +216,7 @@ class AccessibilityService:
         domain: str,
         population: dict[str, Any],
     ) -> dict[str, Any]:
-        candidates = [
-            facility
-            for facility in facilities
-            if facility.get("category") in quality_weights
-            and facility.get("geometry")
-            and facility.get("match_status") != "osm_provisional_review_required"
-        ]
+        candidates = scored_facilities(facilities, quality_weights)
         missing_data: list[str] = []
         if not candidates:
             missing_data.append("no_geocoded_facility")
@@ -267,23 +318,10 @@ class AccessibilityService:
         policy: AccessibilityConfig,
         population: dict[str, Any],
     ) -> dict[str, Any]:
-        airport = any(
-            item.get("category") == "airport"
-            for item in self.facilities
-            if item.get("island_id") == island_id
-        )
-        bus = any(
-            item.get("island_id") == island_id
-            and item.get("category") in {"bus_stop", "bus_station", "public_transport"}
-            for item in self.transport
-        )
-        marine_nodes = [
-            item
-            for item in self.routing.marine.get("nodes", [])
-            if item.get("island_id") == island_id
-            and item.get("category") in {"ferry_terminal", "pier"}
-        ]
-        ferry = bool(marine_nodes)
+        counts = self._transport_evidence(island_id)
+        airport = bool(counts["airport_count"])
+        bus = bool(counts["bus_stop_count"])
+        ferry = bool(counts["marine_terminal_count"])
         ferry_provisional = ferry and not policy.include_unverified_marine
         ferry_score = 1.0 if ferry and policy.include_unverified_marine else 0.0
         values = {
@@ -311,10 +349,37 @@ class AccessibilityService:
             "base_score": round(base_score, 2),
             "density_factor": round(density_factor, 3),
             "components": values,
+            "mapped_counts": counts,
             "population_demand": population.get("total", 0),
             "missing_data": missing_data,
             "ferry_access": (
                 "provisional" if ferry_provisional else ("available" if ferry else "none")
+            ),
+        }
+
+    def _transport_evidence(self, island_id: str) -> dict[str, int]:
+        def is_bus(item: dict[str, Any]) -> bool:
+            tags = item.get("tags") or {}
+            return (
+                item.get("category") in {"bus_stop", "bus_station"}
+                or tags.get("bus") in {"yes", "designated"}
+                or tags.get("highway") == "bus_stop"
+                or tags.get("amenity") == "bus_station"
+            )
+
+        return {
+            "airport_count": sum(
+                item.get("category") == "airport"
+                for item in self.facilities
+                if item.get("island_id") == island_id
+            ),
+            "bus_stop_count": sum(
+                is_bus(item) for item in self.transport if item.get("island_id") == island_id
+            ),
+            "marine_terminal_count": sum(
+                item.get("category") in {"ferry_terminal", "pier"}
+                for item in self.routing.marine.get("nodes", [])
+                if item.get("island_id") == island_id
             ),
         }
 
@@ -419,7 +484,9 @@ class AccessibilityService:
             not explanation[-1].startswith(("population_pressure", "population_density_pressure"))
             and missing_data
         ):
-            explanation.append("Missing data contributes zero under the active configuration.")
+            explanation.append(
+                "Unmapped or unverified services earn no points; this is not proof of no access."
+            )
         return explanation
 
     def _read_json(self, relative_path: str, default: Any) -> Any:

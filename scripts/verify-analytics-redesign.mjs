@@ -107,7 +107,7 @@ try {
 		async () => {
 			await expect(dashboard.locator('.footprint-card')).toBeVisible();
 			await expect(dashboard.locator('.atoll-bar')).toHaveCount(8);
-			await expect(priorities).toContainText('Insufficient evidence');
+			await expect(priorities).toContainText('Need more data');
 			const size = await noOverflow();
 			await page.evaluate(() => window.scrollTo(0, 0));
 			await page.screenshot({ path: path.join(output, 'after-desktop-top.png') });
@@ -299,8 +299,7 @@ try {
 					(name) => target.domains[name].status === 'review'
 				) ?? 'transport';
 			await priorities.locator(`.sector-${domain} .sector-action`).click();
-			const queue =
-				target.domains[domain].status === 'review' ? 'Review signals' : 'Missing evidence';
+			const queue = target.domains[domain].status === 'review' ? 'Review access' : 'Need more data';
 			await priorities.getByRole('button', { name: new RegExp(`^${queue}`) }).click();
 			await priorities.getByLabel('Search priority islands', { exact: true }).fill(target.name);
 			const targetRow = priorities.locator(`[data-policy-opportunity-id="${target.island_id}"]`);

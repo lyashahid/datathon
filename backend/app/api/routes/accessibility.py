@@ -22,7 +22,10 @@ def get_accessibility(request: Request) -> AccessibilityService:
     return request.app.state.accessibility
 
 
-@router.post("/accessibility/score")
+@router.post(
+    "/accessibility/score",
+    summary="Calculate an island access index with plain-language reasons and evidence coverage",
+)
 def score_accessibility(
     request: AccessibilityScoreRequest,
     service: AccessibilityService = Depends(get_accessibility),
@@ -33,7 +36,10 @@ def score_accessibility(
     return result
 
 
-@router.get("/accessibility/summary")
+@router.get(
+    "/accessibility/summary",
+    summary="Access indices, reasons and evidence coverage for every island",
+)
 def accessibility_summary(
     service: AccessibilityService = Depends(get_accessibility),
 ) -> dict[str, Any]:

@@ -90,8 +90,10 @@ def get_opportunities(
 
 
 @router.get("/opportunities")
-def opportunities(service: OpportunityService = Depends(get_opportunities)) -> dict[str, Any]:
-    return service.overview()
+def opportunities(
+    include_geometry: bool = True, service: OpportunityService = Depends(get_opportunities)
+) -> dict[str, Any]:
+    return service.overview(include_geometry=include_geometry)
 
 
 @router.post("/opportunities/suggest")

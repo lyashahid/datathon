@@ -189,7 +189,7 @@ try {
 		['transport', 'health', 'education'].find(
 			(domain) => target.domains[domain].status === 'review'
 		) ?? 'transport';
-	const queue = target.domains[domain].status === 'review' ? 'Review signals' : 'Missing evidence';
+	const queue = target.domains[domain].status === 'review' ? 'Review access' : 'Need more data';
 	const baselineResponse = await page.request.get(
 		`${baseURL}/api/backend/planning/baseline?island_id=${encodeURIComponent(target.island_id)}`
 	);
@@ -205,7 +205,7 @@ try {
 		'Analytics distinguishes review signals from missing evidence and hands the chosen service to the same map',
 		async () => {
 			await expect(
-				priorities.locator('.screening-legend').getByText('Insufficient evidence', { exact: true })
+				priorities.locator('.screening-legend').getByText('Need more data', { exact: true })
 			).toBeVisible();
 			await selectSector(domain);
 			await priorities.getByRole('button', { name: new RegExp(`^${queue}`) }).click();

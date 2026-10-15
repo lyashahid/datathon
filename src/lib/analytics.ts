@@ -22,6 +22,8 @@ export interface IslandAnalytics {
 	score: number | null;
 	confidence: number | null;
 	missingData: string[] | null;
+	assessment: Accessibility['assessment'] | null;
+	population: Accessibility['population'] | null;
 }
 
 export interface FacilityInventory {
@@ -30,6 +32,15 @@ export interface FacilityInventory {
 	category: string;
 	located: boolean;
 	contextOnly: boolean;
+}
+
+export function hasMissingAccessibilityData(row: IslandAnalytics): boolean {
+	return (
+		row.missingData === null ||
+		row.missingData.some(
+			(flag) => flag !== 'population_pressure' && flag !== 'population_density_pressure'
+		)
+	);
 }
 
 export interface AtollInventory {
@@ -98,7 +109,9 @@ export function islandAnalytics(
 			locatedCount: 0,
 			score: score && Number.isFinite(score.score) ? score.score : null,
 			confidence: score && Number.isFinite(score.confidence) ? score.confidence : null,
-			missingData: score?.missing_data ?? null
+			missingData: score?.missing_data ?? null,
+			assessment: score?.assessment ?? null,
+			population: score?.population ?? null
 		});
 	}
 	for (const facility of inventory) {

@@ -86,7 +86,7 @@ class OpportunityService:
             "populationSpatialDistribution", "Source-backed planning origin weights"
         )
 
-    def overview(self) -> dict[str, Any]:
+    def overview(self, *, include_geometry: bool = True) -> dict[str, Any]:
         accessibility = self.accessibility
         scores = (
             {row["island_id"]: row for row in accessibility.default_artifact().get("scores", [])}
@@ -232,28 +232,29 @@ class OpportunityService:
                 "missing_data": score.get("missing_data", []),
             }
             islands.append(island)
-            map_features.append(
-                {
-                    "type": "Feature",
-                    "geometry": geometry,
-                    "properties": {
-                        "island_id": island_id,
-                        "name": island["name"],
-                        "overall_gap": island["priority_score"] / 100
-                        if island["priority_score"] is not None
-                        else None,
-                        **{
-                            f"{domain}_gap": round(1 - domains[domain]["score"] / 100, 4)
-                            if domains[domain]["score"] is not None
-                            else None
-                            for domain in DOMAINS
+            if include_geometry:
+                map_features.append(
+                    {
+                        "type": "Feature",
+                        "geometry": geometry,
+                        "properties": {
+                            "island_id": island_id,
+                            "name": island["name"],
+                            "overall_gap": island["priority_score"] / 100
+                            if island["priority_score"] is not None
+                            else None,
+                            **{
+                                f"{domain}_gap": round(1 - domains[domain]["score"] / 100, 4)
+                                if domains[domain]["score"] is not None
+                                else None
+                                for domain in DOMAINS
+                            },
+                            "status": "review"
+                            if any(d["status"] == "review" for d in domains.values())
+                            else ("unknown" if not known else "stronger_evidence"),
                         },
-                        "status": "review"
-                        if any(d["status"] == "review" for d in domains.values())
-                        else ("unknown" if not known else "stronger_evidence"),
-                    },
-                }
-            )
+                    }
+                )
         islands.sort(
             key=lambda island: (
                 -(island["priority_score"] if island["priority_score"] is not None else -1),

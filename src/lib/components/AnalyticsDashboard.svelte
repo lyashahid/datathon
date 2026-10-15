@@ -22,11 +22,13 @@
 	import { api } from '#lib/api.js';
 	import PolicyOpportunityOverview from '#lib/components/PolicyOpportunityOverview.svelte';
 	import MobilityPulse from '#lib/components/MobilityPulse.svelte';
+	import IslandAccessibilityDetails from '#lib/components/IslandAccessibilityDetails.svelte';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
 	import {
 		atollInventory,
 		facilityColors,
 		facilityLabels,
+		hasMissingAccessibilityData,
 		inventoryForScope,
 		inventoryFromFeatures,
 		islandAnalytics,
@@ -60,6 +62,7 @@
 	let ascending = $state(false);
 	let page = $state(0);
 	let showMethod = $state(false);
+	let selectedScoreId = $state<string | null>(null);
 	let controller: AbortController;
 
 	const numberFormatter = new Intl.NumberFormat('en-US');
@@ -78,6 +81,7 @@
 
 	const inventory = $derived(inventoryFromFeatures(infrastructure));
 	const rows = $derived(islandAnalytics(features, inventory, accessibility));
+	const selectedScore = $derived(rows.find((row) => row.id === selectedScoreId));
 	const atolls = $derived([...new Set(rows.map((row) => row.atoll))].sort());
 	const cohortRows = $derived(
 		rows.filter((row) => cohort === 'all' || row.category === 'Residential Island')
@@ -134,7 +138,7 @@
 			? scoredRows.reduce((sum, row) => sum + (row.score ?? 0), 0) / scoredRows.length
 			: null
 	);
-	const missingDataCount = $derived(scoredRows.filter((row) => row.missingData?.length).length);
+	const missingDataCount = $derived(scopeRows.filter(hasMissingAccessibilityData).length);
 	const distribution = $derived(scoreDistribution(scopeRows));
 	const distributionMax = $derived(Math.max(1, ...distribution.bins.map((bin) => bin.count)));
 	const normalizedSearch = $derived(search.toLowerCase().trim());
@@ -147,7 +151,7 @@
 					(tableFilter === 'zero'
 						? row.score === 0
 						: tableFilter === 'missing'
-							? !!row.missingData?.length
+							? hasMissingAccessibilityData(row)
 							: (row.facilities[tableFilter] ?? 0) > 0);
 				return matchesSearch && matchesFilter;
 			})
@@ -575,14 +579,14 @@
 		<Card.Root class="analytics-card access-card">
 			<div class="card-heading">
 				<div>
-					<h2>Accessibility screening</h2>
-					<p>Modeled index · current data and configuration</p>
+					<h2>Accessibility score</h2>
+					<p>Health, education and transport access</p>
 				</div>
 				<Badge variant="outline">Out of 100</Badge>
 			</div>
 			<div class="access-metric">
 				<strong>{averageScore === null ? '—' : decimal(averageScore)}</strong><span
-					>mean across {number(scoredRows.length)} scored islands</span
+					>average across {number(scoredRows.length)} islands</span
 				>
 			</div>
 			<div
@@ -603,9 +607,11 @@
 				{/each}
 			</div>
 			<p class="access-note">
-				<span class="note-dot"></span> A zero score can reflect missing mapped evidence. Use this as a
-				screening aid.
+				<span class="note-dot"></span> Missing data can lower a score. Open an island to see why.
 			</p>
+			<Button variant="outline" size="sm" onclick={openRecords}
+				>View island scores <ArrowRight size={14} /></Button
+			>
 		</Card.Root>
 	</div>
 
@@ -637,10 +643,10 @@
 	<details class="inventory-disclosure">
 		<summary
 			><div>
-				<h2>Go deeper into the evidence</h2>
-				<p>Explore the island catalogue, data gaps and source methodology</p>
+				<h2>Island accessibility scores</h2>
+				<p>{number(scopeRows.length)} islands · See each score and the reasons behind it</p>
 			</div>
-			<span class="disclosure-action">View records <ChevronDown size={16} /></span></summary
+			<span class="disclosure-action">View scores <ChevronDown size={16} /></span></summary
 		>
 		<div class="data-gap-grid">
 			<Card.Root class="analytics-card mini-card"
@@ -651,9 +657,9 @@
 			>
 			<Card.Root class="analytics-card mini-card"
 				><span class="mini-icon green"><CircleHelp size={17} /></span>
-				<h2>Model data gaps</h2>
+				<h2>Need more data</h2>
 				<strong>{accessibility ? number(missingDataCount) : '—'}</strong>
-				<p>Scored islands with missing inputs</p>
+				<p>Islands with incomplete information</p>
 				<Button variant="ghost" size="sm" class="mini-action" onclick={() => filterRows('missing')}
 					>Review islands <ArrowRight size={12} /></Button
 				></Card.Root
@@ -664,11 +670,9 @@
 			<div class="screening-heading">
 				<div>
 					<div class="eyebrow">YOUR NEXT STEP</div>
-					<h2>Look closer at an island.</h2>
+					<h2>Choose an island.</h2>
 					<p>
-						Review the baseline before designing a proposal. {scopeLabel} · {number(
-							matchedRows.length
-						)}
+						Open a score for a simple explanation. {scopeLabel} · {number(matchedRows.length)}
 						{matchedRows.length === 1 ? 'island' : 'islands'}
 					</p>
 				</div>
@@ -690,8 +694,8 @@
 					bind:value={tableFilter}
 					onchange={() => (page = 0)}
 					><NativeSelect.Option value="all">All island records</NativeSelect.Option
-					><NativeSelect.Option value="zero">Zero modeled score</NativeSelect.Option
-					><NativeSelect.Option value="missing">Model data gaps</NativeSelect.Option
+					><NativeSelect.Option value="zero">Score of zero</NativeSelect.Option><NativeSelect.Option
+						value="missing">Incomplete information</NativeSelect.Option
 					>{#each Object.entries(facilityLabels) as [category, name] (category)}<NativeSelect.Option
 							value={category}>{name} recorded</NativeSelect.Option
 						>{/each}</NativeSelect.Root
@@ -728,11 +732,11 @@
 									size="sm"
 									class="table-sort"
 									onclick={() => sortBy('score')}
-									>Access index {#if sort === 'score'}{#if ascending}<ArrowUp
+									>Access score {#if sort === 'score'}{#if ascending}<ArrowUp
 												size={12}
 											/>{:else}<ArrowDown size={12} />{/if}{/if}</Button
 								></th
-							><th>Evidence</th><th><span class="sr-only">Open island map</span></th></tr
+							><th>Information</th><th><span class="sr-only">Open island map</span></th></tr
 						></thead
 					><tbody>
 						{#each visibleRows as row (row.id)}<tr data-analytics-island-id={row.id}
@@ -741,17 +745,26 @@
 									<span class="island-type">{row.category.replace(' Island', '')}</span></td
 								><td>{row.atoll}</td><td
 									><strong>{number(row.facilityCount)}</strong><span class="table-subline"
-										>{number(row.locatedCount)} with coordinates</span
+										>{number(row.locatedCount)} with map locations</span
 									></td
 								><td
-									><span class="score-value"
-										>{row.score === null ? '—' : decimal(row.score)}<small>/100</small></span
+									><Button
+										variant="ghost"
+										size="sm"
+										class="score-explanation"
+										aria-label={`Why this score for ${row.name}`}
+										aria-describedby={`score-number-${row.id}`}
+										onclick={() => (selectedScoreId = row.id)}
+										><span class="score-value" id={`score-number-${row.id}`}
+											>{row.score === null ? '—' : decimal(row.score)}<small>/100</small></span
+										><CircleHelp size={13} /></Button
 									></td
 								><td
-									>{#if row.missingData === null}<Badge variant="outline">Pending</Badge
-										>{:else if row.missingData.length}<Badge variant="secondary"
-											>{row.missingData.length} data gaps</Badge
-										>{:else}<Badge variant="outline">Inputs available</Badge>{/if}</td
+									>{#if row.missingData === null}<Badge variant="outline">Not available</Badge
+										>{:else}<Badge variant={row.missingData.length ? 'secondary' : 'outline'}
+											>{row.assessment?.coverage.label ??
+												(row.missingData.length ? 'Incomplete information' : 'Available')}</Badge
+										>{/if}</td
 								><td
 									><Button
 										variant="ghost"
@@ -780,7 +793,7 @@
 						: 'No island results'} <span class="footer-divider">·</span>
 					{zeroScoreCount
 						? `${number(zeroScoreCount)} zero scores in this list`
-						: 'Static baseline'}</span
+						: 'Current data snapshot'}</span
 				>
 				<div class="pagination">
 					<Button
@@ -810,6 +823,14 @@
 		</div>
 	</details>
 </section>
+
+{#if selectedScore}
+	<IslandAccessibilityDetails
+		island={selectedScore}
+		onclose={() => (selectedScoreId = null)}
+		{onExplore}
+	/>
+{/if}
 
 <style>
 	.analytics-dashboard {

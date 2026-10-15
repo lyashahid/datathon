@@ -24,6 +24,7 @@
 		"test:backend": "uv run --directory backend pytest",
 		"lint:backend": "uv run --directory backend ruff check app tests",
 		"test:browser": "node scripts/verify-browser.mjs",
+		"test:browser:accessibility": "node scripts/verify-island-accessibility.mjs",
 		"test:policy-api": "node scripts/verify-policy-api.mjs",
 		"test:browser:forecasts": "node scripts/verify-forecast-data-browser.mjs",
 		"test:browser:planning": "node scripts/verify-planning-browser.mjs",

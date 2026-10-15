@@ -136,6 +136,50 @@ and other original settings are documented in [the preserved Vela README](vendor
 The frontend proxy forwards the caller key without exposing it to browser JavaScript.
 Read [the policy implementation report](../docs/policy-expansion.md) for model coverage.
 
+## Island access index
+
+`GET /api/v1/accessibility/summary` returns a numeric **0–100 access index for
+every island** in the map catalogue. `POST /api/v1/accessibility/score` calculates
+one island using the default or a supplied scoring policy:
+
+```json
+{"island_id": "island:1443"}
+```
+
+Every result includes an `assessment` with `score`, `out_of`, `label`, `summary`,
+three plain-language `reasons` (healthcare, schools and transport), component
+scores and mapped facility/stop counts, `coverage`, and plain-language
+`limitations`. Island profiles also include this assessment under
+`accessibility.assessment`. Existing `domains`, `config`, `missing_data` and
+`explanation` fields remain available for detailed inspection.
+
+The index describes the available mapped evidence; **78/100 does not mean 78%
+of residents are served**. Healthcare and education combine mapped facility
+types and distance bands. Transport combines airport, explicit bus-stop and
+marine evidence; generic public-transport features are not automatically bus
+stops. Unverified ferry services earn no points under the default policy.
+Domain weights start equal and change only when an island-specific age
+breakdown is available. Demand and density adjustments are planning
+assumptions, not measured staffing, capacity or service quality.
+
+Unmapped facilities, missing resident counts, straight-line distance fallbacks
+and unverified services are explained separately. Unknown population stays
+`null`; it does not erase a facility-derived index or imply zero residents.
+An island with no mapped service evidence still receives an index, with a
+**Limited evidence** label and a warning that services may exist. The national
+average covers the whole island catalogue, including islands without resident
+counts; it is not a resident-weighted measure of national access.
+
+Valid frozen health/education route results are reused and assessments are
+enriched once in memory. Requests do not rewrite the checked-in source
+artifacts or rebuild the national routing graphs.
+
+The analytics priorities request uses
+`GET /api/v1/planning/opportunities?include_geometry=false` to receive the same
+island numbers, reasons and source metadata without downloading national map
+polygons. Its `features` remains an empty GeoJSON FeatureCollection. Omitting the
+flag retains the complete map response used by the planning workspace.
+
 ## Phase 1 data discovery
 
 Acquire and inspect all required public sources:

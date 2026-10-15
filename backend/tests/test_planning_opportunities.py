@@ -114,6 +114,30 @@ def test_no_mapped_inventory_does_not_become_proven_service_failure(opportunitie
     assert airport["population"] is None
 
 
+def test_compact_overview_preserves_island_data_and_omits_only_map_geometry(opportunities):
+    full = opportunities.overview()
+    compact = opportunities.overview(include_geometry=False)
+    assert full["features"]["features"]
+    assert all(feature["geometry"] for feature in full["features"]["features"])
+    assert compact == {**full, "features": {"type": "FeatureCollection", "features": []}}
+
+
+def test_api_can_skip_geometry_without_changing_default_map_response(opportunities):
+    app = FastAPI()
+    app.state.planning = opportunities.planning
+    app.include_router(router)
+    client = TestClient(app)
+    full = client.get("/api/v1/planning/opportunities")
+    compact = client.get("/api/v1/planning/opportunities?include_geometry=false")
+    assert full.status_code == compact.status_code == 200
+    assert full.json()["features"]["features"]
+    assert compact.json() == {
+        **full.json(),
+        "features": {"type": "FeatureCollection", "features": []},
+    }
+    assert client.get("/api/v1/planning/opportunities?include_geometry=invalid").status_code == 422
+
+
 def test_national_screening_preserves_source_score_and_missing_inventory(opportunities):
     feature = {
         "type": "Feature",

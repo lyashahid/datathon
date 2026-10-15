@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	atollInventory,
+	hasMissingAccessibilityData,
 	inventoryForScope,
 	inventoryFromFeatures,
 	islandAnalytics,
@@ -112,6 +113,34 @@ describe('national analytics inventory and screening', () => {
 		expect(scoreDistribution(rows).unavailable).toBe(1);
 		expect(scoreDistribution(rows).bins.map((bin) => bin.count)).toEqual([1, 0, 1, 0, 0, 0]);
 	});
+	it('keeps the backend explanation with its island and preserves unknown resident counts', () => {
+		const assessed: Accessibility = {
+			...score('island:1', 20),
+			population: { total: null, year: null },
+			assessment: {
+				score: 20,
+				out_of: 100,
+				label: 'Lower access index',
+				summary: 'Accessibility score: 20/100.',
+				reasons: [{ domain: 'health', score: 60, text: 'One healthcare location is mapped.' }],
+				components: { health: { score: 60, facility_count: 1 } },
+				coverage: {
+					status: 'limited',
+					label: 'Limited evidence',
+					note: 'Resident counts are missing.',
+					population_available: false,
+					scored_domains: 1,
+					total_domains: 3
+				},
+				limitations: ['Some services may not be mapped.']
+			}
+		};
+		const rows = islandAnalytics(islands, [], { ...accessibility, scores: [assessed] });
+		expect(rows[0].assessment).toBe(assessed.assessment);
+		expect(rows[0].population?.total).toBeNull();
+		expect(rows[1].assessment).toBeNull();
+		expect(rows[1].population).toBeNull();
+	});
 	it('bins decimal scores and inclusive upper bound exactly once', () => {
 		const rows = islandAnalytics(islands, [], accessibility);
 		const values = [0, 0.01, 19.99, 20, 39.99, 40, 60, 80, 100];
@@ -123,6 +152,22 @@ describe('national analytics inventory and screening', () => {
 		const distribution = scoreDistribution(expanded);
 		expect(distribution.bins.map((bin) => bin.count)).toEqual([1, 2, 2, 1, 1, 2]);
 		expect(distribution.unavailable).toBe(0);
+	});
+	it('counts missing inputs separately from known resident pressure', () => {
+		const [row] = islandAnalytics(islands, [], accessibility);
+		expect(
+			hasMissingAccessibilityData({
+				...row,
+				missingData: ['population_pressure', 'population_density_pressure']
+			})
+		).toBe(false);
+		expect(
+			hasMissingAccessibilityData({
+				...row,
+				missingData: ['population_pressure', 'no_geocoded_facility']
+			})
+		).toBe(true);
+		expect(hasMissingAccessibilityData({ ...row, missingData: null })).toBe(true);
 	});
 	it('ignores duplicate island geometry records and treats non-finite scores as unavailable', () => {
 		const duplicated = { ...islands, features: [...islands.features, islands.features[0]] };
