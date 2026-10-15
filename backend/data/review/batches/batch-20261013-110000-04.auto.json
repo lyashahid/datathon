@@ -1,0 +1,116 @@
+{
+  "job_id": "batch-20261013-110000-04",
+  "records": [
+    {
+      "facility_id": "facility:health:167",
+      "official_name": "Care Max Clinic 1",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:168",
+      "official_name": "ADK Hospital Reach Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:1691",
+      "official_name": "JOY CLINIC",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:17",
+      "official_name": "Safari Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:171",
+      "official_name": "Sun Siyam Irufushi Maldives Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:172",
+      "official_name": "Dhugethi Dhivehibeys clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:173",
+      "official_name": "Oracare Dental",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:174",
+      "official_name": "Stem Center Closed",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:176",
+      "official_name": "Farook Healthcare Villingili",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:177",
+      "official_name": "Thasalli medical Care",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    }
+  ],
+  "summary": "deterministic local review"
+}

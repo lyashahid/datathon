@@ -1,0 +1,297 @@
+{
+  "version": "online-facility-search-batch-v1",
+  "batch": 1,
+  "searched_at": "2026-10-12T19:00:00Z",
+  "record_count": 10,
+  "scope": "ten unresolved HEMS private/area-specific facilities",
+  "records": [
+    {
+      "facility_id": "facility:health:769",
+      "official_name": "Eye Care Clinic",
+      "category": "clinic",
+      "official_owner": "Eye Care Pvt Ltd",
+      "official_contact": "—",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-12T19:00:00Z",
+        "source_record_id": "769",
+        "official_record_fields": {
+          "facility_level": "Area Specific Clinic",
+          "status": "open",
+          "registration_number": "HF-10/ALP/PVT/065"
+        }
+      },
+      "online_discovery": {
+        "query": "Eye Care Clinic Maldives Google Search",
+        "provider": "Google Search / Google Maps discovery",
+        "purpose": "address and place-identity discovery only; search snippets are not treated as final evidence"
+      },
+      "osm_candidate": null,
+      "decision": "unresolved_online_search_batch",
+      "evidence_note": "Online search did not produce a defensible OSM object identity and geometry sufficient for automatic attachment in this batch."
+    },
+    {
+      "facility_id": "facility:health:807",
+      "official_name": "Eye Care Hospital",
+      "category": "hospital",
+      "official_owner": "Eye Care Pvt Ltd (C-308/2002)",
+      "official_contact": "3324300",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-12T19:00:00Z",
+        "source_record_id": "807",
+        "official_record_fields": {
+          "facility_level": "Area Specific Hospital",
+          "status": "open",
+          "registration_number": "HF-13/ALP/PVT/027"
+        }
+      },
+      "online_discovery": {
+        "query": "Eye Care Hospital Maldives Google Search",
+        "provider": "Google Search / Google Maps discovery",
+        "purpose": "address and place-identity discovery only; search snippets are not treated as final evidence",
+        "address_hint": "M. Usha, Orchid Magu, Male"
+      },
+      "osm_candidate": {
+        "osm_object_id": "osm:node:12289715928",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/12289715928.json",
+        "browse_url": "https://www.openstreetmap.org/node/12289715928",
+        "coordinates": [
+          73.5060801,
+          4.1761534
+        ],
+        "live_http_status": 200,
+        "live_tags": {
+          "name": "Eye Care Hospital",
+          "shop": "optician"
+        }
+      },
+      "decision": "provisional_online_candidate_not_attached",
+      "evidence_note": "Official HEMS record name is Eye Care Hospital. The live OSM node has the exact name and Male address context, but is tagged shop=optician rather than hospital/clinic and lacks corroborating official coordinates; do not attach as a confirmed mapping."
+    },
+    {
+      "facility_id": "facility:health:777",
+      "official_name": "Family Care Clinic and Scan Center",
+      "category": "clinic",
+      "official_owner": "Family Care Pvt Ltd (C-101/2007)",
+      "official_contact": "3300767",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-12T19:00:00Z",
+        "source_record_id": "777",
+        "official_record_fields": {
+          "facility_level": "General Clinic",
+          "status": "open",
+          "registration_number": "HF-10/ALP/PVT/057"
+        }
+      },
+      "online_discovery": {
+        "query": "Family Care Clinic and Scan Centre Maldives Google Search",
+        "provider": "Google Search / Google Maps discovery",
+        "purpose": "address and place-identity discovery only; search snippets are not treated as final evidence",
+        "address_hint": "H. Azum, Ameenee Magu, Male"
+      },
+      "osm_candidate": null,
+      "decision": "unresolved_online_search_batch",
+      "evidence_note": "Online search did not produce a defensible OSM object identity and geometry sufficient for automatic attachment in this batch."
+    },
+    {
+      "facility_id": "facility:health:180",
+      "official_name": "Family Dental Care",
+      "category": "clinic",
+      "official_owner": "Mau Holding Pvt Ltd",
+      "official_contact": "9904089",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-12T19:00:00Z",
+        "source_record_id": "180",
+        "official_record_fields": {
+          "facility_level": "Area Specific Clinic",
+          "status": "open",
+          "registration_number": "HF-22-ALP/PVT/669"
+        }
+      },
+      "online_discovery": {
+        "query": "Family Dental Care Maldives Google Maps",
+        "provider": "Google Search / Google Maps discovery",
+        "purpose": "address and place-identity discovery only; search snippets are not treated as final evidence",
+        "reported_google_maps_place": {
+          "coordinates": [
+            73.5137409,
+            4.1738447
+          ],
+          "address_hint": "G.Sun East, 2nd Floor, Nirolhu Magu, Male"
+        }
+      },
+      "osm_candidate": null,
+      "decision": "unresolved_online_search_batch",
+      "evidence_note": "Google Maps discovery reported a Male coordinate and address, but reverse OSM lookup returned a road/building context rather than a facility object; no geometry was attached."
+    },
+    {
+      "facility_id": "facility:health:818",
+      "official_name": "Family Planning Centre",
+      "category": "clinic",
+      "official_owner": "Society for Health Education (10-A/88/4)",
+      "official_contact": "7989037",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-12T19:00:00Z",
+        "source_record_id": "818",
+        "official_record_fields": {
+          "facility_level": "General Clinic",
+          "status": "open",
+          "registration_number": "HF-10/ALP/PVT/016"
+        }
+      },
+      "online_discovery": {
+        "query": "Family Planning Centre Maldives Google Search",
+        "provider": "Google Search / Google Maps discovery",
+        "purpose": "address and place-identity discovery only; search snippets are not treated as final evidence"
+      },
+      "osm_candidate": null,
+      "decision": "unresolved_online_search_batch",
+      "evidence_note": "Online search did not produce a defensible OSM object identity and geometry sufficient for automatic attachment in this batch."
+    },
+    {
+      "facility_id": "facility:health:89",
+      "official_name": "Healing Care Medical Center",
+      "category": "clinic",
+      "official_owner": "Adam Ahmed",
+      "official_contact": "7901278",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-12T19:00:00Z",
+        "source_record_id": "89",
+        "official_record_fields": {
+          "facility_level": "Area Specific Clinic",
+          "status": "open",
+          "registration_number": "HF-24/ALP/PVT/761"
+        }
+      },
+      "online_discovery": {
+        "query": "Healing Care Medical Center Maldives Google Search",
+        "provider": "Google Search / Google Maps discovery",
+        "purpose": "address and place-identity discovery only; search snippets are not treated as final evidence"
+      },
+      "osm_candidate": null,
+      "decision": "unresolved_online_search_batch",
+      "evidence_note": "Online search did not produce a defensible OSM object identity and geometry sufficient for automatic attachment in this batch."
+    },
+    {
+      "facility_id": "facility:health:869",
+      "official_name": "Island Polyclinic",
+      "category": "clinic",
+      "official_owner": "Island Polyclinic Pvt Ltd",
+      "official_contact": "9459739",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-12T19:00:00Z",
+        "source_record_id": "869",
+        "official_record_fields": {
+          "facility_level": "Area Specific Clinic",
+          "status": "open",
+          "registration_number": "HF-25/ALP/PVT/868"
+        }
+      },
+      "online_discovery": {
+        "query": "Island Polyclinic Maldives Google Search",
+        "provider": "Google Search / Google Maps discovery",
+        "purpose": "address and place-identity discovery only; search snippets are not treated as final evidence"
+      },
+      "osm_candidate": null,
+      "decision": "unresolved_online_search_batch",
+      "evidence_note": "Online search did not produce a defensible OSM object identity and geometry sufficient for automatic attachment in this batch."
+    },
+    {
+      "facility_id": "facility:health:400",
+      "official_name": "JP Memorial Clinic",
+      "category": "clinic",
+      "official_owner": "Robinson Club Maldives Ovt Ltd (C196-2009)",
+      "official_contact": "3009094, 3009095",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-12T19:00:00Z",
+        "source_record_id": "400",
+        "official_record_fields": {
+          "facility_level": "General Clinic",
+          "status": "open",
+          "registration_number": "HF-15/ALP/PVT/449"
+        }
+      },
+      "online_discovery": {
+        "query": "JP Memorial Clinic Maldives Google Search",
+        "provider": "Google Search / Google Maps discovery",
+        "purpose": "address and place-identity discovery only; search snippets are not treated as final evidence"
+      },
+      "osm_candidate": null,
+      "decision": "unresolved_online_search_batch",
+      "evidence_note": "Online search did not produce a defensible OSM object identity and geometry sufficient for automatic attachment in this batch."
+    },
+    {
+      "facility_id": "facility:health:340",
+      "official_name": "Advance Diagnostic Center",
+      "category": "clinic",
+      "official_owner": "North West Maldives Pvt Ltd (C-0251/2018)",
+      "official_contact": "7785320",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-12T19:00:00Z",
+        "source_record_id": "340",
+        "official_record_fields": {
+          "facility_level": "General Clinic",
+          "status": "open",
+          "registration_number": "HF-18/ALP/PVT/509"
+        }
+      },
+      "online_discovery": {
+        "query": "Advance Diagnostic Center Maldives Google Search",
+        "provider": "Google Search / Google Maps discovery",
+        "purpose": "address and place-identity discovery only; search snippets are not treated as final evidence"
+      },
+      "osm_candidate": null,
+      "decision": "unresolved_online_search_batch",
+      "evidence_note": "Online search did not produce a defensible OSM object identity and geometry sufficient for automatic attachment in this batch."
+    },
+    {
+      "facility_id": "facility:health:101",
+      "official_name": "Kaam Medical",
+      "category": "clinic",
+      "official_owner": "Kaam Pvt Ltd",
+      "official_contact": "7675776",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-12T19:00:00Z",
+        "source_record_id": "101",
+        "official_record_fields": {
+          "facility_level": "General Clinic",
+          "status": "open",
+          "registration_number": "HF-23/ALP/PVT/749"
+        }
+      },
+      "online_discovery": {
+        "query": "Kaam Medical Hulhumale Maldives Google Search",
+        "provider": "Google Search / Google Maps discovery",
+        "purpose": "address and place-identity discovery only; search snippets are not treated as final evidence",
+        "address_hint": "Lot 10414, Ahigas Magu, Hulhumale"
+      },
+      "osm_candidate": null,
+      "decision": "unresolved_online_search_batch",
+      "evidence_note": "Online search did not produce a defensible OSM object identity and geometry sufficient for automatic attachment in this batch."
+    }
+  ],
+  "summary": {
+    "provisional_online_candidates_not_attached": 1,
+    "unresolved_after_online_search": 9,
+    "confirmed_new_mappings": 0
+  }
+}

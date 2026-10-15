@@ -1,0 +1,28 @@
+{
+  "retrieved": "2026-10-13",
+  "scope": "Alternate-category OSM investigation of ten unresolved private/resort HEMS clinic records",
+  "safety_rule": "Island/resort/hotel/building/office/nearby-health objects are context only unless clinic-level identity is independently supported.",
+  "records": [
+    {"facility_id":"facility:health:261","official_name":"Aahiyans Medical Clinic","decision":"unresolved_island_context_only","context":"Lh. Hinnavaru","osm_evidence":["way 441740990 Hinnavaru place=islet; no matching clinic/doctor/facility object"],"safe_action":"Do not assign Hinnavaru islet geometry or unrelated Malé/Hulhumalé clinics."},
+    {"facility_id":"facility:health:12","official_name":"Aanugandu Island Resort Clinic","decision":"unresolved_island_context_only","context":"Aanugan'du Finolhu and Aanugan'du Huraa, Kaafu; OSM legacy/current resort context Ailafushi","osm_evidence":["way 1061977111 OBLU XPERIENCE AILAFUSHI place=islet at approximately 4.3061,73.5053; no clinic object"],"official_evidence":["Maldives Tourism registered facilities lists Aanugandu Island Resort at Aanugan'du Finolhu and Aanugan'du Huraa, operator Promonant Pvt Ltd"],"safe_action":"Keep resort/island context only; do not map resort/islet as clinic."},
+    {"facility_id":"facility:health:191","official_name":"Aarah Clinic","decision":"unresolved_island_context_only","context":"Aarah, Raa Atoll","osm_evidence":["way 19879650 Aarah place=islet alt_name:en=Heritance Aarah; no clinic object"],"safe_action":"Do not map islet or resort geometry as clinic."},
+    {"facility_id":"facility:health:199","official_name":"Emerald Faarufushi Clinic","decision":"unresolved_island_context_only","context":"Faarufushi Island, Raa Atoll","osm_evidence":["way 19879582 Faarufushi place=islet alt_name:en=Faarufushi Maldives; hotel/buildings are context; no clinic object"],"safe_action":"Do not map resort polygon, hotel relation, or generic building footprints."},
+    {"facility_id":"facility:health:41","official_name":"Emerald Maldives Resort Clinic","decision":"unresolved_island_context_only","context":"Fasmendhoo / Emerald Maldives Resort & Spa","osm_evidence":["way 19879687 Fasmendhoo place=islet alt_name:en=Emerald Maldives Resort & Spa Fasmendho; no clinic object"],"safe_action":"Do not map resort islet or Malé office address as clinic geometry."},
+    {"facility_id":"facility:health:28","official_name":"Eri Maldives Clinic","decision":"rejected_candidate_unresolved","context":"HEMS/Maaharaa address Kaneeru Villa, Orchid Magu, Malé; Eri resort also has in-house medical service","osm_evidence":["way 19881893 Eri Maldives tourism=hotel building=yes at approximately 4.5898,73.4144; not clinic"],"safe_action":"Reject resort hotel as clinic; retain official record unresolved."},
+    {"facility_id":"facility:health:239","official_name":"Eriyadu Clinic Closed","decision":"rejected_candidate_unresolved","context":"Eriyadu Island Resort / later Eri Maldives context","osm_evidence":["way 19881893 Eri Maldives tourism=hotel; node 583580926 Eriyadu amenity=bar; neither is clinic"],"safe_action":"Preserve closed official record; do not map bar, hotel, or island polygon."},
+    {"facility_id":"facility:health:246","official_name":"Esma Dhivehi Beys Clinic Closed","decision":"rejected_candidate_unresolved","context":"HEMS closed Traditional Medicine Clinic; current/closed Google duplicates and current Maaharaa Dhivehi Beys listing are not proven same facility","osm_evidence":["No exact Dhivehi Beys OSM clinic object found; nearby healthcare objects have different names"],"safe_action":"No alternate-category mapping; preserve closed status and leave unresolved."},
+    {"facility_id":"facility:health:760","official_name":"Eve Clinic","decision":"unresolved_no_osm_candidate","context":"M. Kovarik, Fareedhee Magu, Malé","osm_evidence":["Nearby OSM clinics Poli Clinic & Medicals, Family Care, Advance Medical Clinic, Central Clinic, and Medica are distinct names; no EVE object"],"safe_action":"Do not map nearby clinic or generic M. Kovarik building."},
+    {"facility_id":"facility:health:886","official_name":"Eve Clinic Vinares","decision":"unresolved_no_osm_candidate","context":"Vinares Tower 1, Unit V1-1-101 / commercial unit V1-1-01, Hithigas Magu, Phase 2, Hulhumalé","osm_evidence":["Countrywide exact-name query found no EVE/Vinares object; generic Phase 2 buildings are not clinic geometry"],"safe_action":"Retain official Vinares/unit address; do not map generic tower/building footprint."}
+  ],
+  "sources": {
+    "hems":"https://hems.health.gov.mv/establishments",
+    "maaharaa":"https://maaharaa.health.gov.mv/Public/Home/ListHealthCare",
+    "tourism":"https://www.tourism.gov.mv/en/registered/facilities/filter-t1",
+    "eve_locations":"https://eveclinic.mv/locations",
+    "eve_business_registry":"https://business.egov.mv/BusinessRegistry/ViewDetails/133363?key=1108563651",
+    "osm_api":"https://api.openstreetmap.org/api/0.6/{type}/{id}.json",
+    "overpass":"https://overpass-api.de/api/interpreter",
+    "google_maps":"https://www.google.com/maps/search/?api=1&query="
+  },
+  "canonical_files_modified": false
+}

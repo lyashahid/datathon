@@ -1,0 +1,515 @@
+{
+  "version": "online-facility-evidence-batch-v1",
+  "batch_id": "deleg_7b886747",
+  "reviewed_at": "2026-10-13T05:45:00Z",
+  "worker_transcripts": [
+    "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_7b886747/task-0.log",
+    "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_7b886747/task-1.log",
+    "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_7b886747/task-2.log",
+    "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_7b886747/task-3.log"
+  ],
+  "record_count": 38,
+  "records": [
+    {
+      "facility_id": "facility:health:548",
+      "official_source_url": "https://hems.health.gov.mv/establishments?page=21",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "medium",
+      "evidence_note": "HEMS and the official Maavah island registry corroborate L. Maavashu Health Centre on Maavah, Laamu. Live island-bounded and alternate-category OSM checks found no facility-level health object; island and generic building geometry were excluded.",
+      "follow_up": "Obtain official coordinates or a facility-level OSM object."
+    },
+    {
+      "facility_id": "facility:health:542",
+      "official_source_url": "https://hems.health.gov.mv/establishments?page=21",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "medium",
+      "evidence_note": "HEMS, Mundoo Council and the official island registry corroborate L. Mundoo Health Centre on Mundoo, Laamu. No facility-level OSM health object survived live alternate-category checks.",
+      "follow_up": "Obtain official coordinates or a facility-level OSM identity."
+    },
+    {
+      "facility_id": "facility:health:704",
+      "official_source_url": "https://hems.health.gov.mv/establishments?page=22",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Official HEMS identity and Laamu Hithadhoo operator/news evidence agree with live OSM way 1126434800, named Laamu Hithadhoo Health Centre, operated by the Ministry of Health, with compatible healthcare=hospital tags.",
+      "follow_up": "Retain reviewed mapping and periodically re-verify."
+    },
+    {
+      "facility_id": "facility:health:560",
+      "official_source_url": "https://hems.health.gov.mv/establishments?page=22",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "medium",
+      "evidence_note": "HEMS and Hinnavaru Council corroborate LH. Hinnavaru Health Centre on Hinnavaru, Lhaviyani. Live checks found no facility-level health object.",
+      "follow_up": "Obtain official coordinates or a facility-level OSM identity."
+    },
+    {
+      "facility_id": "facility:health:559",
+      "official_source_url": "https://hems.health.gov.mv/establishments?page=22",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "medium",
+      "evidence_note": "HEMS, Explore Maldives and the government employer directory corroborate LH. Kurendhoo Health Centre on Kurendhoo, Lhaviyani. No facility-level OSM health object was found.",
+      "follow_up": "Obtain official coordinates or a facility-level OSM identity."
+    },
+    {
+      "facility_id": "facility:health:487",
+      "official_source_url": "https://hems.health.gov.mv/establishments?page=22",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "medium",
+      "evidence_note": "HEMS and Dhiggaru Council corroborate M. Dhiggaru Health Centre on Dhiggaru, Meemu. Live checks found only island context and no facility-level OSM object.",
+      "follow_up": "Obtain official coordinates or a facility-level OSM identity."
+    },
+    {
+      "facility_id": "facility:health:486",
+      "official_source_url": "https://hems.health.gov.mv/establishments?page=22",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "medium",
+      "evidence_note": "HEMS and Explore Maldives corroborate M. Kolhufushi Health Centre on Kolhufushi, Meemu. Generic buildings and island geometry were excluded.",
+      "follow_up": "Obtain official coordinates or a facility-level OSM identity."
+    },
+    {
+      "facility_id": "facility:health:646",
+      "official_source_url": "https://hems.health.gov.mv/establishments?page=22",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "medium",
+      "evidence_note": "HEMS, Ministry service-charter material and Presidency reporting corroborate M. Maduvvaree Health Center on Maduvvari, Meemu. No facility-level OSM object was found.",
+      "follow_up": "Obtain official coordinates or a facility-level OSM identity."
+    },
+    {
+      "facility_id": "facility:health:485",
+      "official_source_url": "https://hems.health.gov.mv/establishments?page=23",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "medium",
+      "evidence_note": "HEMS and public reporting corroborate M. Mulaku Health Centre on Mulaku/Mulah, Meemu. Live checks found no facility-level OSM health object.",
+      "follow_up": "Obtain official coordinates or a facility-level OSM identity."
+    },
+    {
+      "facility_id": "facility:health:805",
+      "official_source_url": "https://hems.health.gov.mv/establishments?page=23",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "medium",
+      "evidence_note": "HEMS, Maaharaa and a public construction tender corroborate M. Naalaafushi Health Centre on Naalaafushi, Meemu. Airport, resort and generic building features were excluded.",
+      "follow_up": "Obtain official coordinates or a facility-level OSM identity."
+    },
+    {
+      "facility_id": "facility:health:105",
+      "official_source_url": "https://hems.health.gov.mv/feedback/105",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "unresolved_island_context_only",
+      "confidence": "medium",
+      "evidence_note": "HEMS and Ifuru operator sources corroborate Ifuru Clinic and its resort island context, but no facility-level clinic or doctor object was found.",
+      "follow_up": "Obtain official clinic coordinates; do not map the resort or island polygon."
+    },
+    {
+      "facility_id": "facility:health:308",
+      "official_source_url": "https://hems.health.gov.mv/feedback/308",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "unresolved_island_context_only",
+      "confidence": "medium",
+      "evidence_note": "HEMS and InterContinental operator information corroborate IHG Maamunagau Clinic on Maamunagau; no facility-level clinic object was found.",
+      "follow_up": "Obtain official clinic coordinates; do not map resort geometry."
+    },
+    {
+      "facility_id": "facility:health:241",
+      "official_source_url": "https://hems.health.gov.mv/feedback/241",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "evidence_note": "HEMS, Maaharaa and Aasandha corroborate Ilaa Ali Adam Clinic at Zureethu Irumatheebai, Kulhudhuffushi; no compatible facility-level OSM object was found.",
+      "follow_up": "Obtain official coordinates or facility-level OSM identity."
+    },
+    {
+      "facility_id": "facility:health:22",
+      "official_source_url": "https://hems.health.gov.mv/feedback/22",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "evidence_note": "HEMS, Maaharaa and SunOnline corroborate Ilaaj Hijama & Alternative Medical Services in Male; no compatible facility-level OSM object was found.",
+      "follow_up": "Obtain official coordinates or facility-level OSM identity."
+    },
+    {
+      "facility_id": "facility:health:775",
+      "official_source_url": "https://hems.health.gov.mv/feedback/775",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium",
+      "evidence_note": "HEMS, Aasandha and MaldivesYP corroborate Image Center in Male. Live OSM node 11185404564 has exact name:en and compatible doctors/doctor tags, but official coordinates/address linkage is incomplete.",
+      "follow_up": "Verify address and coordinates with the operator before promotion."
+    },
+    {
+      "facility_id": "facility:health:815",
+      "official_source_url": "https://hems.health.gov.mv/feedback/815",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "evidence_note": "HEMS, Maaharaa and MyCareer corroborate Imperial Medicare Centre in Male; a discovery coordinate exists but no compatible facility-level OSM object was found.",
+      "follow_up": "Obtain official coordinates and re-check live OSM."
+    },
+    {
+      "facility_id": "facility:health:1142",
+      "official_source_url": "https://hems.health.gov.mv/feedback/1142",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "evidence_note": "HEMS, Explore Maldives and Implantree corroborate IMPLANTREE DENTAL & AESTHETICS CLINIC; non-Maldives results were excluded and no Maldives facility object was found.",
+      "follow_up": "Obtain Maldives address and coordinates."
+    },
+    {
+      "facility_id": "facility:health:150",
+      "official_source_url": "https://hems.health.gov.mv/feedback/150",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "evidence_note": "HEMS, ICP official site and MyCareer corroborate the counselling practice at H.Haifa/Bodufungandu Magu, Male; no compatible facility-level OSM object was found.",
+      "follow_up": "Obtain official coordinates; do not map the address building alone."
+    },
+    {
+      "facility_id": "facility:health:415",
+      "official_source_url": "https://hems.health.gov.mv/feedback/415",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "evidence_note": "HEMS, Aasandha and Maaharaa corroborate Institute Of Mental Well Being in Male; no compatible facility-level OSM object was found.",
+      "follow_up": "Obtain official coordinates or facility-level OSM identity."
+    },
+    {
+      "facility_id": "facility:health:66",
+      "official_source_url": "https://hems.health.gov.mv/feedback/66",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "unresolved_island_context_only",
+      "confidence": "high",
+      "evidence_note": "HEMS and Waldorf Astoria/Ministry sources corroborate Ithaafushi Clinic on the resort island, but live OSM exposes only the islet and hotel, not clinic geometry.",
+      "follow_up": "Obtain official clinic coordinates; keep resort objects as context only."
+    },
+    {
+      "facility_id": "facility:health:1261",
+      "official_source_url": "https://hems.health.gov.mv/establishments?search=Jazeera",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "unresolved_official_id_not_live",
+      "confidence": "high",
+      "evidence_note": "Live HEMS search and feedback/1261 did not produce a current Jazeera Clinic record; no operator/address proof or OSM candidate was found.",
+      "follow_up": "Recover the source snapshot and current official identity."
+    },
+    {
+      "facility_id": "facility:health:184",
+      "official_source_url": "https://hems.health.gov.mv/establishments?search=Joali",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "unresolved_competing_candidates",
+      "confidence": "high",
+      "evidence_note": "The supplied ID resolves to a different HEMS record while live HEMS search yields distinct Joali Being Clinic and Joali Muravandhoo Clinic branches; only resort context objects were found.",
+      "follow_up": "Resolve the branch with official operator/address proof; preserve branches separately."
+    },
+    {
+      "facility_id": "facility:health:133",
+      "official_source_url": "https://hems.health.gov.mv/establishments?search=JP",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "unresolved_official_name_id_conflict",
+      "confidence": "high",
+      "evidence_note": "Live HEMS search returns JP Memorial Clinic under Robinson, not JP Hospital; the discovered Hussan Abdul Samad memorial clinic is a different identity and was rejected.",
+      "follow_up": "Confirm historical name/ID and operator address."
+    },
+    {
+      "facility_id": "facility:health:166",
+      "official_source_url": "https://hems.health.gov.mv/establishments?search=Intra",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "unresolved_official_name_not_found",
+      "confidence": "medium",
+      "evidence_note": "Live HEMS search and Photon found no current Kaafu Intra Medical Clinic identity or Maldives facility-level OSM object.",
+      "follow_up": "Recover official registration/operator address."
+    },
+    {
+      "facility_id": "facility:health:236",
+      "official_source_url": "https://hems.health.gov.mv/feedback/236",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "evidence_note": "HEMS confirms Fuvahmulah Medical Centre under Stay In Maldives; the only same-island health object found was a differently named drug-treatment centre and was rejected.",
+      "follow_up": "Obtain clinic coordinates or a clinic-level OSM object."
+    },
+    {
+      "facility_id": "facility:health:180",
+      "official_source_url": "https://hems.health.gov.mv/establishments?search=Kaimoo",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "unresolved_competing_operator_branches",
+      "confidence": "high",
+      "evidence_note": "The supplied ID resolves to Family Dental Care while live HEMS Kaimoo search returns distinct Embudu Village and Summer Island clinics; resort objects were context only.",
+      "follow_up": "Use the original official address to select the correct branch."
+    },
+    {
+      "facility_id": "facility:health:183",
+      "official_source_url": "https://hems.health.gov.mv/establishments?search=Kandoo",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "unresolved_name_alias_candidates",
+      "confidence": "medium",
+      "evidence_note": "Live HEMS distinguishes Kandooma Clinic from Th. Kandoodhoo Health Center; the supplied Kandoo Clinic name is not identity-safe and only resort context was found.",
+      "follow_up": "Confirm the intended branch and operator address."
+    },
+    {
+      "facility_id": "facility:health:195",
+      "official_source_url": "https://hems.health.gov.mv/establishments?search=Kandoo%20Medical",
+      "discovery_urls": [],
+      "osm_candidates": [],
+      "decision": "unresolved_official_name_not_found",
+      "confidence": "medium",
+      "evidence_note": "Live HEMS produced no exact Kandoo Medical Centre row and Photon found no Maldives object with that identity.",
+      "follow_up": "Recover the official registration/operator address."
+    },
+    {
+      "facility_id": "facility:school:492",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/492",
+      "discovery_urls": [
+        "https://mycareer.gov.mv/dv/employers/raa-atoll-school",
+        "https://explore.mv/schools/r-atoll-school",
+        "https://api.openstreetmap.org/api/0.6/way/1038348911.json"
+      ],
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:1038348911",
+          "osm_url": "https://api.openstreetmap.org/api/0.6/way/1038348911.json",
+          "name": "Dhuvaafaru Primary School",
+          "island": "Dhuvaafaru (Raa Atoll)",
+          "coordinates": [
+            5.6258004,
+            73.04197053636364
+          ],
+          "tags": {
+            "building": "yes",
+            "name": "Dhuvaafaru Primary School"
+          },
+          "status": "rejected_conflicting_ministry_school_identity"
+        }
+      ],
+      "decision": "unresolved_source_not_in_osm",
+      "confidence": "high_official_identity_low_osm_coverage",
+      "evidence_note": "The Ministry page identifies R. Atoll School at R. Dhuvaafaru. The live island scan found no separately named OSM object for R. Atoll School; the only named school candidate was Dhuvaafaru Primary School, which is the distinct Ministry school record 506 and was rejected rather than substituted.",
+      "follow_up": "Obtain official coordinates or a separately named facility-level OSM object for R. Atoll School; do not attach the Dhuvaafaru Primary School polygon."
+    },
+    {
+      "facility_id": "facility:school:494",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/494",
+      "discovery_urls": [
+        "https://explore.mv/schools/fainu-school",
+        "https://jobcenter.mv/en/employers/fainu-school",
+        "https://www.openstreetmap.org/node/13586575555",
+        "https://www.openstreetmap.org/node/13586575556"
+      ],
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:13586575555",
+          "osm_url": "https://api.openstreetmap.org/api/0.6/node/13586575555.json",
+          "name": "Fainu School",
+          "island": "Fainu (Raa Atoll)",
+          "coordinates": [
+            5.4640163,
+            73.036115
+          ],
+          "tags": {
+            "name": "Fainu School",
+            "office": "educational_institution"
+          },
+          "status": "reviewed_primary_match"
+        },
+        {
+          "osm_object_id": "osm:node:13586575556",
+          "osm_url": "https://api.openstreetmap.org/api/0.6/node/13586575556.json",
+          "name": "Fainu School Building 2",
+          "island": "Fainu (Raa Atoll)",
+          "coordinates": [
+            5.4637119,
+            73.0362036
+          ],
+          "tags": {
+            "name": "Fainu School Building 2",
+            "office": "educational_institution"
+          },
+          "status": "supporting_campus_component"
+        }
+      ],
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "The official Ministry page gives Fainu School at Saharaa Magu, R. Fainu. Both live OSM nodes are on the same island and street, carry the exact school name or an explicit Building 2 variant, and use office=educational_institution, an alternate facility-level education category rather than a conflicting place type.",
+      "follow_up": "Retain node 13586575555 as the primary point and node 13586575556 as a supporting campus component; no OSM polygon was found."
+    },
+    {
+      "facility_id": "facility:school:495",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/495",
+      "discovery_urls": [
+        "https://jobcenter.mv/en/employers/inguraidhoo-school",
+        "https://psmnews.mv/en/97019",
+        "https://www.openstreetmap.org/way/19879262"
+      ],
+      "osm_candidates": [],
+      "decision": "unresolved_source_not_in_osm",
+      "confidence": "high_official_identity_low_osm_coverage",
+      "evidence_note": "The Ministry page identifies Inguraidhoo School at Kaleyfaanu Magu, R. Inguraidhoo. The live OSM island scan returned the Inguraidhoo island polygon but no separately named amenity=school, building=school, office=educational_institution, or education=school facility object; the island polygon is not a facility candidate.",
+      "follow_up": "Obtain official coordinates or map a named facility-level OSM object for Inguraidhoo School; keep island-only context separate."
+    },
+    {
+      "facility_id": "facility:school:496",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/496",
+      "discovery_urls": [
+        "https://www.innamaadhoolive.com/government/school",
+        "https://presidency.gov.mv/Press/Article/32862",
+        "https://www.openstreetmap.org/way/19879253"
+      ],
+      "osm_candidates": [],
+      "decision": "unresolved_source_not_in_osm",
+      "confidence": "high_official_identity_low_osm_coverage",
+      "evidence_note": "The Ministry page identifies Innamaadhoo School at Ameenee Magu, R. Innamaadhoo. The live OSM island scan returned the Innamaadhoo island polygon but no separately named facility-level school object in the searched education categories; the island polygon is not a candidate geometry.",
+      "follow_up": "Obtain official coordinates or a named facility-level OSM object for Innamaadhoo School; do not promote an unnamed building without independent identity evidence."
+    },
+    {
+      "facility_id": "facility:school:498",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/498",
+      "discovery_urls": [
+        "https://www.maakurathuschool.edu.mv/",
+        "http://wikimapia.org/10654258/Maakurathu-School",
+        "https://www.openstreetmap.org/way/19879327"
+      ],
+      "osm_candidates": [],
+      "decision": "unresolved_source_not_in_osm",
+      "confidence": "high_official_identity_low_osm_coverage",
+      "evidence_note": "The Ministry page identifies Maakurathu School at Dhaainkanbaidhimagu, R. Maakurathu. Public discovery confirms the school on Maakurathu, but the live OSM island scan found no separately named facility-level school object in the searched categories; only the island polygon was identified and it was excluded.",
+      "follow_up": "Obtain official coordinates or a named facility-level OSM object for Maakurathu School; treat unnamed building polygons as provisional only."
+    },
+    {
+      "facility_id": "facility:school:499",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/499",
+      "discovery_urls": [
+        "https://exa.ai/library/place/1lfqxrdp2ws",
+        "https://jobcenter.mv/en/employers/rasgetheemu-school",
+        "https://presidency.gov.mv/Press/Article/25125",
+        "https://www.openstreetmap.org/way/19879707"
+      ],
+      "osm_candidates": [],
+      "decision": "unresolved_source_not_in_osm",
+      "confidence": "high_official_identity_low_osm_coverage",
+      "evidence_note": "The Ministry page identifies Rasgetheemu School at Koimala Magu, R. Rasgetheemu. Public discovery supplies a Rasgetheemu school label and approximate point, but no live facility-level OSM object with compatible school identity was found; the OSM result was only the Rasgetheemu island polygon.",
+      "follow_up": "Use the public point only to guide field or imagery review, then obtain a named facility-level OSM object or official coordinates before mapping."
+    },
+    {
+      "facility_id": "facility:school:500",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/500",
+      "discovery_urls": [
+        "https://joali.com/maldives/media/sustainability-fund-recipients",
+        "https://www.education.gov.mv/en/schools/500",
+        "https://www.openstreetmap.org/way/19879388"
+      ],
+      "osm_candidates": [],
+      "decision": "unresolved_source_not_in_osm",
+      "confidence": "high_official_identity_low_osm_coverage",
+      "evidence_note": "The Ministry page identifies Rasmaadhoo School at Iskandharu Magu, R. Rasmaadhoo. The live OSM island scan found the Rasmaadhoo island polygon and unnamed buildings but no separately named facility-level school object in the searched categories; unnamed polygons were not promoted.",
+      "follow_up": "Obtain official coordinates or a named facility-level OSM object for Rasmaadhoo School; review unnamed polygons only as provisional candidates."
+    },
+    {
+      "facility_id": "facility:school:503",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/503",
+      "discovery_urls": [
+        "https://explore.mv/schools/hulhudhuffaaru-school",
+        "https://cms.hulhudhuffaaruschool.edu.mv/about",
+        "https://www.openstreetmap.org/way/19879750"
+      ],
+      "osm_candidates": [],
+      "decision": "unresolved_source_not_in_osm",
+      "confidence": "high_official_identity_low_osm_coverage",
+      "evidence_note": "The Ministry page identifies Hulhudhuffaaru School at Boduthakurufaanu Magu, R. Hulhudhuffaaru. The live OSM island scan found the island polygon and harbour plus unnamed buildings, but no separately named facility-level school object in the searched categories.",
+      "follow_up": "Obtain official coordinates or a named facility-level OSM object for Hulhudhuffaaru School; do not attach an unnamed building without corroborating identity evidence."
+    },
+    {
+      "facility_id": "facility:school:505",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/505",
+      "discovery_urls": [
+        "https://en.wikipedia.org/wiki/Maduvvari_(Raa_Atoll)",
+        "https://hoteliermaldives.com/niva-dhigali-hosts-latest-mati-discover-tourism-sessions-for-raa-atoll-students",
+        "https://www.openstreetmap.org/way/849713608"
+      ],
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:849713608",
+          "osm_url": "https://api.openstreetmap.org/api/0.6/way/849713608.json",
+          "name": "Maduvvari School",
+          "island": "Maduvvari (Raa Atoll)",
+          "coordinates": [
+            5.48528446,
+            72.89645064
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Maduvvari School"
+          },
+          "status": "reviewed_primary_match"
+        }
+      ],
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "The official Ministry page identifies Maduvvaree School on R. Maduvvari. The live OSM way is on that island, is tagged building=school, and carries the spelling variant Maduvvari School, which is consistent with the official identity.",
+      "follow_up": "Retain way 849713608 as the school geometry; preserve the official Maduvvaree spelling alongside the OSM Maduvvari variant."
+    },
+    {
+      "facility_id": "facility:school:506",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/506",
+      "discovery_urls": [
+        "https://explore.mv/schools",
+        "https://www.statisticsmaldives.gov.mv/yearbook/2021/wp-content/uploads/sites/8/2021/07/7.14.pdf",
+        "https://www.openstreetmap.org/way/1038348911"
+      ],
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:1038348911",
+          "osm_url": "https://api.openstreetmap.org/api/0.6/way/1038348911.json",
+          "name": "Dhuvaafaru Primary School",
+          "island": "Dhuvaafaru (Raa Atoll)",
+          "coordinates": [
+            5.6258004,
+            73.04197053636364
+          ],
+          "tags": {
+            "building": "yes",
+            "name": "Dhuvaafaru Primary School"
+          },
+          "status": "reviewed_primary_match"
+        }
+      ],
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "The official Ministry page identifies Duvaafaru Primary School at Dhandehelu Magu, R. Dhuvaafaru. The live OSM way is on Dhuvaafaru, carries the exact facility name, and has a school-building footprint; the official and OSM spellings differ only by the documented Duvaafaru/Dhuvaafaru variant.",
+      "follow_up": "Retain way 1038348911 as the school geometry; preserve the official name and OSM spelling variant in normalized labels."
+    }
+  ]
+}

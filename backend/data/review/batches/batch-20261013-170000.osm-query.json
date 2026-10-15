@@ -1,0 +1,167 @@
+{
+  "version": "facility-osm-query-v1",
+  "queried_at": "2026-10-13T10:51:33.945968Z",
+  "record_count": 40,
+  "island_query_count": 3,
+  "results": [
+    {
+      "island_key": "island:1459",
+      "facility_ids": [
+        "facility:health:772"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](4.1957469,73.5127330,4.1986355,73.5152991);nwr[\"healthcare\"](4.1957469,73.5127330,4.1986355,73.5152991);nwr[\"office\"=\"educational_institution\"](4.1957469,73.5127330,4.1986355,73.5152991);nwr[\"building\"~\"^(hospital|clinic|school)$\"](4.1957469,73.5127330,4.1986355,73.5152991););out center tags;",
+      "overpass": {
+        "query_hash": "3f3b4213451db1dc716849b3c7d577244b6010b253812d874876c4c48e52daf2",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "3f3b4213451db1dc716849b3c7d577244b6010b253812d874876c4c48e52daf2",
+          "retrieved_at": "2026-10-13T10:50:47.051582Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "3d027ecedf19ff6e80f2c2ee015d75be23d4051d6fb3ea5bc6bc36f6a5cbbb83",
+          "expires_at": "2026-10-14T10:50:47.051602+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T10:49:13Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:772": {
+          "query_hash": "24671c7ed3d9b8328c8a79ac11cc85261db390a84414197e45d8c316bf35ba46",
+          "cached": false,
+          "query": {
+            "q": "Dhoonidhoo Clinic, Dhoonidhoo, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5127330,4.1986355,73.5152991,4.1957469",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "24671c7ed3d9b8328c8a79ac11cc85261db390a84414197e45d8c316bf35ba46",
+            "retrieved_at": "2026-10-13T10:50:47.053229Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Dhoonidhoo+Clinic%2C+Dhoonidhoo%2C+Maldives&viewbox=73.5127330%2C4.1986355%2C73.5152991%2C4.1957469",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:164",
+      "facility_ids": [
+        "facility:health:890"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](5.2048445,73.0817726,5.2084852,73.0877719);nwr[\"healthcare\"](5.2048445,73.0817726,5.2084852,73.0877719);nwr[\"office\"=\"educational_institution\"](5.2048445,73.0817726,5.2084852,73.0877719);nwr[\"building\"~\"^(hospital|clinic|school)$\"](5.2048445,73.0817726,5.2084852,73.0877719););out center tags;",
+      "overpass": {
+        "query_hash": "d8d16d4a7a66df054278887eabd02dbea8fb3f118b7e5f20a0964a8f7735b44b",
+        "cached": false,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "d8d16d4a7a66df054278887eabd02dbea8fb3f118b7e5f20a0964a8f7735b44b",
+          "retrieved_at": "2026-10-13T10:51:19.796498Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "1386a500c914fade1900d0757818bd58d5b552a75a85a7e14cb00610cfd79b15",
+          "expires_at": "2026-10-14T10:51:19.796517+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T10:50:16Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:890": {
+          "query_hash": "1a72f3fda9d70b6887eb3ef5c1275a8fbba718a895674607b5ae27b20900090e",
+          "cached": false,
+          "query": {
+            "q": "Mudhdhoo Clinic, Mudhdhoo, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.0817726,5.2084852,73.0877719,5.2048445",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "1a72f3fda9d70b6887eb3ef5c1275a8fbba718a895674607b5ae27b20900090e",
+            "retrieved_at": "2026-10-13T10:51:19.797781Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Mudhdhoo+Clinic%2C+Mudhdhoo%2C+Maldives&viewbox=73.0817726%2C5.2084852%2C73.0877719%2C5.2048445",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:705",
+      "facility_ids": [
+        "facility:health:771"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](1.8669555,73.5207497,1.8819574,73.5315158);nwr[\"healthcare\"](1.8669555,73.5207497,1.8819574,73.5315158);nwr[\"office\"=\"educational_institution\"](1.8669555,73.5207497,1.8819574,73.5315158);nwr[\"building\"~\"^(hospital|clinic|school)$\"](1.8669555,73.5207497,1.8819574,73.5315158););out center tags;",
+      "overpass": {
+        "query_hash": "d2fb591c18164dc05966c95b980a5c71f8f2c743645f0045287c6d086259e1df",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "d2fb591c18164dc05966c95b980a5c71f8f2c743645f0045287c6d086259e1df",
+          "retrieved_at": "2026-10-13T10:51:33.055934Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "1386a500c914fade1900d0757818bd58d5b552a75a85a7e14cb00610cfd79b15",
+          "expires_at": "2026-10-14T10:51:33.055955+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T10:50:16Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:771": {
+          "query_hash": "7cc66867af4817e1daa230d0d9465ab93806038b42fc4b84223c969ebbdafceb",
+          "cached": false,
+          "query": {
+            "q": "Maandhoo Medical Centre, Maandhoo, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5207497,1.8819574,73.5315158,1.8669555",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "7cc66867af4817e1daa230d0d9465ab93806038b42fc4b84223c969ebbdafceb",
+            "retrieved_at": "2026-10-13T10:51:33.057321Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Maandhoo+Medical+Centre%2C+Maandhoo%2C+Maldives&viewbox=73.5207497%2C1.8819574%2C73.5315158%2C1.8669555",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    }
+  ]
+}

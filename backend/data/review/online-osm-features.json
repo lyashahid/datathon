@@ -1,0 +1,517 @@
+{
+  "version": "online-osm-features-v1",
+  "reviewed_at": "2026-10-13T10:54:36.139227Z",
+  "source_policy": "Only live OSM objects with explicit online identity evidence are included. Provisional candidates remain outside this normalized overlay.",
+  "features": [
+    {
+      "id": "osm:node:11186258448",
+      "source_id": "11186258448",
+      "object_type": "node",
+      "category": "clinic",
+      "name": "European Clinic",
+      "tags": {
+        "amenity": "clinic",
+        "healthcare": "clinic",
+        "name:en": "European Clinic"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.5461254,
+          4.2194254
+        ]
+      },
+      "geometry_source": "live OSM API node/11186258448",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:node:6723361843",
+      "source_id": "6723361843",
+      "object_type": "node",
+      "category": "hospital",
+      "name": "IMDC",
+      "tags": {
+        "amenity": "hospital",
+        "healthcare": "hospital",
+        "name": "IMDC"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.0872262,
+          -0.6019436
+        ]
+      },
+      "geometry_source": "live OSM API node/6723361843",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:node:4800490223",
+      "source_id": "4800490223",
+      "object_type": "node",
+      "category": "hospital",
+      "name": "Rasdhoo hospital",
+      "tags": {
+        "amenity": "hospital",
+        "healthcare": "hospital",
+        "name:en": "Rasdhoo hospital"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.9906215,
+          4.2625744
+        ]
+      },
+      "geometry_source": "live OSM API node/4800490223",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:465261224",
+      "source_id": "465261224",
+      "object_type": "way",
+      "category": "hospital",
+      "name": "South Ari District Medical Center",
+      "tags": {
+        "amenity": "hospital",
+        "healthcare": "hospital",
+        "name": "South Ari District Medical Center",
+        "phone": "+960 668-0529"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.9663885875,
+          3.7575868
+        ]
+      },
+      "geometry_source": "live OSM API way/465261224; centroid of live way geometry",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:1317416264",
+      "source_id": "1317416264",
+      "object_type": "way",
+      "category": "hospital",
+      "name": "Baa Atoll Hospital",
+      "tags": {
+        "building": "hospital",
+        "name": "Baa Atoll Hospital"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.06792168125,
+          5.1043622
+        ]
+      },
+      "geometry_source": "live OSM API way/1317416264; centroid of live way geometry",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:1554432119",
+      "source_id": "1554432119",
+      "object_type": "way",
+      "category": "hospital",
+      "name": "Kumundhoo health Center",
+      "tags": {
+        "barrier": "wall",
+        "healthcare": "yes",
+        "name": "ކުމުނދޫ ސިއްޙީ މަރުކަޒު",
+        "name:dv": "ކުމުނދޫ ސިއްޙީ މަރުކަޒު",
+        "name:en": "Kumundhoo health Center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.0500106625,
+          6.57448856875
+        ]
+      },
+      "geometry_source": "live OSM API way/1554432119; centroid of live way geometry",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:1118550872",
+      "source_id": "1118550872",
+      "object_type": "way",
+      "category": "school",
+      "name": "Sh. Maaungoodhoo School",
+      "tags": {
+        "building": "yes",
+        "name": "Sh. Maaungoodhoo School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.2816484,
+          6.036264
+        ]
+      },
+      "geometry_source": "live OSM API way/1118550872; centroid of live way geometry",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:1167904137",
+      "source_id": "1167904137",
+      "object_type": "way",
+      "category": "hospital",
+      "name": "L.Isdhoo Health Centre (IHC)",
+      "tags": {
+        "addr:city": "isdhoo",
+        "addr:postcode": "15011",
+        "addr:street": "Isdhoo Bodumagu",
+        "amenity": "hospital",
+        "emergency": "yes",
+        "healthcare": "hospital",
+        "healthcare:speciality": "general",
+        "name": "L.Isdhoo Health Centre (IHC)",
+        "operator": "Gamu Regional Hospital (GRH)",
+        "website": "https://www.facebook.com/IsdhooHealthCentre"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.56939,
+          2.11784364
+        ]
+      },
+      "geometry_source": "live OSM API way/1167904137; centroid of live way geometry",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:622011138",
+      "source_id": "622011138",
+      "object_type": "way",
+      "category": "clinic",
+      "name": "Olhuveli Clinic",
+      "tags": {
+        "amenity": "doctors",
+        "building": "yes",
+        "healthcare": "yes",
+        "name": "Olhuveli Clinic"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.4555427,
+          3.8519779
+        ]
+      },
+      "geometry_source": "live OSM API way/622011138; centroid of live way geometry",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:1126434800",
+      "source_id": "1126434800",
+      "object_type": "way",
+      "category": "hospital",
+      "name": "Laamu Hithadhoo Health Centre",
+      "tags": {
+        "addr:city": "Hithadhoo",
+        "addr:postcode": "15110",
+        "healthcare": "hospital",
+        "healthcare:speciality": "gynaecology;general;paediatrics;vaccination;radiology;community",
+        "name": "Laamu Hithadhoo Health Centre",
+        "operator": "Ministry of Health, Rep. of Maldives"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.38890465,
+          1.7999891
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:node:13586575555",
+      "source_id": "13586575555",
+      "object_type": "node",
+      "category": "school",
+      "name": "Fainu School",
+      "tags": {
+        "name": "Fainu School",
+        "office": "educational_institution"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.036115,
+          5.4640163
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:849713608",
+      "source_id": "849713608",
+      "object_type": "way",
+      "category": "school",
+      "name": "Maduvvari School",
+      "tags": {
+        "building": "school",
+        "name": "Maduvvari School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8964839,
+          5.48522705
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:1038348911",
+      "source_id": "1038348911",
+      "object_type": "way",
+      "category": "school",
+      "name": "Dhuvaafaru Primary School",
+      "tags": {
+        "building": "yes",
+        "name": "Dhuvaafaru Primary School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.04196731,
+          5.62576592
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:node:12163204712",
+      "source_id": "12163204712",
+      "object_type": "node",
+      "category": "hospital",
+      "name": "Rinbudhoo Health Center",
+      "tags": {
+        "amenity": "doctors",
+        "healthcare": "doctor",
+        "name": "Rinbudhoo Health Center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8959053,
+          2.9235708
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:744245617",
+      "source_id": "744245617",
+      "object_type": "way",
+      "category": "hospital",
+      "name": "HMHC",
+      "tags": {
+        "amenity": "hospital",
+        "healthcare": "hospital",
+        "name": "HMHC",
+        "operator": "Ministry of Health, Rep of Maldives",
+        "operator:type": "government"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.22732822,
+          -0.58820616
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:555723531",
+      "source_id": "555723531",
+      "object_type": "way",
+      "category": "hospital",
+      "name": "Feydhoo Health Centre",
+      "tags": {
+        "building": "hospital",
+        "name": "Feydhoo Health Centre"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.1360225,
+          -0.6812083727272727
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:1201906805",
+      "source_id": "1201906805",
+      "object_type": "way",
+      "category": "hospital",
+      "name": "Maafaru Health Center",
+      "tags": {
+        "building": "yes",
+        "healthcare": "yes",
+        "healthcare:speciality": "general",
+        "name": "Maafaru Health Center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.47868966,
+          5.8322134
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:1122700184",
+      "source_id": "1122700184",
+      "object_type": "way",
+      "category": "hospital",
+      "name": "Kinolhas Health Center",
+      "tags": {
+        "healthcare": "yes",
+        "name": "Kinolhas Health Center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.02978944545454,
+          5.447952763636364
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:node:13586575558",
+      "source_id": "13586575558",
+      "object_type": "node",
+      "category": "hospital",
+      "name": "Fainu Health Centre",
+      "tags": {
+        "healthcare": "yes",
+        "name": "Fainu Health Centre"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.0346721,
+          5.4652336
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:364839738",
+      "source_id": "364839738",
+      "object_type": "way",
+      "category": "school",
+      "name": "Ihadhdhoo School",
+      "tags": {
+        "building": "school",
+        "name": "Ihadhdhoo School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.542556,
+          1.9316287
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:962507715",
+      "source_id": "962507715",
+      "object_type": "way",
+      "category": "school",
+      "name": "Aboobakuru School",
+      "tags": {
+        "building": "school",
+        "name": "Aboobakuru School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.9956232,
+          0.5253296
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:1000764503",
+      "source_id": "1000764503",
+      "object_type": "way",
+      "category": "school",
+      "name": "Thinadhoo School",
+      "tags": {
+        "building": "school",
+        "name": "Thinadhoo School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.9977109,
+          0.5339866
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:relation:9994380",
+      "source_id": "9994380",
+      "object_type": "relation",
+      "category": "school",
+      "name": "Feydhoo School",
+      "tags": {
+        "amenity": "school",
+        "name": "Feydhoo School",
+        "type": "site",
+        "building": "school"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.1354185,
+          -0.6823775
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    },
+    {
+      "id": "osm:way:364882220",
+      "source_id": "364882220",
+      "object_type": "way",
+      "category": "school",
+      "name": "Hamad Bin Khaleefa Al-Thani School",
+      "tags": {
+        "building": "school",
+        "name": "Hamad Bin Khaleefa Al-Thani School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.5469874,
+          1.9202709
+        ]
+      },
+      "geometry_source": "live OSM API batch validator",
+      "source": "OpenStreetMap live review"
+    }
+  ]
+}

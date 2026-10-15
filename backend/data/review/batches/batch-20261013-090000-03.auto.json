@@ -1,0 +1,165 @@
+{
+  "job_id": "batch-20261013-090000-03",
+  "records": [
+    {
+      "facility_id": "facility:school:612",
+      "official_name": "Aboobakuru School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/612",
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:962507715",
+          "osm_url": "https://www.openstreetmap.org/way/962507715",
+          "name": "Aboobakuru School",
+          "island": "Thinadhoo",
+          "coordinates": [
+            72.9956232,
+            0.5253296
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Aboobakuru School"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge.",
+      "follow_up": "Live-validate and merge if all checks pass."
+    },
+    {
+      "facility_id": "facility:school:613",
+      "official_name": "Hoadedhdhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/613",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:614",
+      "official_name": "Nadella School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/614",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:615",
+      "official_name": "Rathafandhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/615",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:618",
+      "official_name": "Huvadhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/618",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:620",
+      "official_name": "Thinadhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/620",
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:1000764503",
+          "osm_url": "https://www.openstreetmap.org/way/1000764503",
+          "name": "Thinadhoo School",
+          "island": "Thinadhoo",
+          "coordinates": [
+            72.9977109,
+            0.5339866
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Thinadhoo School"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge.",
+      "follow_up": "Live-validate and merge if all checks pass."
+    },
+    {
+      "facility_id": "facility:school:631",
+      "official_name": "Feydhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/631",
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:relation:9994380",
+          "osm_url": "https://www.openstreetmap.org/relation/9994380",
+          "name": "Feydhoo School",
+          "island": "Feydhoo",
+          "coordinates": [
+            73.1354185,
+            -0.6823775
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "Feydhoo School",
+            "type": "site"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge.",
+      "follow_up": "Live-validate and merge if all checks pass."
+    },
+    {
+      "facility_id": "facility:school:634",
+      "official_name": "Jamaluddin School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/634",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:636",
+      "official_name": "Thaajuddeen school",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/636",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:639",
+      "official_name": "Majeediyya School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/639",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    }
+  ],
+  "summary": "deterministic local review"
+}

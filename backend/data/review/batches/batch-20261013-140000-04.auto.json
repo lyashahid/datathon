@@ -1,0 +1,116 @@
+{
+  "job_id": "batch-20261013-140000-04",
+  "records": [
+    {
+      "facility_id": "facility:health:361",
+      "official_name": "Noo Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:363",
+      "official_name": "Ananatara Dhigu Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:365",
+      "official_name": "Kandima Medical Center",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:366",
+      "official_name": "Family Relationship Services",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:37",
+      "official_name": "Raaya Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:376",
+      "official_name": "Master Dental Care Centro",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:377",
+      "official_name": "Dr. Usama's Clinic Maafannu",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:38",
+      "official_name": "My Care Medical Centre",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:381",
+      "official_name": "Mercure Maldives Kooddoo Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:382",
+      "official_name": "Physio Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    }
+  ],
+  "summary": "deterministic local review"
+}

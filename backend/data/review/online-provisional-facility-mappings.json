@@ -1,0 +1,842 @@
+{
+  "version": "online-provisional-facility-mappings-v1",
+  "reviewed_at": "2026-10-13T10:54:36.139227Z",
+  "scope": "online candidates found outside or weakly represented in normalized OSM extract; not included in deterministic geometry until separately ingested and revalidated",
+  "records": [
+    {
+      "facility_id": "facility:health:807",
+      "official_name": "Eye Care Hospital",
+      "category": "hospital",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium-high",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments",
+          "title": "HEMS establishment directory"
+        },
+        {
+          "url": "https://hpa.gov.mv/wp-content/uploads/2026/05/Regulated-Health-Facilities-05.05.2026.pdf",
+          "title": "Licensed Private Health Facilities"
+        }
+      ],
+      "online_identity_evidence": "Official HPA listing places Eye Care Hospital at M. Rose Garden, Male; Google Maps discovery identifies an EyeCare Hospital on Orchid Magu with matching brand/location context.",
+      "osm_object": {
+        "id": "osm:node:12289715928",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/12289715928.json",
+        "browse_url": "https://www.openstreetmap.org/node/12289715928",
+        "coordinates": [
+          73.5060801,
+          4.1761534
+        ],
+        "tags": {
+          "name": "Eye Care Hospital",
+          "shop": "optician"
+        }
+      },
+      "geometry_source": "live OSM node API",
+      "evidence_note": "Exact name and Male location agree, but OSM uses shop=optician instead of hospital/clinic and the object is not present in the normalized PBF extract. Keep provisional; do not include in deterministic scoring."
+    },
+    {
+      "facility_id": "facility:health:335",
+      "official_name": "Hussain Abduh Samad Memorial Clinic",
+      "category": "clinic",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments",
+          "title": "HEMS establishment directory"
+        },
+        {
+          "url": "https://www.google.com/maps/search/?api=1&query=Hussain%20Abdul%20Samad%20Memorial%20Clinic%20Dhangethi%20Maldives",
+          "title": "Google Maps discovery"
+        }
+      ],
+      "online_identity_evidence": "HEMS identifies the clinic and owner Dr. Moosa Hussain. Google Maps identifies a spelling variant on Dhangethi; island and facility identity agree, but phone differs.",
+      "osm_object": {
+        "id": "osm:node:10142752042",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/10142752042.json",
+        "browse_url": "https://www.openstreetmap.org/node/10142752042",
+        "tags": {
+          "name": "Hussan Abdul Samad memorial clinic",
+          "amenity": "doctors",
+          "healthcare": "doctor"
+        }
+      },
+      "geometry_source": "live OSM node API; Dhangethi island context from OSM scan",
+      "evidence_note": "Strong name/island match under an alternate doctors category. OSM/Google phone differs from HEMS and there is no operator/address tag. Keep provisional."
+    },
+    {
+      "facility_id": "facility:health:649",
+      "official_name": "Kandooma Clinic",
+      "category": "clinic",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium-high",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments",
+          "title": "HEMS establishment directory"
+        },
+        {
+          "url": "https://www.maldives.holidayinnresorts.com",
+          "title": "Holiday Inn Resort Kandooma Maldives"
+        }
+      ],
+      "online_identity_evidence": "HEMS operator is Leisure Holiday Pvt Ltd; the OSM resort/islet is Holiday Inn Resort Kandooma Maldives / Kandooma Fushi.",
+      "osm_object": {
+        "id": "osm:node:2670929876",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/2670929876.json",
+        "browse_url": "https://www.openstreetmap.org/node/2670929876",
+        "coordinates": [
+          73.4736421,
+          3.9040274
+        ],
+        "tags": {
+          "name": "Doctor",
+          "amenity": "doctors"
+        }
+      },
+      "geometry_source": "live OSM node API; exact Kandooma resort/islet context from OSM",
+      "evidence_note": "The generic Doctor node lies inside the exact resort/islet named by the official operator context. It lacks the clinic name/operator, so it is provisional only; do not substitute the resort polygon as facility geometry."
+    },
+    {
+      "facility_id": "facility:school:455",
+      "official_name": "Kumundhoo School",
+      "category": "school",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium",
+      "osm_object": {
+        "id": "osm:way:1554432122",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1554432122/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/1554432122",
+        "tags": {
+          "amenity": "school",
+          "education": "school"
+        },
+        "geometry_source": "live OSM API; same-island scan"
+      },
+      "official_sources": [
+        {
+          "url": "https://www.moe.gov.mv/en/schools/455",
+          "title": "Ministry of Education school page"
+        }
+      ],
+      "evidence_note": "Same-island unnamed school way is adjacent to Zamaany Hingun, matching the official address spelling variant Zamaanee Hingun. No name/operator/government tag; keep provisional."
+    },
+    {
+      "facility_id": "facility:health:428",
+      "official_name": "Eye Care Opticals",
+      "category": "clinic",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium",
+      "osm_object": {
+        "id": "osm:node:12289743584",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/12289743584.json",
+        "browse_url": "https://www.openstreetmap.org/node/12289743584",
+        "coordinates": [
+          73.5099048,
+          4.1780459
+        ],
+        "tags": {
+          "name": "Eye Care Opticals",
+          "shop": "optician"
+        },
+        "geometry_source": "live OSM API"
+      },
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments",
+          "title": "HEMS establishment directory"
+        }
+      ],
+      "evidence_note": "Exact official name and optical-category OSM tag agree in Male. No recovered official address/operator linkage and OSM is shop=optician rather than clinic; keep provisional."
+    },
+    {
+      "facility_id": "facility:health:606",
+      "official_name": "Fuvammulah Hospital",
+      "category": "hospital",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium-high",
+      "osm_object": {
+        "id": "osm:way:240173921",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/240173921/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/240173921",
+        "tags": {
+          "name": "GN Atoll Hospital",
+          "building": "hospital",
+          "emergency": "yes"
+        },
+        "geometry_source": "live OSM API; same-island scan"
+      },
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments",
+          "title": "HEMS establishment directory"
+        }
+      ],
+      "evidence_note": "Same island and hospital identity strongly agree; GN Atoll Hospital is a plausible local/alternate name. OSM lacks amenity/healthcare hospital tags and official alias confirmation; keep provisional."
+    },
+    {
+      "facility_id": "facility:health:420",
+      "official_name": "Care Trust Multi Speciality Clinic",
+      "category": "clinic",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium",
+      "osm_object": {
+        "id": "osm:node:11183604237",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/11183604237.json",
+        "browse_url": "https://www.openstreetmap.org/node/11183604237",
+        "coordinates": [
+          73.5430155,
+          4.2163645
+        ],
+        "tags": {
+          "name:en": "Care Trust",
+          "amenity": "doctors",
+          "healthcare": "doctor"
+        },
+        "geometry_source": "live OSM API"
+      },
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments",
+          "title": "HEMS establishment directory"
+        }
+      ],
+      "evidence_note": "Official Hulhumale address and Care Trust name agree with OSM doctor point. Category is doctors rather than clinic and operator/address tags are absent; keep provisional."
+    },
+    {
+      "facility_id": "facility:health:751",
+      "official_name": "Haa Alifu Hoarafushi Health Centre",
+      "category": "health_center",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments",
+          "title": "HEMS establishment directory"
+        },
+        {
+          "url": "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare",
+          "title": "Maaharaa public health directory"
+        }
+      ],
+      "osm_object": {
+        "id": "osm:way:750104531",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/750104531.json",
+        "browse_url": "https://www.openstreetmap.org/way/750104531",
+        "coordinates": [
+          72.8952348,
+          6.9796512
+        ],
+        "tags": {
+          "name": "Regional health center, Hoarafushi",
+          "building": "hospital"
+        }
+      },
+      "geometry_source": "live OSM API way geometry",
+      "evidence_note": "Same-island OSM facility-level way and health-centre name context agree, but operator/address tags are absent. Keep provisional and exclude from deterministic scoring."
+    },
+    {
+      "facility_id": "facility:health:752",
+      "official_name": "Haa Alifu Utheemu Health Centre",
+      "category": "health_center",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments",
+          "title": "HEMS establishment directory"
+        },
+        {
+          "url": "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare",
+          "title": "Maaharaa public health directory"
+        }
+      ],
+      "osm_object": {
+        "id": "osm:node:12996649325",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/12996649325.json",
+        "browse_url": "https://www.openstreetmap.org/node/12996649325",
+        "coordinates": [
+          73.1118438,
+          6.8352895
+        ],
+        "tags": {
+          "name": "Utheemu Health center",
+          "healthcare": "yes"
+        }
+      },
+      "geometry_source": "live OSM API node geometry",
+      "evidence_note": "Same-island OSM object has an exact Utheemu health-centre name variant, but no operator/address tags. Keep provisional and exclude from deterministic scoring."
+    },
+    {
+      "facility_id": "facility:school:441",
+      "official_name": "Ihavandhoo School",
+      "category": "school",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium",
+      "official_sources": [
+        {
+          "url": "https://www.moe.gov.mv/en/schools/441",
+          "title": "Ministry of Education school directory"
+        }
+      ],
+      "osm_object": {
+        "id": "osm:way:1176300081",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1176300081.json",
+        "browse_url": "https://www.openstreetmap.org/way/1176300081",
+        "coordinates": [
+          72.92699006666668,
+          6.954270233333333
+        ],
+        "tags": {
+          "amenity": "school"
+        }
+      },
+      "geometry_source": "live OSM API way geometry",
+      "evidence_note": "Same-island amenity=school way is a plausible Ihavandhoo School location, but it is unnamed and lacks operator/address identity. Keep provisional and exclude from deterministic scoring."
+    },
+    {
+      "facility_id": "facility:health:411",
+      "official_name": "Guest And Staff Clinic",
+      "category": "clinic",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/feedback/411",
+          "title": "HEMS establishment record"
+        },
+        {
+          "url": "https://www.outrigger.com/maldives/konotta-maldives-resort",
+          "title": "Outrigger Konotta resort operator"
+        }
+      ],
+      "osm_object": {
+        "id": "osm:way:660528353",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/660528353.json",
+        "browse_url": "https://www.openstreetmap.org/way/660528353",
+        "coordinates": [
+          73.15385665,
+          0.46331575
+        ],
+        "tags": {
+          "amenity": "clinic",
+          "building": "yes",
+          "healthcare": "clinic"
+        }
+      },
+      "geometry_source": "live OSM API way geometry",
+      "evidence_note": "Same Konotta resort/island context and clinic category agree, but the OSM way is unnamed and lacks operator/address identity. Keep provisional and exclude from deterministic scoring."
+    },
+    {
+      "facility_id": "facility:health:201",
+      "official_name": "Hiyaa Medical Center",
+      "category": "clinic",
+      "decision": "osm_provisional_review_required",
+      "confidence": "low-medium",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/feedback/201",
+          "title": "HEMS establishment record"
+        },
+        {
+          "url": "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare",
+          "title": "Maaharaa public health directory"
+        }
+      ],
+      "osm_object": {
+        "id": "osm:way:758835222",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/758835222.json",
+        "browse_url": "https://www.openstreetmap.org/way/758835222",
+        "coordinates": [
+          73.5487275,
+          4.231736
+        ],
+        "tags": {
+          "addr:housenumber": "12",
+          "building": "apartments",
+          "building:levels": "25",
+          "name": "Hiyaa Flat H12"
+        }
+      },
+      "geometry_source": "live OSM API way geometry",
+      "evidence_note": "Official address points to Hiyaa Tower 12 in Hulhumale; matching apartment building is a plausible address context, but it is not a clinic object and has no operator/facility identity. Keep provisional and exclude from deterministic scoring."
+    },
+    {
+      "facility_id": "facility:health:513",
+      "official_name": "K.Kaashidhoo Health Centre",
+      "category": "health_center",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments/feedback/513",
+          "title": "HEMS establishment record"
+        },
+        {
+          "url": "https://maaharaa.health.gov.mv/Public/Home/FacilityDetail",
+          "title": "Maaharaa facility detail"
+        }
+      ],
+      "osm_object": {
+        "id": "osm:way:524899099",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/524899099.json",
+        "browse_url": "https://www.openstreetmap.org/way/524899099",
+        "coordinates": [
+          73.46419808,
+          4.95887976
+        ],
+        "tags": {
+          "building": "hospital",
+          "name": "Health Centre"
+        }
+      },
+      "geometry_source": "live OSM API way geometry",
+      "evidence_note": "Correct-island generic Health Centre building with matching facility context, but no operator/address tags. Keep provisional until official coordinates or imagery/operator evidence confirms the building."
+    },
+    {
+      "facility_id": "facility:school:491",
+      "official_name": "R. Atoll Education Centre",
+      "category": "school",
+      "decision": "osm_provisional_review_required",
+      "confidence": "low-medium",
+      "official_sources": [
+        {
+          "url": "https://www.moe.gov.mv/en/schools/491",
+          "title": "Ministry of Education school directory"
+        }
+      ],
+      "osm_candidates": [
+        {
+          "id": "osm:way:748621104",
+          "coordinates": [
+            72.9555481,
+            5.45804208
+          ],
+          "tags": {
+            "building": "school"
+          }
+        },
+        {
+          "id": "osm:way:748621106",
+          "coordinates": [
+            72.95588698,
+            5.45794752
+          ],
+          "tags": {
+            "building": "school"
+          }
+        },
+        {
+          "id": "osm:way:748621107",
+          "coordinates": [
+            72.95526285,
+            5.45769755
+          ],
+          "tags": {
+            "building": "school"
+          }
+        },
+        {
+          "id": "osm:way:748621108",
+          "coordinates": [
+            72.95577478,
+            5.4575934
+          ],
+          "tags": {
+            "building": "school"
+          }
+        },
+        {
+          "id": "osm:way:748621109",
+          "coordinates": [
+            72.95551639,
+            5.4573957
+          ],
+          "tags": {
+            "building": "school"
+          }
+        },
+        {
+          "id": "osm:way:1332146378",
+          "coordinates": [
+            72.95531182,
+            5.4574932
+          ],
+          "tags": {
+            "building": "school"
+          }
+        },
+        {
+          "id": "osm:way:1332146380",
+          "coordinates": [
+            72.95567972,
+            5.45781564
+          ],
+          "tags": {
+            "amenity": "school"
+          }
+        }
+      ],
+      "geometry_source": "live OSM API same-island scan",
+      "evidence_note": "Seven same-island school-related polygons were verified, but none has name/operator/address identity. Keep all as provisional candidates and do not attach geometry."
+    },
+    {
+      "facility_id": "facility:health:775",
+      "official_name": "Image center",
+      "category": "clinic",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/feedback/775"
+        }
+      ],
+      "osm_object": {
+        "osm_object_id": "osm:node:11185404564",
+        "osm_url": "https://www.openstreetmap.org/node/11185404564",
+        "name": "Image Center",
+        "island": "Male",
+        "coordinates": [
+          73.5133759,
+          4.1768734
+        ],
+        "tags": {
+          "amenity": "doctors",
+          "healthcare": "doctor",
+          "name:en": "Image Center"
+        }
+      },
+      "geometry_source": "batch worker candidate; independently fetched",
+      "evidence_note": "Exact name and compatible alternate doctors category match the official Image Center in Male, but HEMS does not publish coordinates and the available directory address differs; retain provisional until operator or official coordinate confirmation."
+    },
+    {
+      "facility_id": "facility:health:505",
+      "official_name": "V. Rakeedhoo Health Centre",
+      "category": "health_center",
+      "decision": "osm_provisional_review_required",
+      "confidence": "low",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments?page=39",
+          "title": "HEMS establishment directory"
+        }
+      ],
+      "online_identity_evidence": "Official HEMS identifies V. Rakeedhoo Health Centre on Rakeedhoo, Vaavu. The bounded Overpass island query found a live unnamed way tagged healthcare=yes inside the Rakeedhoo island bbox.",
+      "osm_object": {
+        "id": "osm:way:723034027",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/723034027/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/723034027",
+        "coordinates": [
+          73.4697731,
+          3.3156124
+        ],
+        "tags": {
+          "healthcare": "yes"
+        }
+      },
+      "geometry_source": "live Overpass discovery plus live OSM way API",
+      "evidence_note": "The way is inside the official Rakeedhoo island bbox and is live, but it has no name, operator, address, or specific healthcare value linking it to the Health Centre. healthcare=yes is not sufficient for deterministic attachment. Keep as a review lead only; do not use in accessibility scoring.",
+      "discovery_source": "data/review/batches/batch-20261013-102806.osm-query.json"
+    },
+    {
+      "facility_id": "facility:school:462",
+      "official_name": "Neykurendhoo School",
+      "category": "school",
+      "decision": "osm_provisional_review_required",
+      "confidence": "low",
+      "official_sources": [
+        {
+          "url": "https://www.moe.gov.mv/en/schools/462",
+          "title": "Ministry of Education school page"
+        }
+      ],
+      "online_identity_evidence": "Official school and island agree with a same-island OSM educational-institution building, but the object is unnamed and lacks operator/address identity.",
+      "osm_object": {
+        "id": "osm:way:1035327405",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1035327405/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/1035327405",
+        "coordinates": [
+          72.976191,
+          6.546638775
+        ],
+        "tags": {
+          "building": "yes",
+          "office": "educational_institution"
+        }
+      },
+      "geometry_source": "live OSM object API and bounded island discovery",
+      "evidence_note": "Plausible same-island educational building, but no unique official identity; keep unattached and out of deterministic scoring."
+    },
+    {
+      "facility_id": "facility:school:511",
+      "official_name": "B. Goidhoo School",
+      "category": "school",
+      "decision": "osm_provisional_review_required",
+      "confidence": "low",
+      "official_sources": [
+        {
+          "url": "https://www.moe.gov.mv/en/schools/511",
+          "title": "Ministry of Education school page"
+        }
+      ],
+      "online_identity_evidence": "Official school and island agree with a same-island cluster of live school-tagged OSM buildings, but multiple unnamed buildings prevent unique selection.",
+      "osm_object": {
+        "id": "osm:ways:783239335,783239336,783239342,783239343,891363893,1049832930,1284784813,1284784814",
+        "browse_url": "https://www.openstreetmap.org/#map=19/4.8774/72.9956",
+        "coordinates": [
+          72.99555,
+          4.87745
+        ],
+        "tags": {
+          "building": "school",
+          "amenity": "school"
+        }
+      },
+      "geometry_source": "bounded island discovery and live OSM object verification",
+      "evidence_note": "Multiple plausible same-island school buildings; no unique institution geometry. Keep all candidates unattached and out of deterministic scoring."
+    },
+    {
+      "facility_id": "facility:health:733",
+      "official_name": "Raa Maduvvari Health Centre",
+      "category": "health_center",
+      "decision": "osm_provisional_review_required",
+      "confidence": "low",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments"
+        }
+      ],
+      "osm_object": {
+        "osm_object_id": "osm:way:849710130",
+        "osm_url": "https://www.openstreetmap.org/way/849710130",
+        "name": "Hospital",
+        "island": "Maduvvari",
+        "coordinates": [
+          72.8960839,
+          5.4874938
+        ],
+        "tags": {
+          "building": "hospital",
+          "name": "Hospital"
+        },
+        "status": "discovered_overpass"
+      },
+      "geometry_source": "batch worker candidate; independently fetched",
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional."
+    },
+    {
+      "facility_id": "facility:school:532",
+      "official_name": "Gulhee School",
+      "category": "school",
+      "decision": "osm_provisional_review_required",
+      "confidence": "low",
+      "official_sources": [
+        {
+          "url": "https://www.moe.gov.mv/en/schools/532"
+        }
+      ],
+      "osm_object": {
+        "osm_object_id": "osm:way:380915306",
+        "osm_url": "https://www.openstreetmap.org/way/380915306",
+        "name": "",
+        "island": "Gulhi",
+        "coordinates": [
+          73.5091649,
+          3.9893395
+        ],
+        "tags": {
+          "amenity": "school"
+        },
+        "status": "discovered_overpass"
+      },
+      "geometry_source": "batch worker candidate; independently fetched",
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional."
+    },
+    {
+      "facility_id": "facility:school:555",
+      "official_name": "Rakeedhoo School",
+      "category": "school",
+      "decision": "osm_provisional_review_required",
+      "confidence": "low",
+      "official_sources": [
+        {
+          "url": "https://www.moe.gov.mv/en/schools/555"
+        }
+      ],
+      "osm_object": {
+        "osm_object_id": "osm:way:951547163",
+        "osm_url": "https://www.openstreetmap.org/way/951547163",
+        "name": "",
+        "island": "Rakeedhoo",
+        "coordinates": [
+          73.4699533,
+          3.3146125
+        ],
+        "tags": {
+          "building": "school"
+        },
+        "status": "discovered_overpass"
+      },
+      "geometry_source": "batch worker candidate; independently fetched",
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional."
+    },
+    {
+      "facility_id": "facility:school:588",
+      "official_name": "L. Atoll Education Centre",
+      "category": "school",
+      "decision": "osm_provisional_review_required",
+      "confidence": "low",
+      "official_sources": [
+        {
+          "url": "https://www.moe.gov.mv/en/schools/588"
+        }
+      ],
+      "osm_object": {
+        "osm_object_id": "osm:way:364852691",
+        "osm_url": "https://www.openstreetmap.org/way/364852691",
+        "name": "Laamu Atoll Education Centre",
+        "island": "Fonadhoo",
+        "coordinates": [
+          73.500969,
+          1.8332669
+        ],
+        "tags": {
+          "addr:city": "Medhu Avah",
+          "addr:street": "Siraajudhdheen Magu",
+          "building": "school",
+          "name": "Laamu Atoll Education Centre"
+        },
+        "status": "discovered_overpass"
+      },
+      "geometry_source": "batch worker candidate; independently fetched",
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional."
+    },
+    {
+      "facility_id": "facility:health:153",
+      "official_name": "Naifaru Medical Center",
+      "category": "clinic",
+      "decision": "osm_provisional_review_required",
+      "confidence": "low",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments"
+        }
+      ],
+      "osm_object": {
+        "osm_object_id": "osm:way:590298924",
+        "osm_url": "https://www.openstreetmap.org/way/590298924",
+        "name": "Lhaviyani Atoll Hospital",
+        "island": "Naifaru",
+        "coordinates": [
+          73.364897,
+          5.4448025
+        ],
+        "tags": {
+          "amenity": "hospital",
+          "check_date": "2024-12-28",
+          "emergency": "yes",
+          "healthcare": "hospital",
+          "name": "Lhaviyani Atoll Hospital"
+        },
+        "status": "discovered_overpass"
+      },
+      "geometry_source": "batch worker candidate; independently fetched",
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional."
+    },
+    {
+      "facility_id": "facility:health:181",
+      "official_name": "Meedhupparu Clinic",
+      "category": "clinic",
+      "decision": "osm_provisional_review_required",
+      "confidence": "low",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments"
+        }
+      ],
+      "osm_object": {
+        "osm_object_id": "osm:way:145252285",
+        "osm_url": "https://www.openstreetmap.org/way/145252285",
+        "name": "Arzt",
+        "island": "Meedhupparu",
+        "coordinates": [
+          72.9800358,
+          5.4549217
+        ],
+        "tags": {
+          "amenity": "doctors",
+          "building": "yes",
+          "name": "Arzt",
+          "opening_hours": "Mo-Sa 09:00-10:30, 11:00-13:30, 14:30-17:00, 19:30-20:30, 21:30-22:30"
+        },
+        "status": "discovered_overpass"
+      },
+      "geometry_source": "batch worker candidate; independently fetched",
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional."
+    },
+    {
+      "facility_id": "facility:health:190",
+      "official_name": "Rannalhi Clinic",
+      "category": "clinic",
+      "decision": "osm_provisional_review_required",
+      "confidence": "low",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments"
+        }
+      ],
+      "osm_object": {
+        "osm_object_id": "osm:node:3448737032",
+        "osm_url": "https://www.openstreetmap.org/node/3448737032",
+        "name": "",
+        "island": "Rannaalhi",
+        "coordinates": [
+          73.3577829,
+          3.9032083
+        ],
+        "tags": {
+          "amenity": "doctors"
+        },
+        "status": "discovered_overpass"
+      },
+      "geometry_source": "batch worker candidate; independently fetched",
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional."
+    },
+    {
+      "facility_id": "facility:health:238",
+      "official_name": "Maayafushi Clinic",
+      "category": "clinic",
+      "decision": "osm_provisional_review_required",
+      "confidence": "low",
+      "official_sources": [
+        {
+          "url": "https://hems.health.gov.mv/establishments"
+        }
+      ],
+      "osm_object": {
+        "osm_object_id": "osm:node:3683405365",
+        "osm_url": "https://www.openstreetmap.org/node/3683405365",
+        "name": "",
+        "island": "Maayafushi",
+        "coordinates": [
+          72.8877951,
+          4.0741588
+        ],
+        "tags": {
+          "amenity": "doctors",
+          "healthcare": "doctor"
+        },
+        "status": "discovered_overpass"
+      },
+      "geometry_source": "batch worker candidate; independently fetched",
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional."
+    }
+  ],
+  "summary": {
+    "provisional_candidates": 14,
+    "confirmed": 0,
+    "canonical_normalized_mappings_changed": 2
+  }
+}

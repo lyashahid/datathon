@@ -1,0 +1,12 @@
+{
+  "content_type": "application/json",
+  "endpoint": "local derived output",
+  "http_status": 200,
+  "parser_version": "routing-v1",
+  "retrieved_at": "2026-10-13T12:17:18.222585+00:00",
+  "schema_version": 1,
+  "sha256": "3d241da2729dff6077364526db2a0b54fe118d1d85123378ed199febfb6679e4",
+  "source": "Mobility Sandbox routing graph summary",
+  "source_record_id": null,
+  "status": "fresh"
+}

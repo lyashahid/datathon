@@ -1,0 +1,23 @@
+{
+  "upstream_repository": "https://github.com/PimpinPumpkin/Vela",
+  "upstream_commit": "3c8fc207652e7a4fabfe53089de6ccace308ac61",
+  "calibration_version": 26,
+  "calibration_sha256": "b29a8b6acc1059f6517813896b5d7386bc8a670f7f37df9f10cd6391f8f4d3de",
+  "license": "GPL-3.0-only",
+  "sources": [
+    "core/src/main/java/app/vela/core/data/google/GoogleMapsDataSource.kt",
+    "core/src/main/java/app/vela/core/data/google/SearchPb.kt",
+    "core/src/main/java/app/vela/core/data/google/DirectionsPb.kt",
+    "core/src/main/java/app/vela/core/data/google/GoogleResponse.kt",
+    "core/src/main/java/app/vela/core/data/google/StreetViewParser.kt",
+    "core/src/main/java/app/vela/core/data/google/parse/SearchParser.kt",
+    "core/src/main/java/app/vela/core/data/google/parse/PhotosParser.kt",
+    "core/src/main/java/app/vela/core/data/google/parse/ReviewFeedParser.kt",
+    "core/src/main/java/app/vela/core/data/google/parse/DirectionsParser.kt",
+    "core/src/main/java/app/vela/core/config/Calibration.kt",
+    "app/src/main/java/app/vela/web/WebReviewsFetcher.kt",
+    "app/src/main/java/app/vela/web/ReviewTabJs.kt",
+    "core/src/main/java/app/vela/core/data/ReviewWords.kt"
+  ],
+  "runtime_independence": "All runtime code and data are packaged locally; no original checkout or Datathon reads."
+}

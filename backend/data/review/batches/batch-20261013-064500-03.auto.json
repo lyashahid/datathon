@@ -1,0 +1,132 @@
+{
+  "job_id": "batch-20261013-064500-03",
+  "records": [
+    {
+      "facility_id": "facility:health:608",
+      "official_name": "S. Hulhu-Meedhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:609",
+      "official_name": "S. Feydhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:555723531",
+          "osm_url": "https://www.openstreetmap.org/way/555723531",
+          "name": "Feydhoo Health Centre",
+          "island": "Feydhoo",
+          "coordinates": [
+            73.1360635,
+            -0.6812317
+          ],
+          "tags": {
+            "building": "hospital",
+            "name": "Feydhoo Health Centre"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge.",
+      "follow_up": "Live-validate and merge if all checks pass."
+    },
+    {
+      "facility_id": "facility:health:635",
+      "official_name": "AA. Himandhoo Health center",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:636",
+      "official_name": "Baa Kamadhoo Health Center",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:639",
+      "official_name": "Raa Rasmaadhoo Health Center",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:640",
+      "official_name": "Th. Kandoodhoo Health Center",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:641",
+      "official_name": "F. Feeali Health Center",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:643",
+      "official_name": "Noonu Maafaru Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:645",
+      "official_name": "Raa Alifushi Health Center",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:653",
+      "official_name": "Baa Maalhos Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    }
+  ],
+  "summary": "deterministic local review"
+}

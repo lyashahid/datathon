@@ -1,0 +1,43 @@
+{
+  "facilities": {
+    "source_records": 840
+  },
+  "islands": {
+    "count": 1561,
+    "source": "OneMap"
+  },
+  "matching_policy": {
+    "automatic_match": "official CAA ICAO identifier, or compatible exact normalized name with a unique OSM candidate",
+    "lga_councilor_export": "supporting evidence only, not facility data",
+    "low_confidence_fuzzy_match": "disabled; candidates are emitted for review",
+    "nearby_osm_duplicate_handling": "collapse node/way representations only when same-island and near-coincident",
+    "population_attachment": "P5 island records attach by unique official island name; P3 and P6 records remain explicitly unmatched or reviewable when no exact island exists"
+  },
+  "normalization_version": "normalization-v1",
+  "osm": {
+    "feature_categories": {
+      "aerodrome": 26,
+      "bus_station": 1,
+      "bus_stop": 86,
+      "clinic": 18,
+      "ferry_terminal": 19,
+      "government": 103,
+      "helipad": 4,
+      "hospital": 68,
+      "parking": 5,
+      "pier": 40,
+      "public_transport": 158,
+      "school": 109,
+      "taxi": 5,
+      "terminal": 17
+    },
+    "feature_count": 659,
+    "island_assigned_feature_count": 517,
+    "online_review_feature_count": 24,
+    "route_relation_count": 13
+  },
+  "population": {
+    "count": 5442,
+    "source": "MBS Census 2022 P3/P5/P6"
+  }
+}

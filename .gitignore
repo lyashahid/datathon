@@ -1,4 +1,13 @@
 node_modules
+/legacy/
+/backend/.venv/
+/backend/.pytest_cache/
+/backend/.ruff_cache/
+/backend/.mypy_cache/
+/backend/data/cache/raw/
+/backend/data/cache/live/
+/backend/data/runtime/
+/backend/data/metadata/forecast-issues/
 
 # Keep acquisition originals locally; source manifests record their hashes.
 /data/raw/
@@ -6,8 +15,18 @@ node_modules
 /data/local/
 /artifacts/qa/
 /artifacts/graphics/
+/artifacts/
+/tmp/
+/Research and Development/
+/product-ad/
 /output/pdf/
 __pycache__/
+*.py[cod]
+*.tmp
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 
 # Output
 .output
@@ -25,7 +44,6 @@ Thumbs.db
 .env
 .env.*
 !.env.example
-!.env.test
 
 # Vite
 vite.config.js.timestamp-*

@@ -1,0 +1,655 @@
+{
+  "edges": [
+    {
+      "distance_m": 205.654,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:649",
+      "id": "air:airport:vrah:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrah"
+    },
+    {
+      "distance_m": 205.654,
+      "flight_service_verified": false,
+      "from_id": "airport:vrah",
+      "id": "air:airport:vrah:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:649"
+    },
+    {
+      "distance_m": 919.203,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:680",
+      "id": "air:airport:vrbk:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrbk"
+    },
+    {
+      "distance_m": 919.203,
+      "flight_service_verified": false,
+      "from_id": "airport:vrbk",
+      "id": "air:airport:vrbk:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:680"
+    },
+    {
+      "distance_m": 982.135,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:1171",
+      "id": "air:airport:vrcf:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrcf"
+    },
+    {
+      "distance_m": 982.135,
+      "flight_service_verified": false,
+      "from_id": "airport:vrcf",
+      "id": "air:airport:vrcf:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:1171"
+    },
+    {
+      "distance_m": 762.377,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:952",
+      "id": "air:airport:vrda:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrda"
+    },
+    {
+      "distance_m": 762.377,
+      "flight_service_verified": false,
+      "from_id": "airport:vrda",
+      "id": "air:airport:vrda:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:952"
+    },
+    {
+      "distance_m": 130.723,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:1061",
+      "id": "air:airport:vrei:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrei"
+    },
+    {
+      "distance_m": 130.723,
+      "flight_service_verified": false,
+      "from_id": "airport:vrei",
+      "id": "air:airport:vrei:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:1061"
+    },
+    {
+      "distance_m": 69.45,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:792",
+      "id": "air:airport:vrgd:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrgd"
+    },
+    {
+      "distance_m": 69.45,
+      "flight_service_verified": false,
+      "from_id": "airport:vrgd",
+      "id": "air:airport:vrgd:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:792"
+    },
+    {
+      "distance_m": 63.601,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:188",
+      "id": "air:airport:vrmd:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrmd"
+    },
+    {
+      "distance_m": 63.601,
+      "flight_service_verified": false,
+      "from_id": "airport:vrmd",
+      "id": "air:airport:vrmd:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:188"
+    },
+    {
+      "distance_m": 512.462,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:1128",
+      "id": "air:airport:vrmg:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrmg"
+    },
+    {
+      "distance_m": 512.462,
+      "flight_service_verified": false,
+      "from_id": "airport:vrmg",
+      "id": "air:airport:vrmg:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:1128"
+    },
+    {
+      "distance_m": 982.601,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:684",
+      "id": "air:airport:vrmh:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrmh"
+    },
+    {
+      "distance_m": 982.601,
+      "flight_service_verified": false,
+      "from_id": "airport:vrmh",
+      "id": "air:airport:vrmh:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:684"
+    },
+    {
+      "distance_m": 502.969,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:1483",
+      "id": "air:airport:vrmm:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrmm"
+    },
+    {
+      "distance_m": 502.969,
+      "flight_service_verified": false,
+      "from_id": "airport:vrmm",
+      "id": "air:airport:vrmm:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:1483"
+    },
+    {
+      "distance_m": 111.448,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:370",
+      "id": "air:airport:vrmo:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrmo"
+    },
+    {
+      "distance_m": 111.448,
+      "flight_service_verified": false,
+      "from_id": "airport:vrmo",
+      "id": "air:airport:vrmo:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:370"
+    },
+    {
+      "distance_m": 1799.743,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:1334",
+      "id": "air:airport:vrmr:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrmr"
+    },
+    {
+      "distance_m": 1799.743,
+      "flight_service_verified": false,
+      "from_id": "airport:vrmr",
+      "id": "air:airport:vrmr:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:1334"
+    },
+    {
+      "distance_m": 245.885,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:478",
+      "id": "air:airport:vrmt:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrmt"
+    },
+    {
+      "distance_m": 245.885,
+      "flight_service_verified": false,
+      "from_id": "airport:vrmt",
+      "id": "air:airport:vrmt:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:478"
+    },
+    {
+      "distance_m": 439.564,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:1552",
+      "id": "air:airport:vrmv:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrmv"
+    },
+    {
+      "distance_m": 439.564,
+      "flight_service_verified": false,
+      "from_id": "airport:vrmv",
+      "id": "air:airport:vrmv:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:1552"
+    },
+    {
+      "distance_m": 561.346,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:1252",
+      "id": "air:airport:vrnt:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrnt"
+    },
+    {
+      "distance_m": 561.346,
+      "flight_service_verified": false,
+      "from_id": "airport:vrnt",
+      "id": "air:airport:vrnt:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:1252"
+    },
+    {
+      "distance_m": 345.629,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:452",
+      "id": "air:airport:vrom:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrom"
+    },
+    {
+      "distance_m": 345.629,
+      "flight_service_verified": false,
+      "from_id": "airport:vrom",
+      "id": "air:airport:vrom:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:452"
+    },
+    {
+      "distance_m": 342.059,
+      "flight_service_verified": false,
+      "from_id": "air-gateway:island:541",
+      "id": "air:airport:vrqf:to_airport",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "airport:vrqf"
+    },
+    {
+      "distance_m": 342.059,
+      "flight_service_verified": false,
+      "from_id": "airport:vrqf",
+      "id": "air:airport:vrqf:to_gateway",
+      "mode": "air_access",
+      "source": "CAA+OneMap",
+      "to_id": "air-gateway:island:541"
+    }
+  ],
+  "flight_edges": [],
+  "nodes": [
+    {
+      "coordinates": [
+        73.0241136111111,
+        5.708028888888889
+      ],
+      "id": "air-gateway:island:1061",
+      "island_id": "island:1061",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        73.15275527777779,
+        -0.6943347222222223
+      ],
+      "id": "air-gateway:island:1128",
+      "island_id": "island:1128",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        73.28985277777778,
+        6.153252500000001
+      ],
+      "id": "air-gateway:island:1171",
+      "island_id": "island:1171",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        73.14854666666668,
+        2.2092861111111115
+      ],
+      "id": "air-gateway:island:1252",
+      "island_id": "island:1252",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        73.42514777777778,
+        -0.2950888888888889
+      ],
+      "id": "air-gateway:island:1334",
+      "island_id": "island:1334",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        73.53178805555555,
+        4.195245555555556
+      ],
+      "id": "air-gateway:island:1483",
+      "island_id": "island:1483",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        72.83306083333333,
+        3.4748455555555555
+      ],
+      "id": "air-gateway:island:1552",
+      "island_id": "island:1552",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        73.13070944444443,
+        5.157033333333334
+      ],
+      "id": "air-gateway:island:188",
+      "island_id": "island:188",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        73.433695,
+        0.7335791666666666
+      ],
+      "id": "air-gateway:island:370",
+      "island_id": "island:370",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        73.5104825,
+        0.3359175
+      ],
+      "id": "air-gateway:island:452",
+      "island_id": "island:452",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        72.99397055555556,
+        0.4875938888888889
+      ],
+      "id": "air-gateway:island:478",
+      "island_id": "island:478",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        73.19745888888889,
+        0.19215777777777776
+      ],
+      "id": "air-gateway:island:541",
+      "island_id": "island:541",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        72.89529611111112,
+        6.972486666666667
+      ],
+      "id": "air-gateway:island:649",
+      "island_id": "island:649",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        73.06888944444444,
+        6.623225833333334
+      ],
+      "id": "air-gateway:island:680",
+      "island_id": "island:680",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        73.16965777777779,
+        6.753920833333333
+      ],
+      "id": "air-gateway:island:684",
+      "island_id": "island:684",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        73.37026166666666,
+        5.458755833333334
+      ],
+      "id": "air-gateway:island:792",
+      "island_id": "island:792",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        73.47152750000001,
+        5.824624444444444
+      ],
+      "id": "air-gateway:island:952",
+      "island_id": "island:952",
+      "kind": "island_gateway",
+      "name": null
+    },
+    {
+      "coordinates": [
+        72.89611032142857,
+        6.9708231
+      ],
+      "id": "airport:vrah",
+      "island_id": "island:649",
+      "kind": "airport",
+      "name": "Hoarafushi Airport"
+    },
+    {
+      "coordinates": [
+        73.06695816451612,
+        6.631266748387097
+      ],
+      "id": "airport:vrbk",
+      "island_id": "island:680",
+      "kind": "airport",
+      "name": "Kulhudhuffushi Airport"
+    },
+    {
+      "coordinates": [
+        73.28771022608696,
+        6.161824326086957
+      ],
+      "id": "airport:vrcf",
+      "island_id": "island:1171",
+      "kind": "airport",
+      "name": "Funadhoo Airport"
+    },
+    {
+      "coordinates": [
+        73.4685955602564,
+        5.818419616666667
+      ],
+      "id": "airport:vrda",
+      "island_id": "island:952",
+      "kind": "airport",
+      "name": "Maafaru International Airport"
+    },
+    {
+      "coordinates": [
+        73.0252199,
+        5.7076162
+      ],
+      "id": "airport:vrei",
+      "island_id": "island:1061",
+      "kind": "airport",
+      "name": "Ifuru Airport"
+    },
+    {
+      "coordinates": [
+        73.3698816076923,
+        5.458258884615384
+      ],
+      "id": "airport:vrgd",
+      "island_id": "island:792",
+      "kind": "airport",
+      "name": "Madivaru Airport"
+    },
+    {
+      "coordinates": [
+        73.13077403488373,
+        5.156464986046512
+      ],
+      "id": "airport:vrmd",
+      "island_id": "island:188",
+      "kind": "airport",
+      "name": "Dharavandhoo Airport"
+    },
+    {
+      "coordinates": [
+        73.1557259,
+        -0.690811
+      ],
+      "id": "airport:vrmg",
+      "island_id": "island:1128",
+      "kind": "airport",
+      "name": "Gan International Airport"
+    },
+    {
+      "coordinates": [
+        73.16781835581396,
+        6.745274946511628
+      ],
+      "id": "airport:vrmh",
+      "island_id": "island:684",
+      "kind": "airport",
+      "name": "Hanimaadhoo International Airport"
+    },
+    {
+      "coordinates": [
+        73.52885618798283,
+        4.191794399141631
+      ],
+      "id": "airport:vrmm",
+      "island_id": "island:1483",
+      "kind": "airport",
+      "name": "Velana International Airport"
+    },
+    {
+      "coordinates": [
+        73.4343885,
+        0.7328555
+      ],
+      "id": "airport:vrmo",
+      "island_id": "island:370",
+      "kind": "airport",
+      "name": "Kooddoo Airport"
+    },
+    {
+      "coordinates": [
+        73.43336988888889,
+        -0.3090305
+      ],
+      "id": "airport:vrmr",
+      "island_id": "island:1334",
+      "kind": "airport",
+      "name": "Fuvahmulah Airport"
+    },
+    {
+      "coordinates": [
+        72.99591477999999,
+        0.4886475
+      ],
+      "id": "airport:vrmt",
+      "island_id": "island:478",
+      "kind": "airport",
+      "name": "Kaadedhdhoo Airport"
+    },
+    {
+      "coordinates": [
+        72.83649896226414,
+        3.472883516981132
+      ],
+      "id": "airport:vrmv",
+      "island_id": "island:1552",
+      "kind": "airport",
+      "name": "Villa International Airport Maamigili"
+    },
+    {
+      "coordinates": [
+        73.1524596,
+        2.2124794
+      ],
+      "id": "airport:vrnt",
+      "island_id": "island:1252",
+      "kind": "airport",
+      "name": "Thimarafushi Airport"
+    },
+    {
+      "coordinates": [
+        73.512340025,
+        0.33840975625
+      ],
+      "id": "airport:vrom",
+      "island_id": "island:452",
+      "kind": "airport",
+      "name": "Maavarulu Airport"
+    },
+    {
+      "coordinates": [
+        73.19492005714285,
+        0.19389486190476188
+      ],
+      "id": "airport:vrqf",
+      "island_id": "island:541",
+      "kind": "airport",
+      "name": "Faresmaathodaa Airport"
+    }
+  ],
+  "policy": "airport access only; no flight schedules inferred",
+  "version": "routing-v1"
+}

@@ -1,0 +1,328 @@
+{
+  "checked_at": "2026-10-14T14:08:12.841559+00:00",
+  "scope": "Real anonymous Google consumer requests through integrated FastAPI routes. Mal\u00e9 is the primary sample; San Francisco is an explicitly named imagery coverage sample.",
+  "transport": "running_http_server",
+  "privacy": "Only HTTP statuses, count/coverage metadata and provider identities retained.",
+  "results": {
+    "status": {
+      "http_status": 200,
+      "response_bytes": 106,
+      "elapsed_seconds": 0.038,
+      "meta": null,
+      "data": {
+        "status": "ok",
+        "version": "0.1.0",
+        "calibration_version": 26,
+        "browser_enabled": true,
+        "upstream_checked": false
+      }
+    },
+    "search_male": {
+      "http_status": 200,
+      "response_bytes": 31063,
+      "elapsed_seconds": 0.009,
+      "meta": {
+        "request_id": "e3c2ebfcd02046338d06dcff8d64354c",
+        "provider": "google_consumer",
+        "calibration_version": 26,
+        "cached": true,
+        "warnings": [
+          "One upstream page per call. next_offset is a heuristic, not a guaranteed page."
+        ]
+      },
+      "place_count": 20,
+      "completeness": "unknown",
+      "next_offset": 20
+    },
+    "search_next_offset": {
+      "http_status": 200,
+      "response_bytes": 30487,
+      "elapsed_seconds": 0.008,
+      "meta": {
+        "request_id": "038d9e0123ec4313b22e1885bb1526e7",
+        "provider": "google_consumer",
+        "calibration_version": 26,
+        "cached": true,
+        "warnings": [
+          "One upstream page per call. next_offset is a heuristic, not a guaranteed page."
+        ]
+      },
+      "place_count": 20
+    },
+    "search_cache_hit": {
+      "http_status": 200,
+      "response_bytes": 31063,
+      "elapsed_seconds": 0.008,
+      "meta": {
+        "request_id": "7ac178bfefde4e088693b96c7534f558",
+        "provider": "google_consumer",
+        "calibration_version": 26,
+        "cached": true,
+        "warnings": [
+          "One upstream page per call. next_offset is a heuristic, not a guaranteed page."
+        ]
+      },
+      "place_count": 20
+    },
+    "suggest_male": {
+      "http_status": 200,
+      "response_bytes": 1270,
+      "elapsed_seconds": 0.007,
+      "meta": {
+        "request_id": "c585ebb298f34e1ea7cb529ddf1dc3eb",
+        "provider": "google_consumer",
+        "calibration_version": 26,
+        "cached": true,
+        "warnings": []
+      },
+      "place_count": 1,
+      "query_count": 4
+    },
+    "details_male": {
+      "http_status": 200,
+      "response_bytes": 1689,
+      "elapsed_seconds": 0.007,
+      "meta": {
+        "request_id": "c74bd3f70a0842d1878964a8cef77f31",
+        "provider": "google_consumer",
+        "calibration_version": 26,
+        "cached": true,
+        "warnings": [
+          "Focused search lookup; this does not guarantee every detail field."
+        ]
+      },
+      "identity_matched": true,
+      "present_fields": [
+        "id",
+        "name",
+        "location",
+        "feature_id",
+        "place_id",
+        "address",
+        "category",
+        "rating",
+        "review_count",
+        "phone",
+        "open_now",
+        "status_text",
+        "permanently_closed",
+        "temporarily_closed",
+        "hours",
+        "photo_urls",
+        "photo_dates",
+        "photo_categories",
+        "departments",
+        "about",
+        "updates",
+        "similar_places",
+        "place_type",
+        "country_code",
+        "wheelchair_accessible",
+        "completeness"
+      ]
+    },
+    "cached_place_male": {
+      "http_status": 200,
+      "response_bytes": 1689,
+      "elapsed_seconds": 0.006,
+      "meta": {
+        "request_id": "f61d3f130b9d48dd89e79c59d097a8c4",
+        "provider": "google_consumer",
+        "calibration_version": 26,
+        "cached": true,
+        "warnings": [
+          "Focused search lookup; this does not guarantee every detail field."
+        ]
+      },
+      "identity_matched": true
+    },
+    "photos_male": {
+      "http_status": 200,
+      "response_bytes": 2263,
+      "elapsed_seconds": 0.006,
+      "meta": {
+        "request_id": "1f5e3cc4d46c4ae9a06ba50dd67787d3",
+        "provider": "google_consumer",
+        "calibration_version": 26,
+        "cached": true,
+        "warnings": []
+      },
+      "photo_count": 5,
+      "has_next_token": true
+    },
+    "photo_image": {
+      "http_status": 200,
+      "response_bytes": 164448,
+      "elapsed_seconds": 0.331,
+      "content_type": "image/jpeg",
+      "cache_control": "private, max-age=120"
+    },
+    "reviews_native_male": {
+      "http_status": 200,
+      "response_bytes": 5105,
+      "elapsed_seconds": 0.006,
+      "meta": {
+        "request_id": "d34521a35d7f47ac9e9e00846585b9e0",
+        "provider": "google_consumer",
+        "calibration_version": 26,
+        "cached": true,
+        "warnings": [
+          "Google may return a limited review feed even when end=true. Native next_token is unverified."
+        ]
+      },
+      "review_count": 5,
+      "end": true,
+      "completeness": "limited",
+      "pagination_verified": false
+    },
+    "reviews_browser_male": {
+      "http_status": 200,
+      "response_bytes": 5008,
+      "elapsed_seconds": 3.307,
+      "meta": {
+        "request_id": "c24cbb62ede7422181bdfd184bfc9afa",
+        "provider": "google_consumer",
+        "calibration_version": 26,
+        "cached": false,
+        "warnings": [
+          "Google may return a limited review feed even when end=true. Native next_token is unverified."
+        ]
+      },
+      "review_count": 5,
+      "completeness": "limited",
+      "settled": true
+    },
+    "directions_walking_male": {
+      "http_status": 200,
+      "response_bytes": 3730,
+      "elapsed_seconds": 0.007,
+      "meta": {
+        "request_id": "1dbcc43f76f643d79fe9ba1ad277f7cd",
+        "provider": "google_consumer",
+        "calibration_version": 26,
+        "cached": true,
+        "warnings": [
+          "Google geometry and timing only. Android navigation and offline routing are not included."
+        ]
+      },
+      "route_count": 3,
+      "geometry_point_counts": [
+        18,
+        19,
+        17
+      ],
+      "distance_meters": [
+        686.0,
+        706.0,
+        709.0
+      ],
+      "typical_seconds": [
+        567.0,
+        583.0,
+        588.0
+      ],
+      "traffic_seconds": [
+        null,
+        null,
+        null
+      ]
+    },
+    "directions_driving_male": {
+      "http_status": 200,
+      "response_bytes": 4703,
+      "elapsed_seconds": 0.007,
+      "meta": {
+        "request_id": "6a8de0aa0c384b7d852aff44c9406644",
+        "provider": "google_consumer",
+        "calibration_version": 26,
+        "cached": true,
+        "warnings": [
+          "Google geometry and timing only. Android navigation and offline routing are not included."
+        ]
+      },
+      "route_count": 3,
+      "geometry_point_counts": [
+        24,
+        31,
+        35
+      ],
+      "distance_meters": [
+        910.0,
+        917.0,
+        1133.0
+      ],
+      "typical_seconds": [
+        308.0,
+        332.0,
+        393.0
+      ],
+      "traffic_seconds": [
+        287.0,
+        314.0,
+        370.0
+      ]
+    },
+    "directions_bicycling_male": {
+      "http_status": 502,
+      "response_bytes": 171,
+      "elapsed_seconds": 0.291,
+      "error": {
+        "code": "parser_drift",
+        "message": "Google directions routes were not found at the calibrated path",
+        "details": null
+      }
+    },
+    "streetview_male": {
+      "http_status": 404,
+      "response_bytes": 133,
+      "elapsed_seconds": 0.195,
+      "error": {
+        "code": "no_results",
+        "message": "Search returned no images.",
+        "details": null
+      }
+    },
+    "streetview_san_francisco": {
+      "http_status": 200,
+      "response_bytes": 2120,
+      "elapsed_seconds": 0.006,
+      "meta": {
+        "request_id": "822b60ef4dc64343a8cc218b6b112a7e",
+        "provider": "google_consumer",
+        "calibration_version": 26,
+        "cached": true,
+        "warnings": []
+      },
+      "pano_id": "UiZ-8FRkJwHjR3mwzBTPmg",
+      "level_count": 6
+    },
+    "panorama_san_francisco": {
+      "http_status": 200,
+      "response_bytes": 2117,
+      "elapsed_seconds": 0.006,
+      "meta": {
+        "request_id": "4897dd09d4ab42bc9d5724c429abed55",
+        "provider": "google_consumer",
+        "calibration_version": 26,
+        "cached": true,
+        "warnings": []
+      }
+    },
+    "tile_san_francisco": {
+      "http_status": 200,
+      "response_bytes": 29340,
+      "elapsed_seconds": 0.235,
+      "content_type": "image/jpeg",
+      "cache_control": "private, max-age=120"
+    }
+  },
+  "search_seed": {
+    "feature_id": "0x3b3f7f571a197749:0xb002e1d6310f6b8c",
+    "name": "Mednova Medical Center",
+    "location": {
+      "latitude": 4.1744736,
+      "longitude": 73.5087892
+    }
+  },
+  "finished_at": "2026-10-14T14:08:17.415634+00:00"
+}

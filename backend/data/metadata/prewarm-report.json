@@ -1,0 +1,109 @@
+{
+  "version": "prewarm-v1",
+  "generated_at": "2026-10-13T12:16:32.610770+00:00",
+  "data_directory": "D:\\datathon\\backend\\data",
+  "phases": {
+    "source_refresh": {
+      "status": "skipped",
+      "message": "Using the last-known-good raw cache."
+    },
+    "normalization": {
+      "status": "ok",
+      "result": {
+        "islands": 1561,
+        "population_records": 5442,
+        "population_mapping_proposals": 20,
+        "facilities": 840,
+        "osm_features": 659,
+        "osm_summary": {
+          "feature_count": 659,
+          "island_assigned_feature_count": 517,
+          "feature_categories": {
+            "aerodrome": 26,
+            "bus_station": 1,
+            "bus_stop": 86,
+            "clinic": 18,
+            "ferry_terminal": 19,
+            "government": 103,
+            "helipad": 4,
+            "hospital": 68,
+            "parking": 5,
+            "pier": 40,
+            "public_transport": 158,
+            "school": 109,
+            "taxi": 5,
+            "terminal": 17
+          },
+          "route_relation_count": 13,
+          "online_review_feature_count": 24
+        },
+        "routing_summary": {
+          "routing_version": "routing-v1",
+          "land": {
+            "island_count": 431,
+            "node_count": 59686,
+            "edge_count": 137842
+          },
+          "marine": {
+            "node_count": 71,
+            "edge_count": 35,
+            "route_relation_count": 7
+          },
+          "air": {
+            "node_count": 34,
+            "edge_count": 34
+          },
+          "demand": {
+            "anchor_count": 1865
+          },
+          "limitations": [
+            "OSM ferry relations are connectivity candidates, not verified schedules.",
+            "Airport graph contains airport-to-island access gateways, not flight schedules.",
+            "Demand anchors are approximate OSM geometry and have no allocated population until MBS island mapping is approved."
+          ]
+        },
+        "facility_match_summary": {
+          "exact_normalized_name": 62,
+          "exact_source_identifier": 18,
+          "island_context_only": 302,
+          "osm_best_effort": 28,
+          "osm_match_review_required": 125,
+          "osm_provisional_review_required": 16,
+          "reviewed_osm_match": 48,
+          "source_not_in_osm": 241
+        },
+        "facility_candidate_count": 169,
+        "facility_review_summary": {
+          "accepted_best_effort": 28,
+          "not_approved_no_osm_match": 543,
+          "provisional_match_review_required": 16,
+          "accepted_reviewed_match": 48,
+          "not_approved_ambiguous_candidate": 125,
+          "accepted_exact_match": 80
+        },
+        "population_attached": 1049
+      }
+    },
+    "accessibility": {
+      "status": "ok",
+      "summary": {
+        "island_count": 1561,
+        "average_score": 1.93,
+        "zero_score_count": 1466,
+        "missing_data_score_count": 1561
+      }
+    },
+    "cache_validation": {
+      "status": "ok",
+      "checked_files": 13,
+      "required_file_count": 13,
+      "errors": [],
+      "warnings": []
+    }
+  },
+  "readiness": {
+    "status": "ready",
+    "errors": [],
+    "source_refresh_warning": false
+  }
+}

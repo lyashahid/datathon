@@ -1,0 +1,12 @@
+{
+  "content_type": "application/json",
+  "endpoint": "local normalized output",
+  "http_status": 200,
+  "parser_version": "normalization-v1",
+  "retrieved_at": "2026-10-13T12:17:19.707529+00:00",
+  "schema_version": 1,
+  "sha256": "96fb201ca3bb8ee7da7e0ea02c38f946042cf24198e42a77634df3c0eb6b8576",
+  "source": "Mobility Sandbox normalized OneMap data",
+  "source_record_id": null,
+  "status": "fresh"
+}

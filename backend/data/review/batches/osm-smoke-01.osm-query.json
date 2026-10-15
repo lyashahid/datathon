@@ -1,0 +1,85 @@
+{
+  "version": "facility-osm-query-v1",
+  "queried_at": "2026-10-13T06:54:37.891285Z",
+  "record_count": 1,
+  "island_query_count": 1,
+  "results": [
+    {
+      "island_key": "name:rin budhoo|dhaalu",
+      "facility_ids": [
+        "facility:health:502"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.9226119,72.8925356,2.9264851,72.8982799);nwr[\"healthcare\"](2.9226119,72.8925356,2.9264851,72.8982799);nwr[\"office\"=\"educational_institution\"](2.9226119,72.8925356,2.9264851,72.8982799);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.9226119,72.8925356,2.9264851,72.8982799););out center tags;",
+      "overpass": {
+        "query_hash": "f39b47edde8be27c490f61df4618c26bc4d7b6d663e611e44670616f35c8392c",
+        "cached": true,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "f39b47edde8be27c490f61df4618c26bc4d7b6d663e611e44670616f35c8392c",
+          "retrieved_at": "2026-10-13T06:19:41.061623Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "3a795510d87cfe96245a49151d2cc035b436741f7d33c540f3359117bee86831",
+          "expires_at": "2026-10-14T06:19:41.061648+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T06:17:48Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "node",
+              "id": 12163204712,
+              "lat": 2.9235708,
+              "lon": 72.8959053,
+              "tags": {
+                "amenity": "doctors",
+                "healthcare": "doctor",
+                "name": "Rinbudhoo Health Center"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1314127765,
+              "center": {
+                "lat": 2.9242445,
+                "lon": 72.8951602
+              },
+              "tags": {
+                "amenity": "school",
+                "name": "Rinbudhoo School"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:health:502": {
+          "query_hash": "0d5201935a20799b1c5f3651d71a5e8d2785b10822e52f63e93ee2236fb09958",
+          "cached": false,
+          "query": {
+            "q": "DH. Rinbidhoo Health Centre, Rin'budhoo, Dhaalu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.8925356,2.9264851,72.8982799,2.9226119",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "0d5201935a20799b1c5f3651d71a5e8d2785b10822e52f63e93ee2236fb09958",
+            "retrieved_at": "2026-10-13T06:54:37.373886Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=DH.+Rinbidhoo+Health+Centre%2C+Rin%27budhoo%2C+Dhaalu%2C+Maldives&viewbox=72.8925356%2C2.9264851%2C72.8982799%2C2.9226119",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    }
+  ]
+}

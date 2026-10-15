@@ -1,0 +1,824 @@
+{
+  "job_id": "batch-20261013-150000-04",
+  "records": [
+    {
+      "facility_id": "facility:health:460",
+      "official_name": "Medical & Hyperbaric Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:47",
+      "official_name": "Moving Cure",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:472",
+      "official_name": "Ayada Maldives Resort Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:473",
+      "official_name": "Kurumba Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:48",
+      "official_name": "CareOne Dental & Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:482",
+      "official_name": "Male' Eye Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:11185404756",
+          "osm_url": "https://www.openstreetmap.org/node/11185404756",
+          "name": "The Clinic",
+          "island": "Malé",
+          "coordinates": [
+            73.5133692,
+            4.1768088
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "The Clinic"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:9951500245",
+          "osm_url": "https://www.openstreetmap.org/node/9951500245",
+          "name": "Central Clinic",
+          "island": "Malé",
+          "coordinates": [
+            73.5059555,
+            4.1750642
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name": "Central Clinic",
+            "phone": "+9603312221"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:9951457715",
+          "osm_url": "https://www.openstreetmap.org/node/9951457715",
+          "name": "Advance Medical Clinic",
+          "island": "Malé",
+          "coordinates": [
+            73.5099234,
+            4.1726376
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name": "Advance Medical Clinic",
+            "phone": "+9603007788"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:4584491564",
+          "osm_url": "https://www.openstreetmap.org/node/4584491564",
+          "name": "Poli Clinic & Medicals",
+          "island": "Malé",
+          "coordinates": [
+            73.5086607,
+            4.1739241
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name": "Poli Clinic & Medicals"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11185404564",
+          "osm_url": "https://www.openstreetmap.org/node/11185404564",
+          "name": "Image Center",
+          "island": "Malé",
+          "coordinates": [
+            73.5133759,
+            4.1768734
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "Image Center"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:6294957686",
+          "osm_url": "https://www.openstreetmap.org/node/6294957686",
+          "name": "Family Care",
+          "island": "Malé",
+          "coordinates": [
+            73.5159113,
+            4.1708825
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name": "Family Care"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:762119227",
+          "osm_url": "https://www.openstreetmap.org/way/762119227",
+          "name": "Medica",
+          "island": "Malé",
+          "coordinates": [
+            73.509502,
+            4.1786712
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "building": "yes",
+            "healthcare": "clinic",
+            "name": "Medica"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11183604042",
+          "osm_url": "https://www.openstreetmap.org/node/11183604042",
+          "name": "Pine Tree Health Care",
+          "island": "Malé",
+          "coordinates": [
+            73.5128807,
+            4.1774472
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "Pine Tree Health Care"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:151403710",
+          "osm_url": "https://www.openstreetmap.org/way/151403710",
+          "name": "Indira Gandhi Memorial Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5016077,
+            4.1733513
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "building": "yes",
+            "check_date": "2025-12-28",
+            "emergency": "yes",
+            "healthcare": "hospital",
+            "name": "Indira Gandhi Memorial Hospital",
+            "wikidata": "Q6024972",
+            "wikipedia": "en:Indira Gandhi Memorial Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1144346103",
+          "osm_url": "https://www.openstreetmap.org/way/1144346103",
+          "name": "Dharumavantha Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5012018,
+            4.1728204
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "25",
+            "name": "Dharumavantha Hospital",
+            "nohousenumber": "yes"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1548839614",
+          "osm_url": "https://www.openstreetmap.org/way/1548839614",
+          "name": "Dharumavantha Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5016116,
+            4.1732159
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "name": "Dharumavantha Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1001579095",
+          "osm_url": "https://www.openstreetmap.org/way/1001579095",
+          "name": "National Drug Agency of the Maldives",
+          "island": "Malé",
+          "coordinates": [
+            73.5119849,
+            4.174518
+          ],
+          "tags": {
+            "addr:city": "Male'",
+            "addr:street": "Alikilegefaanu Magu",
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "healthcare:speciality": "addiction",
+            "name": "National Drug Agency of the Maldives",
+            "wheelchair": "limited"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929099",
+          "osm_url": "https://www.openstreetmap.org/way/1317929099",
+          "name": "ADK Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5152839,
+            4.1749374
+          ],
+          "tags": {
+            "addr:city": "Male",
+            "addr:street": "Sosun Magu",
+            "amenity": "hospital",
+            "emergency": "yes",
+            "healthcare": "hospital",
+            "name": "ADK Hospital",
+            "wikidata": "Q4651138",
+            "wikipedia": "en:ADK Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:9951513836",
+          "osm_url": "https://www.openstreetmap.org/node/9951513836",
+          "name": "Senahiya Military Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.516507,
+            4.1716899
+          ],
+          "tags": {
+            "addr:street": "Moonlight Hingun, Malé, Maldives",
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "name": "Senahiya Military Hospital",
+            "opening_hours": "Mo-Su 06:00-06:00",
+            "phone": "+9603019899",
+            "website": "https://senahiya.business.site/"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:13999662501",
+          "osm_url": "https://www.openstreetmap.org/node/13999662501",
+          "name": "Lobby A",
+          "island": "Malé",
+          "coordinates": [
+            73.5148796,
+            4.1751159
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "name": "Lobby A"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929094",
+          "osm_url": "https://www.openstreetmap.org/way/1317929094",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5148801,
+            4.1751268
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "9",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929095",
+          "osm_url": "https://www.openstreetmap.org/way/1317929095",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5150742,
+            4.1751537
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "8",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929096",
+          "osm_url": "https://www.openstreetmap.org/way/1317929096",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5152662,
+            4.1751388
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "8",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929097",
+          "osm_url": "https://www.openstreetmap.org/way/1317929097",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5154649,
+            4.1751211
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "8",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929098",
+          "osm_url": "https://www.openstreetmap.org/way/1317929098",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5153868,
+            4.1749283
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1550173481",
+          "osm_url": "https://www.openstreetmap.org/way/1550173481",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5021703,
+            4.1733067
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:49",
+      "official_name": "VitalCare Dental",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:5",
+      "official_name": "SC Dental Care",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:50",
+      "official_name": "My Family Dentist Male'",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:6294957686",
+          "osm_url": "https://www.openstreetmap.org/node/6294957686",
+          "name": "Family Care",
+          "island": "Malé",
+          "coordinates": [
+            73.5159113,
+            4.1708825
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name": "Family Care"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:9951513836",
+          "osm_url": "https://www.openstreetmap.org/node/9951513836",
+          "name": "Senahiya Military Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.516507,
+            4.1716899
+          ],
+          "tags": {
+            "addr:street": "Moonlight Hingun, Malé, Maldives",
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "name": "Senahiya Military Hospital",
+            "opening_hours": "Mo-Su 06:00-06:00",
+            "phone": "+9603019899",
+            "website": "https://senahiya.business.site/"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:4584491564",
+          "osm_url": "https://www.openstreetmap.org/node/4584491564",
+          "name": "Poli Clinic & Medicals",
+          "island": "Malé",
+          "coordinates": [
+            73.5086607,
+            4.1739241
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name": "Poli Clinic & Medicals"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1144346103",
+          "osm_url": "https://www.openstreetmap.org/way/1144346103",
+          "name": "Dharumavantha Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5012018,
+            4.1728204
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "25",
+            "name": "Dharumavantha Hospital",
+            "nohousenumber": "yes"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1548839614",
+          "osm_url": "https://www.openstreetmap.org/way/1548839614",
+          "name": "Dharumavantha Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5016116,
+            4.1732159
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "name": "Dharumavantha Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11185404564",
+          "osm_url": "https://www.openstreetmap.org/node/11185404564",
+          "name": "Image Center",
+          "island": "Malé",
+          "coordinates": [
+            73.5133759,
+            4.1768734
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "Image Center"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1001579095",
+          "osm_url": "https://www.openstreetmap.org/way/1001579095",
+          "name": "National Drug Agency of the Maldives",
+          "island": "Malé",
+          "coordinates": [
+            73.5119849,
+            4.174518
+          ],
+          "tags": {
+            "addr:city": "Male'",
+            "addr:street": "Alikilegefaanu Magu",
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "healthcare:speciality": "addiction",
+            "name": "National Drug Agency of the Maldives",
+            "wheelchair": "limited"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:9951457715",
+          "osm_url": "https://www.openstreetmap.org/node/9951457715",
+          "name": "Advance Medical Clinic",
+          "island": "Malé",
+          "coordinates": [
+            73.5099234,
+            4.1726376
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name": "Advance Medical Clinic",
+            "phone": "+9603007788"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929099",
+          "osm_url": "https://www.openstreetmap.org/way/1317929099",
+          "name": "ADK Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5152839,
+            4.1749374
+          ],
+          "tags": {
+            "addr:city": "Male",
+            "addr:street": "Sosun Magu",
+            "amenity": "hospital",
+            "emergency": "yes",
+            "healthcare": "hospital",
+            "name": "ADK Hospital",
+            "wikidata": "Q4651138",
+            "wikipedia": "en:ADK Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11183604042",
+          "osm_url": "https://www.openstreetmap.org/node/11183604042",
+          "name": "Pine Tree Health Care",
+          "island": "Malé",
+          "coordinates": [
+            73.5128807,
+            4.1774472
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "Pine Tree Health Care"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:9951500245",
+          "osm_url": "https://www.openstreetmap.org/node/9951500245",
+          "name": "Central Clinic",
+          "island": "Malé",
+          "coordinates": [
+            73.5059555,
+            4.1750642
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name": "Central Clinic",
+            "phone": "+9603312221"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:151403710",
+          "osm_url": "https://www.openstreetmap.org/way/151403710",
+          "name": "Indira Gandhi Memorial Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5016077,
+            4.1733513
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "building": "yes",
+            "check_date": "2025-12-28",
+            "emergency": "yes",
+            "healthcare": "hospital",
+            "name": "Indira Gandhi Memorial Hospital",
+            "wikidata": "Q6024972",
+            "wikipedia": "en:Indira Gandhi Memorial Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11185404756",
+          "osm_url": "https://www.openstreetmap.org/node/11185404756",
+          "name": "The Clinic",
+          "island": "Malé",
+          "coordinates": [
+            73.5133692,
+            4.1768088
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "The Clinic"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:13999662501",
+          "osm_url": "https://www.openstreetmap.org/node/13999662501",
+          "name": "Lobby A",
+          "island": "Malé",
+          "coordinates": [
+            73.5148796,
+            4.1751159
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "name": "Lobby A"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:762119227",
+          "osm_url": "https://www.openstreetmap.org/way/762119227",
+          "name": "Medica",
+          "island": "Malé",
+          "coordinates": [
+            73.509502,
+            4.1786712
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "building": "yes",
+            "healthcare": "clinic",
+            "name": "Medica"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929094",
+          "osm_url": "https://www.openstreetmap.org/way/1317929094",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5148801,
+            4.1751268
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "9",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929095",
+          "osm_url": "https://www.openstreetmap.org/way/1317929095",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5150742,
+            4.1751537
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "8",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929096",
+          "osm_url": "https://www.openstreetmap.org/way/1317929096",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5152662,
+            4.1751388
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "8",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929097",
+          "osm_url": "https://www.openstreetmap.org/way/1317929097",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5154649,
+            4.1751211
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "8",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929098",
+          "osm_url": "https://www.openstreetmap.org/way/1317929098",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5153868,
+            4.1749283
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1550173481",
+          "osm_url": "https://www.openstreetmap.org/way/1550173481",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5021703,
+            4.1733067
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:51",
+      "official_name": "Kanuhura Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    }
+  ],
+  "summary": "deterministic local review"
+}

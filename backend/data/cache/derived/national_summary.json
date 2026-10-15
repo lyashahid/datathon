@@ -1,0 +1,46 @@
+{
+  "accessibility_status": "not_calculated_in_phase_2",
+  "facility_categories": {
+    "airport": 19,
+    "clinic": 406,
+    "health_center": 164,
+    "hospital": 31,
+    "school": 220
+  },
+  "facility_count": 840,
+  "facility_match_status": {
+    "exact_normalized_name": 62,
+    "exact_source_identifier": 18,
+    "island_context_only": 302,
+    "osm_best_effort": 28,
+    "osm_match_review_required": 125,
+    "osm_provisional_review_required": 16,
+    "reviewed_osm_match": 48,
+    "source_not_in_osm": 241
+  },
+  "island_count": 1561,
+  "osm": {
+    "feature_categories": {
+      "aerodrome": 26,
+      "bus_station": 1,
+      "bus_stop": 86,
+      "clinic": 18,
+      "ferry_terminal": 19,
+      "government": 103,
+      "helipad": 4,
+      "hospital": 68,
+      "parking": 5,
+      "pier": 40,
+      "public_transport": 158,
+      "school": 109,
+      "taxi": 5,
+      "terminal": 17
+    },
+    "feature_count": 659,
+    "island_assigned_feature_count": 517,
+    "online_review_feature_count": 24,
+    "route_relation_count": 13
+  },
+  "population_attached_count": 1049,
+  "population_record_count": 5442
+}

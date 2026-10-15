@@ -1,0 +1,1088 @@
+{
+  "version": "online-facility-evidence-health-ga-gdh-ha-alt-category-2026-10-13-v1",
+  "review_scope": "Ten unresolved official HEMS health centres: Gaafu Alifu, Gaafu Dhaalu, and Haa Alifu; alternate-category OSM investigation",
+  "reviewed_at": "2026-10-13T04:00:00+05:00",
+  "access_date": "2026-10-13",
+  "canonical_files_modified": false,
+  "source_hierarchy": [
+    "local normalized HEMS/OneMap cache",
+    "official HEMS establishment directory",
+    "Google Maps public place discovery",
+    "Nominatim discovery",
+    "live OpenStreetMap API map bboxes and object API",
+    "Overpass public API"
+  ],
+  "global_method_note": "Island agreement was required. Resort/island polygons, generic buildings, fire stations, mosques, schools, pharmacies, and unrelated facilities were not mapped as health centres. OSM map bboxes were derived from official OneMap island polygons. HTTP 200 was treated as retrieval only; tags, category, name, and island context were checked separately. Nominatim was discovery-only and partly rate-limited; Overpass returned successfully and produced no accepted facility candidate.",
+  "summary": {
+    "records": 10,
+    "safe_mappings_accepted": 0,
+    "source_not_in_osm": 10,
+    "rejected_osm_candidates": 7,
+        "google_island_specific_evidence": 10,
+        "canonical_files_modified": false,
+        "bottom_line": "All ten HEMS facilities have island-agreeing Google Maps discovery (two are generic-name island places/variants), but no safe facility-level OSM mapping. The seven rejected scan objects are one generic healthcare=yes building, one school, one fire station, and four mosques; none is facility-level evidence for a health centre."
+  },
+  "records": [
+    {
+      "facility_id": "facility:health:588",
+      "official_name": "GA. Kan'dhuhulhudhoo Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 1",
+      "official_owner": "Ministry of Health",
+      "official_source_record_id": "588",
+      "official_island": "Kan'duhulhudhoo",
+      "official_atoll": "Gaafu Alifu",
+      "official_context_status": "fuzzy_island_context_requires_review",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "facility_id": "facility:health:588",
+        "query": "GA. Kan'dhuhulhudhoo Health Centre Maldives",
+        "title": "Kanduhulhudhoo Health Centre",
+        "category": "Community health center",
+        "location_text": "9G3Q+5QR, Kanduhulhudhoo",
+        "plus_code": "9G3Q+5QR",
+        "phone": "682-0115",
+        "result_type": "exact_island_place",
+        "observation": "Google normalizes Kan'dhuhulhudhoo to Kanduhulhudhoo and shows the same official island.",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=GA.+Kan%27dhuhulhudhoo+Health+Centre+Maldives"
+      },
+      "nominatim_discovery": {
+        "island_query_url": "https://nominatim.openstreetmap.org/search?q=Kan%27duhulhudhoo+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "island_http_status": 200,
+        "island_result_count": 0,
+        "island_results": [],
+        "exact_facility_query_url": "https://nominatim.openstreetmap.org/search?q=GA.+Kan%27dhuhulhudhoo+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "exact_facility_http_status": 200,
+        "exact_facility_result_count": 0,
+        "rate_limit_note": null
+      },
+      "osm_island_scan": {
+        "source": "OpenStreetMap API map bbox",
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.5356094,0.3461624,73.5439956,0.3568181",
+        "http_status": 200,
+        "bbox": [
+          73.5356093912697,
+          0.346162424604931,
+          73.5439955784049,
+          0.356818100810944
+        ],
+        "object_count": 156,
+        "tagged_object_count": 65,
+        "alternate_categories_checked": [
+          "amenity=*",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=*",
+          "name/alt_name token regex health|clinic|hospital|doctor|medical|pharmacy|dispensary|centre|center|healthcare"
+        ],
+        "relevant_objects": []
+      },
+      "overpass_check": {
+        "endpoint": "https://overpass.kumi.systems/api/interpreter",
+        "http_status": 200,
+        "query_file": "data/review/online-facility-health-ga-gdh-ha-overpass-20261013.query.txt",
+        "elements_returned": 550,
+        "relevant_objects_in_island": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplies island-specific place evidence, but live OSM map/Overpass scans found no defensible facility-level health object. No alternate-category facility object was found."
+    },
+    {
+      "facility_id": "facility:health:591",
+      "official_name": "GA. Kolamafushi Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 3",
+      "official_owner": "Ministry of Health",
+      "official_source_record_id": "591",
+      "official_island": "Kolamaafushi",
+      "official_atoll": "Gaafu Alifu",
+      "official_context_status": "fuzzy_island_context_requires_review",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "facility_id": "facility:health:591",
+        "query": "GA. Kolamafushi Health Centre Maldives",
+        "title": "GA Kolamaafushi Health Center",
+        "category": "Hospital",
+        "location_text": "R5PP+V8P, Kolamaafushi",
+        "plus_code": "R5PP+V8P",
+        "phone": null,
+        "result_type": "exact_island_place",
+        "observation": "Google normalizes Kolamafushi to Kolamaafushi and returns the official island.",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=GA.+Kolamafushi+Health+Centre+Maldives"
+      },
+      "nominatim_discovery": {
+        "island_query_url": "https://nominatim.openstreetmap.org/search?q=Kolamaafushi+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "island_http_status": 200,
+        "island_result_count": 1,
+        "island_results": [
+          [
+            "way",
+            "19932420",
+            "Kolamaafushi",
+            "ކޮލަމާފުށި, ހުވަދުއަތޮޅު އުތުރުބުރި, ދިވެހިރާއްޖެ",
+            "0.8373860",
+            "73.1839716"
+          ]
+        ],
+        "exact_facility_query_url": "https://nominatim.openstreetmap.org/search?q=GA.+Kolamafushi+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "exact_facility_http_status": 200,
+        "exact_facility_result_count": 0,
+        "rate_limit_note": null
+      },
+      "osm_island_scan": {
+        "source": "OpenStreetMap API map bbox",
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.1798617,0.8312005,73.1902940,0.8432974",
+        "http_status": 200,
+        "bbox": [
+          73.1798617408107,
+          0.831200462489249,
+          73.1902939874308,
+          0.843297388699071
+        ],
+        "object_count": 666,
+        "tagged_object_count": 102,
+        "alternate_categories_checked": [
+          "amenity=*",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=*",
+          "name/alt_name token regex health|clinic|hospital|doctor|medical|pharmacy|dispensary|centre|center|healthcare"
+        ],
+        "relevant_objects": []
+      },
+      "overpass_check": {
+        "endpoint": "https://overpass.kumi.systems/api/interpreter",
+        "http_status": 200,
+        "query_file": "data/review/online-facility-health-ga-gdh-ha-overpass-20261013.query.txt",
+        "elements_returned": 550,
+        "relevant_objects_in_island": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplies island-specific place evidence, but live OSM map/Overpass scans found no defensible facility-level health object. No alternate-category facility object was found."
+    },
+    {
+      "facility_id": "facility:health:584",
+      "official_name": "GA. Kondey Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 1",
+      "official_owner": "Ministry of Health",
+      "official_source_record_id": "584",
+      "official_island": "Kondey",
+      "official_atoll": "Gaafu Alifu",
+      "official_context_status": "proposed_context_requires_review",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "facility_id": "facility:health:584",
+        "query": "GA. Kondey Health Centre Maldives",
+        "title": "Health Center",
+        "category": "Community health center",
+        "location_text": "Health Center, Kondey",
+        "plus_code": "FGXW+5J",
+        "phone": null,
+        "result_type": "island_specific_generic_name",
+        "observation": "Google returns a generic Health Center place explicitly located on Kondey; name is not facility-specific.",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=GA.+Kondey+Health+Centre+Maldives"
+      },
+      "nominatim_discovery": {
+        "island_query_url": "https://nominatim.openstreetmap.org/search?q=Kondey+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "island_http_status": 200,
+        "island_result_count": 1,
+        "island_results": [
+          [
+            "way",
+            "19932525",
+            "Kondey",
+            "ކޮނޑޭ, ހުވަދުއަތޮޅު އުތުރުބުރި, ދިވެހިރާއްޖެ",
+            "0.4996788",
+            "73.5483719"
+          ]
+        ],
+        "exact_facility_query_url": "https://nominatim.openstreetmap.org/search?q=GA.+Kondey+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "exact_facility_http_status": 200,
+        "exact_facility_result_count": 0,
+        "rate_limit_note": null
+      },
+      "osm_island_scan": {
+        "source": "OpenStreetMap API map bbox",
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.5408683,0.4900140,73.5566618,0.5095012",
+        "http_status": 200,
+        "bbox": [
+          73.5408682816565,
+          0.490013991815017,
+          73.5566618310975,
+          0.509501237079305
+        ],
+        "object_count": 460,
+        "tagged_object_count": 57,
+        "alternate_categories_checked": [
+          "amenity=*",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=*",
+          "name/alt_name token regex health|clinic|hospital|doctor|medical|pharmacy|dispensary|centre|center|healthcare"
+        ],
+        "relevant_objects": []
+      },
+      "overpass_check": {
+        "endpoint": "https://overpass.kumi.systems/api/interpreter",
+        "http_status": 200,
+        "query_file": "data/review/online-facility-health-ga-gdh-ha-overpass-20261013.query.txt",
+        "elements_returned": 550,
+        "relevant_objects_in_island": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "source_not_in_osm",
+      "confidence": "medium-high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplies island-specific place evidence, but live OSM map/Overpass scans found no defensible facility-level health object. No alternate-category facility object was found."
+    },
+    {
+      "facility_id": "facility:health:586",
+      "official_name": "GA. Nilandhoo Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 1",
+      "official_owner": "Ministry of Health",
+      "official_source_record_id": "586",
+      "official_island": "Nilandhoo",
+      "official_atoll": "Gaafu Alifu",
+      "official_context_status": "proposed_context_requires_review",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "facility_id": "facility:health:586",
+        "query": "GA. Nilandhoo Health Centre Maldives",
+        "title": "Ga. Nilandhoo Health Center",
+        "category": "Hospital",
+        "location_text": "JCMW+GH5, Nilandhoo",
+        "plus_code": "JCMW+GH5",
+        "phone": null,
+        "result_type": "exact_island_place",
+        "observation": "Google title includes Ga. Nilandhoo, resolving the otherwise ambiguous island name.",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=GA.+Nilandhoo+Health+Centre+Maldives"
+      },
+      "nominatim_discovery": {
+        "island_query_url": "https://nominatim.openstreetmap.org/search?q=Nilandhoo+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "island_http_status": 200,
+        "island_result_count": 3,
+        "island_results": [
+          [
+            "way",
+            "19932414",
+            "Nilandhoo",
+            "ނިލަންދޫ, ހުވަދުއަތޮޅު އުތުރުބުރި, ދިވެހިރާއްޖެ",
+            "0.6364925",
+            "73.4465449"
+          ],
+          [
+            "way",
+            "19882137",
+            "Nilandhoo",
+            "ނިލަންދޫ, ނިލަންދެއަތޮޅު އުތުރުބުރި, ދިވެހިރާއްޖެ",
+            "3.0573365",
+            "72.8881326"
+          ],
+          [
+            "node",
+            "4411437538",
+            "Nilandhoo",
+            "ނިލަންދޫ, ނިލަންދެއަތޮޅު އުތުރުބުރި, ދިވެހިރާއްޖެ",
+            "3.0561219",
+            "72.8898950"
+          ]
+        ],
+        "exact_facility_query_url": "https://nominatim.openstreetmap.org/search?q=GA.+Nilandhoo+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "exact_facility_http_status": 200,
+        "exact_facility_result_count": 0,
+        "rate_limit_note": null
+      },
+      "osm_island_scan": {
+        "source": "OpenStreetMap API map bbox",
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.4399910,0.6296125,73.4521776,0.6434764",
+        "http_status": 200,
+        "bbox": [
+          73.4399910298835,
+          0.629612517670008,
+          73.4521776395411,
+          0.643476369902827
+        ],
+        "object_count": 568,
+        "tagged_object_count": 67,
+        "alternate_categories_checked": [
+          "amenity=*",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=*",
+          "name/alt_name token regex health|clinic|hospital|doctor|medical|pharmacy|dispensary|centre|center|healthcare"
+        ],
+        "relevant_objects": []
+      },
+      "overpass_check": {
+        "endpoint": "https://overpass.kumi.systems/api/interpreter",
+        "http_status": 200,
+        "query_file": "data/review/online-facility-health-ga-gdh-ha-overpass-20261013.query.txt",
+        "elements_returned": 550,
+        "relevant_objects_in_island": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplies island-specific place evidence, but live OSM map/Overpass scans found no defensible facility-level health object. No alternate-category facility object was found."
+    },
+    {
+      "facility_id": "facility:health:582",
+      "official_name": "Gaafu Dhaalu Gadhdhoo Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 4",
+      "official_owner": "Ministry of Health, Family and Welfare",
+      "official_source_record_id": "582",
+      "official_island": "Gadhdhoo",
+      "official_atoll": null,
+      "official_context_status": "proposed_context_requires_review",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "facility_id": "facility:health:582",
+        "query": "Gaafu Dhaalu Gadhdhoo Health Centre Maldives",
+        "title": "Gadhdhoo Health Center",
+        "category": "Hospital",
+        "location_text": "7FQ3+5RG, Gadhdhoo",
+        "plus_code": "7FQ3+5RG",
+        "phone": "684-0043",
+        "result_type": "exact_island_place",
+        "observation": "Google returns the official Gadhdhoo island and a health-centre place.",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=Gaafu+Dhaalu+Gadhdhoo+Health+Centre+Maldives"
+      },
+      "nominatim_discovery": {
+        "island_query_url": "https://nominatim.openstreetmap.org/search?q=Gadhdhoo+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "island_http_status": 200,
+        "island_result_count": 1,
+        "island_results": [
+          [
+            "way",
+            "19932432",
+            "Gadhdhoo",
+            "ގައްދޫ, ހުވަދުއަތޮޅު ދެކުނުބުރި, ދިވެހިރާއްޖެ",
+            "0.2901176",
+            "73.4575525"
+          ]
+        ],
+        "exact_facility_query_url": "https://nominatim.openstreetmap.org/search?q=Gaafu+Dhaalu+Gadhdhoo+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "exact_facility_http_status": 200,
+        "exact_facility_result_count": 0,
+        "rate_limit_note": null
+      },
+      "osm_island_scan": {
+        "source": "OpenStreetMap API map bbox",
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.4514334,0.2836436,73.4651501,0.2969411",
+        "http_status": 200,
+        "bbox": [
+          73.4514333540526,
+          0.283643625594975,
+          73.4651500919815,
+          0.296941060996576
+        ],
+        "object_count": 1320,
+        "tagged_object_count": 185,
+        "alternate_categories_checked": [
+          "amenity=*",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=*",
+          "name/alt_name token regex health|clinic|hospital|doctor|medical|pharmacy|dispensary|centre|center|healthcare"
+        ],
+        "relevant_objects": []
+      },
+      "overpass_check": {
+        "endpoint": "https://overpass.kumi.systems/api/interpreter",
+        "http_status": 200,
+        "query_file": "data/review/online-facility-health-ga-gdh-ha-overpass-20261013.query.txt",
+        "elements_returned": 550,
+        "relevant_objects_in_island": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplies island-specific place evidence, but live OSM map/Overpass scans found no defensible facility-level health object. No alternate-category facility object was found."
+    },
+    {
+      "facility_id": "facility:health:579",
+      "official_name": "GDh. Faresmaathodaa Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 3",
+      "official_owner": "ASMH Governing Board",
+      "official_source_record_id": "579",
+      "official_island": "Faresmaathodaa",
+      "official_atoll": "Gaafu Dhaalu",
+      "official_context_status": "proposed_context_requires_review",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "facility_id": "facility:health:579",
+        "query": "GDh. Faresmaathodaa Health Centre Maldives",
+        "title": "Faresmaathodaa Health Centre",
+        "category": "Hospital",
+        "location_text": "Faresmaathodaa",
+        "plus_code": "652P+GM",
+        "phone": "684-0097",
+        "result_type": "exact_island_place",
+        "observation": "Google corrects the spelling in the result query but returns the official island and facility.",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=GDh.+Faresmaathodaa+Health+Centre+Maldives"
+      },
+      "nominatim_discovery": {
+        "island_query_url": "https://nominatim.openstreetmap.org/search?q=Faresmaathodaa+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "island_http_status": null,
+        "island_result_count": 0,
+        "island_results": [],
+        "exact_facility_query_url": "https://nominatim.openstreetmap.org/search?q=GDh.+Faresmaathodaa+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "exact_facility_http_status": null,
+        "exact_facility_result_count": 0,
+        "rate_limit_note": "HTTP 429 after the first five records; Nominatim was discovery-only and not used as absence proof."
+      },
+      "osm_island_scan": {
+        "source": "OpenStreetMap API map bbox",
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.1809671,0.1931282,73.1936168,0.2052287",
+        "http_status": 200,
+        "bbox": [
+          73.1809671456155,
+          0.193128218690169,
+          73.19361682512411,
+          0.205228726665209
+        ],
+        "object_count": 1096,
+        "tagged_object_count": 126,
+        "alternate_categories_checked": [
+          "amenity=*",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=*",
+          "name/alt_name token regex health|clinic|hospital|doctor|medical|pharmacy|dispensary|centre|center|healthcare"
+        ],
+        "relevant_objects": [
+          {
+            "type": "way",
+            "id": "1104753218",
+            "tags": {
+              "amenity": "fire_station"
+            }
+          }
+        ]
+      },
+      "overpass_check": {
+        "endpoint": "https://overpass.kumi.systems/api/interpreter",
+        "http_status": 200,
+        "query_file": "data/review/online-facility-health-ga-gdh-ha-overpass-20261013.query.txt",
+        "elements_returned": 550,
+        "relevant_objects_in_island": [
+          {
+            "type": "way",
+            "id": 1104753218,
+            "center": {
+              "lat": 0.1948531,
+              "lon": 73.1932581
+            },
+            "tags": {
+              "amenity": "fire_station"
+            }
+          }
+        ]
+      },
+      "candidate_osm_objects": [
+        {
+          "osm_id": "osm:way:1104753218",
+          "type": "way",
+          "id": "1104753218",
+          "tags": {
+            "amenity": "fire_station"
+          },
+          "coordinates": null,
+          "api_url": "https://api.openstreetmap.org/api/0.6/way/1104753218.json",
+          "browse_url": "https://www.openstreetmap.org/way/1104753218",
+          "candidate_decision": "rejected_candidate",
+          "reason": "Unrelated OSM object; not a health facility."
+        }
+      ],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplies island-specific place evidence, but live OSM map/Overpass scans found no defensible facility-level health object. Nearby non-health objects are rejected."
+    },
+    {
+      "facility_id": "facility:health:580",
+      "official_name": "GDh. Fiyoaree Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 2",
+      "official_owner": "ASMH Governing Board",
+      "official_source_record_id": "580",
+      "official_island": "Fiyoaree",
+      "official_atoll": "Gaafu Dhaalu",
+      "official_context_status": "proposed_context_requires_review",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "facility_id": "facility:health:580",
+        "query": "GDh. Fiyoaree Health Centre Maldives",
+        "title": "Fiyoaree Health Center",
+        "category": "Hospital",
+        "location_text": "64CQ+H6R, Baraasil Magu",
+        "plus_code": "64CQ+H6R",
+        "phone": null,
+        "result_type": "exact_island_place",
+        "observation": "Google returns Fiyoaree Health Center on Fiyoaree; a separate boat-builder result is unrelated.",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=GDh.+Fiyoaree+Health+Centre+Maldives"
+      },
+      "nominatim_discovery": {
+        "island_query_url": "https://nominatim.openstreetmap.org/search?q=Fiyoaree+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "island_http_status": null,
+        "island_result_count": 0,
+        "island_results": [],
+        "exact_facility_query_url": "https://nominatim.openstreetmap.org/search?q=GDh.+Fiyoaree+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "exact_facility_http_status": null,
+        "exact_facility_result_count": 0,
+        "rate_limit_note": "HTTP 429 after the first five records; Nominatim was discovery-only and not used as absence proof."
+      },
+      "osm_island_scan": {
+        "source": "OpenStreetMap API map bbox",
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.1300784,0.2126784,73.1431613,0.2296552",
+        "http_status": 200,
+        "bbox": [
+          73.13007838427079,
+          0.212678382748702,
+          73.14316128171501,
+          0.229655195545233
+        ],
+        "object_count": 998,
+        "tagged_object_count": 132,
+        "alternate_categories_checked": [
+          "amenity=*",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=*",
+          "name/alt_name token regex health|clinic|hospital|doctor|medical|pharmacy|dispensary|centre|center|healthcare"
+        ],
+        "relevant_objects": [
+          {
+            "type": "node",
+            "id": "11221812118",
+            "tags": {
+              "addr:city": "Fiyoari",
+              "addr:street": "Baraasil Magu",
+              "amenity": "school",
+              "description": "Fiyoaree School is a school in Fiyoaree, an island of Gaafu Dhaalu Atoll, Maldives. The school was opened on 17 September 1980 under the name of Fiyoaree Makthab.",
+              "mobile": "(+960)7983086",
+              "name": "Fiyoaree School",
+              "name:dv": "ފިޔޯރީ ސްކޫލް",
+              "name:en": "Fiyoaree School",
+              "operator": "Government of Maldives",
+              "operator:type": "government",
+              "religion": "muslim",
+              "website": "https://fiyoarischool.edupage.org/",
+              "wikidata": "Q27961820",
+              "wikipedia": "en:Fiyoaree School"
+            },
+            "lat": 0.2219726,
+            "lon": 73.1382166
+          },
+          {
+            "type": "way",
+            "id": "751750170",
+            "tags": {
+              "building": "yes",
+              "healthcare": "yes"
+            }
+          },
+          {
+            "type": "way",
+            "id": "1467225959",
+            "tags": {
+              "amenity": "place_of_worship",
+              "building": "yes",
+              "religion": "muslim"
+            }
+          },
+          {
+            "type": "way",
+            "id": "1467225960",
+            "tags": {
+              "amenity": "place_of_worship",
+              "building": "yes",
+              "religion": "muslim"
+            }
+          }
+        ]
+      },
+      "overpass_check": {
+        "endpoint": "https://overpass.kumi.systems/api/interpreter",
+        "http_status": 200,
+        "query_file": "data/review/online-facility-health-ga-gdh-ha-overpass-20261013.query.txt",
+        "elements_returned": 550,
+        "relevant_objects_in_island": [
+          {
+            "type": "node",
+            "id": 11221812118,
+            "lat": 0.2219726,
+            "lon": 73.1382166,
+            "tags": {
+              "addr:city": "Fiyoari",
+              "addr:street": "Baraasil Magu",
+              "amenity": "school",
+              "description": "Fiyoaree School is a school in Fiyoaree, an island of Gaafu Dhaalu Atoll, Maldives. The school was opened on 17 September 1980 under the name of Fiyoaree Makthab.",
+              "mobile": "(+960)7983086",
+              "name": "Fiyoaree School",
+              "name:dv": "ފިޔޯރީ ސްކޫލް",
+              "name:en": "Fiyoaree School",
+              "operator": "Government of Maldives",
+              "operator:type": "government",
+              "religion": "muslim",
+              "website": "https://fiyoarischool.edupage.org/",
+              "wikidata": "Q27961820",
+              "wikipedia": "en:Fiyoaree School"
+            }
+          },
+          {
+            "type": "way",
+            "id": 751750170,
+            "center": {
+              "lat": 0.2215023,
+              "lon": 73.1379774
+            },
+            "tags": {
+              "building": "yes",
+              "healthcare": "yes"
+            }
+          },
+          {
+            "type": "way",
+            "id": 1467225959,
+            "center": {
+              "lat": 0.2252681,
+              "lon": 73.1368141
+            },
+            "tags": {
+              "amenity": "place_of_worship",
+              "building": "yes",
+              "religion": "muslim"
+            }
+          },
+          {
+            "type": "way",
+            "id": 1467225960,
+            "center": {
+              "lat": 0.2220776,
+              "lon": 73.1363248
+            },
+            "tags": {
+              "amenity": "place_of_worship",
+              "building": "yes",
+              "religion": "muslim"
+            }
+          }
+        ]
+      },
+      "candidate_osm_objects": [
+        {
+          "osm_id": "osm:node:11221812118",
+          "type": "node",
+          "id": "11221812118",
+          "tags": {
+            "addr:city": "Fiyoari",
+            "addr:street": "Baraasil Magu",
+            "amenity": "school",
+            "description": "Fiyoaree School is a school in Fiyoaree, an island of Gaafu Dhaalu Atoll, Maldives. The school was opened on 17 September 1980 under the name of Fiyoaree Makthab.",
+            "mobile": "(+960)7983086",
+            "name": "Fiyoaree School",
+            "name:dv": "ފިޔޯރީ ސްކޫލް",
+            "name:en": "Fiyoaree School",
+            "operator": "Government of Maldives",
+            "operator:type": "government",
+            "religion": "muslim",
+            "website": "https://fiyoarischool.edupage.org/",
+            "wikidata": "Q27961820",
+            "wikipedia": "en:Fiyoaree School"
+          },
+          "coordinates": [
+            73.1382166,
+            0.2219726
+          ],
+          "api_url": "https://api.openstreetmap.org/api/0.6/node/11221812118.json",
+          "browse_url": "https://www.openstreetmap.org/node/11221812118",
+          "candidate_decision": "rejected_candidate",
+          "reason": "Unrelated OSM object; not a health facility."
+        },
+        {
+          "osm_id": "osm:way:751750170",
+          "type": "way",
+          "id": "751750170",
+          "tags": {
+            "building": "yes",
+            "healthcare": "yes"
+          },
+          "coordinates": null,
+          "api_url": "https://api.openstreetmap.org/api/0.6/way/751750170.json",
+          "browse_url": "https://www.openstreetmap.org/way/751750170",
+          "candidate_decision": "rejected_candidate",
+          "reason": "Generic healthcare=yes building without name, operator, or clinic/hospital category; alternate tag alone is insufficient."
+        },
+        {
+          "osm_id": "osm:way:1467225959",
+          "type": "way",
+          "id": "1467225959",
+          "tags": {
+            "amenity": "place_of_worship",
+            "building": "yes",
+            "religion": "muslim"
+          },
+          "coordinates": null,
+          "api_url": "https://api.openstreetmap.org/api/0.6/way/1467225959.json",
+          "browse_url": "https://www.openstreetmap.org/way/1467225959",
+          "candidate_decision": "rejected_candidate",
+          "reason": "Unrelated OSM object; not a health facility."
+        },
+        {
+          "osm_id": "osm:way:1467225960",
+          "type": "way",
+          "id": "1467225960",
+          "tags": {
+            "amenity": "place_of_worship",
+            "building": "yes",
+            "religion": "muslim"
+          },
+          "coordinates": null,
+          "api_url": "https://api.openstreetmap.org/api/0.6/way/1467225960.json",
+          "browse_url": "https://www.openstreetmap.org/way/1467225960",
+          "candidate_decision": "rejected_candidate",
+          "reason": "Unrelated OSM object; not a health facility."
+        }
+      ],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplies island-specific place evidence, but live OSM map/Overpass scans found no defensible facility-level health object. The only alternate-tag object is a generic healthcare=yes building and is rejected."
+    },
+    {
+      "facility_id": "facility:health:576",
+      "official_name": "GDh. Nadella Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 2",
+      "official_owner": "ASMH Governing Board",
+      "official_source_record_id": "576",
+      "official_island": "Nadellaa",
+      "official_atoll": "Gaafu Dhaalu",
+      "official_context_status": "fuzzy_island_context_requires_review",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "facility_id": "facility:health:576",
+        "query": "GDh. Nadella Health Centre Maldives",
+        "title": "Nadella Health Center",
+        "category": "Hospital",
+        "location_text": "72VR+F26, Nadallaa",
+        "plus_code": "72VR+F26",
+        "phone": "684-2612",
+        "result_type": "exact_island_place",
+        "observation": "Google uses the OSM/official spelling variant Nadallaa for Nadella.",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=GDh.+Nadella+Health+Centre+Maldives"
+      },
+      "nominatim_discovery": {
+        "island_query_url": "https://nominatim.openstreetmap.org/search?q=Nadellaa+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "island_http_status": null,
+        "island_result_count": 0,
+        "island_results": [],
+        "exact_facility_query_url": "https://nominatim.openstreetmap.org/search?q=GDh.+Nadella+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "exact_facility_http_status": null,
+        "exact_facility_result_count": 0,
+        "rate_limit_note": "HTTP 429 after the first five records; Nominatim was discovery-only and not used as absence proof."
+      },
+      "osm_island_scan": {
+        "source": "OpenStreetMap API map bbox",
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.0353779,0.2888128,73.0465162,0.2985776",
+        "http_status": 200,
+        "bbox": [
+          73.035377850475,
+          0.288812765923649,
+          73.0465161531455,
+          0.298577619473741
+        ],
+        "object_count": 1298,
+        "tagged_object_count": 203,
+        "alternate_categories_checked": [
+          "amenity=*",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=*",
+          "name/alt_name token regex health|clinic|hospital|doctor|medical|pharmacy|dispensary|centre|center|healthcare"
+        ],
+        "relevant_objects": []
+      },
+      "overpass_check": {
+        "endpoint": "https://overpass.kumi.systems/api/interpreter",
+        "http_status": 200,
+        "query_file": "data/review/online-facility-health-ga-gdh-ha-overpass-20261013.query.txt",
+        "elements_returned": 550,
+        "relevant_objects_in_island": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplies island-specific place evidence, but live OSM map/Overpass scans found no defensible facility-level health object. No alternate-category facility object was found."
+    },
+    {
+      "facility_id": "facility:health:703",
+      "official_name": "Gdh. Rathafandhoo Health Center",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 2",
+      "official_owner": "Ministry of Health",
+      "official_source_record_id": "703",
+      "official_island": "Rathafandhoo",
+      "official_atoll": "Gaafu Dhaalu",
+      "official_context_status": "proposed_context_requires_review",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "facility_id": "facility:health:703",
+        "query": "Gdh. Rathafandhoo Health Center Maldives",
+        "title": "Rathafandhoo Health Centre",
+        "category": "Hospital",
+        "location_text": "7434+F4R, Rathafandhoo",
+        "plus_code": "7434+F4R",
+        "phone": null,
+        "result_type": "exact_island_place",
+        "observation": "Google returns the official Rathafandhoo island and facility.",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=Gdh.+Rathafandhoo+Health+Center+Maldives"
+      },
+      "nominatim_discovery": {
+        "island_query_url": "https://nominatim.openstreetmap.org/search?q=Rathafandhoo+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "island_http_status": null,
+        "island_result_count": 0,
+        "island_results": [],
+        "exact_facility_query_url": "https://nominatim.openstreetmap.org/search?q=Gdh.+Rathafandhoo+Health+Center+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "exact_facility_http_status": null,
+        "exact_facility_result_count": 0,
+        "rate_limit_note": "HTTP 429 after the first five records; Nominatim was discovery-only and not used as absence proof."
+      },
+      "osm_island_scan": {
+        "source": "OpenStreetMap API map bbox",
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.0998414,0.2477917,73.1099193,0.2578757",
+        "http_status": 200,
+        "bbox": [
+          73.0998414017261,
+          0.247791686609087,
+          73.1099192719498,
+          0.25787573308594
+        ],
+        "object_count": 1049,
+        "tagged_object_count": 183,
+        "alternate_categories_checked": [
+          "amenity=*",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=*",
+          "name/alt_name token regex health|clinic|hospital|doctor|medical|pharmacy|dispensary|centre|center|healthcare"
+        ],
+        "relevant_objects": []
+      },
+      "overpass_check": {
+        "endpoint": "https://overpass.kumi.systems/api/interpreter",
+        "http_status": 200,
+        "query_file": "data/review/online-facility-health-ga-gdh-ha-overpass-20261013.query.txt",
+        "elements_returned": 550,
+        "relevant_objects_in_island": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplies island-specific place evidence, but live OSM map/Overpass scans found no defensible facility-level health object. No alternate-category facility object was found."
+    },
+    {
+      "facility_id": "facility:health:745",
+      "official_name": "Haa Alifu Filladhoo Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 1",
+      "official_owner": "Ministry of Health, Family and Welfare",
+      "official_source_record_id": "745",
+      "official_island": "Filladhoo",
+      "official_atoll": "Haa Alifu",
+      "official_context_status": "proposed_context_requires_review",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "facility_id": "facility:health:745",
+        "query": "Filladhoo Health Centre Maldives",
+        "title": "Hospital",
+        "category": "Hospital",
+        "location_text": "V6JH+5X6, Filladhoo",
+        "plus_code": "V6JH+5X6",
+        "phone": null,
+        "result_type": "island_specific_generic_name_variant",
+        "observation": "The full Haa Alifu query returned unrelated islands, but the short-name query Filladhoo Health Centre Maldives returned a generic Hospital on Filladhoo; retain island agreement but not exact facility identity.",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=Filladhoo+Health+Centre+Maldives"
+      },
+      "nominatim_discovery": {
+        "island_query_url": "https://nominatim.openstreetmap.org/search?q=Filladhoo+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "island_http_status": null,
+        "island_result_count": 0,
+        "island_results": [],
+        "exact_facility_query_url": "https://nominatim.openstreetmap.org/search?q=Haa+Alifu+Filladhoo+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "exact_facility_http_status": null,
+        "exact_facility_result_count": 0,
+        "rate_limit_note": "HTTP 429 after the first five records; Nominatim was discovery-only and not used as absence proof."
+      },
+      "osm_island_scan": {
+        "source": "OpenStreetMap API map bbox",
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.2191729,6.8690629,73.2368213,6.9250522",
+        "http_status": 200,
+        "bbox": [
+          73.21917292673879,
+          6.8690629009913,
+          73.2368213364431,
+          6.9250521850837705
+        ],
+        "object_count": 1934,
+        "tagged_object_count": 344,
+        "alternate_categories_checked": [
+          "amenity=*",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=*",
+          "name/alt_name token regex health|clinic|hospital|doctor|medical|pharmacy|dispensary|centre|center|healthcare"
+        ],
+        "relevant_objects": [
+          {
+            "type": "way",
+            "id": "750425461",
+            "tags": {
+              "amenity": "place_of_worship",
+              "building": "yes",
+              "name": "Kuda Miskiyy",
+              "religion": "muslim"
+            }
+          },
+          {
+            "type": "way",
+            "id": "1332135327",
+            "tags": {
+              "amenity": "place_of_worship",
+              "building": "yes",
+              "name": "Hukuru Miskiy",
+              "religion": "muslim"
+            }
+          }
+        ]
+      },
+      "overpass_check": {
+        "endpoint": "https://overpass.kumi.systems/api/interpreter",
+        "http_status": 200,
+        "query_file": "data/review/online-facility-health-ga-gdh-ha-overpass-20261013.query.txt",
+        "elements_returned": 550,
+        "relevant_objects_in_island": [
+          {
+            "type": "way",
+            "id": 750425461,
+            "center": {
+              "lat": 6.8776684,
+              "lon": 73.2282115
+            },
+            "tags": {
+              "amenity": "place_of_worship",
+              "building": "yes",
+              "name": "Kuda Miskiyy",
+              "religion": "muslim"
+            }
+          },
+          {
+            "type": "way",
+            "id": 1332135327,
+            "center": {
+              "lat": 6.8797016,
+              "lon": 73.2293165
+            },
+            "tags": {
+              "amenity": "place_of_worship",
+              "building": "yes",
+              "name": "Hukuru Miskiy",
+              "religion": "muslim"
+            }
+          }
+        ]
+      },
+      "candidate_osm_objects": [
+        {
+          "osm_id": "osm:way:750425461",
+          "type": "way",
+          "id": "750425461",
+          "tags": {
+            "amenity": "place_of_worship",
+            "building": "yes",
+            "name": "Kuda Miskiyy",
+            "religion": "muslim"
+          },
+          "coordinates": null,
+          "api_url": "https://api.openstreetmap.org/api/0.6/way/750425461.json",
+          "browse_url": "https://www.openstreetmap.org/way/750425461",
+          "candidate_decision": "rejected_candidate",
+          "reason": "Unrelated OSM object; not a health facility."
+        },
+        {
+          "osm_id": "osm:way:1332135327",
+          "type": "way",
+          "id": "1332135327",
+          "tags": {
+            "amenity": "place_of_worship",
+            "building": "yes",
+            "name": "Hukuru Miskiy",
+            "religion": "muslim"
+          },
+          "coordinates": null,
+          "api_url": "https://api.openstreetmap.org/api/0.6/way/1332135327.json",
+          "browse_url": "https://www.openstreetmap.org/way/1332135327",
+          "candidate_decision": "rejected_candidate",
+          "reason": "Unrelated OSM object; not a health facility."
+        }
+      ],
+      "decision": "source_not_in_osm",
+      "confidence": "medium-high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplies island-specific place evidence, but live OSM map/Overpass scans found no defensible facility-level health object. Nearby non-health objects are rejected."
+    }
+  ],
+  "artifact_inputs": {
+    "google_raw": "data/review/online-facility-health-ga-gdh-ha-google-20261013.json",
+    "nominatim_raw": "data/review/online-facility-health-ga-gdh-ha-nominatim-20261013.json",
+    "osm_map_raw": "data/review/online-facility-health-ga-gdh-ha-osm-map-20261013.json",
+    "overpass_raw": "data/review/online-facility-health-ga-gdh-ha-overpass-20261013.json",
+    "osm_object_raw": "data/review/online-facility-health-ga-gdh-ha-osm-objects-20261013.json",
+    "overpass_query": "data/review/online-facility-health-ga-gdh-ha-overpass-20261013.query.txt"
+  }
+}

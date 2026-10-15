@@ -1,0 +1,72 @@
+{
+  "version": "online-facility-review-batch-v2",
+  "batch_id": "deleg_7b886747",
+  "reviewed_at": "2026-10-13T05:45:00Z",
+  "facility_ids": [
+    "facility:health:105",
+    "facility:health:1142",
+    "facility:health:1261",
+    "facility:health:133",
+    "facility:health:150",
+    "facility:health:166",
+    "facility:health:180",
+    "facility:health:183",
+    "facility:health:184",
+    "facility:health:195",
+    "facility:health:22",
+    "facility:health:236",
+    "facility:health:241",
+    "facility:health:308",
+    "facility:health:415",
+    "facility:health:485",
+    "facility:health:486",
+    "facility:health:487",
+    "facility:health:542",
+    "facility:health:548",
+    "facility:health:559",
+    "facility:health:560",
+    "facility:health:646",
+    "facility:health:66",
+    "facility:health:704",
+    "facility:health:775",
+    "facility:health:805",
+    "facility:health:815",
+    "facility:school:492",
+    "facility:school:494",
+    "facility:school:495",
+    "facility:school:496",
+    "facility:school:498",
+    "facility:school:499",
+    "facility:school:500",
+    "facility:school:503",
+    "facility:school:505",
+    "facility:school:506"
+  ],
+  "worker_transcripts": [
+    "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_7b886747/task-0.log",
+    "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_7b886747/task-1.log",
+    "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_7b886747/task-2.log",
+    "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_7b886747/task-3.log"
+  ],
+  "evidence_artifact": "data/review/online-facility-evidence-batch-deleg_7b886747.json",
+  "confirmed_promotions": [
+    "facility:health:704",
+    "facility:school:494",
+    "facility:school:505",
+    "facility:school:506"
+  ],
+  "provisional_candidates": [
+    "facility:health:775"
+  ],
+  "rejected_pairs": [
+    "facility:school:492 -> osm:way:1038348911",
+    "facility:health:236 -> osm:node:9532890185",
+    "facility:health:133 -> osm:node:10142752042"
+  ],
+  "summary": {
+    "records_researched": 38,
+    "confirmed_promotions": 4,
+    "provisional": 1,
+    "unresolved_or_context": 33
+  }
+}

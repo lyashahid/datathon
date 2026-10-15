@@ -1,0 +1,215 @@
+{
+  "version": "facility-review-queue-v1",
+  "created_at": "2026-10-13T10:53:25.789253Z",
+  "batch_id": "batch-20261013-180000",
+  "batch_size": 10,
+  "known_review_count": 692,
+  "available_unresolved_count": 11,
+  "jobs": [
+    {
+      "job_id": "batch-20261013-180000-01",
+      "facility_ids": [
+        "facility:health:921",
+        "facility:health:93",
+        "facility:health:931",
+        "facility:health:932",
+        "facility:health:943",
+        "facility:health:95",
+        "facility:health:954",
+        "facility:health:957",
+        "facility:health:969",
+        "facility:health:98"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:health:921",
+          "official_name": "Mavericks Care",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Doctor Plus Private Limited",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:93",
+          "official_name": "Olive Medical Centre",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Abdulla Afeef",
+            "status": "open",
+            "facility_level": "Area Specific Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:931",
+          "official_name": "KODHIPPARU CLINIC",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Kohdhipparu",
+          "official_atoll": null,
+          "official_island_id": "island:1384",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "CES PARK KODHIPPARU PVT LTD",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:932",
+          "official_name": "SILVER CARE CLINIC",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "SILVERCARE PRIVATE LIMITED",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:943",
+          "official_name": "Seen Hijama & Wellness",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Super Wellness Pvt Ltd",
+            "status": "open",
+            "facility_level": "Complementary Medicine Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:95",
+          "official_name": "Thulhagiri Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Thulhaagiri",
+          "official_atoll": null,
+          "official_island_id": "island:1470",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Angirir Resorts Managmenet & Orientation Pvt Ltd",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:954",
+          "official_name": "Bluspan Care Dhidhdhoo",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Dhidhdhoo",
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Blue Span Pvt Ltd",
+            "status": "open",
+            "facility_level": "Therapeutic Service Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:957",
+          "official_name": "Kudhuraniyage Dhivehibeys Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ahmed Saeed",
+            "status": "open",
+            "facility_level": "Traditional Medicine Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:969",
+          "official_name": "Life Care Medical",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Life Care Holding PVT LTD",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:98",
+          "official_name": "Life Wellness Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Grace Atoll Pvt Ltd",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-180000-01.prompt.md"
+    },
+    {
+      "job_id": "batch-20261013-180000-02",
+      "facility_ids": [
+        "facility:health:99"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:health:99",
+          "official_name": "Chinese Health Care",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Chinese Health care Pvt Ltd",
+            "status": "open",
+            "facility_level": "Complementary Medicine Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-180000-02.prompt.md"
+    }
+  ],
+  "status": "completed",
+  "completed_at": "2026-10-13T10:55:48.965431Z"
+}

@@ -1,0 +1,1526 @@
+{
+  "version": "facility-review-validated-v1",
+  "validated_at": "2026-10-13T08:20:00Z",
+  "job_id": "batch-20261013-073000",
+  "errors": [],
+  "records": [
+    {
+      "facility_id": "facility:health:722",
+      "official_name": "Raa Innamaadhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:725",
+      "official_name": "B. Hithaadhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:726",
+      "official_name": "Baa Kudarikilu Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:727",
+      "official_name": "Baa Kihaadhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:730",
+      "official_name": "Raa In'guraidhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:731",
+      "official_name": "Raa Maakurathu Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:732",
+      "official_name": "Raa Kinolhas Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:1122700184",
+          "osm_url": "https://www.openstreetmap.org/way/1122700184",
+          "name": "Kinolhas Health Center",
+          "island": "Kinolhas",
+          "coordinates": [
+            73.0297846,
+            5.4479394
+          ],
+          "tags": {
+            "healthcare": "yes",
+            "name": "Kinolhas Health Center"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge.",
+      "follow_up": "Live-validate and merge if all checks pass.",
+      "selected_candidate": {
+        "osm_object_id": "osm:way:1122700184",
+        "osm_url": "https://www.openstreetmap.org/way/1122700184",
+        "name": "Kinolhas Health Center",
+        "island": "Kinolhas",
+        "coordinates": [
+          73.0297846,
+          5.4479394
+        ],
+        "tags": {
+          "healthcare": "yes",
+          "name": "Kinolhas Health Center"
+        },
+        "status": "discovered_overpass"
+      },
+      "live_verification": {
+        "osm_object_id": "osm:way:1122700184",
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/way/1122700184/full.json",
+        "payload": {
+          "version": "0.6",
+          "generator": "openstreetmap-cgimap 2.1.0 (3814988 spike-06.openstreetmap.org)",
+          "copyright": "OpenStreetMap and contributors",
+          "attribution": "http://www.openstreetmap.org/copyright",
+          "license": "http://opendatacommons.org/licenses/odbl/1-0/",
+          "elements": [
+            {
+              "type": "node",
+              "id": 10268011837,
+              "lat": 5.4480027,
+              "lon": 73.0297292,
+              "timestamp": "2022-12-16T16:58:01Z",
+              "version": 1,
+              "changeset": 130163637,
+              "user": "Achille BN",
+              "uid": 17434378
+            },
+            {
+              "type": "node",
+              "id": 10268011838,
+              "lat": 5.4479997,
+              "lon": 73.029775,
+              "timestamp": "2022-12-16T16:58:01Z",
+              "version": 1,
+              "changeset": 130163637,
+              "user": "Achille BN",
+              "uid": 17434378
+            },
+            {
+              "type": "node",
+              "id": 10268011839,
+              "lat": 5.4480181,
+              "lon": 73.0297762,
+              "timestamp": "2022-12-16T16:58:01Z",
+              "version": 1,
+              "changeset": 130163637,
+              "user": "Achille BN",
+              "uid": 17434378
+            },
+            {
+              "type": "node",
+              "id": 10268011840,
+              "lat": 5.4480152,
+              "lon": 73.0298206,
+              "timestamp": "2022-12-16T16:58:01Z",
+              "version": 1,
+              "changeset": 130163637,
+              "user": "Achille BN",
+              "uid": 17434378
+            },
+            {
+              "type": "node",
+              "id": 10268011841,
+              "lat": 5.4479693,
+              "lon": 73.0298176,
+              "timestamp": "2022-12-16T16:58:01Z",
+              "version": 1,
+              "changeset": 130163637,
+              "user": "Achille BN",
+              "uid": 17434378
+            },
+            {
+              "type": "node",
+              "id": 10268011842,
+              "lat": 5.4479673,
+              "lon": 73.029849,
+              "timestamp": "2022-12-16T16:58:01Z",
+              "version": 1,
+              "changeset": 130163637,
+              "user": "Achille BN",
+              "uid": 17434378
+            },
+            {
+              "type": "node",
+              "id": 10268011843,
+              "lat": 5.447888,
+              "lon": 73.0298438,
+              "timestamp": "2022-12-16T16:58:01Z",
+              "version": 1,
+              "changeset": 130163637,
+              "user": "Achille BN",
+              "uid": 17434378
+            },
+            {
+              "type": "node",
+              "id": 10268011844,
+              "lat": 5.4478901,
+              "lon": 73.0298125,
+              "timestamp": "2022-12-16T16:58:01Z",
+              "version": 1,
+              "changeset": 130163637,
+              "user": "Achille BN",
+              "uid": 17434378
+            },
+            {
+              "type": "node",
+              "id": 10268011845,
+              "lat": 5.4478607,
+              "lon": 73.0298106,
+              "timestamp": "2022-12-16T16:58:01Z",
+              "version": 1,
+              "changeset": 130163637,
+              "user": "Achille BN",
+              "uid": 17434378
+            },
+            {
+              "type": "node",
+              "id": 10268011846,
+              "lat": 5.4478666,
+              "lon": 73.0297202,
+              "timestamp": "2022-12-16T16:58:01Z",
+              "version": 1,
+              "changeset": 130163637,
+              "user": "Achille BN",
+              "uid": 17434378
+            },
+            {
+              "type": "way",
+              "id": 1122700184,
+              "timestamp": "2022-12-16T16:58:01Z",
+              "version": 1,
+              "changeset": 130163637,
+              "user": "Achille BN",
+              "uid": 17434378,
+              "nodes": [
+                10268011837,
+                10268011838,
+                10268011839,
+                10268011840,
+                10268011841,
+                10268011842,
+                10268011843,
+                10268011844,
+                10268011845,
+                10268011846,
+                10268011837
+              ],
+              "tags": {
+                "healthcare": "yes",
+                "name": "Kinolhas Health Center"
+              }
+            }
+          ]
+        }
+      },
+      "derived_tags": {
+        "healthcare": "yes",
+        "name": "Kinolhas Health Center"
+      },
+      "derived_coordinates": [
+        73.0297846,
+        5.4479394
+      ],
+      "validation": {
+        "checks": {
+          "single_candidate": true,
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        },
+        "approved": true
+      }
+    },
+    {
+      "facility_id": "facility:health:733",
+      "official_name": "Raa Maduvvari Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:849710130",
+          "osm_url": "https://www.openstreetmap.org/way/849710130",
+          "name": "Hospital",
+          "island": "Maduvvari",
+          "coordinates": [
+            72.8960839,
+            5.4874938
+          ],
+          "tags": {
+            "building": "hospital",
+            "name": "Hospital"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": {
+        "osm_object_id": "osm:way:849710130",
+        "osm_url": "https://www.openstreetmap.org/way/849710130",
+        "name": "Hospital",
+        "island": "Maduvvari",
+        "coordinates": [
+          72.8960839,
+          5.4874938
+        ],
+        "tags": {
+          "building": "hospital",
+          "name": "Hospital"
+        },
+        "status": "discovered_overpass"
+      },
+      "live_verification": {
+        "osm_object_id": "osm:way:849710130",
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/way/849710130/full.json",
+        "payload": {
+          "version": "0.6",
+          "generator": "openstreetmap-cgimap 2.1.0 (3964269 spike-06.openstreetmap.org)",
+          "copyright": "OpenStreetMap and contributors",
+          "attribution": "http://www.openstreetmap.org/copyright",
+          "license": "http://opendatacommons.org/licenses/odbl/1-0/",
+          "elements": [
+            {
+              "type": "node",
+              "id": 7927575194,
+              "lat": 5.4875612,
+              "lon": 72.8960221,
+              "timestamp": "2020-09-21T08:30:13Z",
+              "version": 1,
+              "changeset": 91212819,
+              "user": "Samooh",
+              "uid": 11024455
+            },
+            {
+              "type": "node",
+              "id": 7927575195,
+              "lat": 5.4875252,
+              "lon": 72.896182,
+              "timestamp": "2020-09-21T08:30:13Z",
+              "version": 1,
+              "changeset": 91212819,
+              "user": "Samooh",
+              "uid": 11024455
+            },
+            {
+              "type": "node",
+              "id": 7927575196,
+              "lat": 5.4874264,
+              "lon": 72.8961365,
+              "timestamp": "2020-09-21T08:30:13Z",
+              "version": 1,
+              "changeset": 91212819,
+              "user": "Samooh",
+              "uid": 11024455
+            },
+            {
+              "type": "node",
+              "id": 7927575197,
+              "lat": 5.4874717,
+              "lon": 72.8959859,
+              "timestamp": "2020-09-21T08:30:13Z",
+              "version": 1,
+              "changeset": 91212819,
+              "user": "Samooh",
+              "uid": 11024455
+            },
+            {
+              "type": "way",
+              "id": 849710130,
+              "timestamp": "2020-09-21T08:30:13Z",
+              "version": 1,
+              "changeset": 91212819,
+              "user": "Samooh",
+              "uid": 11024455,
+              "nodes": [
+                7927575194,
+                7927575195,
+                7927575196,
+                7927575197,
+                7927575194
+              ],
+              "tags": {
+                "building": "hospital",
+                "name": "Hospital"
+              }
+            }
+          ]
+        }
+      },
+      "derived_tags": {
+        "building": "hospital",
+        "name": "Hospital"
+      },
+      "derived_coordinates": [
+        72.8960839,
+        5.4874938
+      ],
+      "validation": {
+        "checks": {
+          "single_candidate": true,
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:735",
+      "official_name": "Raa Fainu Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:13586575558",
+          "osm_url": "https://www.openstreetmap.org/node/13586575558",
+          "name": "Fainu Health Centre",
+          "island": "Fainu",
+          "coordinates": [
+            73.0346721,
+            5.4652336
+          ],
+          "tags": {
+            "healthcare": "yes",
+            "name": "Fainu Health Centre"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge.",
+      "follow_up": "Live-validate and merge if all checks pass.",
+      "selected_candidate": {
+        "osm_object_id": "osm:node:13586575558",
+        "osm_url": "https://www.openstreetmap.org/node/13586575558",
+        "name": "Fainu Health Centre",
+        "island": "Fainu",
+        "coordinates": [
+          73.0346721,
+          5.4652336
+        ],
+        "tags": {
+          "healthcare": "yes",
+          "name": "Fainu Health Centre"
+        },
+        "status": "discovered_overpass"
+      },
+      "live_verification": {
+        "osm_object_id": "osm:node:13586575558",
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/node/13586575558.json",
+        "payload": {
+          "version": "0.6",
+          "generator": "openstreetmap-cgimap 2.1.0 (3964030 spike-06.openstreetmap.org)",
+          "copyright": "OpenStreetMap and contributors",
+          "attribution": "http://www.openstreetmap.org/copyright",
+          "license": "http://opendatacommons.org/licenses/odbl/1-0/",
+          "elements": [
+            {
+              "type": "node",
+              "id": 13586575558,
+              "lat": 5.4652336,
+              "lon": 73.0346721,
+              "timestamp": "2026-02-21T11:00:09Z",
+              "version": 1,
+              "changeset": 178853183,
+              "user": "Fainu_Council",
+              "uid": 23851998,
+              "tags": {
+                "healthcare": "yes",
+                "name": "Fainu Health Centre"
+              }
+            }
+          ]
+        }
+      },
+      "derived_tags": {
+        "healthcare": "yes",
+        "name": "Fainu Health Centre"
+      },
+      "derived_coordinates": [
+        73.0346721,
+        5.4652336
+      ],
+      "validation": {
+        "checks": {
+          "single_candidate": true,
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        },
+        "approved": true
+      }
+    },
+    {
+      "facility_id": "facility:health:737",
+      "official_name": "Noonu Velidhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:738",
+      "official_name": "Shaviyani Komandoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:739",
+      "official_name": "Shaviyani Kan'ditheemu Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:740",
+      "official_name": "Shaviyani Narudhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:741",
+      "official_name": "Shaviyani Feydhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:745",
+      "official_name": "Haa Alifu Filladhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:749",
+      "official_name": "Amina Dhiyo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:750",
+      "official_name": "M. Veyvah Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:754",
+      "official_name": "Amina Rehendhi Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:460",
+      "official_name": "Makunudhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/460",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:461",
+      "official_name": "Nellaidhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/461",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:462",
+      "official_name": "Neykurendhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/462",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:463",
+      "official_name": "Nolhivaranfaru School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/463",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:464",
+      "official_name": "Munavvara School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/464",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:466",
+      "official_name": "Sh. Atoll School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/466",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:467",
+      "official_name": "Feevaku School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/467",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:468",
+      "official_name": "Foakaidhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/468",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:470",
+      "official_name": "Bileffahee School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/470",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:471",
+      "official_name": "Sh. Feydhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/471",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:509",
+      "official_name": "Dhonfanu School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/509",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:511",
+      "official_name": "B. Goidhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/511",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:783239335",
+          "osm_url": "https://www.openstreetmap.org/way/783239335",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9958683,
+            4.8774084
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:783239336",
+          "osm_url": "https://www.openstreetmap.org/way/783239336",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9958051,
+            4.8775411
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:783239342",
+          "osm_url": "https://www.openstreetmap.org/way/783239342",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9954437,
+            4.8772472
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:783239343",
+          "osm_url": "https://www.openstreetmap.org/way/783239343",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9956682,
+            4.8772143
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:891363893",
+          "osm_url": "https://www.openstreetmap.org/way/891363893",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9954491,
+            4.8776333
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1049832930",
+          "osm_url": "https://www.openstreetmap.org/way/1049832930",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9952748,
+            4.8772476
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1284784813",
+          "osm_url": "https://www.openstreetmap.org/way/1284784813",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9952988,
+            4.8776375
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1284784814",
+          "osm_url": "https://www.openstreetmap.org/way/1284784814",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9955544,
+            4.8774398
+          ],
+          "tags": {
+            "amenity": "school"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:513",
+      "official_name": "Kamadhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/513",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:514",
+      "official_name": "Kendhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/514",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:516",
+      "official_name": "Kudarikilu School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/516",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:517",
+      "official_name": "Maalhohu School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/517",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:518",
+      "official_name": "Fehendhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/518",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:519",
+      "official_name": "Thulhaadhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/519",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:520",
+      "official_name": "Lh. Atoll Education Centre",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/520",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:521",
+      "official_name": "Lh. Atoll school",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/521",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:522",
+      "official_name": "Olhuvelifushi School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/522",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:530",
+      "official_name": "Gaafaru School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/530",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    }
+  ]
+}

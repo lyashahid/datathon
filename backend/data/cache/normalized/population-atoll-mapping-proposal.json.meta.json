@@ -1,0 +1,12 @@
+{
+  "content_type": "application/json",
+  "endpoint": "local review artifact",
+  "http_status": 200,
+  "parser_version": "normalization-v1",
+  "retrieved_at": "2026-10-13T12:17:19.814426+00:00",
+  "schema_version": 1,
+  "sha256": "af29cb8f4ad400f9f46bc848fc8a79c6c3fddf49b6379028f9c108e650c668d7",
+  "source": "Mobility Sandbox MBS matching proposal",
+  "source_record_id": null,
+  "status": "fresh"
+}

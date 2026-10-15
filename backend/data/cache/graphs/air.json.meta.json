@@ -1,0 +1,12 @@
+{
+  "content_type": "application/json",
+  "endpoint": "local normalized output",
+  "http_status": 200,
+  "parser_version": "routing-v1",
+  "retrieved_at": "2026-10-13T12:17:18.165668+00:00",
+  "schema_version": 1,
+  "sha256": "0e7ffed57fb057edb8cb52ebc3cc9a94536306959040cc707eed63b822a85314",
+  "source": "Mobility Sandbox CAA airport access graph",
+  "source_record_id": null,
+  "status": "fresh"
+}

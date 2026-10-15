@@ -1,0 +1,613 @@
+{
+  "version": "facility-review-queue-v1",
+  "created_at": "2026-10-13T05:28:06.752904Z",
+  "batch_id": "batch-20261013-102806",
+  "batch_size": 10,
+  "known_review_count": 143,
+  "available_unresolved_count": 558,
+  "jobs": [
+    {
+      "job_id": "batch-20261013-102806-01",
+      "facility_ids": [
+        "facility:health:490",
+        "facility:health:492",
+        "facility:health:494",
+        "facility:health:500",
+        "facility:health:501",
+        "facility:health:502",
+        "facility:health:504"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:health:490",
+          "official_name": "F. Dharanboodhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Dharanboodhoo",
+          "official_atoll": "Faafu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:492",
+          "official_name": "DH. Bandidhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Bandidhoo",
+          "official_atoll": "Dhaalu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 2"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:494",
+          "official_name": "DH. Hulhudhelee Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Hulhudheli",
+          "official_atoll": "Dhaalu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:500",
+          "official_name": "A.Dh Dhidhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Dhidhdhoo",
+          "official_atoll": "Alifu Dhaalu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:501",
+          "official_name": "A.Dh Mandhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Mandhoo",
+          "official_atoll": "Alifu Dhaalu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:502",
+          "official_name": "DH. Rinbidhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Rin'budhoo",
+          "official_atoll": "Dhaalu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:504",
+          "official_name": "A.Dh Maamigilee Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Maamigili",
+          "official_atoll": "Alifu Dhaalu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 4"
+          },
+          "current_status": "island_context_only"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-102806-01.prompt.md"
+    },
+    {
+      "job_id": "batch-20261013-102806-02",
+      "facility_ids": [
+        "facility:health:505",
+        "facility:health:506",
+        "facility:health:507",
+        "facility:health:509",
+        "facility:health:535",
+        "facility:health:536",
+        "facility:health:537",
+        "facility:health:538",
+        "facility:health:540",
+        "facility:health:541"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:health:505",
+          "official_name": "V. Rakeedhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Rakeedhoo",
+          "official_atoll": "Vaavu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:506",
+          "official_name": "V. Thinadhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Thinadhoo",
+          "official_atoll": "Vaavu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:507",
+          "official_name": "V. Fulidhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Fulidhoo",
+          "official_atoll": "Vaavu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:509",
+          "official_name": "V. Keyodhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Keyodhoo",
+          "official_atoll": "Vaavu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 2"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:535",
+          "official_name": "TH. Vandhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Vandhoo",
+          "official_atoll": "Thaa",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:536",
+          "official_name": "TH. Gaadhifushi Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Gaadhiffushi",
+          "official_atoll": "Thaa",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:537",
+          "official_name": "TH. Buruni Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Buruni",
+          "official_atoll": "Thaa",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 2"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:538",
+          "official_name": "TH. Dhiyamigili Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Dhiyamigili",
+          "official_atoll": "Thaa",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 2"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:540",
+          "official_name": "TH. Hirilandhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Hirilandhoo",
+          "official_atoll": "Thaa",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 3"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:541",
+          "official_name": "TH. Guraidhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Guraidhoo",
+          "official_atoll": "Thaa",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 3"
+          },
+          "current_status": "island_context_only"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-102806-02.prompt.md"
+    },
+    {
+      "job_id": "batch-20261013-102806-03",
+      "facility_ids": [
+        "facility:health:554",
+        "facility:health:555",
+        "facility:health:556",
+        "facility:health:557",
+        "facility:health:562",
+        "facility:health:563"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:health:554",
+          "official_name": "Raa Hulhudhuffaaru Heath Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Hulhudhuffaaru",
+          "official_atoll": "Raa",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 3"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:555",
+          "official_name": "Raa Dhuvaafaru Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Dhuvaafaru",
+          "official_atoll": "Raa",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 4"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:556",
+          "official_name": "Raa Rasgetheemu Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Rasgetheemu",
+          "official_atoll": "Raa",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:557",
+          "official_name": "Raa Meedhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Meedhoo",
+          "official_atoll": "Raa",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 3"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:562",
+          "official_name": "Baa Fehendhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Fehendhoo",
+          "official_atoll": "Baa",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:563",
+          "official_name": "Baa Dhonfanu Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Dhonfan",
+          "official_atoll": "Baa",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-102806-03.prompt.md"
+    },
+    {
+      "job_id": "batch-20261013-102806-04",
+      "facility_ids": [
+        "facility:health:564",
+        "facility:health:565",
+        "facility:health:566",
+        "facility:health:567",
+        "facility:health:568",
+        "facility:health:569",
+        "facility:health:570",
+        "facility:health:571",
+        "facility:health:572",
+        "facility:health:573"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:health:564",
+          "official_name": "Baa Kendhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Kendhoo",
+          "official_atoll": "Baa",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 3"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:565",
+          "official_name": "B. Thulhaadhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Thulhaadhoo",
+          "official_atoll": "Baa",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 4"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:566",
+          "official_name": "Noonu Fodhdhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Fodhdhoo",
+          "official_atoll": "Noonu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:567",
+          "official_name": "Noonu Magoodhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Magoodhoo",
+          "official_atoll": "Noonu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:568",
+          "official_name": "Noonu Hen'badhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Hen'badhoo",
+          "official_atoll": "Noonu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:569",
+          "official_name": "Noonu Kudafari Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Kudafari",
+          "official_atoll": "Noonu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:570",
+          "official_name": "Noonu Miladhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Miladhoo",
+          "official_atoll": "Noonu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 2"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:571",
+          "official_name": "Noonu Lhohi Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Lhohi",
+          "official_atoll": "Noonu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:572",
+          "official_name": "Noonu Maalhendhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Maalhendhoo",
+          "official_atoll": "Noonu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:573",
+          "official_name": "Noonu Landhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Landhoo",
+          "official_atoll": "Noonu",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 2"
+          },
+          "current_status": "island_context_only"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-102806-04.prompt.md"
+    }
+  ],
+  "completed_removed": [
+    "facility:health:105",
+    "facility:health:1142",
+    "facility:health:1261",
+    "facility:health:133",
+    "facility:health:150",
+    "facility:health:166",
+    "facility:health:180",
+    "facility:health:183",
+    "facility:health:184",
+    "facility:health:195",
+    "facility:health:22",
+    "facility:health:236",
+    "facility:health:241",
+    "facility:health:308",
+    "facility:health:415",
+    "facility:health:485",
+    "facility:health:486",
+    "facility:health:487",
+    "facility:health:542",
+    "facility:health:548",
+    "facility:health:559",
+    "facility:health:560",
+    "facility:health:646",
+    "facility:health:66",
+    "facility:health:704",
+    "facility:health:775",
+    "facility:health:805",
+    "facility:health:815",
+    "facility:school:492",
+    "facility:school:494",
+    "facility:school:495",
+    "facility:school:496",
+    "facility:school:498",
+    "facility:school:499",
+    "facility:school:500",
+    "facility:school:503",
+    "facility:school:505",
+    "facility:school:506"
+  ],
+  "remaining_records": 33,
+  "status": "completed",
+  "completed_at": "2026-10-13T07:06:22.503288Z"
+}

@@ -1,0 +1,114 @@
+{
+  "version": "facility-osm-query-v1",
+  "queried_at": "2026-10-13T10:54:03.490580Z",
+  "record_count": 11,
+  "island_query_count": 2,
+  "results": [
+    {
+      "island_key": "island:1384",
+      "facility_ids": [
+        "facility:health:931"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](4.2580570,73.3791012,4.2608819,73.3812290);nwr[\"healthcare\"](4.2580570,73.3791012,4.2608819,73.3812290);nwr[\"office\"=\"educational_institution\"](4.2580570,73.3791012,4.2608819,73.3812290);nwr[\"building\"~\"^(hospital|clinic|school)$\"](4.2580570,73.3791012,4.2608819,73.3812290););out center tags;",
+      "overpass": {
+        "query_hash": "87ef95f73ff816c0ef6b194b06039790d77aa57b79a28bcd094bb40d1d181ff4",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "87ef95f73ff816c0ef6b194b06039790d77aa57b79a28bcd094bb40d1d181ff4",
+          "retrieved_at": "2026-10-13T10:53:46.935689Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "39969be39e1e0a09e0f6a65b843bf9a6c7c7231e94151402bca03fb16f45f107",
+          "expires_at": "2026-10-14T10:53:46.935714+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T10:52:16Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:931": {
+          "query_hash": "6f02010cb3201bcc7d8f0baa99ae594c849b4d88e93b86ef7c0b8974b1754370",
+          "cached": false,
+          "query": {
+            "q": "KODHIPPARU CLINIC, Kohdhipparu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.3791012,4.2608819,73.3812290,4.2580570",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "6f02010cb3201bcc7d8f0baa99ae594c849b4d88e93b86ef7c0b8974b1754370",
+            "retrieved_at": "2026-10-13T10:53:46.940239Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=KODHIPPARU+CLINIC%2C+Kohdhipparu%2C+Maldives&viewbox=73.3791012%2C4.2608819%2C73.3812290%2C4.2580570",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1470",
+      "facility_ids": [
+        "facility:health:95"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](4.3106272,73.4859882,4.3128221,73.4883950);nwr[\"healthcare\"](4.3106272,73.4859882,4.3128221,73.4883950);nwr[\"office\"=\"educational_institution\"](4.3106272,73.4859882,4.3128221,73.4883950);nwr[\"building\"~\"^(hospital|clinic|school)$\"](4.3106272,73.4859882,4.3128221,73.4883950););out center tags;",
+      "overpass": {
+        "query_hash": "2f0515b0f586b6414b7e04bb881d80d38fd81f9cb2d16d961d8b04cbd5529b0b",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "2f0515b0f586b6414b7e04bb881d80d38fd81f9cb2d16d961d8b04cbd5529b0b",
+          "retrieved_at": "2026-10-13T10:54:03.086869Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "39969be39e1e0a09e0f6a65b843bf9a6c7c7231e94151402bca03fb16f45f107",
+          "expires_at": "2026-10-14T10:54:03.086895+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T10:52:16Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:95": {
+          "query_hash": "4c7045de7f67cb79eaa0a178256855fc0cdb49e8d753d96753233d3026269e61",
+          "cached": false,
+          "query": {
+            "q": "Thulhagiri Clinic, Thulhaagiri, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.4859882,4.3128221,73.4883950,4.3106272",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "4c7045de7f67cb79eaa0a178256855fc0cdb49e8d753d96753233d3026269e61",
+            "retrieved_at": "2026-10-13T10:54:03.088260Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Thulhagiri+Clinic%2C+Thulhaagiri%2C+Maldives&viewbox=73.4859882%2C4.3128221%2C73.4883950%2C4.3106272",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    }
+  ]
+}

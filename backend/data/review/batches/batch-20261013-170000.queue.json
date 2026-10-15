@@ -1,0 +1,724 @@
+{
+  "version": "facility-review-queue-v1",
+  "created_at": "2026-10-13T10:50:34.768323Z",
+  "batch_id": "batch-20261013-170000",
+  "batch_size": 10,
+  "known_review_count": 652,
+  "available_unresolved_count": 51,
+  "jobs": [
+    {
+      "job_id": "batch-20261013-170000-01",
+      "facility_ids": [
+        "facility:health:771",
+        "facility:health:772",
+        "facility:health:777",
+        "facility:health:78",
+        "facility:health:795",
+        "facility:health:796",
+        "facility:health:8",
+        "facility:health:80",
+        "facility:health:802",
+        "facility:health:808"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:health:771",
+          "official_name": "Maandhoo Medical Centre",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Maandhoo",
+          "official_atoll": null,
+          "official_island_id": "island:705",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Horizon Fisheries Pvt. Ltd.",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:772",
+          "official_name": "Dhoonidhoo Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Dhoonidhoo",
+          "official_atoll": null,
+          "official_island_id": "island:1459",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Police Welfare Corporation Pvt Ltd (C-0575/2013)",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:777",
+          "official_name": "Family Care Clinic and Scan Center",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Family Care Pvt Ltd (C-101/2007)",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:78",
+          "official_name": "My Family Dentist",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Naadu Private Limited",
+            "status": "open",
+            "facility_level": "Area Specific Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:795",
+          "official_name": "D.S.M Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Aishath Shiruhana (A034618)",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:796",
+          "official_name": "Eye Care Clinic, Fareedhee Magu Branch Closed",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "Eye Care Clinic",
+            "owner": "Eye Care Pvt Ltd (C-308/2002)",
+            "status": "closed",
+            "facility_level": "Area Specific Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:8",
+          "official_name": "MIOT Rehab Centre - Maldives",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "MIOT Rehab Centre",
+            "owner": "MIOT Hospitals (Maldives) Private Limited",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:80",
+          "official_name": "Maldives Alternative Medical Centre",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Aminath Suziyya",
+            "status": "open",
+            "facility_level": "Traditional Medicine Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:802",
+          "official_name": "Dr. Didi Dental Centre",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Mariyam Waseem (A061341)",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:808",
+          "official_name": "Smiles Dental Care",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Smiles Inc Pvt Ltd",
+            "status": "open",
+            "facility_level": "Area Specific Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-170000-01.prompt.md"
+    },
+    {
+      "job_id": "batch-20261013-170000-02",
+      "facility_ids": [
+        "facility:health:81",
+        "facility:health:814",
+        "facility:health:818",
+        "facility:health:82",
+        "facility:health:824",
+        "facility:health:825",
+        "facility:health:828",
+        "facility:health:83",
+        "facility:health:857",
+        "facility:health:858"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:health:81",
+          "official_name": "Mind Space",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Mohamed Samaiel",
+            "status": "open",
+            "facility_level": "Therapeutic Service Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:814",
+          "official_name": "Maldicare",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Maldicare Pvt Ltd (C-0392/2014)",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:818",
+          "official_name": "Family Planning Centre",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Society for Health Education (10-A/88/4)",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:82",
+          "official_name": "SO/ Maldives Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Dream Islands Development 3 Pvt Ltd",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:824",
+          "official_name": "Abuharee Medical Centre",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Abuharee Holdings Pvt Ltd",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:825",
+          "official_name": "The Clinic Closed",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Enhance Medicare Maldives Pvt Ltd (C-0520/2014)",
+            "status": "closed",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:828",
+          "official_name": "Azmi Naeem Medical and Diagnostic Centre",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Azmi Naeem Medical & Diagnostic Centre Pvt. Ltd (C-64-91)",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:83",
+          "official_name": "TotalPhysio",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Total Physio Private Limited",
+            "status": "open",
+            "facility_level": "Therapeutic Service Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:857",
+          "official_name": "Shuba's Medical Centre",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Medical",
+          "official_atoll": "Seenu",
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Shuba's LLP",
+            "status": "open",
+            "facility_level": "Complementary Medicine Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:858",
+          "official_name": "Pulse Medical and Diagnostics",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Harir Private Limited",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-170000-02.prompt.md"
+    },
+    {
+      "job_id": "batch-20261013-170000-03",
+      "facility_ids": [
+        "facility:health:86",
+        "facility:health:869",
+        "facility:health:87",
+        "facility:health:872",
+        "facility:health:88",
+        "facility:health:885",
+        "facility:health:886",
+        "facility:health:887",
+        "facility:health:888",
+        "facility:health:889"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:health:86",
+          "official_name": "The Residence Maldives at Dhigurah Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Dhigurah",
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Bonavista (Maldives) Private Limited",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:869",
+          "official_name": "Island Polyclinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Island Polyclinic Pvt Ltd",
+            "status": "open",
+            "facility_level": "Area Specific Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:87",
+          "official_name": "Knowhub",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Knowhub LLP",
+            "status": "open",
+            "facility_level": "Therapeutic Service Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:872",
+          "official_name": "Dhun-nika dhivehibeys clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "Dhun",
+            "owner": "Azzam Abdul ghani",
+            "status": "open",
+            "facility_level": "Therapeutic Service Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:88",
+          "official_name": "Bulbul Multi Rehab Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Mohamed Nizam",
+            "status": "open",
+            "facility_level": "Therapeutic Service Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:885",
+          "official_name": "Bluspan Care",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Blue Span Pvt Ltd",
+            "status": "open",
+            "facility_level": "Therapeutic Service Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:886",
+          "official_name": "Eve Clinic Vinares",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Fathimath Shenaly Hussain",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:887",
+          "official_name": "Point Medical Care",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Point Trading Pvt Ltd",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:888",
+          "official_name": "The Clinic at Summer Island Maldives",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Kaimoo Travels & Hotel Services Pvt Ltd",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:889",
+          "official_name": "Surgicare Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Surgicare MV Private Limited",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-170000-03.prompt.md"
+    },
+    {
+      "job_id": "batch-20261013-170000-04",
+      "facility_ids": [
+        "facility:health:89",
+        "facility:health:890",
+        "facility:health:891",
+        "facility:health:892",
+        "facility:health:9",
+        "facility:health:91",
+        "facility:health:911",
+        "facility:health:916",
+        "facility:health:917",
+        "facility:health:92"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:health:89",
+          "official_name": "Healing Care Medical Center",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Adam Ahmed",
+            "status": "open",
+            "facility_level": "Area Specific Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:890",
+          "official_name": "Mudhdhoo Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Mudhdhoo",
+          "official_atoll": null,
+          "official_island_id": "island:164",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Doctor Plus Pvt Ltd",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:891",
+          "official_name": "Bluspan Care Annex - 1",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "Bluspan Care Annex",
+            "owner": "Blue Span Pvt Ltd",
+            "status": "open",
+            "facility_level": "Therapeutic Service Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:892",
+          "official_name": "Embudu Village Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Kaimoo Travels & Hotel Services Pvt Ltd",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:9",
+          "official_name": "WTE Medical Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Bio Biz Maldives Pvt Ltd",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:91",
+          "official_name": "The Standard Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Snappper Blue Investments Private Limited",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:911",
+          "official_name": "AL- KHAIRU MEDICAL CENTRE",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "AL",
+            "owner": "Pine Tree Investment Pvt Ltd",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:916",
+          "official_name": "Zulnoor Hijama Care",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Bloom Wellness LLP",
+            "status": "open",
+            "facility_level": "Traditional Medicine Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:917",
+          "official_name": "Pulse Point Medical Center",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Mohamed Aadhil",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:92",
+          "official_name": "Eve Clinic West Park",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Hussain Mohamed Fulhu",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-170000-04.prompt.md"
+    }
+  ],
+  "status": "completed",
+  "completed_at": "2026-10-13T10:53:12.825639Z"
+}

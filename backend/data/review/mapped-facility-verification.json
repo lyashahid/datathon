@@ -1,0 +1,2312 @@
+{
+  "version": "mapped-facility-verification-v2",
+  "verified_at": "2026-10-13T03:41:16.846305+00:00",
+  "facility_count": 151,
+  "results": [
+    {
+      "facility_id": "facility:health:642",
+      "facility_name": "A,Dh. Dhangethi Health center",
+      "category": "health_center",
+      "osm_object_id": "osm:way:465261680",
+      "osm_name": "Dhangethi medical post",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:717",
+      "facility_name": "A.A Feridhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:614086854",
+      "osm_name": "Feridhoo Health Center",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:503",
+      "facility_name": "A.Dh Dhigurah Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:465261759",
+      "osm_name": "Dhigurah Medical Post",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:495",
+      "facility_name": "AA. Bodufolhudhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:1066962466",
+      "osm_name": "hospital",
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:496",
+      "facility_name": "AA. Mathiveree Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:node:4174150465",
+      "osm_name": "Mathiveri Health Centre",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:health:498",
+      "facility_name": "AA. Thoddoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:672670311",
+      "osm_name": "Thoddoo Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:497",
+      "facility_name": "AA. Ukulhas Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:924568542",
+      "osm_name": "Ukulhas Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:394",
+      "facility_name": "European Clinic Maldives Closed",
+      "category": "clinic",
+      "osm_object_id": "osm:node:11186258448",
+      "osm_name": null,
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:654",
+      "facility_name": "F.Magoodhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:node:11633175417",
+      "osm_name": null,
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:489",
+      "facility_name": "Faafu Atoll Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:node:5574309273",
+      "osm_name": "Faafu Atoll Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:235",
+      "facility_name": "Farook HealthCare",
+      "category": "clinic",
+      "osm_object_id": "osm:way:1032953203",
+      "osm_name": "Farook Health Care",
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:590",
+      "facility_name": "GA. Dhaandhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:node:3979112656",
+      "osm_name": "Dhaandhoo Health Centre",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:587",
+      "facility_name": "GA. Maamendhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:976103994",
+      "osm_name": "Ga. Maamendhoo Health Centre",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:784",
+      "facility_name": "Gan Regional Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:way:364840338",
+      "osm_name": "L. Gan Regional Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:578",
+      "facility_name": "GDh. Madaveli Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:751742951",
+      "osm_name": "Madaveli Health Centre",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:581",
+      "facility_name": "GDh. Vaadhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:node:5729756639",
+      "osm_name": null,
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:746",
+      "facility_name": "Haa Alifu Kelaa Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:485054780",
+      "osm_name": "Kelaa Health Centre",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:651",
+      "facility_name": "Haa Alifu Thakandhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:node:10196643638",
+      "osm_name": "Health Center",
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:743",
+      "facility_name": "Haa Alifu Uligan Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:node:12319802702",
+      "osm_name": null,
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:621",
+      "facility_name": "Haa Dhaalu Nolhivaranfaru Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:node:4823483321",
+      "osm_name": "Nolhivaranfaru Health post",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:618",
+      "facility_name": "Haa Dhaalu Vaikaradhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:814112443",
+      "osm_name": "Vaikaradhoo Health Center",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:632",
+      "facility_name": "Hulhumale' Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:way:383751026",
+      "osm_name": "ހުޅުމާލެ ހޮސްޕިޓަލް",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:637",
+      "facility_name": "Huraa Health Center",
+      "category": "health_center",
+      "osm_object_id": "osm:way:679843731",
+      "osm_name": "K Hura Health Centre",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:health:782",
+      "facility_name": "I.M.D.C Multi Speciality Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:node:6723361843",
+      "osm_name": "IMDC",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:health:611",
+      "facility_name": "Indhira Gandhi Memorial Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:way:151403710",
+      "osm_name": "Indira Gandhi Memorial Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:719",
+      "facility_name": "K. Guraidhoo Heath Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:659921836",
+      "osm_name": "K.Guraidhoo Health Center",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:693",
+      "facility_name": "K. Thulusdhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:node:12462668301",
+      "osm_name": null,
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:510",
+      "facility_name": "K.Gulhi Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:384227881",
+      "osm_name": "Island Clinic",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:610",
+      "facility_name": "Addu Equatorial Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:way:715658099",
+      "osm_name": "Addu Equatorial Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:827",
+      "facility_name": "ADK Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:way:1317929099",
+      "osm_name": "ADK Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:397",
+      "facility_name": "Advance Eye Clinic",
+      "category": "clinic",
+      "osm_object_id": "osm:node:9951457715",
+      "osm_name": "Advance Medical Clinic",
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "duplicate_osm_claim"
+      ]
+    },
+    {
+      "facility_id": "facility:health:1223",
+      "facility_name": "Advance Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:node:9951457715",
+      "osm_name": "Advance Medical Clinic",
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "duplicate_osm_claim"
+      ]
+    },
+    {
+      "facility_id": "facility:health:471",
+      "facility_name": "Advance Medical Clinic",
+      "category": "clinic",
+      "osm_object_id": "osm:node:9951457715",
+      "osm_name": "Advance Medical Clinic",
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "duplicate_osm_claim"
+      ]
+    },
+    {
+      "facility_id": "facility:health:692",
+      "facility_name": "Kaafu Maafushi Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:216221235",
+      "osm_name": "Kaafu Maafushi Health Centre",
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:612",
+      "facility_name": "Kulhudhuffushi Regional Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:node:4823302223",
+      "osm_name": "Kulhudhuffushi Regional Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:545",
+      "facility_name": "L. Fonadhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:364915911",
+      "osm_name": "Health Centre",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:561",
+      "facility_name": "Lhaviyani Atoll Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:way:590298924",
+      "osm_name": "Lhaviyani Atoll Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:228",
+      "facility_name": "MACL Medical Clinic",
+      "category": "clinic",
+      "osm_object_id": "osm:node:11190861038",
+      "osm_name": null,
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:459",
+      "facility_name": "Medica",
+      "category": "hospital",
+      "osm_object_id": "osm:way:762119227",
+      "osm_name": "Medica",
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:736",
+      "facility_name": "Noonu Holhudhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:1323805892",
+      "osm_name": "N. Holhudhoo Health Center",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:729",
+      "facility_name": "Raa An'golhitheemu Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:node:13823271980",
+      "osm_name": "R. Angolhitheemu Health Center",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:health:327",
+      "facility_name": "Senahiya Military Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:node:9951513836",
+      "osm_name": "Senahiya Military Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:602",
+      "facility_name": "Shaviyani Maaun'goodhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:1118550871",
+      "osm_name": "Maaungoodhoo Health Center",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:health:600",
+      "facility_name": "Shaviyani Milandhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:298204771",
+      "osm_name": "Health Centre",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:539",
+      "facility_name": "TH. Kin'bidhoo health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:650454845",
+      "osm_name": "ކިބިދޫ ސިއްޙީ މަރުކަޒު",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:709",
+      "facility_name": "Thaa Atoll Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:way:616114846",
+      "osm_name": "Thaa Atoll Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:194",
+      "facility_name": "Thilamaafushi Clinic",
+      "category": "clinic",
+      "osm_object_id": "osm:way:1155312673",
+      "osm_name": "Thilamaafushi Clinic",
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:362",
+      "facility_name": "Tree Top Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:way:1448574099",
+      "osm_name": "Tree Top Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:734",
+      "facility_name": "Un'goofaaru Regional Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:node:4016346106",
+      "osm_name": "Ungoofaaru Regional Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:508",
+      "facility_name": "Vaavu Atoll Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:node:7208742187",
+      "osm_name": null,
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:724",
+      "facility_name": "B. Goidhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:783239341",
+      "osm_name": "Baa Goidhoo Health Center",
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:728",
+      "facility_name": "Baa Dharavandhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:node:14267725202",
+      "osm_name": "Dharavandhoo Medical Centre",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:647",
+      "facility_name": "Baa Fulhadhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:node:14268681101",
+      "osm_name": "Baa Fulhadhoo Health Centre",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:809",
+      "facility_name": "Central Clinic",
+      "category": "clinic",
+      "osm_object_id": "osm:node:9951500245",
+      "osm_name": "Central Clinic",
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "duplicate_osm_claim"
+      ]
+    },
+    {
+      "facility_id": "facility:health:633",
+      "facility_name": "Central Medical Center",
+      "category": "clinic",
+      "osm_object_id": "osm:node:9951500245",
+      "osm_name": "Central Clinic",
+      "osm_category": "clinic",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "duplicate_osm_claim"
+      ]
+    },
+    {
+      "facility_id": "facility:health:493",
+      "facility_name": "DH. Maaenboodhoo Health Centre",
+      "category": "health_center",
+      "osm_object_id": "osm:way:677448171",
+      "osm_name": "Maaenboodhoo Health Center",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:491",
+      "facility_name": "Dhaalu Atoll Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:node:13970065170",
+      "osm_name": "Dhaal Atoll Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:health:34",
+      "facility_name": "Dharumavantha Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:way:1548839614",
+      "osm_name": "Dharumavantha Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:583",
+      "facility_name": "Dr. Abdul Samad Memorial Hospital",
+      "category": "hospital",
+      "osm_object_id": "osm:way:969492568",
+      "osm_name": "Dr. Abdul Samadh Memorial Hospital",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:health:126",
+      "facility_name": "Ellaidhoo Clinic",
+      "category": "clinic",
+      "osm_object_id": "osm:way:143013442",
+      "osm_name": "Clinic",
+      "osm_category": "hospital",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:435",
+      "facility_name": "Sheikh Ibrahim School",
+      "category": "school",
+      "osm_object_id": "osm:way:485066760",
+      "osm_name": "Madharasathul Sheikh Ibrahim",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:437",
+      "facility_name": "Shaheed Ali Thakurufaanu School",
+      "category": "school",
+      "osm_object_id": "osm:node:10196475671",
+      "osm_name": "Madharusathul Shaheedh Ali Thakurufaan",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:school:440",
+      "facility_name": "Ha. Atoll school",
+      "category": "school",
+      "osm_object_id": "osm:node:4721519795",
+      "osm_name": null,
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:448",
+      "facility_name": "Uligamu School",
+      "category": "school",
+      "osm_object_id": "osm:way:1287079702",
+      "osm_name": "Uligamu School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:449",
+      "facility_name": "Afeefudin School",
+      "category": "school",
+      "osm_object_id": "osm:node:4824126825",
+      "osm_name": "Afeefuddin School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:school:450",
+      "facility_name": "Jalaaludin school",
+      "category": "school",
+      "osm_object_id": "osm:node:4735485322",
+      "osm_name": "Jalaluddin School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:school:451",
+      "facility_name": "Hdh. Atoll Education Centre",
+      "category": "school",
+      "osm_object_id": "osm:node:4735490021",
+      "osm_name": "HDh.Atoll Education Centre",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:452",
+      "facility_name": "Hdh. Atoll School",
+      "category": "school",
+      "osm_object_id": "osm:way:935256114",
+      "osm_name": "HDh Atoll School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:458",
+      "facility_name": "Nolhivaram School",
+      "category": "school",
+      "osm_object_id": "osm:way:1320350102",
+      "osm_name": "Nolhivaram School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:469",
+      "facility_name": "Milandhoo School",
+      "category": "school",
+      "osm_object_id": "osm:way:298204766",
+      "osm_name": "Milandhoo School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:478",
+      "facility_name": "N. Atoll Education Centre",
+      "category": "school",
+      "osm_object_id": "osm:node:6823692106",
+      "osm_name": "Noonu Atoll Education Centre",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:482",
+      "facility_name": "Meyna School",
+      "category": "school",
+      "osm_object_id": "osm:way:1322873196",
+      "osm_name": "މޭނާ ސްކޫލް",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:484",
+      "facility_name": "Kudafaree School",
+      "category": "school",
+      "osm_object_id": "osm:node:10025963494",
+      "osm_name": "Kudafaree School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:487",
+      "facility_name": "Maafaru School",
+      "category": "school",
+      "osm_object_id": "osm:way:1201901731",
+      "osm_name": "N.Maafaru School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:493",
+      "facility_name": "Angolhitheemu School",
+      "category": "school",
+      "osm_object_id": "osm:node:13823271983",
+      "osm_name": "R. Angolhitheemu School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:497",
+      "facility_name": "Kinolhahu School",
+      "category": "school",
+      "osm_object_id": "osm:node:9620924475",
+      "osm_name": null,
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:501",
+      "facility_name": "Alifushi School",
+      "category": "school",
+      "osm_object_id": "osm:node:9621817425",
+      "osm_name": "Alifushi school",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:502",
+      "facility_name": "Ungoofaaru School",
+      "category": "school",
+      "osm_object_id": "osm:way:1535333527",
+      "osm_name": "Ungoofaaru School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:504",
+      "facility_name": "Vaadhoo School",
+      "category": "school",
+      "osm_object_id": "osm:way:1478463933",
+      "osm_name": "Vaadhoo School Ground",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:507",
+      "facility_name": "B. Atoll Education Centre",
+      "category": "school",
+      "osm_object_id": "osm:node:11221710523",
+      "osm_name": "Baa Atoll Education Centre",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:508",
+      "facility_name": "B. Atoll School",
+      "category": "school",
+      "osm_object_id": "osm:way:908907992",
+      "osm_name": "Baa Atoll School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:510",
+      "facility_name": "Fulhadhoo School",
+      "category": "school",
+      "osm_object_id": "osm:node:14268849901",
+      "osm_name": "Fulhadhoo School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:515",
+      "facility_name": "Kihaadhoo School",
+      "category": "school",
+      "osm_object_id": "osm:way:371295897",
+      "osm_name": "Kihaadhoo School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:523",
+      "facility_name": "Madrasathul Ifthithaah",
+      "category": "school",
+      "osm_object_id": "osm:node:5636226150",
+      "osm_name": "Madhrasathul Ifthithaah",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:524",
+      "facility_name": "K. Atoll Education Centre",
+      "category": "school",
+      "osm_object_id": "osm:node:12584499285",
+      "osm_name": "Kaafu Atoll Education Centre",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:525",
+      "facility_name": "K. Atoll School",
+      "category": "school",
+      "osm_object_id": "osm:way:529663160",
+      "osm_name": "Kaafu Atoll School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:526",
+      "facility_name": "Maafushi School",
+      "category": "school",
+      "osm_object_id": "osm:way:216221260",
+      "osm_name": "Maafushi School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:527",
+      "facility_name": "Huraa School",
+      "category": "school",
+      "osm_object_id": "osm:way:679844567",
+      "osm_name": "Huraa School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:528",
+      "facility_name": "Himmafushi School",
+      "category": "school",
+      "osm_object_id": "osm:way:683081961",
+      "osm_name": "Himmafushi School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:529",
+      "facility_name": "Guraidhoo School",
+      "category": "school",
+      "osm_object_id": "osm:way:665479493",
+      "osm_name": "Guraidhoo School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:531",
+      "facility_name": "Dhiffushi School",
+      "category": "school",
+      "osm_object_id": "osm:way:1001991808",
+      "osm_name": "Dhiffushi School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:533",
+      "facility_name": "Aa. Atoll Education Centre",
+      "category": "school",
+      "osm_object_id": "osm:node:9283732117",
+      "osm_name": null,
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:534",
+      "facility_name": "Aa. Atoll School",
+      "category": "school",
+      "osm_object_id": "osm:way:1066958751",
+      "osm_name": "Alif ALif Atoll School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:school:536",
+      "facility_name": "Thoddoo School",
+      "category": "school",
+      "osm_object_id": "osm:way:672670306",
+      "osm_name": "Thoddoo school",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:537",
+      "facility_name": "Mathiveri School",
+      "category": "school",
+      "osm_object_id": "osm:way:1197569810",
+      "osm_name": "Mathiveri School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:549",
+      "facility_name": "Dhigurah School",
+      "category": "school",
+      "osm_object_id": "osm:node:5163050680",
+      "osm_name": "Dhigurah School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:552",
+      "facility_name": "V. Atoll School",
+      "category": "school",
+      "osm_object_id": "osm:node:2990393947",
+      "osm_name": "Vaavu Atoll School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:556",
+      "facility_name": "M. Atoll Education Center",
+      "category": "school",
+      "osm_object_id": "osm:node:4340333890",
+      "osm_name": "MAEC",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:school:566",
+      "facility_name": "F. Magoodhoo School",
+      "category": "school",
+      "osm_object_id": "osm:node:11631471886",
+      "osm_name": null,
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:569",
+      "facility_name": "Dh. Atoll Education Centre",
+      "category": "school",
+      "osm_object_id": "osm:way:1532937539",
+      "osm_name": "Dhaalu Atoll Education Centre",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:572",
+      "facility_name": "Rinbudhoo School",
+      "category": "school",
+      "osm_object_id": "osm:way:1314127765",
+      "osm_name": "Rinbudhoo School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:573",
+      "facility_name": "Bandidhoo School",
+      "category": "school",
+      "osm_object_id": "osm:node:1677799555",
+      "osm_name": "Ban'didhoo School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:574",
+      "facility_name": "Maaenboodhoo School",
+      "category": "school",
+      "osm_object_id": "osm:way:677448182",
+      "osm_name": "Maaenboodhoo School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:575",
+      "facility_name": "Th. Atoll Education Centre",
+      "category": "school",
+      "osm_object_id": "osm:way:791616201",
+      "osm_name": "Tha Atoll Education Centre",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:578",
+      "facility_name": "Kinbidhoo School",
+      "category": "school",
+      "osm_object_id": "osm:node:11222055209",
+      "osm_name": "Kinbidhoo School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:579",
+      "facility_name": "Veymandoo School",
+      "category": "school",
+      "osm_object_id": "osm:way:616114858",
+      "osm_name": "Veymandoo School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:591",
+      "facility_name": "Hamad Bin Khaleefa Al Thani School",
+      "category": "school",
+      "osm_object_id": "osm:way:364882221",
+      "osm_name": "Hamadh School Ground",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:school:592",
+      "facility_name": "Hithadhoo School",
+      "category": "school",
+      "osm_object_id": "osm:way:1126419152",
+      "osm_name": "Laamu Hithadhoo School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:606",
+      "facility_name": "GA. Maamendhoo School",
+      "category": "school",
+      "osm_object_id": "osm:way:976103995",
+      "osm_name": "Ga. Maamendhoo School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:607",
+      "facility_name": "Dhaandhoo School",
+      "category": "school",
+      "osm_object_id": "osm:node:3979113477",
+      "osm_name": "Dhaandhoo School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:616",
+      "facility_name": "Vaadhoo Jamaluddeen School",
+      "category": "school",
+      "osm_object_id": "osm:node:8526293513",
+      "osm_name": "Jamaaluddin School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:school:617",
+      "facility_name": "Madaveli School",
+      "category": "school",
+      "osm_object_id": "osm:way:953821186",
+      "osm_name": "Madaveli School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:619",
+      "facility_name": "Fiyoaree School",
+      "category": "school",
+      "osm_object_id": "osm:node:11221812118",
+      "osm_name": "Fiyoaree School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:621",
+      "facility_name": "Gn. Atoll Education Centre",
+      "category": "school",
+      "osm_object_id": "osm:way:651281003",
+      "osm_name": "ޏ.އަތޮޅު ތައުލީމީ މަރުކަޒު",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:623",
+      "facility_name": "Mohamed Jamaluddin School",
+      "category": "school",
+      "osm_object_id": "osm:node:8392088123",
+      "osm_name": "Mohamed Jamaaludheen School (MJS)",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:624",
+      "facility_name": "Hafiz Ahmed School",
+      "category": "school",
+      "osm_object_id": "osm:way:1033583587",
+      "osm_name": "Hafiz Ahmed School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:625",
+      "facility_name": "Sharafuddin School",
+      "category": "school",
+      "osm_object_id": "osm:node:9889458135",
+      "osm_name": "Sharafuddin School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:626",
+      "facility_name": "Hithadhoo School",
+      "category": "school",
+      "osm_object_id": "osm:way:715008220",
+      "osm_name": "Hithadhoo School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:627",
+      "facility_name": "Nooraanee School",
+      "category": "school",
+      "osm_object_id": "osm:node:5157162191",
+      "osm_name": "Noorani School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:school:628",
+      "facility_name": "Addu High School",
+      "category": "school",
+      "osm_object_id": "osm:node:5200094223",
+      "osm_name": null,
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:629",
+      "facility_name": "Maradhoo School",
+      "category": "school",
+      "osm_object_id": "osm:way:531757805",
+      "osm_name": "Maradhoo School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:633",
+      "facility_name": "Iskandhar School",
+      "category": "school",
+      "osm_object_id": "osm:way:508266761",
+      "osm_name": "Iskandhar School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:635",
+      "facility_name": "Kalaafaanu School",
+      "category": "school",
+      "osm_object_id": "osm:way:1317921914",
+      "osm_name": "Kalaafaanu School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:637",
+      "facility_name": "Imaduddin School",
+      "category": "school",
+      "osm_object_id": "osm:node:4866622621",
+      "osm_name": "Imaduddin School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:638",
+      "facility_name": "Aminiya School",
+      "category": "school",
+      "osm_object_id": "osm:way:1323678631",
+      "osm_name": "Aminiya School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:640",
+      "facility_name": "Dharumavantha School",
+      "category": "school",
+      "osm_object_id": "osm:way:1320069203",
+      "osm_name": "ދަރުމަވަންތަ ސްކޫލް",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:642",
+      "facility_name": "Muhyiddin School",
+      "category": "school",
+      "osm_object_id": "osm:way:1317950376",
+      "osm_name": "Muhiyyidin school",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": [
+        "weak_name_overlap"
+      ]
+    },
+    {
+      "facility_id": "facility:school:643",
+      "facility_name": "Ghaazee School",
+      "category": "school",
+      "osm_object_id": "osm:way:697262511",
+      "osm_name": "Ghaazee School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:644",
+      "facility_name": "Centre for Higher Secondary Education Hulhumale'",
+      "category": "school",
+      "osm_object_id": "osm:way:1547305510",
+      "osm_name": "CHSE Hulhumale",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:645",
+      "facility_name": "Al Madharusathul Arabiyyathul Islaamiyya",
+      "category": "school",
+      "osm_object_id": "osm:way:1207054212",
+      "osm_name": "Al Madhrasathul Arabiyyathul Islamiyya",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:646",
+      "facility_name": "Rehendhi School",
+      "category": "school",
+      "osm_object_id": "osm:way:1210924794",
+      "osm_name": "ރެހެންދި ސްކޫލް",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "facility:school:653",
+      "facility_name": "Shaheed Ali School",
+      "category": "school",
+      "osm_object_id": "osm:node:14268489201",
+      "osm_name": "Shaheed Ali School",
+      "osm_category": "school",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrmm",
+      "facility_name": "Velana International Airport",
+      "category": "airport",
+      "osm_object_id": "osm:way:747440857",
+      "osm_name": "ވެލާނާ ބައިނަލްއަޤުވާމީ ވައިގެ ބަނދަރު",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrmg",
+      "facility_name": "Gan International Airport",
+      "category": "airport",
+      "osm_object_id": "osm:node:12895354033",
+      "osm_name": "Gan Island International Airport",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrmv",
+      "facility_name": "Villa International Airport Maamigili",
+      "category": "airport",
+      "osm_object_id": "osm:way:1319728541",
+      "osm_name": "Villa International Airport Maamigili",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrmh",
+      "facility_name": "Hanimaadhoo International Airport",
+      "category": "airport",
+      "osm_object_id": "osm:way:747433190",
+      "osm_name": "Hanimaadhoo Airport",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrda",
+      "facility_name": "Maafaru International Airport",
+      "category": "airport",
+      "osm_object_id": "osm:way:747425647",
+      "osm_name": "Maafaru International Airport",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrmd",
+      "facility_name": "Dharavandhoo Airport",
+      "category": "airport",
+      "osm_object_id": "osm:way:749871864",
+      "osm_name": "Dharavandhoo Airport",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrmo",
+      "facility_name": "Kooddoo Airport",
+      "category": "airport",
+      "osm_object_id": "osm:node:2722414091",
+      "osm_name": "Kuddoo",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrmr",
+      "facility_name": "Fuvahmulah Airport",
+      "category": "airport",
+      "osm_object_id": "osm:way:501718359",
+      "osm_name": "Fuvahmulah Island",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrmu",
+      "facility_name": "Dhaalu Airport",
+      "category": "airport",
+      "osm_object_id": "osm:way:602758011",
+      "osm_name": "Dhaalu Airport",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrgd",
+      "facility_name": "Madivaru Airport",
+      "category": "airport",
+      "osm_object_id": "osm:way:1256311744",
+      "osm_name": "Madivaru Airport",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrqf",
+      "facility_name": "Faresmaathodaa Airport",
+      "category": "airport",
+      "osm_object_id": "osm:way:1557300131",
+      "osm_name": "Faresmaathoda Airport",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrah",
+      "facility_name": "Hoarafushi Airport",
+      "category": "airport",
+      "osm_object_id": "osm:way:1255413502",
+      "osm_name": "Hoarafushi Airport",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrbk",
+      "facility_name": "Kulhudhuffushi Airport",
+      "category": "airport",
+      "osm_object_id": "osm:way:752541163",
+      "osm_name": "Kulhudhuffushi Airport",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrcf",
+      "facility_name": "Funadhoo Airport",
+      "category": "airport",
+      "osm_object_id": "osm:way:757319579",
+      "osm_name": "Funadhoo Airport",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrom",
+      "facility_name": "Maavarulu Airport",
+      "category": "airport",
+      "osm_object_id": "osm:way:1165473042",
+      "osm_name": "Maavarulu Airport",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrnt",
+      "facility_name": "Thimarafushi Airport",
+      "category": "airport",
+      "osm_object_id": "osm:node:4508136626",
+      "osm_name": "Thimarafushi",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrmt",
+      "facility_name": "Kaadedhdhoo Airport",
+      "category": "airport",
+      "osm_object_id": "osm:way:1165473041",
+      "osm_name": "Kaadedhdhoo Airport",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrei",
+      "facility_name": "Ifuru Airport",
+      "category": "airport",
+      "osm_object_id": "osm:node:4502629775",
+      "osm_name": "Ifuru",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    },
+    {
+      "facility_id": "airport:vrkm",
+      "facility_name": "Muli Airport",
+      "category": "airport",
+      "osm_object_id": "osm:way:1557297319",
+      "osm_name": "Muli Airport",
+      "osm_category": "aerodrome",
+      "checks": {
+        "live_object_exists": true,
+        "category_compatible": true,
+        "same_island_as_normalized_mapping": true,
+        "geometry_within_maldives": true
+      },
+      "audit_flags": []
+    }
+  ]
+}

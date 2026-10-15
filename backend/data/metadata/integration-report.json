@@ -1,0 +1,803 @@
+{
+  "generated_at": "2026-10-14T07:56:48.816676+00:00",
+  "base_url": "http://127.0.0.1:8000",
+  "api_path_count": 16,
+  "national_summary": {
+    "accessibility_status": "calculated",
+    "facility_categories": {
+      "airport": 19,
+      "clinic": 406,
+      "health_center": 164,
+      "hospital": 31,
+      "school": 220
+    },
+    "facility_count": 840,
+    "facility_match_status": {
+      "exact_normalized_name": 62,
+      "exact_source_identifier": 18,
+      "island_context_only": 302,
+      "osm_best_effort": 28,
+      "osm_match_review_required": 125,
+      "osm_provisional_review_required": 16,
+      "reviewed_osm_match": 48,
+      "source_not_in_osm": 241
+    },
+    "island_count": 1561,
+    "osm": {
+      "feature_categories": {
+        "aerodrome": 26,
+        "bus_station": 1,
+        "bus_stop": 86,
+        "clinic": 18,
+        "ferry_terminal": 19,
+        "government": 103,
+        "helipad": 4,
+        "hospital": 68,
+        "parking": 5,
+        "pier": 40,
+        "public_transport": 158,
+        "school": 109,
+        "taxi": 5,
+        "terminal": 17
+      },
+      "feature_count": 659,
+      "island_assigned_feature_count": 517,
+      "online_review_feature_count": 24,
+      "route_relation_count": 13
+    },
+    "population_attached_count": 1049,
+    "population_record_count": 5442,
+    "accessibility": {
+      "average_score": 1.93,
+      "island_count": 1561,
+      "missing_data_score_count": 1561,
+      "zero_score_count": 1466
+    }
+  },
+  "sample_profile": {
+    "name": "Malé",
+    "population": {
+      "year": null,
+      "basis": "resident_population",
+      "source": null,
+      "total": 0,
+      "school_age": null,
+      "early_childhood": null,
+      "older_adult": null,
+      "by_age_sex": {},
+      "by_sex": {
+        "both": 0,
+        "female": 0,
+        "male": 0
+      },
+      "by_nationality": {
+        "total": 0,
+        "Maldivian": 0,
+        "foreign": 0
+      },
+      "record_count": 0,
+      "demographic_breakdown": false
+    },
+    "data_quality": {
+      "warnings": [
+        "population records are unavailable; zero represents missing data",
+        "island-level age breakdown is unavailable; scores use total population only",
+        "some official facilities are not safely geocoded"
+      ],
+      "official_facility_count": 24,
+      "unresolved_facility_count": 24,
+      "provisional_facility_count": 0,
+      "population_record_count": 0
+    },
+    "accessibility_score": 68.61
+  },
+  "sample_populated_profile": {
+    "year": 2022,
+    "basis": "resident_population",
+    "source": "MBS Census 2022 P3",
+    "total": 9177,
+    "school_age": null,
+    "early_childhood": null,
+    "older_adult": null,
+    "by_age_sex": {},
+    "by_sex": {
+      "both": 9177,
+      "female": 4267,
+      "male": 4910
+    },
+    "by_nationality": {
+      "total": 9177,
+      "Maldivian": 7907,
+      "foreign": 1270
+    },
+    "record_count": 10,
+    "demographic_breakdown": false
+  },
+  "map_summary": {
+    "layer": "all",
+    "feature_count": 2223,
+    "unlocated_count": 668,
+    "matched_osm_count": 169,
+    "coordinates": "[longitude, latitude]",
+    "island_id": null
+  },
+  "sample_land_route": {
+    "distance_m": 13.977,
+    "mode": "walk"
+  },
+  "marine_verified_status": {
+    "status": "unreachable",
+    "reason": "no_connected_marine_path"
+  },
+  "marine_candidate_distance_m": 1614.104,
+  "recommendation_counts": {
+    "underserved_island": 2,
+    "bus_stop": 2,
+    "ferry_terminal": 2,
+    "ferry_route": 2,
+    "parking": 2,
+    "mobility_hub": 2,
+    "pedestrian": 2,
+    "airport_access": 0
+  },
+  "live_sample": {
+    "location_count": 2,
+    "coverage": "available",
+    "providers": [
+      {
+        "provider": "adsb.lol",
+        "enabled": true,
+        "status": "ok",
+        "event_count": 2,
+        "retrieved_at": "2026-10-14T07:56:52.745376+00:00"
+      },
+      {
+        "provider": "openwaters",
+        "enabled": true,
+        "status": "no_current_coverage",
+        "event_count": 0,
+        "retrieved_at": "2026-10-14T07:56:52.673977+00:00"
+      },
+      {
+        "provider": "rtl",
+        "enabled": false,
+        "status": "disabled",
+        "event_count": 0
+      },
+      {
+        "provider": "followme",
+        "enabled": true,
+        "status": "no_selection",
+        "event_count": 0,
+        "retrieved_at": "2026-10-14T07:56:52.770440+00:00"
+      },
+      {
+        "provider": "facha",
+        "enabled": true,
+        "status": "not_used",
+        "event_count": 0
+      }
+    ]
+  },
+  "followme_selected_sample": {
+    "provider": "followme",
+    "enabled": true,
+    "status": "ok",
+    "event_count": 1,
+    "retrieved_at": "2026-10-14T07:56:53.681469+00:00"
+  },
+  "cases": [
+    {
+      "label": "/health",
+      "method": "GET",
+      "path": "/health",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.027,
+      "response_bytes": 79
+    },
+    {
+      "label": "/openapi.json",
+      "method": "GET",
+      "path": "/openapi.json",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.041,
+      "response_bytes": 19418
+    },
+    {
+      "label": "/api/v1/national/summary",
+      "method": "GET",
+      "path": "/api/v1/national/summary",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.002,
+      "response_bytes": 947
+    },
+    {
+      "label": "/api/v1/islands?limit=1000",
+      "method": "GET",
+      "path": "/api/v1/islands?limit=1000",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.046,
+      "response_bytes": 9798286
+    },
+    {
+      "label": "/api/v1/islands?limit=1000&offset=1000",
+      "method": "GET",
+      "path": "/api/v1/islands?limit=1000&offset=1000",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.045,
+      "response_bytes": 4845589
+    },
+    {
+      "label": "/api/v1/islands?q=Hithadhoo&atoll=Addu&limit=5",
+      "method": "GET",
+      "path": "/api/v1/islands?q=Hithadhoo&atoll=Addu&limit=5",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.003,
+      "response_bytes": 43
+    },
+    {
+      "label": "/api/v1/islands/island:1443",
+      "method": "GET",
+      "path": "/api/v1/islands/island:1443",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.002,
+      "response_bytes": 20809
+    },
+    {
+      "label": "/api/v1/islands/island:1443/profile",
+      "method": "GET",
+      "path": "/api/v1/islands/island:1443/profile",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.067,
+      "response_bytes": 108010
+    },
+    {
+      "label": "/api/v1/islands/island:1334/profile",
+      "method": "GET",
+      "path": "/api/v1/islands/island:1334/profile",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.015,
+      "response_bytes": 46419
+    },
+    {
+      "label": "/api/v1/map/features?layer=all&island_id=island:1443",
+      "method": "GET",
+      "path": "/api/v1/map/features?layer=all&island_id=island:1443",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.003,
+      "response_bytes": 88193
+    },
+    {
+      "label": "/api/v1/map/features?layer=islands&island_id=island:1443",
+      "method": "GET",
+      "path": "/api/v1/map/features?layer=islands&island_id=island:1443",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.002,
+      "response_bytes": 21224
+    },
+    {
+      "label": "/api/v1/map/features?layer=infrastructure&island_id=island:1443",
+      "method": "GET",
+      "path": "/api/v1/map/features?layer=infrastructure&island_id=island:1443",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.002,
+      "response_bytes": 13042
+    },
+    {
+      "label": "/api/v1/map/features?layer=transport&island_id=island:1443",
+      "method": "GET",
+      "path": "/api/v1/map/features?layer=transport&island_id=island:1443",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.002,
+      "response_bytes": 61012
+    },
+    {
+      "label": "/api/v1/map/features?layer=all",
+      "method": "GET",
+      "path": "/api/v1/map/features?layer=all",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.064,
+      "response_bytes": 14973659
+    },
+    {
+      "label": "/api/v1/map/features?layer=infrastructure&include_unlocated=true",
+      "method": "GET",
+      "path": "/api/v1/map/features?layer=infrastructure&include_unlocated=true",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.024,
+      "response_bytes": 610144
+    },
+    {
+      "label": "/api/v1/accessibility/summary",
+      "method": "GET",
+      "path": "/api/v1/accessibility/summary",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.048,
+      "response_bytes": 3582991
+    },
+    {
+      "label": "/api/v1/accessibility/score",
+      "method": "POST",
+      "path": "/api/v1/accessibility/score",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.064,
+      "response_bytes": 2363
+    },
+    {
+      "label": "/api/v1/routing/land",
+      "method": "POST",
+      "path": "/api/v1/routing/land",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.005,
+      "response_bytes": 230
+    },
+    {
+      "label": "land-routing:bicycle",
+      "method": "POST",
+      "path": "/api/v1/routing/land",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.004,
+      "response_bytes": 233
+    },
+    {
+      "label": "land-routing:car",
+      "method": "POST",
+      "path": "/api/v1/routing/land",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.004,
+      "response_bytes": 228
+    },
+    {
+      "label": "land-routing:taxi",
+      "method": "POST",
+      "path": "/api/v1/routing/land",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.004,
+      "response_bytes": 229
+    },
+    {
+      "label": "land-routing:bus",
+      "method": "POST",
+      "path": "/api/v1/routing/land",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.003,
+      "response_bytes": 228
+    },
+    {
+      "label": "/api/v1/routing/marine",
+      "method": "POST",
+      "path": "/api/v1/routing/marine",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.001,
+      "response_bytes": 60
+    },
+    {
+      "label": "/api/v1/routing/marine",
+      "method": "POST",
+      "path": "/api/v1/routing/marine",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.001,
+      "response_bytes": 253
+    },
+    {
+      "label": "simulation:add_bus_stop",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.346,
+      "response_bytes": 949
+    },
+    {
+      "label": "simulation:move_bus_stop",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.055,
+      "response_bytes": 960
+    },
+    {
+      "label": "simulation:remove_bus_stop",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.053,
+      "response_bytes": 948
+    },
+    {
+      "label": "simulation:add_ferry_terminal",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.052,
+      "response_bytes": 1005
+    },
+    {
+      "label": "simulation:move_ferry_terminal",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.051,
+      "response_bytes": 997
+    },
+    {
+      "label": "simulation:disable_ferry_terminal",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.051,
+      "response_bytes": 989
+    },
+    {
+      "label": "simulation:add_ferry_route",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.052,
+      "response_bytes": 1005
+    },
+    {
+      "label": "simulation:remove_ferry_route",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.051,
+      "response_bytes": 993
+    },
+    {
+      "label": "simulation:change_ferry_route",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.053,
+      "response_bytes": 1048
+    },
+    {
+      "label": "simulation:add_parking",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.055,
+      "response_bytes": 946
+    },
+    {
+      "label": "simulation:add_park_and_ride",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.052,
+      "response_bytes": 965
+    },
+    {
+      "label": "simulation:add_mobility_hub",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.052,
+      "response_bytes": 962
+    },
+    {
+      "label": "simulation:road_closure",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.052,
+      "response_bytes": 969
+    },
+    {
+      "label": "simulation:pedestrian_connection",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.055,
+      "response_bytes": 976
+    },
+    {
+      "label": "simulation:airport_access_improvement",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.053,
+      "response_bytes": 1007
+    },
+    {
+      "label": "simulation:weather_disruption",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.053,
+      "response_bytes": 983
+    },
+    {
+      "label": "/api/v1/simulation/compare",
+      "method": "POST",
+      "path": "/api/v1/simulation/compare",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.385,
+      "response_bytes": 1914
+    },
+    {
+      "label": "/api/v1/simulation/run",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.055,
+      "response_bytes": 617
+    },
+    {
+      "label": "recommendations:underserved_island",
+      "method": "POST",
+      "path": "/api/v1/recommendations",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.034,
+      "response_bytes": 2042
+    },
+    {
+      "label": "recommendations:bus_stop",
+      "method": "POST",
+      "path": "/api/v1/recommendations",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.105,
+      "response_bytes": 2732
+    },
+    {
+      "label": "recommendations:deterministic_repeat",
+      "method": "POST",
+      "path": "/api/v1/recommendations",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.104,
+      "response_bytes": 2732
+    },
+    {
+      "label": "recommendations:ferry_terminal",
+      "method": "POST",
+      "path": "/api/v1/recommendations",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.05,
+      "response_bytes": 2854
+    },
+    {
+      "label": "recommendations:ferry_route",
+      "method": "POST",
+      "path": "/api/v1/recommendations",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.028,
+      "response_bytes": 2823
+    },
+    {
+      "label": "recommendations:parking",
+      "method": "POST",
+      "path": "/api/v1/recommendations",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.126,
+      "response_bytes": 2661
+    },
+    {
+      "label": "recommendations:mobility_hub",
+      "method": "POST",
+      "path": "/api/v1/recommendations",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.236,
+      "response_bytes": 2779
+    },
+    {
+      "label": "recommendations:pedestrian",
+      "method": "POST",
+      "path": "/api/v1/recommendations",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.049,
+      "response_bytes": 2835
+    },
+    {
+      "label": "recommendations:airport_access",
+      "method": "POST",
+      "path": "/api/v1/recommendations",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.002,
+      "response_bytes": 269
+    },
+    {
+      "label": "/api/v1/live/status",
+      "method": "GET",
+      "path": "/api/v1/live/status",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.002,
+      "response_bytes": 503
+    },
+    {
+      "label": "/api/v1/live/snapshot?include_fallback=false",
+      "method": "GET",
+      "path": "/api/v1/live/snapshot?include_fallback=false",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.771,
+      "response_bytes": 2835
+    },
+    {
+      "label": "/api/v1/live/snapshot?include_fallback=false&followme_vessel_ids=18157",
+      "method": "GET",
+      "path": "/api/v1/live/snapshot?include_fallback=false&followme_vessel_ids=18157",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.908,
+      "response_bytes": 3834
+    },
+    {
+      "label": "/api/v1/live/stream?once=true&include_fallback=false",
+      "method": "GET",
+      "path": "/api/v1/live/stream?once=true&include_fallback=false",
+      "status": 200,
+      "expected_status": 200,
+      "duration_seconds": 0.004,
+      "response_bytes": 1822
+    },
+    {
+      "label": "/api/v1/islands/island:missing",
+      "method": "GET",
+      "path": "/api/v1/islands/island:missing",
+      "status": 404,
+      "expected_status": 404,
+      "duration_seconds": 0.002,
+      "response_bytes": 76
+    },
+    {
+      "label": "/api/v1/islands/island:missing/profile",
+      "method": "GET",
+      "path": "/api/v1/islands/island:missing/profile",
+      "status": 404,
+      "expected_status": 404,
+      "duration_seconds": 0.001,
+      "response_bytes": 76
+    },
+    {
+      "label": "/api/v1/map/features?island_id=island:missing",
+      "method": "GET",
+      "path": "/api/v1/map/features?island_id=island:missing",
+      "status": 404,
+      "expected_status": 404,
+      "duration_seconds": 0.001,
+      "response_bytes": 76
+    },
+    {
+      "label": "/api/v1/accessibility/score",
+      "method": "POST",
+      "path": "/api/v1/accessibility/score",
+      "status": 404,
+      "expected_status": 404,
+      "duration_seconds": 0.002,
+      "response_bytes": 76
+    },
+    {
+      "label": "/api/v1/recommendations",
+      "method": "POST",
+      "path": "/api/v1/recommendations",
+      "status": 404,
+      "expected_status": 404,
+      "duration_seconds": 0.002,
+      "response_bytes": 76
+    },
+    {
+      "label": "/api/v1/simulation/run",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 404,
+      "expected_status": 404,
+      "duration_seconds": 0.002,
+      "response_bytes": 76
+    },
+    {
+      "label": "/api/v1/islands?limit=0",
+      "method": "GET",
+      "path": "/api/v1/islands?limit=0",
+      "status": 422,
+      "expected_status": 422,
+      "duration_seconds": 0.001,
+      "response_bytes": 230
+    },
+    {
+      "label": "/api/v1/map/features?layer=bad",
+      "method": "GET",
+      "path": "/api/v1/map/features?layer=bad",
+      "status": 422,
+      "expected_status": 422,
+      "duration_seconds": 0.001,
+      "response_bytes": 306
+    },
+    {
+      "label": "/api/v1/simulation/run",
+      "method": "POST",
+      "path": "/api/v1/simulation/run",
+      "status": 422,
+      "expected_status": 422,
+      "duration_seconds": 0.002,
+      "response_bytes": 301
+    },
+    {
+      "label": "/api/v1/recommendations",
+      "method": "POST",
+      "path": "/api/v1/recommendations",
+      "status": 422,
+      "expected_status": 422,
+      "duration_seconds": 0.001,
+      "response_bytes": 341
+    },
+    {
+      "label": "/api/v1/live/snapshot?bbox=bad",
+      "method": "GET",
+      "path": "/api/v1/live/snapshot?bbox=bad",
+      "status": 422,
+      "expected_status": 422,
+      "duration_seconds": 0.005,
+      "response_bytes": 342
+    },
+    {
+      "label": "/api/v1/live/stream?followme_vessel_ids=-1",
+      "method": "GET",
+      "path": "/api/v1/live/stream?followme_vessel_ids=-1",
+      "status": 422,
+      "expected_status": 422,
+      "duration_seconds": 0.002,
+      "response_bytes": 340
+    }
+  ],
+  "passed_request_count": 67,
+  "deterministic_artifacts_unchanged": true,
+  "cache_validation": {
+    "status": "ok",
+    "checked_files": 13,
+    "required_file_count": 13,
+    "errors": [],
+    "warnings": []
+  }
+}

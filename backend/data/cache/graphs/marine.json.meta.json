@@ -1,0 +1,12 @@
+{
+  "content_type": "application/json",
+  "endpoint": "local normalized output",
+  "http_status": 200,
+  "parser_version": "routing-v1",
+  "retrieved_at": "2026-10-13T12:17:18.144179+00:00",
+  "schema_version": 1,
+  "sha256": "2313c002773100f84ce8d9020043fe953c74d0c648f912faac1d45ec69ab6f39",
+  "source": "Mobility Sandbox OSM marine graph candidates",
+  "source_record_id": null,
+  "status": "fresh"
+}

@@ -1,0 +1,164 @@
+{
+  "job_id": "batch-20261013-073000-01",
+  "records": [
+    {
+      "facility_id": "facility:health:722",
+      "official_name": "Raa Innamaadhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:725",
+      "official_name": "B. Hithaadhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:726",
+      "official_name": "Baa Kudarikilu Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:727",
+      "official_name": "Baa Kihaadhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:730",
+      "official_name": "Raa In'guraidhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:731",
+      "official_name": "Raa Maakurathu Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:732",
+      "official_name": "Raa Kinolhas Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:1122700184",
+          "osm_url": "https://www.openstreetmap.org/way/1122700184",
+          "name": "Kinolhas Health Center",
+          "island": "Kinolhas",
+          "coordinates": [
+            73.0297846,
+            5.4479394
+          ],
+          "tags": {
+            "healthcare": "yes",
+            "name": "Kinolhas Health Center"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge.",
+      "follow_up": "Live-validate and merge if all checks pass."
+    },
+    {
+      "facility_id": "facility:health:733",
+      "official_name": "Raa Maduvvari Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:849710130",
+          "osm_url": "https://www.openstreetmap.org/way/849710130",
+          "name": "Hospital",
+          "island": "Maduvvari",
+          "coordinates": [
+            72.8960839,
+            5.4874938
+          ],
+          "tags": {
+            "building": "hospital",
+            "name": "Hospital"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:735",
+      "official_name": "Raa Fainu Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:13586575558",
+          "osm_url": "https://www.openstreetmap.org/node/13586575558",
+          "name": "Fainu Health Centre",
+          "island": "Fainu",
+          "coordinates": [
+            73.0346721,
+            5.4652336
+          ],
+          "tags": {
+            "healthcare": "yes",
+            "name": "Fainu Health Centre"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge.",
+      "follow_up": "Live-validate and merge if all checks pass."
+    },
+    {
+      "facility_id": "facility:health:737",
+      "official_name": "Noonu Velidhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    }
+  ],
+  "summary": "deterministic local review"
+}

@@ -1,0 +1,79 @@
+{
+  "version": "facility-review-validated-v1",
+  "validated_at": "2026-10-13T06:10:00Z",
+  "job_id": "batch-20261013-102806-01",
+  "errors": [],
+  "records": [
+    {
+      "facility_id": "facility:health:502",
+      "official_name": "DH. Rinbidhoo Health Centre",
+      "category": "health_center",
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "official_source_url": "https://hems.health.gov.mv/establishments?page=8",
+      "discovery_urls": [
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare",
+        "https://api.openstreetmap.org/api/0.6/node/12163204712.json",
+        "https://www.openstreetmap.org/node/12163204712"
+      ],
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:12163204712",
+          "osm_url": "https://www.openstreetmap.org/node/12163204712",
+          "name": "Rinbudhoo Health Center",
+          "island": "Rinbudhoo",
+          "coordinates": [
+            72.8959053,
+            2.9235708
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name": "Rinbudhoo Health Center"
+          },
+          "status": "live"
+        }
+      ],
+      "evidence_note": "Official HEMS/Maaharaa identity for Dh. Rinbudhoo Health Centre and the Rinbudhoo island agree with the live OSM node's exact name variant and compatible doctors/doctor tags.",
+      "validation": {
+        "approved": true,
+        "checks": {
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        }
+      },
+      "selected_candidate": {
+        "osm_object_id": "osm:node:12163204712",
+        "osm_url": "https://www.openstreetmap.org/node/12163204712",
+        "name": "Rinbudhoo Health Center",
+        "island": "Rinbudhoo",
+        "coordinates": [
+          72.8959053,
+          2.9235708
+        ],
+        "tags": {
+          "amenity": "doctors",
+          "healthcare": "doctor",
+          "name": "Rinbudhoo Health Center"
+        }
+      },
+      "live_verification": {
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/node/12163204712.json"
+      },
+      "derived_tags": {
+        "amenity": "doctors",
+        "healthcare": "doctor",
+        "name": "Rinbudhoo Health Center"
+      },
+      "derived_coordinates": [
+        72.8959053,
+        2.9235708
+      ]
+    }
+  ]
+}

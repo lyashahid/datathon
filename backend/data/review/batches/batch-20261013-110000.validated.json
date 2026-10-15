@@ -1,0 +1,1243 @@
+{
+  "version": "facility-review-validated-v1",
+  "validated_at": "2026-10-13T09:34:50.614384Z",
+  "job_id": "batch-20261013-110000",
+  "errors": [],
+  "records": [
+    {
+      "facility_id": "facility:health:138",
+      "official_name": "Reethi Beach Clilnic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:1393",
+      "official_name": "EyeCare Clinic Laamu Branch",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:14",
+      "official_name": "Island Health Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:140",
+      "official_name": "Sun Siyam Iruveli Maldives Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:141",
+      "official_name": "Vadoo Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:1415",
+      "official_name": "TAJ CORAL CARE CLINIC",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:142",
+      "official_name": "Kunaavashi Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:144",
+      "official_name": "Alai Play and Learn Therapy Center",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:1442",
+      "official_name": "MALDIVES MULTISPECIALITY CLINIC",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:145",
+      "official_name": "Veligandu Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:1460",
+      "official_name": "Zen Medi Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:1466",
+      "official_name": "Madivaru Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:147",
+      "official_name": "Avani Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:1478",
+      "official_name": "Medi Trust Centre",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:148",
+      "official_name": "Cheval Blance Randeli Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:1483",
+      "official_name": "Mathiveri Eesa Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:149",
+      "official_name": "Magey Physio",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:15",
+      "official_name": "Mirage Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:151",
+      "official_name": "Paradise Medical Centre",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:153",
+      "official_name": "Naifaru Medical Center",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:590298924",
+          "osm_url": "https://www.openstreetmap.org/way/590298924",
+          "name": "Lhaviyani Atoll Hospital",
+          "island": "Naifaru",
+          "coordinates": [
+            73.364897,
+            5.4448025
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "check_date": "2024-12-28",
+            "emergency": "yes",
+            "healthcare": "hospital",
+            "name": "Lhaviyani Atoll Hospital"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": {
+        "osm_object_id": "osm:way:590298924",
+        "osm_url": "https://www.openstreetmap.org/way/590298924",
+        "name": "Lhaviyani Atoll Hospital",
+        "island": "Naifaru",
+        "coordinates": [
+          73.364897,
+          5.4448025
+        ],
+        "tags": {
+          "amenity": "hospital",
+          "check_date": "2024-12-28",
+          "emergency": "yes",
+          "healthcare": "hospital",
+          "name": "Lhaviyani Atoll Hospital"
+        },
+        "status": "discovered_overpass"
+      },
+      "live_verification": {
+        "osm_object_id": "osm:way:590298924",
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/way/590298924/full.json",
+        "payload": {
+          "version": "0.6",
+          "generator": "openstreetmap-cgimap 2.1.0 (3964269 spike-06.openstreetmap.org)",
+          "copyright": "OpenStreetMap and contributors",
+          "attribution": "http://www.openstreetmap.org/copyright",
+          "license": "http://opendatacommons.org/licenses/odbl/1-0/",
+          "elements": [
+            {
+              "type": "node",
+              "id": 5457780651,
+              "lat": 5.4450346,
+              "lon": 73.3650661,
+              "timestamp": "2018-05-23T00:52:50Z",
+              "version": 3,
+              "changeset": 59195399,
+              "user": "Flih",
+              "uid": 7528084
+            },
+            {
+              "type": "node",
+              "id": 5457780652,
+              "lat": 5.4443702,
+              "lon": 73.3649711,
+              "timestamp": "2018-05-23T00:52:50Z",
+              "version": 4,
+              "changeset": 59195399,
+              "user": "Flih",
+              "uid": 7528084
+            },
+            {
+              "type": "node",
+              "id": 5457780653,
+              "lat": 5.4443867,
+              "lon": 73.3646898,
+              "timestamp": "2018-05-23T00:52:50Z",
+              "version": 3,
+              "changeset": 59195399,
+              "user": "Flih",
+              "uid": 7528084
+            },
+            {
+              "type": "node",
+              "id": 5636273282,
+              "lat": 5.4452273,
+              "lon": 73.3648903,
+              "timestamp": "2018-05-23T00:52:49Z",
+              "version": 1,
+              "changeset": 59195399,
+              "user": "Flih",
+              "uid": 7528084
+            },
+            {
+              "type": "node",
+              "id": 5636273283,
+              "lat": 5.4451957,
+              "lon": 73.3651043,
+              "timestamp": "2018-05-23T00:52:49Z",
+              "version": 1,
+              "changeset": 59195399,
+              "user": "Flih",
+              "uid": 7528084
+            },
+            {
+              "type": "node",
+              "id": 5636273284,
+              "lat": 5.4452348,
+              "lon": 73.364843,
+              "timestamp": "2018-05-23T00:52:49Z",
+              "version": 1,
+              "changeset": 59195399,
+              "user": "Flih",
+              "uid": 7528084
+            },
+            {
+              "type": "node",
+              "id": 14087146178,
+              "lat": 5.4450952,
+              "lon": 73.3650805,
+              "timestamp": "2026-08-11T08:40:26Z",
+              "version": 1,
+              "changeset": 187271301,
+              "user": "dhoru",
+              "uid": 21936107
+            },
+            {
+              "type": "way",
+              "id": 590298924,
+              "timestamp": "2026-08-11T08:40:26Z",
+              "version": 3,
+              "changeset": 187271301,
+              "user": "dhoru",
+              "uid": 21936107,
+              "nodes": [
+                5636273282,
+                5636273283,
+                14087146178,
+                5457780651,
+                5457780652,
+                5457780653,
+                5636273284,
+                5636273282
+              ],
+              "tags": {
+                "amenity": "hospital",
+                "check_date": "2024-12-28",
+                "emergency": "yes",
+                "healthcare": "hospital",
+                "name": "Lhaviyani Atoll Hospital"
+              }
+            }
+          ]
+        }
+      },
+      "derived_tags": {
+        "amenity": "hospital",
+        "check_date": "2024-12-28",
+        "emergency": "yes",
+        "healthcare": "hospital",
+        "name": "Lhaviyani Atoll Hospital"
+      },
+      "derived_coordinates": [
+        73.364897,
+        5.4448025
+      ],
+      "validation": {
+        "checks": {
+          "single_candidate": true,
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:154",
+      "official_name": "Care Medicals Services",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:155",
+      "official_name": "Constance Moofushi Resort Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:158",
+      "official_name": "Bulbul Therapy Center",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:159",
+      "official_name": "Pain Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:16",
+      "official_name": "Royal Island Medical Center",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:160",
+      "official_name": "Ayurvedic Therapy",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:1627",
+      "official_name": "Bluspan Care Thulusdhoo",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:12462668301",
+          "osm_url": "https://www.openstreetmap.org/node/12462668301",
+          "name": "Hospital of Thulusdhoo",
+          "island": "Thulusdhoo",
+          "coordinates": [
+            73.6510393,
+            4.3752275
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "emergency": "yes",
+            "healthcare": "hospital",
+            "name:en": "Hospital of Thulusdhoo",
+            "name:ru": "больница"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:956583564",
+          "osm_url": "https://www.openstreetmap.org/way/956583564",
+          "name": "",
+          "island": "Thulusdhoo",
+          "coordinates": [
+            73.651031,
+            4.3752135
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:163",
+      "official_name": "Dental Care Centre",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:164",
+      "official_name": "Vitalcare Huvadhoo",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:165",
+      "official_name": "Valley Dental",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:167",
+      "official_name": "Care Max Clinic 1",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:168",
+      "official_name": "ADK Hospital Reach Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:1691",
+      "official_name": "JOY CLINIC",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:17",
+      "official_name": "Safari Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:171",
+      "official_name": "Sun Siyam Irufushi Maldives Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:172",
+      "official_name": "Dhugethi Dhivehibeys clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:173",
+      "official_name": "Oracare Dental",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:174",
+      "official_name": "Stem Center Closed",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:176",
+      "official_name": "Farook Healthcare Villingili",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:177",
+      "official_name": "Thasalli medical Care",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    }
+  ]
+}

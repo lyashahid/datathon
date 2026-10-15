@@ -1,0 +1,712 @@
+# Unresolved official facilities — 667 records
+
+Generated from the current facility reconciliation ledger. These are not treated as nonexistent; each requires the follow-up shown in the ledger.
+
+## Competing OSM candidates (103)
+
+### hospital (8)
+
+- `facility:health:499` — Alifu Alifu Atoll Hospital; candidates=4
+- `facility:health:575` — Noonu Atoll hospital; candidates=2
+- `facility:health:592` — Gaafu Alifu Atoll Hospital; candidates=4
+- `facility:health:593` — Shaviyani Atoll Hospital; candidates=4
+- `facility:health:714` — Alifu Dhaalu Atoll Hospital; candidates=4
+- `facility:health:723` — Baa Atoll Hospital; candidates=4
+- `facility:health:753` — Haa Alifu Atoll Hospital; candidates=4
+- `facility:health:807` — Eye Care Hospital; candidates=1
+
+### health_center (4)
+
+- `facility:health:512` — K.Himmafushi Health Centre; candidates=2
+- `facility:health:577` — GDh. Hoadedhoo Health Centre; candidates=5
+- `facility:health:608` — S. Hulhu-Meedhoo Health Centre; candidates=1
+- `facility:health:749` — Amina Dhiyo Health Centre; candidates=1
+
+### clinic (87)
+
+- `facility:health:1001` — Centara Clinic; candidates=1
+- `facility:health:101` — Kaam Medical; candidates=1
+- `facility:health:11` — Omni Care Clinic; candidates=1
+- `facility:health:111` — Atoll Clinic Closed; candidates=3
+- `facility:health:112` — Life Care Medical Centre; candidates=1
+- `facility:health:1163` — Primary Care; candidates=1
+- `facility:health:121` — Nada Clinic; candidates=1
+- `facility:health:127` — Noosandha - Addu; candidates=2
+- `facility:health:131` — Cinnamon Dhonveli Maldives Medical Clinic; candidates=1
+- `facility:health:135` — Sun Island Medical Centre; candidates=1
+- `facility:health:1352` — S&R Medical Clinic; candidates=5
+- `facility:health:136` — Kandolhu Clinic; candidates=3
+- `facility:health:139` — My Dental Care; candidates=3
+- `facility:health:1395` — EyeCare Clinic Addu Branch; candidates=2
+- `facility:health:14` — Island Health Clinic; candidates=2
+- `facility:health:141` — Vadoo Clinic; candidates=4
+- `facility:health:1415` — TAJ CORAL CARE CLINIC; candidates=2
+- `facility:health:1460` — Zen Medi Clinic; candidates=1
+- `facility:health:147` — Avani Clinic; candidates=1
+- `facility:health:159` — Pain Clinic; candidates=1
+- `facility:health:16` — Royal Island Medical Center; candidates=1
+- `facility:health:164` — Vitalcare Huvadhoo; candidates=1
+- `facility:health:173` — Oracare Dental; candidates=1
+- `facility:health:174` — Stem Center Closed; candidates=1
+- `facility:health:176` — Farook Healthcare Villingili; candidates=1
+- `facility:health:177` — Thasalli medical Care; candidates=1
+- `facility:health:180` — Family Dental Care; candidates=2
+- `facility:health:185` — Rx Medicare; candidates=2
+- `facility:health:188` — Dreamland Clinic; candidates=2
+- `facility:health:19` — So Caring; candidates=1
+- `facility:health:209` — Clinica; candidates=5
+- `facility:health:215` — Angaga Medicals; candidates=1
+- `facility:health:216` — Cocoa Island Clinic; candidates=1
+- `facility:health:229` — Mindcare Clinic; candidates=3
+- `facility:health:248` — Huva Clinic Closed; candidates=1
+- `facility:health:254` — KV Clinic; candidates=5
+- `facility:health:255` — Maya Clinic; candidates=1
+- `facility:health:26` — Muraka Clinic; candidates=1
+- `facility:health:272` — Senahiya Nothern; candidates=1
+- `facility:health:3` — Dhirithi Faruvaa; candidates=1
+- `facility:health:315` — Pine Tree Medic Care; candidates=1
+- `facility:health:317` — Mednova Medical Center; candidates=1
+- `facility:health:326` — CyMa Care; candidates=1
+- `facility:health:335` — Hussain Abduh Samad Memorial Clinic; candidates=2
+- `facility:health:337` — M.C.S. Medical Center 2; candidates=5
+- `facility:health:340` — Advance Diagnostic Center; candidates=1
+- `facility:health:35` — NU Hospitals Clinic; candidates=5
+- `facility:health:357` — Faruvaa Clinic; candidates=1
+- `facility:health:36` — Furana Clinic; candidates=1
+- `facility:health:385` — Medhope Medical Centre; candidates=1
+- `facility:health:39` — NazaHealth; candidates=1
+- `facility:health:4` — Grand Clinic; candidates=1
+- `facility:health:400` — JP Memorial Clinic; candidates=3
+- `facility:health:422` — Maalifushi By COMO; candidates=2
+- `facility:health:425` — Athuruga Medical Clinic; candidates=1
+- `facility:health:473` — Kurumba Clinic; candidates=1
+- `facility:health:48` — CareOne Dental & Clinic; candidates=1
+- `facility:health:5` — SC Dental Care; candidates=3
+- `facility:health:51` — Kanuhura Clinic; candidates=1
+- `facility:health:523` — Vital Care; candidates=1
+- `facility:health:53` — Heart Care; candidates=2
+- `facility:health:551` — My Clinic; candidates=5
+- `facility:health:6` — Sangeli Clinic; candidates=1
+- `facility:health:63` — Rasfushi Clinic; candidates=1
+- `facility:health:649` — Kandooma Clinic; candidates=4
+- `facility:health:7` — My Medical Center; candidates=5
+- `facility:health:700` — Bandos Medical Clinic and Hyperbaric Treatment Centre; candidates=2
+- `facility:health:74` — Bliss Care; candidates=1
+- `facility:health:76` — Maldives Emergency Medical Services; candidates=1
+- `facility:health:769` — Eye Care Clinic; candidates=1
+- `facility:health:777` — Family Care Clinic and Scan Center; candidates=1
+- `facility:health:78` — My Family Dentist; candidates=1
+- `facility:health:795` — D.S.M Clinic; candidates=5
+- `facility:health:8` — MIOT Rehab Centre - Maldives; candidates=1
+- `facility:health:806` — F & C Medicare; candidates=2
+- `facility:health:808` — Smiles Dental Care; candidates=1
+- `facility:health:814` — Maldicare; candidates=2
+- `facility:health:818` — Family Planning Centre; candidates=1
+- `facility:health:82` — SO/ Maldives Clinic; candidates=3
+- `facility:health:857` — Shuba's Medical Centre; candidates=1
+- `facility:health:869` — Island Polyclinic; candidates=1
+- `facility:health:887` — Point Medical Care; candidates=1
+- `facility:health:89` — Healing Care Medical Center; candidates=2
+- `facility:health:921` — Mavericks Care; candidates=1
+- `facility:health:932` — SILVER CARE CLINIC; candidates=1
+- `facility:health:969` — Life Care Medical; candidates=1
+- `facility:health:99` — Chinese Health Care; candidates=1
+
+### school (4)
+
+- `facility:school:439` — Ha. Atoll Education Centre; candidates=5
+- `facility:school:465` — Sh. Atoll Education Centre; candidates=5
+- `facility:school:601` — GA. Atoll Education Centre; candidates=5
+- `facility:school:632` — S. Atoll School; candidates=5
+
+## Island context only (317)
+
+### hospital (2)
+
+- `facility:health:488` — Muli Regional Hospital
+- `facility:health:606` — Fuvammulah Hospital
+
+### health_center (126)
+
+- `facility:health:484` — Adh. Hangnaameedhoo Health Centre
+- `facility:health:486` — M. Kolhufushi Health Centre
+- `facility:health:487` — M. Dhiggaru Health Centre
+- `facility:health:490` — F. Dharanboodhoo Health Centre
+- `facility:health:492` — DH. Bandidhoo Health Centre
+- `facility:health:494` — DH. Hulhudhelee Health Centre
+- `facility:health:500` — A.Dh Dhidhoo Health Centre
+- `facility:health:501` — A.Dh Mandhoo Health Centre
+- `facility:health:502` — DH. Rinbidhoo Health Centre
+- `facility:health:504` — A.Dh Maamigilee Health Centre
+- `facility:health:505` — V. Rakeedhoo Health Centre
+- `facility:health:506` — V. Thinadhoo Health Centre
+- `facility:health:507` — V. Fulidhoo Health Centre
+- `facility:health:509` — V. Keyodhoo Health Centre
+- `facility:health:511` — K.Dhiffushi Health Centre
+- `facility:health:513` — K.Kaashidhoo Health Centre
+- `facility:health:535` — TH. Vandhoo Health Centre
+- `facility:health:536` — TH. Gaadhifushi Health Centre
+- `facility:health:537` — TH. Buruni Health Centre
+- `facility:health:538` — TH. Dhiyamigili Health Centre
+- `facility:health:540` — TH. Hirilandhoo Health Centre
+- `facility:health:541` — TH. Guraidhoo Health Centre
+- `facility:health:542` — L. Mundoo Health Centre
+- `facility:health:543` — L. Dhanbidhoo Health Centre
+- `facility:health:546` — L. Maabaidhoo Health Centre
+- `facility:health:547` — L. Isdhoo Health Centre
+- `facility:health:548` — L. Maavashu Health Centre
+- `facility:health:554` — Raa Hulhudhuffaaru Heath Centre
+- `facility:health:555` — Raa Dhuvaafaru Health Centre
+- `facility:health:556` — Raa Rasgetheemu Health Centre
+- `facility:health:557` — Raa Meedhoo Health Centre
+- `facility:health:559` — LH. Kurendhoo Health Centre
+- `facility:health:560` — LH. Hinnavaru Health Centre
+- `facility:health:562` — Baa Fehendhoo Health Centre
+- `facility:health:563` — Baa Dhonfanu Health Centre
+- `facility:health:564` — Baa Kendhoo Health Centre
+- `facility:health:565` — B. Thulhaadhoo Health Centre
+- `facility:health:566` — Noonu Fodhdhoo Health Centre
+- `facility:health:567` — Noonu Magoodhoo Health Centre
+- `facility:health:568` — Noonu Hen'badhoo Health Centre
+- `facility:health:569` — Noonu Kudafari Health Centre
+- `facility:health:570` — Noonu Miladhoo Health Centre
+- `facility:health:571` — Noonu Lhohi Health Centre
+- `facility:health:572` — Noonu Maalhendhoo Health Centre
+- `facility:health:573` — Noonu Landhoo Health Centre
+- `facility:health:574` — Noonu Ken'dhikulhudhoo Health Centre
+- `facility:health:576` — GDh. Nadella Health Centre
+- `facility:health:579` — GDh. Faresmaathodaa Health Centre
+- `facility:health:580` — GDh. Fiyoaree Health Centre
+- `facility:health:582` — Gaafu Dhaalu Gadhdhoo Health Centre
+- `facility:health:584` — GA. Kondey Health Centre
+- `facility:health:585` — GA. Dhevvadhoo Health Centre
+- `facility:health:586` — GA. Nilandhoo Health Centre
+- `facility:health:588` — GA. Kan'dhuhulhudhoo Health Centre
+- `facility:health:589` — GA. Gemanafushi Health Centre
+- `facility:health:591` — GA. Kolamafushi Health Centre
+- `facility:health:594` — Shaviyani Noomaraa Health Centre
+- `facility:health:595` — Shaviyani Goidhoo Health Centre
+- `facility:health:596` — Shaviyani Lhaimagu Health Centre
+- `facility:health:597` — Shaviyani Maroshi Health Centre
+- `facility:health:598` — Shaviyani Feevah Health Centre
+- `facility:health:599` — Shaviyani Foakaidhoo Health Centre
+- `facility:health:601` — Shaviyani Bileiyfahi Health Centre
+- `facility:health:607` — S. Maradhoo Health Centre
+- `facility:health:609` — S. Feydhoo Health Centre
+- `facility:health:613` — Haa Dhaalu Hirimaradhoo Health Centre
+- `facility:health:614` — Haa Dhaalu Kurin'bi Health Centre
+- `facility:health:615` — Haa Dhaalu Naivaadhoo Health Centre
+- `facility:health:616` — Haa Dhaalu Nellaidhoo Health Centre
+- `facility:health:617` — Haa Dhaalu Kumundhoo Health Centre
+- `facility:health:619` — Haa Dhaalu Neykurendhoo Health Centre
+- `facility:health:620` — Haa Dhaalu Nolhivaran Health Centre
+- `facility:health:622` — Haa Dhaalu Makunudhoo Health Centre
+- `facility:health:635` — AA. Himandhoo Health center
+- `facility:health:636` — Baa Kamadhoo Health Center
+- `facility:health:639` — Raa Rasmaadhoo Health Center
+- `facility:health:640` — Th. Kandoodhoo Health Center
+- `facility:health:641` — F. Feeali Health Center
+- `facility:health:643` — Noonu Maafaru Health Centre
+- `facility:health:644` — Haa Dhaalu Finey Health Center
+- `facility:health:645` — Raa Alifushi Health Center
+- `facility:health:646` — M. Maduvvaree Health Center
+- `facility:health:652` — Lh.Olhuvelifushi Health Centre
+- `facility:health:653` — Baa Maalhos Health Centre
+- `facility:health:663` — Adh. Kurunburudhoo Health Centre
+- `facility:health:696` — Th. Villifushi Health Centre
+- `facility:health:697` — Raa Vaadhoo Health Centre
+- `facility:health:702` — M. Raiymaadhoo Health Centre
+- `facility:health:703` — Gdh. Rathafandhoo Health Center
+- `facility:health:704` — L.Hithadhoo Health Center
+- `facility:health:705` — L. Maamendhoo Health center
+- `facility:health:706` — L. Kunahandhoo Health Centre
+- `facility:health:707` — Th. Omadhoo Health Centre
+- `facility:health:708` — Th. Thimarafushi Health Centre
+- `facility:health:710` — Th. Madifushi Health Centre
+- `facility:health:711` — Dh. Meedhoo Health Center
+- `facility:health:712` — F. Biledhoo Health Centre
+- `facility:health:713` — Adh. Fenfushi Health Centre
+- `facility:health:715` — Adh. Omadhoo Health Centre
+- `facility:health:716` — A.A. Maalhos Health Centre
+- `facility:health:718` — K. Gaafaru Health Centre
+- `facility:health:720` — Haa Alifu Vashafaru Health Centre
+- `facility:health:722` — Raa Innamaadhoo Health Centre
+- `facility:health:725` — B. Hithaadhoo Health Centre
+- `facility:health:726` — Baa Kudarikilu Health Centre
+- `facility:health:727` — Baa Kihaadhoo Health Centre
+- `facility:health:730` — Raa In'guraidhoo Health Centre
+- `facility:health:731` — Raa Maakurathu Health Centre
+- `facility:health:732` — Raa Kinolhas Health Centre
+- `facility:health:733` — Raa Maduvvari Health Centre
+- `facility:health:735` — Raa Fainu Health Centre
+- `facility:health:737` — Noonu Velidhoo Health Centre
+- `facility:health:738` — Shaviyani Komandoo Health Centre
+- `facility:health:739` — Shaviyani Kan'ditheemu Health Centre
+- `facility:health:740` — Shaviyani Narudhoo Health Centre
+- `facility:health:741` — Shaviyani Feydhoo Health Centre
+- `facility:health:742` — Haa Dhaalu Hanimaadhoo Health Centre
+- `facility:health:744` — Haa Alifu Muraidhoo Health Centre
+- `facility:health:745` — Haa Alifu Filladhoo Health Centre
+- `facility:health:747` — Haa Alifu Thuraakurun Health Centre
+- `facility:health:748` — Haa Alifu Maarandhoo Health Centre
+- `facility:health:750` — M. Veyvah Health Centre
+- `facility:health:751` — Haa Alifu Hoarafushi Health Centre
+- `facility:health:752` — Haa Alifu Utheemu Health Centre
+- `facility:health:804` — Haa Alifu Molhadhoo Health Centre
+- `facility:health:805` — M. Naalaafushi Health Centre
+
+### clinic (55)
+
+- `facility:health:103` — Miriandhoo Medical Services
+- `facility:health:105` — Ifuru Clinic
+- `facility:health:129` — Fihalhohi Clinic
+- `facility:health:1354` — THILAFUSHI GENERAL CLINIC
+- `facility:health:142` — Kunaavashi Clinic
+- `facility:health:143` — Gangehi Clinic
+- `facility:health:155` — Constance Moofushi Resort Clinic
+- `facility:health:169` — Maafushivaru Clinic
+- `facility:health:170` — Havodda Clinic
+- `facility:health:181` — Meedhupparu Clinic
+- `facility:health:182` — Kothaifaru Clinic
+- `facility:health:183` — Hudhuranfushi Clinic
+- `facility:health:190` — Rannalhi Clinic
+- `facility:health:197` — Milaidhoo Clinic
+- `facility:health:199` — Emerald Faarufushi Clinic
+- `facility:health:200` — Vabbinfaru Clinic
+- `facility:health:202` — Verso Medical Centre Alifushi Closed
+- `facility:health:230` — Maamigili Clinic
+- `facility:health:238` — Maayafushi Clinic
+- `facility:health:247` — Kagi Clinic
+- `facility:health:252` — Alimatha Clinic
+- `facility:health:257` — The Residence Maldives at Falhumaafushi Clinic
+- `facility:health:276` — Bolifushi Clinic
+- `facility:health:29` — Pine Tree Medic Care Sh. Funadhoo
+- `facility:health:293` — Vommuli Clinic
+- `facility:health:307` — Pullman Maamutaa Maldives Resort Clinic
+- `facility:health:308` — IHG Maamunagau Clinic
+- `facility:health:313` — Kuredhivaru Clinic
+- `facility:health:314` — Pearl Medical Centre Hulhumale
+- `facility:health:32` — Baros Clinic
+- `facility:health:33` — CyMa Care Hulhumale'
+- `facility:health:333` — Joali Muravandhoo Clinic
+- `facility:health:345` — Vision Clinic - Hulhumale'
+- `facility:health:359` — Dhigali Clinic
+- `facility:health:365` — Kandima Medical Center
+- `facility:health:375` — Hurawalhi Clinic
+- `facility:health:381` — Mercure Maldives Kooddoo Clinic
+- `facility:health:401` — Kani Medical Clinic
+- `facility:health:404` — Thundufushi Medical Clinic
+- `facility:health:44` — Physio & Autism Clinic - Hulhumale'
+- `facility:health:45` — Smiles Dental Care Hulhumale'
+- `facility:health:466` — Hadahaa Clinic
+- `facility:health:482` — Male' Eye Clinic
+- `facility:health:524` — Velassaru Medical Center
+- `facility:health:65` — Halaveli Clinic
+- `facility:health:655` — Rangali Clinic
+- `facility:health:66` — Ithaafushi Clinic
+- `facility:health:767` — Kuramathi Medical Centre
+- `facility:health:771` — Maandhoo Medical Centre
+- `facility:health:772` — Dhoonidhoo Clinic
+- `facility:health:84` — Furaveri Clinic
+- `facility:health:85` — Helengeli Clinic
+- `facility:health:890` — Mudhdhoo Clinic
+- `facility:health:931` — KODHIPPARU CLINIC
+- `facility:health:95` — Thulhagiri Clinic
+
+### school (134)
+
+- `facility:school:436` — Ghaazee Bandaarain School
+- `facility:school:438` — Filladhoo School
+- `facility:school:441` — Ihavandhoo School
+- `facility:school:442` — Baarashu School
+- `facility:school:443` — Maarandhoo School
+- `facility:school:444` — Vashafaru School
+- `facility:school:445` — Molhadhoo School
+- `facility:school:446` — Muraidhoo School
+- `facility:school:447` — Thuraakunu School
+- `facility:school:453` — Hanimaadhoo School
+- `facility:school:454` — Finey School
+- `facility:school:455` — Kumundhoo School
+- `facility:school:456` — Kurinbee School
+- `facility:school:457` — Naivaadhoo School
+- `facility:school:459` — Hirimaradhoo School
+- `facility:school:460` — Makunudhoo School
+- `facility:school:461` — Nellaidhoo School
+- `facility:school:462` — Neykurendhoo School
+- `facility:school:463` — Nolhivaranfaru School
+- `facility:school:464` — Munavvara School
+- `facility:school:466` — Sh. Atoll School
+- `facility:school:467` — Feevaku School
+- `facility:school:468` — Foakaidhoo School
+- `facility:school:470` — Bileffahee School
+- `facility:school:471` — Sh. Feydhoo School
+- `facility:school:472` — Sh. Goidhoo School
+- `facility:school:473` — Lhaimagu School
+- `facility:school:474` — Narudhoo School
+- `facility:school:475` — Noomaraa School
+- `facility:school:476` — Funadhoo School
+- `facility:school:477` — Maaungoodhoo School
+- `facility:school:479` — N. Atoll school
+- `facility:school:480` — Fodhdhoo School
+- `facility:school:481` — Henbadhoo School
+- `facility:school:483` — Kendhikulhudhoo School
+- `facility:school:485` — Landhoo School
+- `facility:school:486` — Lhohee School
+- `facility:school:488` — Maalhendhoo School
+- `facility:school:489` — N. Magoodhoo School
+- `facility:school:490` — Hidhaya School
+- `facility:school:491` — R. Atoll Education Centre
+- `facility:school:492` — R. Atoll school
+- `facility:school:494` — Fainu School
+- `facility:school:495` — Inguraidhoo School
+- `facility:school:496` — Innamaadhoo School
+- `facility:school:498` — Maakurathu School
+- `facility:school:499` — Rasgetheemu School
+- `facility:school:500` — Rasmaadhoo School
+- `facility:school:503` — Hulhudhuffaaru School
+- `facility:school:505` — Maduvvaree School
+- `facility:school:506` — Duvaafaru Primary School
+- `facility:school:509` — Dhonfanu School
+- `facility:school:511` — B. Goidhoo School
+- `facility:school:512` — Hithaadhoo School
+- `facility:school:513` — Kamadhoo School
+- `facility:school:514` — Kendhoo School
+- `facility:school:516` — Kudarikilu School
+- `facility:school:517` — Maalhohu School
+- `facility:school:518` — Fehendhoo School
+- `facility:school:519` — Thulhaadhoo School
+- `facility:school:520` — Lh. Atoll Education Centre
+- `facility:school:521` — Lh. Atoll school
+- `facility:school:522` — Olhuvelifushi School
+- `facility:school:530` — Gaafaru School
+- `facility:school:532` — Gulhee School
+- `facility:school:535` — Ukulhahu School
+- `facility:school:538` — Bodufolhudhoo School
+- `facility:school:539` — Maalhohu School
+- `facility:school:540` — Himandhoo School
+- `facility:school:541` — ADh. Atoll Education Centre
+- `facility:school:542` — ADh. Atoll School
+- `facility:school:543` — Hangnaameedhoo School
+- `facility:school:544` — ADh. Omadhoo School
+- `facility:school:545` — Kunburudhoo School
+- `facility:school:546` — Mandhoo School
+- `facility:school:547` — Dhangethee School
+- `facility:school:548` — ADh. Dhidhdhoo School
+- `facility:school:550` — Fenfushee School
+- `facility:school:551` — V. Atoll Education Centre
+- `facility:school:553` — Keyodhoo School
+- `facility:school:554` — Thinadhoo School
+- `facility:school:555` — Rakeedhoo School
+- `facility:school:557` — M. Atoll School
+- `facility:school:558` — Mulaku School
+- `facility:school:559` — Dhiggaru School
+- `facility:school:560` — Raiymandhoo School
+- `facility:school:561` — Veyvashu School
+- `facility:school:562` — Naalaafushi School
+- `facility:school:563` — M. Maduvvaree School
+- `facility:school:564` — F. Atoll Education Centre
+- `facility:school:565` — F. Atoll School
+- `facility:school:567` — Bilehdhoo School
+- `facility:school:568` — Dharanboodhoo School
+- `facility:school:570` — Dh. Atoll School
+- `facility:school:571` — Hulhudheli School
+- `facility:school:576` — Th. Atoll School
+- `facility:school:577` — Dhiyamigili School
+- `facility:school:580` — Hirilandhoo School
+- `facility:school:581` — Vilufushee School
+- `facility:school:582` — Burunee School
+- `facility:school:583` — Kandoodhoo School
+- `facility:school:584` — Vandhoo School
+- `facility:school:585` — Madifushi School
+- `facility:school:586` — Th. Omadhoo School
+- `facility:school:587` — Gaadhiffushi School
+- `facility:school:588` — L. Atoll Education Centre
+- `facility:school:589` — L. Atoll School
+- `facility:school:590` — Maavashu School
+- `facility:school:593` — Kunahandhoo School
+- `facility:school:594` — Isdhoo School
+- `facility:school:595` — kalaidhoo School
+- `facility:school:596` — Mundoo School
+- `facility:school:597` — L. Maamendhoo School
+- `facility:school:598` — Dhanbidhoo School
+- `facility:school:602` — GA. Atoll School
+- `facility:school:603` — GA. Nilandhoo School
+- `facility:school:604` — Kondey School
+- `facility:school:605` — Kanduhulhudhoo School
+- `facility:school:608` — Sulthan Mohamed School
+- `facility:school:609` — Gemanafushi School
+- `facility:school:610` — GDh. Atoll Education Centre
+- `facility:school:611` — GDh. Atoll School
+- `facility:school:612` — Aboobakuru School
+- `facility:school:613` — Hoadedhdhoo School
+- `facility:school:614` — Nadella School
+- `facility:school:615` — Rathafandhoo School
+- `facility:school:618` — Huvadhoo School
+- `facility:school:620` — Thinadhoo School
+- `facility:school:622` — Fuvahmulaku School
+- `facility:school:630` — Irushadhiyya School
+- `facility:school:631` — Feydhoo School
+- `facility:school:650` — Kaamil Didi Primary School
+- `facility:school:651` — S'alaah'udhdheen School
+- `facility:school:652` — Centre for Higher Secondary Education Male'
+
+## Not found in current OSM coverage (247)
+
+### hospital (2)
+
+- `facility:health:420` — Care Trust Multi Speciality Clinic
+- `facility:health:721` — Vilimale' Hospital
+
+### health_center (2)
+
+- `facility:health:485` — M. Mulaku Health Centre
+- `facility:health:754` — Amina Rehendhi Health Centre
+
+### clinic (242)
+
+- `facility:health:1` — Blu Clinic
+- `facility:health:1004` — CORAL BAY CLINIC
+- `facility:health:102` — Vision Care Optical and Eye Clinic
+- `facility:health:1030` — NALA CLINIC
+- `facility:health:1035` — Oasis Health Clinic
+- `facility:health:104` — VCare Counselling and Psychotherapy Centre
+- `facility:health:1042` — CHARM DENTAL & SKIN CLINIC
+- `facility:health:106` — Jawakara Clinic
+- `facility:health:1063` — WELL CARE MEDICALS
+- `facility:health:107` — The Clinic at Jumeirah Maldives Olhahali Island
+- `facility:health:108` — Medplus Dental
+- `facility:health:1086` — JIRAA Health Centre
+- `facility:health:110` — Shifaa Medical
+- `facility:health:1142` — IMPLANTREE DENTAL & AESTHETICS CLINIC
+- `facility:health:117` — MPI Clinique
+- `facility:health:118` — Maldives Neuro Endocrine Medical Facility
+- `facility:health:12` — Aanugandu Island Resort Clinic
+- `facility:health:1200` — Nautilus Medical Center
+- `facility:health:122` — Therapy Centre
+- `facility:health:1226` — Holistic Hijama MV
+- `facility:health:125` — MV DX Diagnostics
+- `facility:health:1258` — CAREMORE MEDICALS
+- `facility:health:1277` — Rah Gili Clinic
+- `facility:health:128` — AMG Clinic
+- `facility:health:13` — Yoonaanee Faruvaa Clinic
+- `facility:health:130` — Shuba's Herbal Medicine Center Closed
+- `facility:health:1318` — SafeSpace Psychological Clinic
+- `facility:health:132` — The Clinic At Sirru Fen Fushi
+- `facility:health:133` — Popular Clinic
+- `facility:health:134` — Taj Exotica Clinic
+- `facility:health:1353` — HEAL PHYSIO AND WELLNESS CLINIC
+- `facility:health:1361` — Hayaath Hijama Clinic
+- `facility:health:137` — Komandoo Clinic
+- `facility:health:138` — Reethi Beach Clilnic
+- `facility:health:1393` — EyeCare Clinic Laamu Branch
+- `facility:health:140` — Sun Siyam Iruveli Maldives Clinic
+- `facility:health:144` — Alai Play and Learn Therapy Center
+- `facility:health:1442` — MALDIVES MULTISPECIALITY CLINIC
+- `facility:health:1448` — Fari Campus
+- `facility:health:145` — Veligandu Clinic
+- `facility:health:1463` — Glow Medical and Aesthetics
+- `facility:health:1466` — Madivaru Clinic
+- `facility:health:1478` — Medi Trust Centre
+- `facility:health:148` — Cheval Blance Randeli Clinic
+- `facility:health:149` — Magey Physio
+- `facility:health:15` — Mirage Clinic
+- `facility:health:150` — Institute For Counselling And Psychotherapy
+- `facility:health:151` — Paradise Medical Centre
+- `facility:health:1518` — HEBE DHIVEHIBEYS HIJAMA CENTER
+- `facility:health:154` — Care Medicals Services
+- `facility:health:158` — Bulbul Therapy Center
+- `facility:health:160` — Ayurvedic Therapy
+- `facility:health:161` — ICATT Maldives- Medical Services
+- `facility:health:163` — Dental Care Centre
+- `facility:health:165` — Valley Dental
+- `facility:health:166` — TTH Clinic
+- `facility:health:167` — Care Max Clinic 1
+- `facility:health:168` — ADK Hospital Reach Clinic
+- `facility:health:1691` — JOY CLINIC
+- `facility:health:17` — Safari Clinic
+- `facility:health:171` — Sun Siyam Irufushi Maldives Clinic
+- `facility:health:172` — Dhugethi Dhivehibeys clinic
+- `facility:health:175` — Sun Siyam Olhuveli Maldives Clinic
+- `facility:health:178` — You & Me Clinic
+- `facility:health:179` — Kulhelama Therapy
+- `facility:health:18` — Spectrum Child Development Center
+- `facility:health:1815` — HOPE CARE
+- `facility:health:184` — Soneva Jani Clinic
+- `facility:health:186` — Synergy Care
+- `facility:health:187` — Early Intervention Therapy Centre
+- `facility:health:189` — Blyss Multi-Specialty Therapy Centre
+- `facility:health:191` — Aarah Clinic
+- `facility:health:192` — Leykokaa Medical and Rehabilitation Centre
+- `facility:health:193` — Tiny Drops Medical Services
+- `facility:health:195` — City Optical
+- `facility:health:196` — Nafsu Psychological Services
+- `facility:health:198` — Nova Clinic
+- `facility:health:20` — Faxys Hijama Clinic
+- `facility:health:201` — Hiyaa Medical Center
+- `facility:health:203` — Amingiri Clinic
+- `facility:health:205` — Emerald Dental Care
+- `facility:health:206` — Anantara Kihavah Villas Clinic
+- `facility:health:208` — Revive Medical Centre
+- `facility:health:210` — My Lab Closed
+- `facility:health:211` — Cinnamon Velifushi Maldives Medical Clinic
+- `facility:health:213` — Maadhoo Clinic
+- `facility:health:218` — Maldives Diagnostic Centre
+- `facility:health:219` — Nowall Medical Centre
+- `facility:health:22` — Ilaaj Hijama & Alternative Medical Services
+- `facility:health:220` — Cocogiri Clinic
+- `facility:health:221` — Southern Care Clinic
+- `facility:health:222` — Sandies Bathala Infirmary
+- `facility:health:223` — Mafhaa Diagnostic Centre
+- `facility:health:224` — Joali Being Clinic
+- `facility:health:225` — Oagaa Medical Centre
+- `facility:health:226` — Mediflex Scan Centre Closed
+- `facility:health:227` — Novalux Diagnostics Closed
+- `facility:health:23` — Siyam World Maldives Clinic
+- `facility:health:231` — Physio Solutions
+- `facility:health:232` — Dental Studio
+- `facility:health:233` — Dr Usama Dental Clinic
+- `facility:health:234` — Doctor's Clinic
+- `facility:health:237` — Physio and Autism Clinic
+- `facility:health:239` — Eriyadu Clinic Closed
+- `facility:health:24` — Amilla Sihhath
+- `facility:health:241` — Ilaa Ali Adam Clinic
+- `facility:health:242` — Great Minds
+- `facility:health:243` — Angsana Velavaru Medical Centre
+- `facility:health:246` — Esma Dhivehi Beys Clinic Closed
+- `facility:health:249` — Mediflex Dental and Maxillofacial Surgery
+- `facility:health:25` — Eye Zone Clinic
+- `facility:health:250` — My Lab Closed
+- `facility:health:251` — Huvadhoo PCR lab Closed
+- `facility:health:256` — Villa Biomedicals Laboratory
+- `facility:health:261` — Aahiyans Medical Clinic
+- `facility:health:267` — Coco Chic Clinic
+- `facility:health:27` — Leaf of Life Clinic
+- `facility:health:274` — Mediflex Laboratories
+- `facility:health:277` — F & C Medicare, Meedhoo
+- `facility:health:278` — Herbal Medi Clinic
+- `facility:health:279` — RMLS Lab Services
+- `facility:health:28` — Eri Maldives Clinic
+- `facility:health:280` — Hope Dental Care
+- `facility:health:281` — True Care medicals
+- `facility:health:286` — Maldives Mobile Nursing Crae
+- `facility:health:294` — Asisa Medical Center
+- `facility:health:299` — Child Development Clinic
+- `facility:health:30` — Alai Clinic
+- `facility:health:309` — Atolls Guest Clinic
+- `facility:health:31` — Bulbul Multi Rehab Clinic
+- `facility:health:316` — My Dentist
+- `facility:health:322` — Dr Didi Dental And Medical Center
+- `facility:health:338` — Resort Medical and Laboratory Services
+- `facility:health:342` — Kulunu Medical Clinic
+- `facility:health:343` — Reethi Faru Clinic
+- `facility:health:347` — Ruhgalu Clinic
+- `facility:health:349` — Omega Medical Centre
+- `facility:health:354` — Elite Medical Center
+- `facility:health:361` — Noo Clinic
+- `facility:health:363` — Ananatara Dhigu Clinic
+- `facility:health:366` — Family Relationship Services
+- `facility:health:37` — Raaya Clinic
+- `facility:health:376` — Master Dental Care Centro
+- `facility:health:377` — Dr. Usama's Clinic Maafannu
+- `facility:health:38` — My Care Medical Centre
+- `facility:health:382` — Physio Clinic
+- `facility:health:383` — Uro Medical Care Closed
+- `facility:health:395` — Finolhu Clinic Plus
+- `facility:health:398` — Resort Clinic
+- `facility:health:40` — Huvadhoo Therapy Clinic
+- `facility:health:402` — Crystal Medicals
+- `facility:health:403` — HPSN Medical Clinic
+- `facility:health:41` — Emerald Maldives Resort Clinic
+- `facility:health:411` — Guest And Staff Clinic
+- `facility:health:415` — Institute Of Mental Well Being
+- `facility:health:416` — Mipstar Clinic
+- `facility:health:418` — Finolhu Clinic
+- `facility:health:419` — Noosandha
+- `facility:health:427` — Unique Dental
+- `facility:health:428` — Eye Care Opticals
+- `facility:health:429` — Velaa Private Island Clinic
+- `facility:health:43` — Sha Therapy Dhivehibeys Centre
+- `facility:health:432` — AIMS Diagnostic Care
+- `facility:health:434` — Pro Care Clinic & Dental Centre
+- `facility:health:439` — Gili Gets Well
+- `facility:health:443` — Ali Rasheed Dhivehi Beys Clinic
+- `facility:health:445` — Center for Traditional Medicine
+- `facility:health:446` — Dhivehi Beys Clinic
+- `facility:health:451` — Vision Clinic-01
+- `facility:health:452` — Raffles Clinic
+- `facility:health:454` — Huvafen Fushi Clinic
+- `facility:health:455` — Ouch Clinic
+- `facility:health:457` — F & C Medicare and Scan Center
+- `facility:health:46` — Eye to Eye Opticals & Clinic 2
+- `facility:health:460` — Medical & Hyperbaric Clinic
+- `facility:health:47` — Moving Cure
+- `facility:health:472` — Ayada Maldives Resort Clinic
+- `facility:health:49` — VitalCare Dental
+- `facility:health:517` — Master Dental Care Centre
+- `facility:health:52` — Star Medical
+- `facility:health:520` — Pearl Medical Centre
+- `facility:health:521` — Primax Medi Care
+- `facility:health:522` — Vision Clinic
+- `facility:health:526` — Vivadent Dental Centre
+- `facility:health:54` — Modern Medical Centre
+- `facility:health:56` — Eye to Eye Opticals & Clinic
+- `facility:health:57` — Physio Cure
+- `facility:health:58` — Recovery Room
+- `facility:health:59` — Soneva Fushi Clinic
+- `facility:health:61` — One Medical Care
+- `facility:health:62` — Ana's Aesthetic Clinic
+- `facility:health:626` — Dr. Jihad's Dental and Medical Centre
+- `facility:health:631` — Meeru Clinic
+- `facility:health:64` — Master Medical and Dental Care Centre
+- `facility:health:67` — Wellcare Physiotherapy & Sports Rehabilitation
+- `facility:health:68` — Niyama Resort Clinic
+- `facility:health:694` — I wear
+- `facility:health:695` — MedLab Diagnostic
+- `facility:health:70` — Sun Siyam Vilu Reef Maldives Clinic
+- `facility:health:71` — Lux Maldives Resort Clinic
+- `facility:health:72` — Queen Aesthetic Medical Center
+- `facility:health:73` — Sukoon Clinic
+- `facility:health:75` — BCare
+- `facility:health:760` — Eve Clinic
+- `facility:health:762` — Listen Clinic
+- `facility:health:77` — Varu Medical Centre
+- `facility:health:775` — Image center
+- `facility:health:796` — Eye Care Clinic, Fareedhee Magu Branch Closed
+- `facility:health:80` — Maldives Alternative Medical Centre
+- `facility:health:802` — Dr. Didi Dental Centre
+- `facility:health:81` — Mind Space
+- `facility:health:815` — Imperial Medicare Centre
+- `facility:health:824` — Abuharee Medical Centre
+- `facility:health:825` — The Clinic Closed
+- `facility:health:828` — Azmi Naeem Medical and Diagnostic Centre
+- `facility:health:83` — TotalPhysio
+- `facility:health:858` — Pulse Medical and Diagnostics
+- `facility:health:87` — Knowhub
+- `facility:health:872` — Dhun-nika dhivehibeys clinic
+- `facility:health:88` — Bulbul Multi Rehab Clinic
+- `facility:health:884` — Gynova
+- `facility:health:885` — Bluspan Care
+- `facility:health:886` — Eve Clinic Vinares
+- `facility:health:888` — The Clinic at Summer Island Maldives
+- `facility:health:889` — Surgicare Clinic
+- `facility:health:891` — Bluspan Care Annex - 1
+- `facility:health:892` — Embudu Village Clinic
+- `facility:health:9` — WTE Medical Clinic
+- `facility:health:90` — Haajy Medical Clinic
+- `facility:health:91` — The Standard Clinic
+- `facility:health:911` — AL- KHAIRU MEDICAL CENTRE
+- `facility:health:916` — Zulnoor Hijama Care
+- `facility:health:917` — Pulse Point Medical Center
+- `facility:health:918` — Hijama Faruva By Manara Clinic
+- `facility:health:92` — Eve Clinic West Park
+- `facility:health:93` — Olive Medical Centre
+- `facility:health:94` — Gagan Clinic
+- `facility:health:943` — Seen Hijama & Wellness
+- `facility:health:954` — Bluspan Care Dhidhdhoo
+- `facility:health:957` — Kudhuraniyage Dhivehibeys Clinic
+- `facility:health:97` — Fushi Clinic
+- `facility:health:98` — Life Wellness Clinic
+
+### school (1)
+
+- `facility:school:648` — I'zzudhdheen School

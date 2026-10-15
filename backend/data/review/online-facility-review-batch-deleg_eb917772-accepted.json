@@ -1,0 +1,14 @@
+{
+  "version": "online-facility-review-batch-v2",
+  "reviewed_at": "2026-10-13T07:57:26.672592Z",
+  "batch_id": "deleg_eb917772-accepted",
+  "facility_ids": [
+    "facility:health:732",
+    "facility:health:735"
+  ],
+  "confirmed_promotions": [
+    "facility:health:732",
+    "facility:health:735"
+  ],
+  "provisional_candidates": []
+}

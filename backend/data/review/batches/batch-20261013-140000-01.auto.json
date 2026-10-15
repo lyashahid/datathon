@@ -1,0 +1,236 @@
+{
+  "job_id": "batch-20261013-140000-01",
+  "records": [
+    {
+      "facility_id": "facility:health:294",
+      "official_name": "Asisa Medical Center",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:299",
+      "official_name": "Child Development Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:3",
+      "official_name": "Dhirithi Faruvaa",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:30",
+      "official_name": "Alai Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:307",
+      "official_name": "Pullman Maamutaa Maldives Resort Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:309",
+      "official_name": "Atolls Guest Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:31",
+      "official_name": "Bulbul Multi Rehab Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:313",
+      "official_name": "Kuredhivaru Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:314",
+      "official_name": "Pearl Medical Centre Hulhumale",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:11183604237",
+          "osm_url": "https://www.openstreetmap.org/node/11183604237",
+          "name": "Care Trust",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5430155,
+            4.2163645
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "Care Trust"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11186258448",
+          "osm_url": "https://www.openstreetmap.org/node/11186258448",
+          "name": "European Clinic",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5461254,
+            4.2194254
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name:en": "European Clinic"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1448574099",
+          "osm_url": "https://www.openstreetmap.org/way/1448574099",
+          "name": "Tree Top Hospital",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5390602,
+            4.2124525
+          ],
+          "tags": {
+            "addr:city": "Hulhumalé",
+            "addr:housenumber": "Lot 10608",
+            "addr:postcode": "23000",
+            "addr:street": "Asurumaa Hingun",
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "name": "Tree Top Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:relation:11963822",
+          "osm_url": "https://www.openstreetmap.org/relation/11963822",
+          "name": "Tree Top Hospital",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5390109,
+            4.2121069
+          ],
+          "tags": {
+            "addr:street": "Asurumaa Hingun",
+            "building": "hospital",
+            "building:levels": "6",
+            "name": "Tree Top Hospital",
+            "type": "multipolygon"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:383751026",
+          "osm_url": "https://www.openstreetmap.org/way/383751026",
+          "name": "ހުޅުމާލެ ހޮސްޕިޓަލް",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5431478,
+            4.2157382
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "check_date": "2024-10-13",
+            "healthcare": "hospital",
+            "name": "ހުޅުމާލެ ހޮސްޕިޓަލް",
+            "name:dv": "ހުޅުމާލެ ހޮސްޕިޓަލް",
+            "name:en": "Hulhumalé Hospital",
+            "website": "https://hmh.gov.mv"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477471181",
+          "osm_url": "https://www.openstreetmap.org/way/477471181",
+          "name": "",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5433358,
+            4.2156691
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:relation:9080106",
+          "osm_url": "https://www.openstreetmap.org/relation/9080106",
+          "name": "",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5431128,
+            4.2157286
+          ],
+          "tags": {
+            "building": "hospital",
+            "type": "multipolygon"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:315",
+      "official_name": "Pine Tree Medic Care",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    }
+  ],
+  "summary": "deterministic local review"
+}

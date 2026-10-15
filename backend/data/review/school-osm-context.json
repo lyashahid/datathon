@@ -1,0 +1,1087 @@
+{
+  "438 Filladhoo": {
+    "bbox": [
+      73.20041,
+      6.86376,
+      73.27041,
+      6.93376
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.20041%2C6.86376%2C73.27041%2C6.93376",
+    "islands": [
+      {
+        "osm_type": "way",
+        "osm_id": 19879519,
+        "tags": {
+          "name": "ފިއްލަދޫ",
+          "name:dv": "ފިއްލަދޫ",
+          "name:en": "Filladhoo",
+          "natural": "coastline",
+          "place": "island",
+          "source": "PGS",
+          "wikidata": "Q2145937",
+          "wikipedia": "en:Filladhoo (Haa Alif Atoll)"
+        },
+        "center": [
+          73.22795584713376,
+          6.894810307006369
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879519.json"
+      }
+    ],
+    "schools": [],
+    "government_or_operator": []
+  },
+  "443 Maarandhoo": {
+    "bbox": [
+      72.94835,
+      6.8180499999999995,
+      73.01835,
+      6.88805
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.94835%2C6.8180499999999995%2C73.01835%2C6.88805",
+    "islands": [
+      {
+        "osm_type": "way",
+        "osm_id": 19879278,
+        "tags": {
+          "name": "ތަކަންދޫ",
+          "name:dv": "ތަކަންދޫ",
+          "name:en": "Thakandhoo",
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS",
+          "wikidata": "Q4179913",
+          "wikipedia": "en:Thakandhoo (Haa Alif Atoll)"
+        },
+        "center": [
+          72.99420627594937,
+          6.844592405063291
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879278.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879514,
+        "tags": {
+          "name": "Mulidhoo",
+          "natural": "coastline",
+          "place": "island",
+          "source": "PGS",
+          "wikidata": "Q2428948"
+        },
+        "center": [
+          73.0117747081081,
+          6.8364693783783785
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879514.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879729,
+        "tags": {
+          "name": "މާރަންދޫ",
+          "name:dv": "މާރަންދޫ",
+          "name:en": "Maarandhoo",
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS",
+          "wikidata": "Q1924774",
+          "wikipedia": "en:Maarandhoo (Haa Alif Atoll)"
+        },
+        "center": [
+          72.9849120080292,
+          6.853196708029198
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879729.json"
+      }
+    ],
+    "schools": [
+      {
+        "osm_type": "node",
+        "osm_id": 10196475671,
+        "tags": {
+          "amenity": "school",
+          "grades": "1;2;3;4;5;6;7;8;9;10",
+          "name": "Madharusathul Shaheedh Ali Thakurufaan",
+          "operator": "Ministry of Education",
+          "operator:type": "government"
+        },
+        "center": [
+          72.995369,
+          6.842382
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/10196475671.json"
+      }
+    ],
+    "government_or_operator": [
+      {
+        "osm_type": "node",
+        "osm_id": 10173570551,
+        "tags": {
+          "amenity": "courthouse",
+          "name": "Thakandhoo Magistrate Court",
+          "office": "government",
+          "opening_hours": "Mo-Th, Su 08:00-14:00",
+          "phone": "+9606500511"
+        },
+        "center": [
+          72.995079,
+          6.8441124
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/10173570551.json"
+      },
+      {
+        "osm_type": "node",
+        "osm_id": 10196475671,
+        "tags": {
+          "amenity": "school",
+          "grades": "1;2;3;4;5;6;7;8;9;10",
+          "name": "Madharusathul Shaheedh Ali Thakurufaan",
+          "operator": "Ministry of Education",
+          "operator:type": "government"
+        },
+        "center": [
+          72.995369,
+          6.842382
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/10196475671.json"
+      },
+      {
+        "osm_type": "node",
+        "osm_id": 10196567499,
+        "tags": {
+          "alt_name": "Thakandhoo Council Idhaara",
+          "amenity": "townhall",
+          "building": "townhall",
+          "email": "info@thakandhoo.gov.mv",
+          "name": "Secretariat of the Thakandhoo Council",
+          "name:dv": "ތަކަންދޫ ކައުންސިލް އިދާރާ",
+          "office": "government",
+          "opening_hours": "Mo-Th, Su 08:00-14:00",
+          "website": "https://www.thakandhoo.gov.mv/"
+        },
+        "center": [
+          72.9950943,
+          6.8442988
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/10196567499.json"
+      },
+      {
+        "osm_type": "node",
+        "osm_id": 10196627343,
+        "tags": {
+          "name": "Fenaka Power Station",
+          "office": "government",
+          "operator": "Fenaka Pvt Ltd",
+          "plant:source": "gas;solar",
+          "power": "plant"
+        },
+        "center": [
+          72.9928513,
+          6.8463259
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/10196627343.json"
+      }
+    ]
+  },
+  "444 Vashafaru": {
+    "bbox": [
+      73.12407,
+      6.863659999999999,
+      73.19407,
+      6.93366
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.12407%2C6.863659999999999%2C73.19407%2C6.93366",
+    "islands": [
+      {
+        "osm_type": "way",
+        "osm_id": 19879336,
+        "tags": {
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS"
+        },
+        "center": [
+          73.12674205070422,
+          6.8949848295774645
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879336.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879406,
+        "tags": {
+          "name": "ވަށަފަރު",
+          "name:dv": "ވަށަފަރު",
+          "name:en": "Vashafaru",
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS",
+          "wikidata": "Q4179905",
+          "wikipedia": "en:Vashafaru (Haa Alif Atoll)"
+        },
+        "center": [
+          73.16083069117647,
+          6.8970618588235295
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879406.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879476,
+        "tags": {
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS"
+        },
+        "center": [
+          73.13021296470588,
+          6.925785592156863
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879476.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879515,
+        "tags": {
+          "name": "Beenaafushi",
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS",
+          "wikidata": "Q2309192"
+        },
+        "center": [
+          73.1363483764706,
+          6.928324269117646
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879515.json"
+      }
+    ],
+    "schools": [],
+    "government_or_operator": []
+  },
+  "445 Molhadhoo": {
+    "bbox": [
+      72.96225,
+      6.97705,
+      73.03224999999999,
+      7.0470500000000005
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.96225%2C6.97705%2C73.03224999999999%2C7.0470500000000005",
+    "islands": [
+      {
+        "osm_type": "way",
+        "osm_id": 19879428,
+        "tags": {
+          "landuse": "forest",
+          "name": "Gaamathikulhudhoo",
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS",
+          "wikidata": "Q4716394"
+        },
+        "center": [
+          72.98471415,
+          7.038880969354839
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879428.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879480,
+        "tags": {
+          "name": "Berinmadhoo",
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS",
+          "wikidata": "Q2282433",
+          "wikipedia": "en:Berinmadhoo"
+        },
+        "center": [
+          72.97133954186047,
+          7.047297460465117
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879480.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879752,
+        "tags": {
+          "name": "މޮޅަދޫ",
+          "name:dv": "މޮޅަދޫ",
+          "name:en": "Mulhadhoo",
+          "natural": "coastline",
+          "place": "island",
+          "source": "PGS",
+          "wikidata": "Q4179934",
+          "wikipedia": "en:Mulhadhoo (Haa Alif Atoll)"
+        },
+        "center": [
+          72.99686389431818,
+          7.015233179545455
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879752.json"
+      }
+    ],
+    "schools": [],
+    "government_or_operator": []
+  },
+  "446 Muraidhoo": {
+    "bbox": [
+      73.13249,
+      6.8034099999999995,
+      73.20249,
+      6.87341
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.13249%2C6.8034099999999995%2C73.20249%2C6.87341",
+    "islands": [
+      {
+        "osm_type": "way",
+        "osm_id": 19879436,
+        "tags": {
+          "name": "މުރައިދޫ",
+          "name:dv": "މުރައިދޫ",
+          "name:en": "Muraidhoo",
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS",
+          "wikidata": "Q4179922",
+          "wikipedia": "en:Muraidhoo (Haa Alif Atoll)"
+        },
+        "center": [
+          73.16815578947369,
+          6.837814157894736
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879436.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879573,
+        "tags": {
+          "alt_name:en": "Maafahi",
+          "name": "Mahafai",
+          "natural": "coastline",
+          "place": "islet",
+          "wikidata": "Q27764784"
+        },
+        "center": [
+          73.15724613939393,
+          6.82811425
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879573.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879757,
+        "tags": {
+          "name": "ބާރަށް",
+          "name:dv": "ބާރަށް",
+          "name:en": "Baarah",
+          "natural": "coastline",
+          "place": "island",
+          "wikidata": "Q2782953",
+          "wikipedia": "en:Baarah"
+        },
+        "center": [
+          73.20559947452229,
+          6.815979256687898
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879757.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 446492342,
+        "tags": {
+          "alt_name:en": "Alidhoo Island Resort",
+          "name": "Alidhoo",
+          "natural": "coastline",
+          "place": "islet",
+          "wikidata": "Q1930825"
+        },
+        "center": [
+          73.15264745147059,
+          6.848838261764706
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/446492342.json"
+      }
+    ],
+    "schools": [],
+    "government_or_operator": []
+  },
+  "447 Thuraakunu": {
+    "bbox": [
+      72.86496,
+      7.06928,
+      72.93495999999999,
+      7.13928
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.86496%2C7.06928%2C72.93495999999999%2C7.13928",
+    "islands": [
+      {
+        "osm_type": "way",
+        "osm_id": 19879531,
+        "tags": {
+          "name": "Uligan",
+          "natural": "coastline",
+          "place": "island",
+          "source": "PGS",
+          "wikidata": "Q4179927",
+          "wikipedia": "en:Uligan"
+        },
+        "center": [
+          72.92439677578125,
+          7.08667930859375
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879531.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879682,
+        "tags": {
+          "name": "Thuraakunu",
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS",
+          "wikidata": "Q4598475",
+          "wikipedia": "en:Thuraakunu"
+        },
+        "center": [
+          72.89906480151515,
+          7.104253637878788
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879682.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879725,
+        "tags": {
+          "name": "Vangaaru",
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS",
+          "wikidata": "Q2879430",
+          "wikipedia": "en:Vagaaru"
+        },
+        "center": [
+          72.87868561538461,
+          7.092990884615385
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879725.json"
+      }
+    ],
+    "schools": [
+      {
+        "osm_type": "way",
+        "osm_id": 367880332,
+        "tags": {
+          "building": "school"
+        },
+        "center": [
+          72.92490646,
+          7.08647102
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/367880332.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079696,
+        "tags": {
+          "building": "school"
+        },
+        "center": [
+          72.9246849,
+          7.0868671800000005
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079696.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079697,
+        "tags": {
+          "building": "school"
+        },
+        "center": [
+          72.92484618571429,
+          7.0869214000000005
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079697.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079698,
+        "tags": {
+          "building": "school"
+        },
+        "center": [
+          72.9247347,
+          7.08669994
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079698.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079699,
+        "tags": {
+          "building": "school"
+        },
+        "center": [
+          72.92488657999999,
+          7.086702
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079699.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079700,
+        "tags": {
+          "building": "school"
+        },
+        "center": [
+          72.9249511,
+          7.086592085714286
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079700.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079701,
+        "tags": {
+          "building": "school"
+        },
+        "center": [
+          72.92484942,
+          7.08681198
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079701.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079702,
+        "tags": {
+          "amenity": "school",
+          "denomination": "sunni",
+          "grades": "1-10",
+          "name": "Uligamu School",
+          "operator": "Uligamu School",
+          "operator:type": "public",
+          "religion": "muslim"
+        },
+        "center": [
+          72.92487236818182,
+          7.0868510863636365
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079702.json"
+      }
+    ],
+    "government_or_operator": [
+      {
+        "osm_type": "way",
+        "osm_id": 367880334,
+        "tags": {
+          "amenity": "townhall",
+          "building": "yes",
+          "name": "Secretariat of the Uligan Council",
+          "operator": "Uligan Council",
+          "townhall:type": "village"
+        },
+        "center": [
+          72.92463012,
+          7.08634878
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/367880334.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1216154622,
+        "tags": {
+          "man_made": "wastewater_plant",
+          "name": "Sewage Plant",
+          "operator": "Fenaka"
+        },
+        "center": [
+          72.92406522,
+          7.088517179999999
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1216154622.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079689,
+        "tags": {
+          "amenity": "ferry_terminal",
+          "ferry": "yes",
+          "internet_access": "no",
+          "name": "Uligamu Ferry Terminal",
+          "network": "R1",
+          "operator": "Raajje Transport Link",
+          "public_transport": "station"
+        },
+        "center": [
+          72.92415935,
+          7.08408638
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079689.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079702,
+        "tags": {
+          "amenity": "school",
+          "denomination": "sunni",
+          "grades": "1-10",
+          "name": "Uligamu School",
+          "operator": "Uligamu School",
+          "operator:type": "public",
+          "religion": "muslim"
+        },
+        "center": [
+          72.92487236818182,
+          7.0868510863636365
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079702.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287159278,
+        "tags": {
+          "building": "yes",
+          "government": "customs",
+          "name": "Maldives Customs Service - Uligan Branch",
+          "office": "government"
+        },
+        "center": [
+          72.92422157272728,
+          7.0852497
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287159278.json"
+      }
+    ]
+  },
+  "454 Finey": {
+    "bbox": [
+      73.0189,
+      6.71202,
+      73.0889,
+      6.78202
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.0189%2C6.71202%2C73.0889%2C6.78202",
+    "islands": [
+      {
+        "osm_type": "way",
+        "osm_id": 19879484,
+        "tags": {
+          "alt_name:en": "Hon'daidhoo",
+          "name": "Hunadu",
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS",
+          "wikidata": "Q27764604"
+        },
+        "center": [
+          73.08764801481482,
+          6.769701318518519
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879484.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879506,
+        "tags": {
+          "name": "ފިނޭ",
+          "name:dv": "ފިނޭ",
+          "name:en": "Finey",
+          "natural": "coastline",
+          "place": "island",
+          "source": "PGS",
+          "wikidata": "Q4176738",
+          "wikipedia": "en:Finey (Haa Dhaalu Atoll)"
+        },
+        "center": [
+          73.0549524057971,
+          6.744903621739131
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879506.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879567,
+        "tags": {
+          "name": "Hirimaradhoo",
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS",
+          "wikidata": "Q2455261",
+          "wikipedia": "en:Hirimaradhoo"
+        },
+        "center": [
+          73.02477631632654,
+          6.724967204081633
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879567.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879739,
+        "tags": {
+          "name": "Theefaridhoo",
+          "natural": "coastline",
+          "place": "island",
+          "source": "PGS"
+        },
+        "center": [
+          73.03438204827586,
+          6.739591105172414
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879739.json"
+      }
+    ],
+    "schools": [],
+    "government_or_operator": [
+      {
+        "osm_type": "way",
+        "osm_id": 1319805083,
+        "tags": {
+          "name": "Finey–Hirimaradhoo RTL ferry route (R1C4)",
+          "operator": "RAAJJE TRANSPORT LINK (RTL)",
+          "route": "ferry"
+        },
+        "center": [
+          73.13447509999999,
+          6.760605300000001
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1319805083.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1319805086,
+        "tags": {
+          "name": "Hanimaadhoo–Finey RTL ferry route (R1C4)",
+          "operator": "RAAJJE TRANSPORT LINK (RTL)",
+          "route": "ferry"
+        },
+        "center": [
+          73.04961637142857,
+          6.737700885714285
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1319805086.json"
+      }
+    ]
+  },
+  "455 Kumundhoo": {
+    "bbox": [
+      73.01542,
+      6.53715,
+      73.08542,
+      6.60715
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.01542%2C6.53715%2C73.08542%2C6.60715",
+    "islands": [
+      {
+        "osm_type": "way",
+        "osm_id": 122946807,
+        "tags": {
+          "name": "ކުމުންދޫ",
+          "name:dv": "ކުމުންދޫ",
+          "name:en": "Kumundhoo",
+          "natural": "coastline",
+          "place": "island",
+          "wikidata": "Q2523216",
+          "wikipedia": "en:Kumundhoo (Haa Dhaalu Atoll)"
+        },
+        "center": [
+          73.05199707462685,
+          6.571464095522388
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/122946807.json"
+      }
+    ],
+    "schools": [
+      {
+        "osm_type": "node",
+        "osm_id": 14152834523,
+        "tags": {
+          "amenity": "kindergarten",
+          "name": "ތަރަޙަ ޕްރީ ސްކޫލް",
+          "name:dv": "ތަރަޙަ ޕްރީ ސްކޫލް",
+          "name:en": "Tharaha Pre-School"
+        },
+        "center": [
+          73.0515151,
+          6.5744643
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/14152834523.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1554432122,
+        "tags": {
+          "amenity": "school",
+          "education": "school"
+        },
+        "center": [
+          73.0505902,
+          6.574872233333334
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1554432122.json"
+      }
+    ],
+    "government_or_operator": [
+      {
+        "osm_type": "way",
+        "osm_id": 1090152960,
+        "tags": {
+          "from": "Kulhudhuffushi",
+          "name": "Kumundhoo–Kulhudhuffushi RTL ferry route (R1C6)",
+          "operator": "RAAJJE TRANSPORT LINK (RTL)",
+          "route": "ferry",
+          "to": "Kumundhoo"
+        },
+        "center": [
+          73.05101445000001,
+          6.580434822727272
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1090152960.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1554432118,
+        "tags": {
+          "barrier": "wall",
+          "building": "yes",
+          "name": "ހދ. ކުމުންދޫ ކައުންސިލް",
+          "name:dv": "ހދ. ކުމުންދޫ ކައުންސިލް",
+          "name:en": "Hdh. Kumundhoo Council",
+          "office": "government"
+        },
+        "center": [
+          73.05057495294118,
+          6.574338605882353
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1554432118.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1554432129,
+        "tags": {
+          "building": "yes",
+          "office": "government"
+        },
+        "center": [
+          73.05211265714286,
+          6.575161514285715
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1554432129.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1554823540,
+        "tags": {
+          "building": "yes",
+          "office": "government"
+        },
+        "center": [
+          73.05189669999999,
+          6.5751815222222225
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1554823540.json"
+      }
+    ]
+  },
+  "456 Kurinbi": {
+    "bbox": [
+      72.96236,
+      6.63053,
+      73.03236,
+      6.7005300000000005
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.96236%2C6.63053%2C73.03236%2C6.7005300000000005",
+    "islands": [
+      {
+        "osm_type": "way",
+        "osm_id": 19879371,
+        "tags": {
+          "name": "ކުރިނބީ",
+          "name:dv": "ކުރިނބީ",
+          "name:en": "Kurinbi",
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS",
+          "wikidata": "Q4179647",
+          "wikipedia": "en:Kurinbi (Haa Dhaalu Atoll)"
+        },
+        "center": [
+          72.99730072857143,
+          6.665789766666666
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879371.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879499,
+        "tags": {
+          "name": "Kunburudhoo",
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS",
+          "wikidata": "Q1990034",
+          "wikipedia": "en:Kunburudhoo (Haa Dhaalu Atoll)"
+        },
+        "center": [
+          73.02754675294118,
+          6.6580949088235295
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879499.json"
+      }
+    ],
+    "schools": [],
+    "government_or_operator": [
+      {
+        "osm_type": "way",
+        "osm_id": 1311207680,
+        "tags": {
+          "name": "Kulhudhuffushi–Kurinbi RTL ferry route (R1C5)",
+          "operator": "RAAJJE TRANSPORT LINK (RTL)",
+          "route": "ferry"
+        },
+        "center": [
+          73.03797018,
+          6.63743722
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1311207680.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1311207683,
+        "tags": {
+          "name": "Kurinbi–Nellaidhoo RTL ferry route (R1C5)",
+          "operator": "RAAJJE TRANSPORT LINK (RTL)",
+          "route": "ferry"
+        },
+        "center": [
+          72.97438460000001,
+          6.68970915
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1311207683.json"
+      }
+    ]
+  },
+  "457 Naivaadhoo": {
+    "bbox": [
+      72.9002,
+      6.71269,
+      72.97019999999999,
+      6.7826900000000006
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.9002%2C6.71269%2C72.97019999999999%2C6.7826900000000006",
+    "islands": [
+      {
+        "osm_type": "way",
+        "osm_id": 19879577,
+        "tags": {
+          "name": "Naavaidhoo",
+          "natural": "coastline",
+          "place": "islet",
+          "wikidata": "Q2445008",
+          "wikipedia": "en:Naivaadhoo"
+        },
+        "center": [
+          72.93549683214286,
+          6.747697275
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879577.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879585,
+        "tags": {
+          "natural": "coastline",
+          "place": "islet"
+        },
+        "center": [
+          72.93813083333333,
+          6.754289666666667
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879585.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 19879749,
+        "tags": {
+          "name": "Nellaidhoo",
+          "natural": "coastline",
+          "place": "islet",
+          "source": "PGS",
+          "wikidata": "Q4177658",
+          "wikipedia": "en:Nellaidhoo (Haa Dhaalu Atoll)"
+        },
+        "center": [
+          72.94710849726027,
+          6.7154446835616435
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/19879749.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 482309862,
+        "tags": {
+          "natural": "coastline",
+          "place": "islet"
+        },
+        "center": [
+          72.93898673076923,
+          6.758915746153846
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/482309862.json"
+      }
+    ],
+    "schools": [],
+    "government_or_operator": [
+      {
+        "osm_type": "way",
+        "osm_id": 1093278885,
+        "tags": {
+          "amenity": "ferry_terminal",
+          "building": "yes",
+          "ferry": "yes",
+          "name": "Ferry Stop",
+          "network": "Naivadhoo-Nellaidhoo-Kurinbi-Kulhudufushi",
+          "operator": "MTCC PLC",
+          "public_transport": "station"
+        },
+        "center": [
+          72.94871488,
+          6.71347768
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1093278885.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1311207683,
+        "tags": {
+          "name": "Kurinbi–Nellaidhoo RTL ferry route (R1C5)",
+          "operator": "RAAJJE TRANSPORT LINK (RTL)",
+          "route": "ferry"
+        },
+        "center": [
+          72.97438460000001,
+          6.68970915
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1311207683.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1311207685,
+        "tags": {
+          "name": "Nellaidhoo–Naivaadhoo RTL ferry route (R1C5)",
+          "operator": "RAAJJE TRANSPORT LINK (RTL)",
+          "route": "ferry"
+        },
+        "center": [
+          72.94620834,
+          6.724089910000001
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1311207685.json"
+      }
+    ]
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "version": "facility-review-validated-v1",
+  "validated_at": "2026-10-13T07:40:00Z",
+  "job_id": "deleg_eb917772-accepted",
+  "errors": [],
+  "records": [
+    {
+      "facility_id": "facility:health:732",
+      "official_name": "Raa Kinolhas Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "discovery_urls": [
+        "https://api.openstreetmap.org/api/0.6/way/1122700184/full.json",
+        "https://www.openstreetmap.org/way/1122700184",
+        "https://lz4.overpass-api.de/api/interpreter",
+        "https://nominatim.openstreetmap.org/search"
+      ],
+      "confidence": "medium-high",
+      "decision": "reviewed_osm_match",
+      "evidence_note": "Official HEMS identity and island context agree with live OSM facility-level object Kinolhas Health Center; category-compatible healthcare tagging and live geometry were independently verified.",
+      "follow_up": "None; preserve routine live verification.",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:1122700184",
+          "osm_url": "https://www.openstreetmap.org/way/1122700184",
+          "name": "Kinolhas Health Center",
+          "island": "Kinolhas",
+          "coordinates": [
+            73.02978944545454,
+            5.447952763636364
+          ],
+          "tags": {
+            "healthcare": "yes",
+            "name": "Kinolhas Health Center"
+          },
+          "status": "live"
+        }
+      ],
+      "selected_candidate": {
+        "osm_object_id": "osm:way:1122700184",
+        "osm_url": "https://www.openstreetmap.org/way/1122700184",
+        "name": "Kinolhas Health Center",
+        "island": "Kinolhas",
+        "coordinates": [
+          73.02978944545454,
+          5.447952763636364
+        ],
+        "tags": {
+          "healthcare": "yes",
+          "name": "Kinolhas Health Center"
+        }
+      },
+      "live_verification": {
+        "osm_object_id": "osm:way:1122700184",
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/way/1122700184/full.json"
+      },
+      "derived_tags": {
+        "healthcare": "yes",
+        "name": "Kinolhas Health Center"
+      },
+      "derived_coordinates": [
+        73.02978944545454,
+        5.447952763636364
+      ],
+      "validation": {
+        "checks": {
+          "single_candidate": true,
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        },
+        "approved": true
+      }
+    },
+    {
+      "facility_id": "facility:health:735",
+      "official_name": "Raa Fainu Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "discovery_urls": [
+        "https://api.openstreetmap.org/api/0.6/node/13586575558.json",
+        "https://www.openstreetmap.org/node/13586575558",
+        "https://lz4.overpass-api.de/api/interpreter",
+        "https://nominatim.openstreetmap.org/search"
+      ],
+      "confidence": "medium-high",
+      "decision": "reviewed_osm_match",
+      "evidence_note": "Official HEMS identity and island context agree with live OSM facility-level object Fainu Health Centre; category-compatible healthcare tagging and live geometry were independently verified.",
+      "follow_up": "None; preserve routine live verification.",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:13586575558",
+          "osm_url": "https://www.openstreetmap.org/node/13586575558",
+          "name": "Fainu Health Centre",
+          "island": "Fainu",
+          "coordinates": [
+            73.0346721,
+            5.4652336
+          ],
+          "tags": {
+            "healthcare": "yes",
+            "name": "Fainu Health Centre"
+          },
+          "status": "live"
+        }
+      ],
+      "selected_candidate": {
+        "osm_object_id": "osm:node:13586575558",
+        "osm_url": "https://www.openstreetmap.org/node/13586575558",
+        "name": "Fainu Health Centre",
+        "island": "Fainu",
+        "coordinates": [
+          73.0346721,
+          5.4652336
+        ],
+        "tags": {
+          "healthcare": "yes",
+          "name": "Fainu Health Centre"
+        }
+      },
+      "live_verification": {
+        "osm_object_id": "osm:node:13586575558",
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/node/13586575558.json"
+      },
+      "derived_tags": {
+        "healthcare": "yes",
+        "name": "Fainu Health Centre"
+      },
+      "derived_coordinates": [
+        73.0346721,
+        5.4652336
+      ],
+      "validation": {
+        "checks": {
+          "single_candidate": true,
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        },
+        "approved": true
+      }
+    }
+  ]
+}

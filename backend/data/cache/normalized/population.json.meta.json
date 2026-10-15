@@ -1,0 +1,12 @@
+{
+  "content_type": "application/json",
+  "endpoint": "local normalized output",
+  "http_status": 200,
+  "parser_version": "normalization-v1",
+  "retrieved_at": "2026-10-13T12:17:19.805197+00:00",
+  "schema_version": 1,
+  "sha256": "4893b4aea8a9bad10554825f9998d262939e6340f3f22b6063857b40ad7cd5f6",
+  "source": "Mobility Sandbox normalized MBS P3/P5/P6 population data",
+  "source_record_id": null,
+  "status": "fresh"
+}

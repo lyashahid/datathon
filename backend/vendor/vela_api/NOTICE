@@ -1,0 +1,17 @@
+This standalone service contains Python adaptations of Vela request builders and
+positional response parsers, and a bundled calibration snapshot.
+
+Upstream: https://github.com/PimpinPumpkin/Vela
+Audited commit: 3c8fc207652e7a4fabfe53089de6ccace308ac61
+Calibration version: 26
+Upstream license: GNU General Public License version 3 (see LICENSE).
+
+Derived sources: core/data/google/{GoogleMapsDataSource,GoogleResponse,SearchPb,
+DirectionsPb,StreetViewParser}, core/data/google/parse/{SearchParser,PhotosParser,
+ReviewFeedParser,DirectionsParser}, core/config/Calibration, and
+app/web/WebReviewsFetcher (paths relative to Vela's src/main/java/app/vela).
+See docs/provenance.json for exact source paths.
+
+This project is independent from the Datathon project. It is not an official
+Google API or a hosted Vela backend. Source licensing is separate from the
+terms governing external services and their content.

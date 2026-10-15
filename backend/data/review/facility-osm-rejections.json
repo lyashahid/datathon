@@ -1,0 +1,321 @@
+{
+  "version": "facility-osm-rejections-v1",
+  "reviewed_at": "2026-10-13T07:40:00Z",
+  "records": [
+    {
+      "facility_id": "facility:health:86",
+      "osm_object_id": "osm:way:465261759",
+      "reason": "Private resort clinic was attached to the public Dhigurah Medical Post; official operator and facility identity conflict."
+    },
+    {
+      "facility_id": "facility:health:1483",
+      "osm_object_id": "osm:node:4174150465",
+      "reason": "Private Mathiveri Eesa Clinic was attached to the government Mathiveri Health Centre; operator and name conflict."
+    },
+    {
+      "facility_id": "facility:health:1483",
+      "osm_object_id": "osm:way:1066957223",
+      "reason": "Second candidate is another representation of the government Mathiveri Health Centre; reject all current candidates for the private clinic."
+    },
+    {
+      "facility_id": "facility:school:634",
+      "osm_object_id": "osm:way:1323678631",
+      "reason": "Second candidate is Aminiya School, also a different official school; reject all current candidates for Jamaluddin School."
+    },
+    {
+      "facility_id": "facility:school:654",
+      "osm_object_id": "osm:node:12196297366",
+      "reason": "Villa International High School is a different school; reject the only candidate."
+    },
+    {
+      "facility_id": "facility:health:1392",
+      "osm_object_id": "osm:node:4823302223",
+      "reason": "EyeCare Clinic Kulhudhuffushi Branch was attached to Kulhudhuffushi Regional Hospital; name/operator/category conflict."
+    },
+    {
+      "facility_id": "facility:health:275",
+      "osm_object_id": "osm:node:4823302223",
+      "reason": "Vital Care Kulhudhuffushi Anex was attached to Kulhudhuffushi Regional Hospital; name/operator/category conflict."
+    },
+    {
+      "facility_id": "facility:health:469",
+      "osm_object_id": "osm:way:679843731",
+      "reason": "Four Seasons resort clinic was attached to the public K. Huraa Health Centre; operator and identity conflict."
+    },
+    {
+      "facility_id": "facility:health:115",
+      "osm_object_id": "osm:way:679843731",
+      "reason": "Hakuraa Medical Centre was attached to the public K. Huraa Health Centre; operator and identity conflict."
+    },
+    {
+      "facility_id": "facility:health:1259",
+      "osm_object_id": "osm:way:216221235",
+      "reason": "Private Maafushi Pain Clinic was attached to the public Kaafu Maafushi Health Centre; name/operator conflict."
+    },
+    {
+      "facility_id": "facility:health:153",
+      "osm_object_id": "osm:way:590298924",
+      "reason": "Private Naifaru Medical Center was attached to Lhaviyani Atoll Hospital; name/operator conflict."
+    },
+    {
+      "facility_id": "facility:health:244",
+      "osm_object_id": "osm:node:14267725202",
+      "reason": "Closed private My Lab facility was attached to the public Dharavandhoo Medical Centre; identity and operator conflict."
+    },
+    {
+      "facility_id": "facility:health:1627",
+      "osm_object_id": "osm:node:12462668301",
+      "reason": "Private Bluspan Care Thulusdhoo was attached to the unnamed public Thulusdhoo hospital object; no identity evidence."
+    },
+    {
+      "facility_id": "facility:health:236",
+      "osm_object_id": "osm:node:9532890185",
+      "reason": "Fuvahmulah Medical Centre was attached to a drug-treatment/detoxification object; facility identity and category conflict."
+    },
+    {
+      "facility_id": "facility:health:50",
+      "osm_object_id": "osm:node:6294957686",
+      "reason": "My Family Dentist Male' was attached to the unrelated Family Care clinic; exact facility name and operator conflict."
+    },
+    {
+      "facility_id": "facility:health:42",
+      "osm_object_id": "osm:node:14267725202",
+      "reason": "Private Dharavandhoo Medical Center was attached to the public Dharavandhoo Medical Centre; operator and identity conflict."
+    },
+    {
+      "facility_id": "facility:school:599",
+      "osm_object_id": "osm:way:364882221",
+      "reason": "Mukurimagu School was attached to Hamadh School Ground, a different named school context on the same island."
+    },
+    {
+      "facility_id": "facility:school:600",
+      "osm_object_id": "osm:way:364882221",
+      "reason": "Ihadhdhoo School was attached to Hamadh School Ground, a different named school context on the same island."
+    },
+    {
+      "facility_id": "facility:school:634",
+      "osm_object_id": "osm:node:4866622621",
+      "reason": "Jamaluddin School was attached to Imaduddin School; exact school identity conflict."
+    },
+    {
+      "facility_id": "facility:school:636",
+      "osm_object_id": "osm:node:4866622621",
+      "reason": "Thaajuddeen School was attached to Imaduddin School; exact school identity conflict."
+    },
+    {
+      "facility_id": "facility:school:639",
+      "osm_object_id": "osm:way:1323678631",
+      "reason": "Majeediyya School was attached to Aminiya School; exact school identity conflict."
+    },
+    {
+      "facility_id": "facility:school:641",
+      "osm_object_id": "osm:way:1323678631",
+      "reason": "Hiriya School was attached to Aminiya School; exact school identity conflict."
+    },
+    {
+      "facility_id": "facility:school:647",
+      "osm_object_id": "osm:way:697262511",
+      "reason": "Huravee School was attached to Ghaazee School; exact school identity conflict."
+    },
+    {
+      "facility_id": "facility:school:649",
+      "osm_object_id": "osm:node:14268489201",
+      "reason": "Mohamed Qasim Preschool was attached to Shaheed Ali School; exact school identity conflict."
+    },
+    {
+      "facility_id": "facility:health:715",
+      "osm_object_id": "osm:way:1133986301",
+      "reason": "Unnamed pharmacy is not the Omadhoo Health Centre."
+    },
+    {
+      "facility_id": "facility:health:511",
+      "osm_object_id": "osm:way:1001663721",
+      "reason": "Unnamed hospital building lacks health-centre identity; do not attach by island/category alone."
+    },
+    {
+      "facility_id": "facility:health:512",
+      "osm_object_id": "osm:way:1069271437",
+      "reason": "Unnamed pharmacy building is not a health-centre identity."
+    },
+    {
+      "facility_id": "facility:school:492",
+      "osm_object_id": "osm:way:1038348911",
+      "reason": "Dhuvaafaru Primary School is the distinct Ministry school record 506, not R. Atoll School; same-island name conflict."
+    },
+    {
+      "facility_id": "facility:health:133",
+      "osm_object_id": "osm:node:10142752042",
+      "reason": "Hussan Abdul Samad memorial clinic conflicts with the supplied JP Hospital identity and has no operator/address linkage."
+    },
+    {
+      "facility_id": "facility:health:509",
+      "osm_object_id": "osm:node:7208742187",
+      "reason": "Vaavu Atoll Hospital is a different hospital identity, not V. Keyodhoo Health Centre."
+    },
+    {
+      "facility_id": "facility:health:504",
+      "osm_object_id": "osm:node:12925283001",
+      "reason": "Unnamed pharmacy is not A.Dh Maamigilee Health Centre."
+    },
+    {
+      "facility_id": "facility:health:577",
+      "osm_object_id": "osm:way:672670311",
+      "reason": "Thoddoo Hospital is on a different island from official GDh. Hoadedhoo Health Centre; reject cross-island attachment."
+    },
+    {
+      "facility_id": "facility:health:577",
+      "osm_object_id": "osm:node:3979112656",
+      "reason": "Dhaandhoo Health Centre is on a different island from official GDh. Hoadedhoo Health Centre; reject cross-island attachment."
+    },
+    {
+      "facility_id": "facility:health:577",
+      "osm_object_id": "osm:way:1323805892",
+      "reason": "N. Holhudhoo Health Center is on a different island from official GDh. Hoadedhoo Health Centre; reject cross-island attachment."
+    },
+    {
+      "facility_id": "facility:health:577",
+      "osm_object_id": "osm:node:10196643638",
+      "reason": "Thakandhoo Health Center is on a different island from official GDh. Hoadedhoo Health Centre; reject cross-island attachment."
+    },
+    {
+      "facility_id": "facility:health:577",
+      "osm_object_id": "osm:way:976103994",
+      "reason": "Ga. Maamendhoo Health Centre is on a different island from official GDh. Hoadedhoo Health Centre; reject cross-island attachment."
+    },
+    {
+      "facility_id": "facility:health:579",
+      "osm_object_id": "osm:way:1104753218",
+      "reason": "Faresmaathodaa fire station is unrelated to the official GDh. Faresmaathodaa Health Centre."
+    },
+    {
+      "facility_id": "facility:health:580",
+      "osm_object_id": "osm:way:751750170",
+      "reason": "Unnamed healthcare=yes building on Fiyoaree has no facility identity, name, operator, or address linking it to the official health centre."
+    },
+    {
+      "facility_id": "facility:health:580",
+      "osm_object_id": "osm:node:11221812118",
+      "reason": "Fiyoaree School is unrelated to the official GDh. Fiyoaree Health Centre."
+    },
+    {
+      "facility_id": "facility:health:580",
+      "osm_object_id": "osm:way:1467225959",
+      "reason": "Unnamed Muslim place-of-worship building is unrelated to the official GDh. Fiyoaree Health Centre."
+    },
+    {
+      "facility_id": "facility:health:580",
+      "osm_object_id": "osm:way:1467225960",
+      "reason": "Unnamed Muslim place-of-worship building is unrelated to the official GDh. Fiyoaree Health Centre."
+    },
+    {
+      "facility_id": "facility:health:697",
+      "osm_object_id": "osm:way:1478463933",
+      "reason": "Vaadhoo school feature is category-incompatible and unrelated to the official Raa Vaadhoo Health Centre."
+    },
+    {
+      "facility_id": "facility:health:697",
+      "osm_object_id": "osm:way:1478463934",
+      "reason": "Vaadhoo school feature is category-incompatible and unrelated to the official Raa Vaadhoo Health Centre."
+    },
+    {
+      "facility_id": "facility:health:697",
+      "osm_object_id": "osm:way:1478463935",
+      "reason": "Vaadhoo school feature is category-incompatible and unrelated to the official Raa Vaadhoo Health Centre."
+    },
+    {
+      "facility_id": "facility:health:697",
+      "osm_object_id": "osm:way:1478463936",
+      "reason": "Vaadhoo school feature is category-incompatible and unrelated to the official Raa Vaadhoo Health Centre."
+    },
+    {
+      "facility_id": "facility:health:697",
+      "osm_object_id": "osm:way:1478463937",
+      "reason": "Vaadhoo school feature is category-incompatible and unrelated to the official Raa Vaadhoo Health Centre."
+    },
+    {
+      "facility_id": "facility:health:697",
+      "osm_object_id": "osm:way:1478463938",
+      "reason": "Vaadhoo school feature is category-incompatible and unrelated to the official Raa Vaadhoo Health Centre."
+    },
+    {
+      "facility_id": "facility:health:697",
+      "osm_object_id": "osm:way:1478463939",
+      "reason": "Vaadhoo school feature is category-incompatible and unrelated to the official Raa Vaadhoo Health Centre."
+    },
+    {
+      "facility_id": "facility:health:697",
+      "osm_object_id": "osm:way:1478463940",
+      "reason": "Vaadhoo school feature is category-incompatible and unrelated to the official Raa Vaadhoo Health Centre."
+    },
+    {
+      "facility_id": "facility:health:708",
+      "osm_object_id": "osm:way:791616201",
+      "reason": "Tha Atoll Education Centre is a school, not the official Th. Thimarafushi Health Centre."
+    },
+    {
+      "facility_id": "facility:health:739",
+      "osm_object_id": "osm:way:759001101",
+      "reason": "Kanditheemu harbor is unrelated to Shaviyani Kan'ditheemu Health Centre."
+    },
+    {
+      "facility_id": "facility:health:740",
+      "osm_object_id": "osm:way:755987461",
+      "reason": "Narudhoo harbor is unrelated to Shaviyani Narudhoo Health Centre."
+    },
+    {
+      "facility_id": "facility:school:463",
+      "osm_object_id": "osm:node:4823483321",
+      "reason": "Nolhivaranfaru Health post is a hospital/health facility, not Nolhivaranfaru School."
+    },
+    {
+      "facility_id": "facility:school:513",
+      "osm_object_id": "osm:way:19879283",
+      "reason": "Kamadhoo island coastline/islet object is not Kamadhoo School geometry."
+    },
+    {
+      "facility_id": "facility:school:514",
+      "osm_object_id": "osm:way:19879500",
+      "reason": "Kendhoo island coastline/islet object is not Kendhoo School geometry."
+    },
+    {
+      "facility_id": "facility:school:516",
+      "osm_object_id": "osm:way:19879572",
+      "reason": "Kudarikilu island coastline/islet object is not Kudarikilu School geometry."
+    },
+    {
+      "facility_id": "facility:school:517",
+      "osm_object_id": "osm:way:19879346",
+      "reason": "Maalhos island coastline/islet object is not Maalhohu School geometry."
+    },
+    {
+      "facility_id": "facility:school:518",
+      "osm_object_id": "osm:way:176651325",
+      "reason": "Fehendhoo island coastline/islet object is not Fehendhoo School geometry."
+    },
+    {
+      "facility_id": "facility:school:519",
+      "osm_object_id": "osm:way:19879690",
+      "reason": "Thulhaadhoo island coastline/islet object is not Thulhaadhoo School geometry."
+    },
+    {
+      "facility_id": "facility:school:520",
+      "osm_object_id": "osm:way:441740990",
+      "reason": "Hinnavaru island coastline/islet object is not Lh. Atoll Education Centre geometry."
+    },
+    {
+      "facility_id": "facility:school:521",
+      "osm_object_id": "osm:way:19879351",
+      "reason": "Kurendhoo island coastline/islet object is not Lh. Atoll school geometry."
+    },
+    {
+      "facility_id": "facility:school:522",
+      "osm_object_id": "osm:way:19879413",
+      "reason": "Olhuvelifushi island coastline/islet object is not Olhuvelifushi School geometry."
+    },
+    {
+      "facility_id": "facility:school:530",
+      "osm_object_id": "osm:way:19882022",
+      "reason": "Gaafaru island coastline/islet object is not Gaafaru School geometry."
+    }
+  ]
+}

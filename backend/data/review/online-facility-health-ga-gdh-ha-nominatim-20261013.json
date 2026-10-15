@@ -1,0 +1,364 @@
+{
+  "accessed_at": "2026-10-13",
+  "user_agent": "HEMS-health-review/1.0 (https://example.com/contact)",
+  "records": [
+    {
+      "facility_id": "facility:health:588",
+      "official_name": "GA. Kan'dhuhulhudhoo Health Centre",
+      "island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Kan%27duhulhudhoo+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "http_status": 200,
+        "data": []
+      },
+      "exact_facility_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=GA.+Kan%27dhuhulhudhoo+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "http_status": 200,
+        "data": []
+      }
+    },
+    {
+      "facility_id": "facility:health:591",
+      "official_name": "GA. Kolamafushi Health Centre",
+      "island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Kolamaafushi+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "http_status": 200,
+        "data": [
+          {
+            "place_id": 254589313,
+            "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+            "osm_type": "way",
+            "osm_id": 19932420,
+            "lat": "0.8373860",
+            "lon": "73.1839716",
+            "category": "place",
+            "type": "islet",
+            "place_rank": 20,
+            "importance": 0.4096924117123553,
+            "addresstype": "islet",
+            "name": "ކޮލަމާފުށި",
+            "display_name": "ކޮލަމާފުށި, ހުވަދުއަތޮޅު އުތުރުބުރި, ދިވެހިރާއްޖެ",
+            "address": {
+              "islet": "ކޮލަމާފުށި",
+              "state": "ހުވަދުއަތޮޅު އުތުރުބުރި",
+              "ISO3166-2-lvl4": "MV-27",
+              "country": "ދިވެހިރާއްޖެ",
+              "country_code": "mv"
+            },
+            "namedetails": {
+              "name": "ކޮލަމާފުށި",
+              "name:dv": "ކޮލަމާފުށި",
+              "name:en": "Kolamaafushi"
+            },
+            "boundingbox": [
+              "0.8321725",
+              "0.8422177",
+              "73.1808082",
+              "73.1889915"
+            ]
+          }
+        ]
+      },
+      "exact_facility_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=GA.+Kolamafushi+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "http_status": 200,
+        "data": []
+      }
+    },
+    {
+      "facility_id": "facility:health:584",
+      "official_name": "GA. Kondey Health Centre",
+      "island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Kondey+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "http_status": 200,
+        "data": [
+          {
+            "place_id": 255468213,
+            "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+            "osm_type": "way",
+            "osm_id": 19932525,
+            "lat": "0.4996788",
+            "lon": "73.5483719",
+            "category": "place",
+            "type": "islet",
+            "place_rank": 20,
+            "importance": 0.4098179928326091,
+            "addresstype": "islet",
+            "name": "ކޮނޑޭ",
+            "display_name": "ކޮނޑޭ, ހުވަދުއަތޮޅު އުތުރުބުރި, ދިވެހިރާއްޖެ",
+            "address": {
+              "islet": "ކޮނޑޭ",
+              "state": "ހުވަދުއަތޮޅު އުތުރުބުރި",
+              "ISO3166-2-lvl4": "MV-27",
+              "country": "ދިވެހިރާއްޖެ",
+              "country_code": "mv"
+            },
+            "namedetails": {
+              "name": "ކޮނޑޭ",
+              "name:dv": "ކޮނޑޭ",
+              "name:en": "Kondey",
+              "alt_name:en": "Kondē"
+            },
+            "boundingbox": [
+              "0.4907858",
+              "0.5084409",
+              "73.5431858",
+              "73.5554796"
+            ]
+          }
+        ]
+      },
+      "exact_facility_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=GA.+Kondey+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "http_status": 200,
+        "data": []
+      }
+    },
+    {
+      "facility_id": "facility:health:586",
+      "official_name": "GA. Nilandhoo Health Centre",
+      "island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Nilandhoo+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "http_status": 200,
+        "data": [
+          {
+            "place_id": 264142158,
+            "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+            "osm_type": "way",
+            "osm_id": 19932414,
+            "lat": "0.6364925",
+            "lon": "73.4465449",
+            "category": "place",
+            "type": "islet",
+            "place_rank": 20,
+            "importance": 0.41006843495098233,
+            "addresstype": "islet",
+            "name": "ނިލަންދޫ",
+            "display_name": "ނިލަންދޫ, ހުވަދުއަތޮޅު އުތުރުބުރި, ދިވެހިރާއްޖެ",
+            "address": {
+              "islet": "ނިލަންދޫ",
+              "state": "ހުވަދުއަތޮޅު އުތުރުބުރި",
+              "ISO3166-2-lvl4": "MV-27",
+              "country": "ދިވެހިރާއްޖެ",
+              "country_code": "mv"
+            },
+            "namedetails": {
+              "name": "ނިލަންދޫ",
+              "name:dv": "ނިލަންދޫ",
+              "name:en": "Nilandhoo"
+            },
+            "boundingbox": [
+              "0.6306736",
+              "0.6424481",
+              "73.4408247",
+              "73.4511612"
+            ]
+          },
+          {
+            "place_id": 252692137,
+            "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+            "osm_type": "way",
+            "osm_id": 19882137,
+            "lat": "3.0573365",
+            "lon": "72.8881326",
+            "category": "place",
+            "type": "islet",
+            "place_rank": 20,
+            "importance": 0.40855121186406457,
+            "addresstype": "islet",
+            "name": "ނިލަންދޫ",
+            "display_name": "ނިލަންދޫ, ނިލަންދެއަތޮޅު އުތުރުބުރި, ދިވެހިރާއްޖެ",
+            "address": {
+              "islet": "ނިލަންދޫ",
+              "town": "ނިލަންދޫ",
+              "state": "ނިލަންދެއަތޮޅު އުތުރުބުރި",
+              "ISO3166-2-lvl4": "MV-14",
+              "country": "ދިވެހިރާއްޖެ",
+              "country_code": "mv"
+            },
+            "namedetails": {
+              "name": "ނިލަންދޫ",
+              "name:dv": "ނިލަންދޫ",
+              "name:en": "Nilandhoo",
+              "name:fr": "Nilandhoo"
+            },
+            "boundingbox": [
+              "3.0522647",
+              "3.0623001",
+              "72.8837058",
+              "72.8935442"
+            ]
+          },
+          {
+            "place_id": 252684930,
+            "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+            "osm_type": "node",
+            "osm_id": 4411437538,
+            "lat": "3.0561219",
+            "lon": "72.8898950",
+            "category": "place",
+            "type": "town",
+            "place_rank": 18,
+            "importance": 0.40855121186406457,
+            "addresstype": "town",
+            "name": "ނިލަންދޫ",
+            "display_name": "ނިލަންދޫ, ނިލަންދެއަތޮޅު އުތުރުބުރި, ދިވެހިރާއްޖެ",
+            "address": {
+              "town": "ނިލަންދޫ",
+              "state": "ނިލަންދެއަތޮޅު އުތުރުބުރި",
+              "ISO3166-2-lvl4": "MV-14",
+              "country": "ދިވެހިރާއްޖެ",
+              "country_code": "mv"
+            },
+            "namedetails": {
+              "name": "ނިލަންދޫ",
+              "name:cy": "Nilandhoo",
+              "name:dv": "ނިލަންދޫ",
+              "name:en": "Nilandhoo",
+              "name:fr": "Nilandhoo",
+              "name:ko": "닐란두"
+            },
+            "boundingbox": [
+              "3.0161219",
+              "3.0961219",
+              "72.8498950",
+              "72.9298950"
+            ]
+          }
+        ]
+      },
+      "exact_facility_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=GA.+Nilandhoo+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "http_status": 200,
+        "data": []
+      }
+    },
+    {
+      "facility_id": "facility:health:582",
+      "official_name": "Gaafu Dhaalu Gadhdhoo Health Centre",
+      "island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Gadhdhoo+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "http_status": 200,
+        "data": [
+          {
+            "place_id": 252687759,
+            "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+            "osm_type": "way",
+            "osm_id": 19932432,
+            "lat": "0.2901176",
+            "lon": "73.4575525",
+            "category": "place",
+            "type": "islet",
+            "place_rank": 20,
+            "importance": 0.3602803386784236,
+            "addresstype": "islet",
+            "name": "ގައްދޫ",
+            "display_name": "ގައްދޫ, ހުވަދުއަތޮޅު ދެކުނުބުރި, ދިވެހިރާއްޖެ",
+            "address": {
+              "islet": "ގައްދޫ",
+              "state": "ހުވަދުއަތޮޅު ދެކުނުބުރި",
+              "ISO3166-2-lvl4": "MV-28",
+              "country": "ދިވެހިރާއްޖެ",
+              "country_code": "mv"
+            },
+            "namedetails": {
+              "name": "ގައްދޫ",
+              "name:dv": "ގައްދޫ",
+              "name:en": "Gadhdhoo"
+            },
+            "boundingbox": [
+              "0.2846751",
+              "0.2958290",
+              "73.4524848",
+              "73.4641719"
+            ]
+          }
+        ]
+      },
+      "exact_facility_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Gaafu+Dhaalu+Gadhdhoo+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "http_status": 200,
+        "data": []
+      }
+    },
+    {
+      "facility_id": "facility:health:579",
+      "official_name": "GDh. Faresmaathodaa Health Centre",
+      "island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Faresmaathodaa+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      },
+      "exact_facility_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=GDh.+Faresmaathodaa+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      },
+      "island_query_atoll_qualified": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Faresmaathodaa+Gaafu+Dhaalu+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      }
+    },
+    {
+      "facility_id": "facility:health:580",
+      "official_name": "GDh. Fiyoaree Health Centre",
+      "island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Fiyoaree+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      },
+      "exact_facility_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=GDh.+Fiyoaree+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      },
+      "island_query_atoll_qualified": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Fiyoaree+Gaafu+Dhaalu+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      }
+    },
+    {
+      "facility_id": "facility:health:576",
+      "official_name": "GDh. Nadella Health Centre",
+      "island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Nadellaa+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      },
+      "exact_facility_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=GDh.+Nadella+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      },
+      "island_query_atoll_qualified": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Nadellaa+Gaafu+Dhaalu+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      }
+    },
+    {
+      "facility_id": "facility:health:703",
+      "official_name": "Gdh. Rathafandhoo Health Center",
+      "island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Rathafandhoo+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      },
+      "exact_facility_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Gdh.+Rathafandhoo+Health+Center+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      },
+      "island_query_atoll_qualified": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Rathafandhoo+Gaafu+Dhaalu+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      }
+    },
+    {
+      "facility_id": "facility:health:745",
+      "official_name": "Haa Alifu Filladhoo Health Centre",
+      "island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Filladhoo+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      },
+      "exact_facility_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Haa+Alifu+Filladhoo+Health+Centre+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      },
+      "island_query_atoll_qualified": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Filladhoo+Haa+Alifu+Maldives&format=jsonv2&addressdetails=1&namedetails=1&limit=10",
+        "error": "HTTPError: HTTP Error 429: Too many requests"
+      }
+    }
+  ]
+}

@@ -1,0 +1,2055 @@
+{
+  "transformation": "population-atoll-locality-reconciliation-v1",
+  "generated_at": "2026-10-14T15:43:37.415478+00:00",
+  "method": "Exact administrative atoll + normalized locality; explicit reviewed transliterations; disjoint P5 wards/phases. P6 aggregate geographies and multi-island city/harbour totals are not allocated.",
+  "sources": [
+    {
+      "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "endpoint": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2023/07/P3.xlsx",
+      "http_status": 200,
+      "parser_version": "mbs-census-2022-tables-v1",
+      "retrieved_at": "2026-10-13T11:50:19.961878+00:00",
+      "schema_version": 1,
+      "sha256": "362ec941232c39bd35084ce1cd586def6931c58864898e9ed65270db52919029",
+      "source": "Maldives Bureau of Statistics Census 2022",
+      "source_record_id": null,
+      "status": "fresh"
+    },
+    {
+      "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "endpoint": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2023/07/P5.xlsx",
+      "http_status": 200,
+      "parser_version": "mbs-census-2022-tables-v1",
+      "retrieved_at": "2026-10-13T11:50:20.187336+00:00",
+      "schema_version": 1,
+      "sha256": "5a4588640048d5cc5dbfe7bdf064d45195583f264729f114393e6de9b294afba",
+      "source": "Maldives Bureau of Statistics Census 2022",
+      "source_record_id": null,
+      "status": "fresh"
+    },
+    {
+      "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "endpoint": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2023/07/P6.xlsx",
+      "http_status": 200,
+      "parser_version": "mbs-census-2022-tables-v1",
+      "retrieved_at": "2026-10-13T11:50:20.292464+00:00",
+      "schema_version": 1,
+      "sha256": "a325daa2f4afed57bb3544ef3014caac67b3774030ee7cb7f46d76048a4cba9d",
+      "source": "Maldives Bureau of Statistics Census 2022",
+      "source_record_id": null,
+      "status": "fresh"
+    }
+  ],
+  "original_normalized_sha256": "4893b4aea8a9bad10554825f9998d262939e6340f3f22b6063857b40ad7cd5f6",
+  "before": {
+    "attached_records": 1049,
+    "covered_islands": 105
+  },
+  "after": {
+    "attached_records": 1932,
+    "covered_islands": 190,
+    "administrative_island_rows": 186,
+    "administrative_island_total": 236911,
+    "match_status": {
+      "matched_atoll_island_name": 1510,
+      "matched_atoll_name_alias": 350,
+      "aggregate_geography_not_island": 3475,
+      "aggregate_or_unmapped": 26,
+      "matched_census_ward_or_phase": 72,
+      "unmatched_island_name": 9
+    }
+  },
+  "administrative_islands": [
+    {
+      "source_record_id": "HA:Baarah",
+      "locality": "Baarah",
+      "atoll": "HA",
+      "population": 1141,
+      "year": 2022,
+      "island_id": "island:640",
+      "one_map_name": "Baarah",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HA:Dhidhdhoo",
+      "locality": "Dhidhdhoo",
+      "atoll": "HA",
+      "population": 3412,
+      "year": 2022,
+      "island_id": "island:625",
+      "one_map_name": "Dhidhdhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HA:Filladhoo",
+      "locality": "Filladhoo",
+      "atoll": "HA",
+      "population": 559,
+      "year": 2022,
+      "island_id": "island:641",
+      "one_map_name": "Filladhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HA:Hoarafushi",
+      "locality": "Hoarafushi",
+      "atoll": "HA",
+      "population": 1841,
+      "year": 2022,
+      "island_id": "island:612",
+      "one_map_name": "Hoarafushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HA:Ihavandhoo",
+      "locality": "Ihavandhoo",
+      "atoll": "HA",
+      "population": 2873,
+      "year": 2022,
+      "island_id": "island:635",
+      "one_map_name": "Ihavandhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HA:Kelaa",
+      "locality": "Kelaa",
+      "atoll": "HA",
+      "population": 1115,
+      "year": 2022,
+      "island_id": "island:624",
+      "one_map_name": "Kelaa",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HA:Maarandhoo",
+      "locality": "Maarandhoo",
+      "atoll": "HA",
+      "population": 668,
+      "year": 2022,
+      "island_id": "island:628",
+      "one_map_name": "Maarandhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HA:Mulhadhoo",
+      "locality": "Mulhadhoo",
+      "atoll": "HA",
+      "population": 286,
+      "year": 2022,
+      "island_id": "island:634",
+      "one_map_name": "Molhadhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "HA:Muraidhoo",
+      "locality": "Muraidhoo",
+      "atoll": "HA",
+      "population": 534,
+      "year": 2022,
+      "island_id": "island:629",
+      "one_map_name": "Muraidhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HA:Thakandhoo",
+      "locality": "Thakandhoo",
+      "atoll": "HA",
+      "population": 279,
+      "year": 2022,
+      "island_id": "island:639",
+      "one_map_name": "Thakandhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HA:Thuraakunu",
+      "locality": "Thuraakunu",
+      "atoll": "HA",
+      "population": 427,
+      "year": 2022,
+      "island_id": "island:637",
+      "one_map_name": "Thuraakunu",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HA:Uligamu",
+      "locality": "Uligamu",
+      "atoll": "HA",
+      "population": 400,
+      "year": 2022,
+      "island_id": "island:618",
+      "one_map_name": "Uligan",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "HA:Utheemu",
+      "locality": "Utheemu",
+      "atoll": "HA",
+      "population": 612,
+      "year": 2022,
+      "island_id": "island:620",
+      "one_map_name": "Utheemu",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HA:Vashafaru",
+      "locality": "Vashafaru",
+      "atoll": "HA",
+      "population": 476,
+      "year": 2022,
+      "island_id": "island:611",
+      "one_map_name": "Vashafaru",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HDh:Finey",
+      "locality": "Finey",
+      "atoll": "HDh",
+      "population": 409,
+      "year": 2022,
+      "island_id": "island:653",
+      "one_map_name": "Finey",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HDh:Hanimaadhoo",
+      "locality": "Hanimaadhoo",
+      "atoll": "HDh",
+      "population": 2664,
+      "year": 2022,
+      "island_id": "island:684",
+      "one_map_name": "Hanimaadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HDh:Hirimaradhoo",
+      "locality": "Hirimaradhoo",
+      "atoll": "HDh",
+      "population": 293,
+      "year": 2022,
+      "island_id": "island:662",
+      "one_map_name": "Hirimaradhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HDh:Kulhudhuffushi",
+      "locality": "Kulhudhuffushi",
+      "atoll": "HDh",
+      "population": 10131,
+      "year": 2022,
+      "island_id": "island:680",
+      "one_map_name": "Kulhudhuffushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HDh:Kumundhoo",
+      "locality": "Kumundhoo",
+      "atoll": "HDh",
+      "population": 997,
+      "year": 2022,
+      "island_id": "island:670",
+      "one_map_name": "Kumundhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HDh:Kuribi",
+      "locality": "Kuribi",
+      "atoll": "HDh",
+      "population": 492,
+      "year": 2022,
+      "island_id": "island:664",
+      "one_map_name": "Kurin'bi",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "HDh:Makunudhoo",
+      "locality": "Makunudhoo",
+      "atoll": "HDh",
+      "population": 1265,
+      "year": 2022,
+      "island_id": "island:676",
+      "one_map_name": "Makunudhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HDh:Naivaadhoo",
+      "locality": "Naivaadhoo",
+      "atoll": "HDh",
+      "population": 495,
+      "year": 2022,
+      "island_id": "island:655",
+      "one_map_name": "Naivaadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HDh:Nellaidhoo",
+      "locality": "Nellaidhoo",
+      "atoll": "HDh",
+      "population": 1038,
+      "year": 2022,
+      "island_id": "island:661",
+      "one_map_name": "Nellaidhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HDh:Neykurendhoo",
+      "locality": "Neykurendhoo",
+      "atoll": "HDh",
+      "population": 641,
+      "year": 2022,
+      "island_id": "island:672",
+      "one_map_name": "Neykurendhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HDh:Nolhivaramu",
+      "locality": "Nolhivaramu",
+      "atoll": "HDh",
+      "population": 1985,
+      "year": 2022,
+      "island_id": "island:681",
+      "one_map_name": "Nolhivaran",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "HDh:Nolhivaranfaru",
+      "locality": "Nolhivaranfaru",
+      "atoll": "HDh",
+      "population": 1254,
+      "year": 2022,
+      "island_id": "island:682",
+      "one_map_name": "Nolhivaranfaru",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "HDh:Vaikaradhoo",
+      "locality": "Vaikaradhoo",
+      "atoll": "HDh",
+      "population": 776,
+      "year": 2022,
+      "island_id": "island:673",
+      "one_map_name": "Vaikaradhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Sh:Bilehffahi",
+      "locality": "Bilehffahi",
+      "atoll": "Sh",
+      "population": 502,
+      "year": 2022,
+      "island_id": "island:1175",
+      "one_map_name": "Bileiyfahi",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "Sh:Feevah",
+      "locality": "Feevah",
+      "atoll": "Sh",
+      "population": 694,
+      "year": 2022,
+      "island_id": "island:1189",
+      "one_map_name": "Feevah",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Sh:Feydhoo",
+      "locality": "Feydhoo",
+      "atoll": "Sh",
+      "population": 854,
+      "year": 2022,
+      "island_id": "island:1177",
+      "one_map_name": "Feydhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Sh:Foakaidhoo",
+      "locality": "Foakaidhoo",
+      "atoll": "Sh",
+      "population": 1571,
+      "year": 2022,
+      "island_id": "island:1166",
+      "one_map_name": "Foakaidhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Sh:Funadhoo",
+      "locality": "Funadhoo",
+      "atoll": "Sh",
+      "population": 2255,
+      "year": 2022,
+      "island_id": "island:1171",
+      "one_map_name": "Funadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Sh:Goidhoo",
+      "locality": "Goidhoo",
+      "atoll": "Sh",
+      "population": 592,
+      "year": 2022,
+      "island_id": "island:1169",
+      "one_map_name": "Goidhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Sh:Kaditheemu",
+      "locality": "Kaditheemu",
+      "atoll": "Sh",
+      "population": 1193,
+      "year": 2022,
+      "island_id": "island:1176",
+      "one_map_name": "Kan'ditheemu",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "Sh:Komandoo",
+      "locality": "Komandoo",
+      "atoll": "Sh",
+      "population": 921,
+      "year": 2022,
+      "island_id": "island:1192",
+      "one_map_name": "Komandoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Sh:Lhaimagu",
+      "locality": "Lhaimagu",
+      "atoll": "Sh",
+      "population": 684,
+      "year": 2022,
+      "island_id": "island:1173",
+      "one_map_name": "Lhaimagu",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Sh:Maaugoodhoo",
+      "locality": "Maaugoodhoo",
+      "atoll": "Sh",
+      "population": 944,
+      "year": 2022,
+      "island_id": "island:1181",
+      "one_map_name": "Maaun'goodhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "Sh:Maroshi",
+      "locality": "Maroshi",
+      "atoll": "Sh",
+      "population": 479,
+      "year": 2022,
+      "island_id": "island:1178",
+      "one_map_name": "Maroshi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Sh:Milandhoo",
+      "locality": "Milandhoo",
+      "atoll": "Sh",
+      "population": 2094,
+      "year": 2022,
+      "island_id": "island:1162",
+      "one_map_name": "Milandhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Sh:Narudhoo",
+      "locality": "Narudhoo",
+      "atoll": "Sh",
+      "population": 544,
+      "year": 2022,
+      "island_id": "island:1163",
+      "one_map_name": "Narudhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Sh:Noomaraa",
+      "locality": "Noomaraa",
+      "atoll": "Sh",
+      "population": 371,
+      "year": 2022,
+      "island_id": "island:1174",
+      "one_map_name": "Noomaraa",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "N:Fodhdhoo",
+      "locality": "Fodhdhoo",
+      "atoll": "N",
+      "population": 345,
+      "year": 2022,
+      "island_id": "island:941",
+      "one_map_name": "Fodhdhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "N:Henbadhoo",
+      "locality": "Henbadhoo",
+      "atoll": "N",
+      "population": 638,
+      "year": 2022,
+      "island_id": "island:972",
+      "one_map_name": "Hen'badhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "N:Holhudhoo",
+      "locality": "Holhudhoo",
+      "atoll": "N",
+      "population": 1428,
+      "year": 2022,
+      "island_id": "island:988",
+      "one_map_name": "Holhudhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "N:Kedhikulhudhoo",
+      "locality": "Kedhikulhudhoo",
+      "atoll": "N",
+      "population": 1556,
+      "year": 2022,
+      "island_id": "island:966",
+      "one_map_name": "Ken'dhikulhudhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "N:Kudafari",
+      "locality": "Kudafari",
+      "atoll": "N",
+      "population": 628,
+      "year": 2022,
+      "island_id": "island:944",
+      "one_map_name": "Kudafari",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "N:Landhoo",
+      "locality": "Landhoo",
+      "atoll": "N",
+      "population": 757,
+      "year": 2022,
+      "island_id": "island:933",
+      "one_map_name": "Landhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "N:Lhohi",
+      "locality": "Lhohi",
+      "atoll": "N",
+      "population": 692,
+      "year": 2022,
+      "island_id": "island:949",
+      "one_map_name": "Lhohi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "N:Maafaru",
+      "locality": "Maafaru",
+      "atoll": "N",
+      "population": 919,
+      "year": 2022,
+      "island_id": "island:952",
+      "one_map_name": "Maafaru",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "N:Maalhendhoo",
+      "locality": "Maalhendhoo",
+      "atoll": "N",
+      "population": 724,
+      "year": 2022,
+      "island_id": "island:934",
+      "one_map_name": "Maalhendhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "N:Magoodhoo",
+      "locality": "Magoodhoo",
+      "atoll": "N",
+      "population": 305,
+      "year": 2022,
+      "island_id": "island:970",
+      "one_map_name": "Magoodhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "N:Manadhoo",
+      "locality": "Manadhoo",
+      "atoll": "N",
+      "population": 1745,
+      "year": 2022,
+      "island_id": "island:945",
+      "one_map_name": "Manadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "N:Miladhoo",
+      "locality": "Miladhoo",
+      "atoll": "N",
+      "population": 934,
+      "year": 2022,
+      "island_id": "island:979",
+      "one_map_name": "Miladhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "N:Velidhoo",
+      "locality": "Velidhoo",
+      "atoll": "N",
+      "population": 1832,
+      "year": 2022,
+      "island_id": "island:948",
+      "one_map_name": "Velidhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "R:Agolhitheemu",
+      "locality": "Agolhitheemu",
+      "atoll": "R",
+      "population": 381,
+      "year": 2022,
+      "island_id": "island:1045",
+      "one_map_name": "An'golhitheemu",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "R:Alifushi",
+      "locality": "Alifushi",
+      "atoll": "R",
+      "population": 1859,
+      "year": 2022,
+      "island_id": "island:1055",
+      "one_map_name": "Alifushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "R:Dhuvaafaru",
+      "locality": "Dhuvaafaru",
+      "atoll": "R",
+      "population": 3321,
+      "year": 2022,
+      "island_id": "island:1066",
+      "one_map_name": "Dhuvaafaru",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "R:Fainu",
+      "locality": "Fainu",
+      "atoll": "R",
+      "population": 423,
+      "year": 2022,
+      "island_id": "island:1070",
+      "one_map_name": "Fainu",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "R:Hulhudhuffaaru",
+      "locality": "Hulhudhuffaaru",
+      "atoll": "R",
+      "population": 1228,
+      "year": 2022,
+      "island_id": "island:1062",
+      "one_map_name": "Hulhudhuffaaru",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "R:Iguraidhoo",
+      "locality": "Iguraidhoo",
+      "atoll": "R",
+      "population": 1278,
+      "year": 2022,
+      "island_id": "island:1120",
+      "one_map_name": "In'guraidhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "R:Innamaadhoo",
+      "locality": "Innamaadhoo",
+      "atoll": "R",
+      "population": 663,
+      "year": 2022,
+      "island_id": "island:1047",
+      "one_map_name": "Innamaadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "R:Kinolhas",
+      "locality": "Kinolhas",
+      "atoll": "R",
+      "population": 543,
+      "year": 2022,
+      "island_id": "island:1048",
+      "one_map_name": "Kinolhas",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "R:Maakurathu",
+      "locality": "Maakurathu",
+      "atoll": "R",
+      "population": 956,
+      "year": 2022,
+      "island_id": "island:1046",
+      "one_map_name": "Maakurathu",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "R:Maduvvari",
+      "locality": "Maduvvari",
+      "atoll": "R",
+      "population": 1760,
+      "year": 2022,
+      "island_id": "island:1012",
+      "one_map_name": "Maduvvari",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "R:Meedhoo",
+      "locality": "Meedhoo",
+      "atoll": "R",
+      "population": 1872,
+      "year": 2022,
+      "island_id": "island:1063",
+      "one_map_name": "Meedhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "R:Rasgetheemu",
+      "locality": "Rasgetheemu",
+      "atoll": "R",
+      "population": 537,
+      "year": 2022,
+      "island_id": "island:1057",
+      "one_map_name": "Rasgetheemu",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "R:Rasmaadhoo",
+      "locality": "Rasmaadhoo",
+      "atoll": "R",
+      "population": 554,
+      "year": 2022,
+      "island_id": "island:1027",
+      "one_map_name": "Rasmaadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "R:Ugoofaaru",
+      "locality": "Ugoofaaru",
+      "atoll": "R",
+      "population": 1754,
+      "year": 2022,
+      "island_id": "island:1075",
+      "one_map_name": "Un'goofaaru",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "R:Vaadhoo",
+      "locality": "Vaadhoo",
+      "atoll": "R",
+      "population": 452,
+      "year": 2022,
+      "island_id": "island:1073",
+      "one_map_name": "Vaadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "B:Dharavandhoo",
+      "locality": "Dharavandhoo",
+      "atoll": "B",
+      "population": 997,
+      "year": 2022,
+      "island_id": "island:188",
+      "one_map_name": "Dharavandhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "B:Dhonfanu",
+      "locality": "Dhonfanu",
+      "atoll": "B",
+      "population": 398,
+      "year": 2022,
+      "island_id": "island:185",
+      "one_map_name": "Dhonfan",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "B:Eydhafushi",
+      "locality": "Eydhafushi",
+      "atoll": "B",
+      "population": 2581,
+      "year": 2022,
+      "island_id": "island:193",
+      "one_map_name": "Eydhafushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "B:Fehendhoo",
+      "locality": "Fehendhoo",
+      "atoll": "B",
+      "population": 198,
+      "year": 2022,
+      "island_id": "island:221",
+      "one_map_name": "Fehendhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "B:Fulhadhoo",
+      "locality": "Fulhadhoo",
+      "atoll": "B",
+      "population": 341,
+      "year": 2022,
+      "island_id": "island:227",
+      "one_map_name": "Fulhadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "B:Goidhoo",
+      "locality": "Goidhoo",
+      "atoll": "B",
+      "population": 583,
+      "year": 2022,
+      "island_id": "island:219",
+      "one_map_name": "Goidhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "B:Hithaadhoo",
+      "locality": "Hithaadhoo",
+      "atoll": "B",
+      "population": 744,
+      "year": 2022,
+      "island_id": "island:200",
+      "one_map_name": "Hithaadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "B:Kamadhoo",
+      "locality": "Kamadhoo",
+      "atoll": "B",
+      "population": 552,
+      "year": 2022,
+      "island_id": "island:168",
+      "one_map_name": "Kamadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "B:Kendhoo",
+      "locality": "Kendhoo",
+      "atoll": "B",
+      "population": 1002,
+      "year": 2022,
+      "island_id": "island:146",
+      "one_map_name": "Kendhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "B:Kihaadhoo",
+      "locality": "Kihaadhoo",
+      "atoll": "B",
+      "population": 481,
+      "year": 2022,
+      "island_id": "island:174",
+      "one_map_name": "Kihaadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "B:Kudarikilu",
+      "locality": "Kudarikilu",
+      "atoll": "B",
+      "population": 557,
+      "year": 2022,
+      "island_id": "island:133",
+      "one_map_name": "Kudarikilu",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "B:Maalhos",
+      "locality": "Maalhos",
+      "atoll": "B",
+      "population": 572,
+      "year": 2022,
+      "island_id": "island:190",
+      "one_map_name": "Maalhos",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "B:Thulhaadhoo",
+      "locality": "Thulhaadhoo",
+      "atoll": "B",
+      "population": 1625,
+      "year": 2022,
+      "island_id": "island:205",
+      "one_map_name": "Thulhaadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Lh:Hinnavaru",
+      "locality": "Hinnavaru",
+      "atoll": "Lh",
+      "population": 2286,
+      "year": 2022,
+      "island_id": "island:791",
+      "one_map_name": "Hinnavaru",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Lh:Kurendhoo",
+      "locality": "Kurendhoo",
+      "atoll": "Lh",
+      "population": 1171,
+      "year": 2022,
+      "island_id": "island:798",
+      "one_map_name": "Kurendhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Lh:Naifaru",
+      "locality": "Naifaru",
+      "atoll": "Lh",
+      "population": 4832,
+      "year": 2022,
+      "island_id": "island:777",
+      "one_map_name": "Naifaru",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Lh:Olhuvelifushi",
+      "locality": "Olhuvelifushi",
+      "atoll": "Lh",
+      "population": 703,
+      "year": 2022,
+      "island_id": "island:799",
+      "one_map_name": "Olhuvelifushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "K:Dhiffushi",
+      "locality": "Dhiffushi",
+      "atoll": "K",
+      "population": 1270,
+      "year": 2022,
+      "island_id": "island:1358",
+      "one_map_name": "Dhiffushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "K:Gaafaru",
+      "locality": "Gaafaru",
+      "atoll": "K",
+      "population": 1294,
+      "year": 2022,
+      "island_id": "island:1339",
+      "one_map_name": "Gaafaru",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "K:Gulhi",
+      "locality": "Gulhi",
+      "atoll": "K",
+      "population": 976,
+      "year": 2022,
+      "island_id": "island:1464",
+      "one_map_name": "Gulhi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "K:Guraidhoo",
+      "locality": "Guraidhoo",
+      "atoll": "K",
+      "population": 1743,
+      "year": 2022,
+      "island_id": "island:1427",
+      "one_map_name": "Guraidhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "K:Himmafushi",
+      "locality": "Himmafushi",
+      "atoll": "K",
+      "population": 2012,
+      "year": 2022,
+      "island_id": "island:1380",
+      "one_map_name": "Hinmafushi",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "K:Huraa",
+      "locality": "Huraa",
+      "atoll": "K",
+      "population": 1654,
+      "year": 2022,
+      "island_id": "island:1372",
+      "one_map_name": "Huraa",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "K:Kaashidhoo",
+      "locality": "Kaashidhoo",
+      "atoll": "K",
+      "population": 2528,
+      "year": 2022,
+      "island_id": "island:1338",
+      "one_map_name": "Kaashidhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "K:Maafushi",
+      "locality": "Maafushi",
+      "atoll": "K",
+      "population": 4471,
+      "year": 2022,
+      "island_id": "island:1431",
+      "one_map_name": "Maafushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "K:Thulusdhoo",
+      "locality": "Thulusdhoo",
+      "atoll": "K",
+      "population": 1801,
+      "year": 2022,
+      "island_id": "island:1364",
+      "one_map_name": "Thulusdhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "AA:Bodufolhudhoo",
+      "locality": "Bodufolhudhoo",
+      "atoll": "AA",
+      "population": 704,
+      "year": 2022,
+      "island_id": "island:15",
+      "one_map_name": "Bodufolhudhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "AA:Feridhoo",
+      "locality": "Feridhoo",
+      "atoll": "AA",
+      "population": 544,
+      "year": 2022,
+      "island_id": "island:9",
+      "one_map_name": "Feridhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "AA:Himandhoo",
+      "locality": "Himandhoo",
+      "atoll": "AA",
+      "population": 885,
+      "year": 2022,
+      "island_id": "island:23",
+      "one_map_name": "Himandhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "AA:Maalhos",
+      "locality": "Maalhos",
+      "atoll": "AA",
+      "population": 516,
+      "year": 2022,
+      "island_id": "island:1",
+      "one_map_name": "Maalhos",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "AA:Mathiveri",
+      "locality": "Mathiveri",
+      "atoll": "AA",
+      "population": 878,
+      "year": 2022,
+      "island_id": "island:5",
+      "one_map_name": "Mathiveri",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "AA:Rasdhoo",
+      "locality": "Rasdhoo",
+      "atoll": "AA",
+      "population": 1282,
+      "year": 2022,
+      "island_id": "island:8",
+      "one_map_name": "Rasdhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "AA:Thoddoo",
+      "locality": "Thoddoo",
+      "atoll": "AA",
+      "population": 1924,
+      "year": 2022,
+      "island_id": "island:16",
+      "one_map_name": "Thoddoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "AA:Ukulhas",
+      "locality": "Ukulhas",
+      "atoll": "AA",
+      "population": 1284,
+      "year": 2022,
+      "island_id": "island:25",
+      "one_map_name": "Ukulhas",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Adh:Dhagethi",
+      "locality": "Dhagethi",
+      "atoll": "Adh",
+      "population": 936,
+      "year": 2022,
+      "island_id": "island:60",
+      "one_map_name": "Dhan'gethi",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "Adh:Dhidhdhoo",
+      "locality": "Dhidhdhoo",
+      "atoll": "Adh",
+      "population": 141,
+      "year": 2022,
+      "island_id": "island:66",
+      "one_map_name": "Dhidhdhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Adh:Dhigurah",
+      "locality": "Dhigurah",
+      "atoll": "Adh",
+      "population": 761,
+      "year": 2022,
+      "island_id": "island:78",
+      "one_map_name": "Dhigurah",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Adh:Fenfushi",
+      "locality": "Fenfushi",
+      "atoll": "Adh",
+      "population": 1000,
+      "year": 2022,
+      "island_id": "island:68",
+      "one_map_name": "Fenfushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Adh:Hangnameedhoo",
+      "locality": "Hangnameedhoo",
+      "atoll": "Adh",
+      "population": 484,
+      "year": 2022,
+      "island_id": "island:90",
+      "one_map_name": "Hangnaameedhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "Adh:Kuburudhoo",
+      "locality": "Kuburudhoo",
+      "atoll": "Adh",
+      "population": 509,
+      "year": 2022,
+      "island_id": "island:74",
+      "one_map_name": "Kun'burudhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "Adh:Maamigili",
+      "locality": "Maamigili",
+      "atoll": "Adh",
+      "population": 2798,
+      "year": 2022,
+      "island_id": "island:1552",
+      "one_map_name": "Maamigili",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Adh:Mahibadhoo",
+      "locality": "Mahibadhoo",
+      "atoll": "Adh",
+      "population": 2580,
+      "year": 2022,
+      "island_id": "island:1531",
+      "one_map_name": "Mahibadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Adh:Mandhoo",
+      "locality": "Mandhoo",
+      "atoll": "Adh",
+      "population": 418,
+      "year": 2022,
+      "island_id": "island:54",
+      "one_map_name": "Mandhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Adh:Omadhoo",
+      "locality": "Omadhoo",
+      "atoll": "Adh",
+      "population": 913,
+      "year": 2022,
+      "island_id": "island:47",
+      "one_map_name": "Omadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "V:Felidhoo",
+      "locality": "Felidhoo",
+      "atoll": "V",
+      "population": 620,
+      "year": 2022,
+      "island_id": "island:1291",
+      "one_map_name": "Felidhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "V:Fulidhoo",
+      "locality": "Fulidhoo",
+      "atoll": "V",
+      "population": 400,
+      "year": 2022,
+      "island_id": "island:1286",
+      "one_map_name": "Fulidhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "V:Keyodhoo",
+      "locality": "Keyodhoo",
+      "atoll": "V",
+      "population": 641,
+      "year": 2022,
+      "island_id": "island:1292",
+      "one_map_name": "Keyodhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "V:Rakeedhoo",
+      "locality": "Rakeedhoo",
+      "atoll": "V",
+      "population": 76,
+      "year": 2022,
+      "island_id": "island:1302",
+      "one_map_name": "Rakeedhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "V:Thinadhoo",
+      "locality": "Thinadhoo",
+      "atoll": "V",
+      "population": 258,
+      "year": 2022,
+      "island_id": "island:1290",
+      "one_map_name": "Thinadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "M:Dhiggaru",
+      "locality": "Dhiggaru",
+      "atoll": "M",
+      "population": 1099,
+      "year": 2022,
+      "island_id": "island:859",
+      "one_map_name": "Dhiggaru",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "M:Kolhufushi",
+      "locality": "Kolhufushi",
+      "atoll": "M",
+      "population": 793,
+      "year": 2022,
+      "island_id": "island:904",
+      "one_map_name": "Kolhufushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "M:Maduvvari",
+      "locality": "Maduvvari",
+      "atoll": "M",
+      "population": 318,
+      "year": 2022,
+      "island_id": "island:895",
+      "one_map_name": "Maduvvari",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "M:Mulah",
+      "locality": "Mulah",
+      "atoll": "M",
+      "population": 1426,
+      "year": 2022,
+      "island_id": "island:906",
+      "one_map_name": "Mulah",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "M:Muli",
+      "locality": "Muli",
+      "atoll": "M",
+      "population": 949,
+      "year": 2022,
+      "island_id": "island:868",
+      "one_map_name": "Muli",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "M:Naalaafushi",
+      "locality": "Naalaafushi",
+      "atoll": "M",
+      "population": 430,
+      "year": 2022,
+      "island_id": "island:879",
+      "one_map_name": "Naalaafushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "M:Raimandhoo",
+      "locality": "Raimandhoo",
+      "atoll": "M",
+      "population": 171,
+      "year": 2022,
+      "island_id": "island:907",
+      "one_map_name": "Raiymandhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "M:Veyvah",
+      "locality": "Veyvah",
+      "atoll": "M",
+      "population": 304,
+      "year": 2022,
+      "island_id": "island:896",
+      "one_map_name": "Veyvah",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "F:Biledhdhoo",
+      "locality": "Biledhdhoo",
+      "atoll": "F",
+      "population": 967,
+      "year": 2022,
+      "island_id": "island:318",
+      "one_map_name": "Bileiydhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "F:Dharaboodhoo",
+      "locality": "Dharaboodhoo",
+      "atoll": "F",
+      "population": 455,
+      "year": 2022,
+      "island_id": "island:316",
+      "one_map_name": "Dharan'boodhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "F:Feeali",
+      "locality": "Feeali",
+      "atoll": "F",
+      "population": 922,
+      "year": 2022,
+      "island_id": "island:329",
+      "one_map_name": "Feeali",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "F:Magoodhoo",
+      "locality": "Magoodhoo",
+      "atoll": "F",
+      "population": 702,
+      "year": 2022,
+      "island_id": "island:317",
+      "one_map_name": "Magoodhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "F:Nilandhoo",
+      "locality": "Nilandhoo",
+      "atoll": "F",
+      "population": 1823,
+      "year": 2022,
+      "island_id": "island:315",
+      "one_map_name": "Nilandhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Dh:Badidhoo",
+      "locality": "Badidhoo",
+      "atoll": "Dh",
+      "population": 629,
+      "year": 2022,
+      "island_id": "island:245",
+      "one_map_name": "Ban'didhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "Dh:Hulhudheli",
+      "locality": "Hulhudheli",
+      "atoll": "Dh",
+      "population": 764,
+      "year": 2022,
+      "island_id": "island:267",
+      "one_map_name": "Hulhudheli",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Dh:Kudahuvadhoo",
+      "locality": "Kudahuvadhoo",
+      "atoll": "Dh",
+      "population": 3131,
+      "year": 2022,
+      "island_id": "island:260",
+      "one_map_name": "Kudahuvadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Dh:Maaeboodhoo",
+      "locality": "Maaeboodhoo",
+      "atoll": "Dh",
+      "population": 679,
+      "year": 2022,
+      "island_id": "island:251",
+      "one_map_name": "Maaen'boodhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "Dh:Meedhoo",
+      "locality": "Meedhoo",
+      "atoll": "Dh",
+      "population": 1118,
+      "year": 2022,
+      "island_id": "island:282",
+      "one_map_name": "Meedhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Dh:Ribudhoo",
+      "locality": "Ribudhoo",
+      "atoll": "Dh",
+      "population": 316,
+      "year": 2022,
+      "island_id": "island:254",
+      "one_map_name": "Rin'budhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "Th:Buruni",
+      "locality": "Buruni",
+      "atoll": "Th",
+      "population": 414,
+      "year": 2022,
+      "island_id": "island:1222",
+      "one_map_name": "Buruni",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Th:Dhiyamigili",
+      "locality": "Dhiyamigili",
+      "atoll": "Th",
+      "population": 649,
+      "year": 2022,
+      "island_id": "island:1275",
+      "one_map_name": "Dhiyamigili",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Th:Gaadhiffushi",
+      "locality": "Gaadhiffushi",
+      "atoll": "Th",
+      "population": 317,
+      "year": 2022,
+      "island_id": "island:1254",
+      "one_map_name": "Gaadhiffushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Th:Guraidhoo",
+      "locality": "Guraidhoo",
+      "atoll": "Th",
+      "population": 1293,
+      "year": 2022,
+      "island_id": "island:1274",
+      "one_map_name": "Guraidhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Th:Hirilandhoo",
+      "locality": "Hirilandhoo",
+      "atoll": "Th",
+      "population": 1146,
+      "year": 2022,
+      "island_id": "island:1234",
+      "one_map_name": "Hirilandhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Th:Kadoodhoo",
+      "locality": "Kadoodhoo",
+      "atoll": "Th",
+      "population": 456,
+      "year": 2022,
+      "island_id": "island:1218",
+      "one_map_name": "Kan'doodhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "Th:Kibidhoo",
+      "locality": "Kibidhoo",
+      "atoll": "Th",
+      "population": 715,
+      "year": 2022,
+      "island_id": "island:1280",
+      "one_map_name": "Kin'bidhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "Th:Madifushi",
+      "locality": "Madifushi",
+      "atoll": "Th",
+      "population": 858,
+      "year": 2022,
+      "island_id": "island:1281",
+      "one_map_name": "Madifushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Th:Omadhoo",
+      "locality": "Omadhoo",
+      "atoll": "Th",
+      "population": 417,
+      "year": 2022,
+      "island_id": "island:1242",
+      "one_map_name": "Omadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Th:Thimarafushi",
+      "locality": "Thimarafushi",
+      "atoll": "Th",
+      "population": 1229,
+      "year": 2022,
+      "island_id": "island:1252",
+      "one_map_name": "Thimarafushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Th:Vandhoo",
+      "locality": "Vandhoo",
+      "atoll": "Th",
+      "population": 364,
+      "year": 2022,
+      "island_id": "island:1212",
+      "one_map_name": "Vandhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Th:Veymandoo",
+      "locality": "Veymandoo",
+      "atoll": "Th",
+      "population": 1321,
+      "year": 2022,
+      "island_id": "island:1249",
+      "one_map_name": "Veymandoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Th:Vilufushi",
+      "locality": "Vilufushi",
+      "atoll": "Th",
+      "population": 1081,
+      "year": 2022,
+      "island_id": "island:1229",
+      "one_map_name": "Vilufushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "L:Dhabidhoo",
+      "locality": "Dhabidhoo",
+      "atoll": "L",
+      "population": 606,
+      "year": 2022,
+      "island_id": "island:753",
+      "one_map_name": "Dhan'bidhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "L:Fonadhoo",
+      "locality": "Fonadhoo",
+      "atoll": "L",
+      "population": 2986,
+      "year": 2022,
+      "island_id": "island:704",
+      "one_map_name": "Fonadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "L:Gamu",
+      "locality": "Gamu",
+      "atoll": "L",
+      "population": 4815,
+      "year": 2022,
+      "island_id": "island:692",
+      "one_map_name": "Gan",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "L:Hithadhoo",
+      "locality": "Hithadhoo",
+      "atoll": "L",
+      "population": 1108,
+      "year": 2022,
+      "island_id": "island:697",
+      "one_map_name": "Hithadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "L:Isdhoo",
+      "locality": "Isdhoo",
+      "atoll": "L",
+      "population": 929,
+      "year": 2022,
+      "island_id": "island:723",
+      "one_map_name": "Isdhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "L:Kalaidhoo",
+      "locality": "Kalaidhoo",
+      "atoll": "L",
+      "population": 655,
+      "year": 2022,
+      "island_id": "island:746",
+      "one_map_name": "Kalaidhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "L:Kunahandhoo",
+      "locality": "Kunahandhoo",
+      "atoll": "L",
+      "population": 601,
+      "year": 2022,
+      "island_id": "island:699",
+      "one_map_name": "Kunahandhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "L:Maabaidhoo",
+      "locality": "Maabaidhoo",
+      "atoll": "L",
+      "population": 565,
+      "year": 2022,
+      "island_id": "island:720",
+      "one_map_name": "Maabaidhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "L:Maamendhoo",
+      "locality": "Maamendhoo",
+      "atoll": "L",
+      "population": 879,
+      "year": 2022,
+      "island_id": "island:702",
+      "one_map_name": "Maamendhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "L:Maavah",
+      "locality": "Maavah",
+      "atoll": "L",
+      "population": 1379,
+      "year": 2022,
+      "island_id": "island:717",
+      "one_map_name": "Maavah",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "L:Mundoo",
+      "locality": "Mundoo",
+      "atoll": "L",
+      "population": 176,
+      "year": 2022,
+      "island_id": "island:691",
+      "one_map_name": "Mundoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "GA:Dhaandhoo",
+      "locality": "Dhaandhoo",
+      "atoll": "GA",
+      "population": 1044,
+      "year": 2022,
+      "island_id": "island:387",
+      "one_map_name": "Dhaandhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "GA:Dhevvadhoo",
+      "locality": "Dhevvadhoo",
+      "atoll": "GA",
+      "population": 599,
+      "year": 2022,
+      "island_id": "island:368",
+      "one_map_name": "Dhevvadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "GA:Gemanafushi",
+      "locality": "Gemanafushi",
+      "atoll": "GA",
+      "population": 1318,
+      "year": 2022,
+      "island_id": "island:415",
+      "one_map_name": "Gemanafushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "GA:Kanduhulhudhoo",
+      "locality": "Kanduhulhudhoo",
+      "atoll": "GA",
+      "population": 619,
+      "year": 2022,
+      "island_id": "island:399",
+      "one_map_name": "Kan'duhulhudhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "GA:Kodey",
+      "locality": "Kodey",
+      "atoll": "GA",
+      "population": 328,
+      "year": 2022,
+      "island_id": "island:369",
+      "one_map_name": "Kon'dey",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "GA:Kolamaafushi",
+      "locality": "Kolamaafushi",
+      "atoll": "GA",
+      "population": 636,
+      "year": 2022,
+      "island_id": "island:385",
+      "one_map_name": "Kolamaafushi",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "GA:Maamendhoo",
+      "locality": "Maamendhoo",
+      "atoll": "GA",
+      "population": 1201,
+      "year": 2022,
+      "island_id": "island:412",
+      "one_map_name": "Maamendhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "GA:Nilandhoo",
+      "locality": "Nilandhoo",
+      "atoll": "GA",
+      "population": 545,
+      "year": 2022,
+      "island_id": "island:413",
+      "one_map_name": "Nilandhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "GA:Viligili",
+      "locality": "Viligili",
+      "atoll": "GA",
+      "population": 2900,
+      "year": 2022,
+      "island_id": "island:429",
+      "one_map_name": "Vilin'gili",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "GDh:Fares-Maathodaa",
+      "locality": "Fares-Maathodaa",
+      "atoll": "GDh",
+      "population": 858,
+      "year": 2022,
+      "island_id": "island:595",
+      "one_map_name": "Faresmaathodaa",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "GDh:Fiyoari",
+      "locality": "Fiyoari",
+      "atoll": "GDh",
+      "population": 637,
+      "year": 2022,
+      "island_id": "island:550",
+      "one_map_name": "Fiyoaree",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "GDh:Gadhdhoo",
+      "locality": "Gadhdhoo",
+      "atoll": "GDh",
+      "population": 1414,
+      "year": 2022,
+      "island_id": "island:458",
+      "one_map_name": "Gadhdhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "GDh:Hoadedhdhoo",
+      "locality": "Hoadedhdhoo",
+      "atoll": "GDh",
+      "population": 885,
+      "year": 2022,
+      "island_id": "island:483",
+      "one_map_name": "Hoan'dehdhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "GDh:Madaveli",
+      "locality": "Madaveli",
+      "atoll": "GDh",
+      "population": 1219,
+      "year": 2022,
+      "island_id": "island:607",
+      "one_map_name": "Madaveli",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "GDh:Nadallaa",
+      "locality": "Nadallaa",
+      "atoll": "GDh",
+      "population": 581,
+      "year": 2022,
+      "island_id": "island:545",
+      "one_map_name": "Nadellaa",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "GDh:Rathafandhoo",
+      "locality": "Rathafandhoo",
+      "atoll": "GDh",
+      "population": 431,
+      "year": 2022,
+      "island_id": "island:584",
+      "one_map_name": "Rathafandhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "GDh:Thinadhoo",
+      "locality": "Thinadhoo",
+      "atoll": "GDh",
+      "population": 6217,
+      "year": 2022,
+      "island_id": "island:470",
+      "one_map_name": "Thinadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "GDh:Vaadhoo",
+      "locality": "Vaadhoo",
+      "atoll": "GDh",
+      "population": 516,
+      "year": 2022,
+      "island_id": "island:510",
+      "one_map_name": "Vaadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "Gn:Fuvahmulah",
+      "locality": "Fuvahmulah",
+      "atoll": "Gn",
+      "population": 9177,
+      "year": 2022,
+      "island_id": "island:1334",
+      "one_map_name": "Fuvahmulah",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "S:Feydhoo",
+      "locality": "Feydhoo",
+      "atoll": "S",
+      "population": 4289,
+      "year": 2022,
+      "island_id": "island:1129",
+      "one_map_name": "Feydhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "S:Hithadhoo",
+      "locality": "Hithadhoo",
+      "atoll": "S",
+      "population": 13759,
+      "year": 2022,
+      "island_id": "island:1152",
+      "one_map_name": "Hithadhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "S:Hulhudhoo",
+      "locality": "Hulhudhoo",
+      "atoll": "S",
+      "population": 1182,
+      "year": 2022,
+      "island_id": "island:1560",
+      "one_map_name": "Addu Hulhudhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "S:Maradhoo",
+      "locality": "Maradhoo",
+      "atoll": "S",
+      "population": 2542,
+      "year": 2022,
+      "island_id": "island:1131",
+      "one_map_name": "Maradhoo",
+      "mapping": "matched_atoll_island_name"
+    },
+    {
+      "source_record_id": "S:Maradhoo-Feydhoo",
+      "locality": "Maradhoo-Feydhoo",
+      "atoll": "S",
+      "population": 1398,
+      "year": 2022,
+      "island_id": "island:1130",
+      "one_map_name": "Maradhoofeydhoo",
+      "mapping": "matched_atoll_name_alias"
+    },
+    {
+      "source_record_id": "S:Meedhoo",
+      "locality": "Meedhoo",
+      "atoll": "S",
+      "population": 1892,
+      "year": 2022,
+      "island_id": "island:1559",
+      "one_map_name": "Addu Meedhoo",
+      "mapping": "matched_atoll_name_alias"
+    }
+  ],
+  "greater_male": [
+    {
+      "island_id": "island:1443",
+      "name": "Malé",
+      "year": 2022,
+      "basis": "resident_population",
+      "source": "MBS Census 2022 P5",
+      "source_url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2023/07/P5.xlsx",
+      "status": "census",
+      "total": 137238,
+      "school_age": null,
+      "early_childhood": null,
+      "older_adult": null,
+      "working_age": null,
+      "by_age_sex": {},
+      "by_sex": {
+        "both": 137238,
+        "female": 55211,
+        "male": 82027
+      },
+      "by_nationality": {
+        "total": 137238,
+        "Maldivian": 100614,
+        "foreign": 36624
+      },
+      "record_count": 36,
+      "demographic_breakdown": false,
+      "localities": [
+        "Galolhu",
+        "Henveiru",
+        "Maafannu",
+        "Machchangolhi"
+      ],
+      "qualification": "Census 2022 enumeration wards/phases combined for this island; excludes the unallocatable multi-island harbour row. This is a census count, not a current projection."
+    },
+    {
+      "island_id": "island:1442",
+      "name": "Hulhumalé",
+      "year": 2022,
+      "basis": "resident_population",
+      "source": "MBS Census 2022 P5",
+      "source_url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2023/07/P5.xlsx",
+      "status": "census",
+      "total": 65714,
+      "school_age": null,
+      "early_childhood": null,
+      "older_adult": null,
+      "working_age": null,
+      "by_age_sex": {},
+      "by_sex": {
+        "both": 65714,
+        "female": 28586,
+        "male": 37128
+      },
+      "by_nationality": {
+        "total": 65714,
+        "Maldivian": 53129,
+        "foreign": 12585
+      },
+      "record_count": 18,
+      "demographic_breakdown": false,
+      "localities": [
+        "Hulhumaale Phase 1",
+        "Hulhumaale Phase 2"
+      ],
+      "qualification": "Census 2022 enumeration wards/phases combined for this island; excludes the unallocatable multi-island harbour row. This is a census count, not a current projection."
+    },
+    {
+      "island_id": "island:1382",
+      "name": "Vilin'gili",
+      "year": 2022,
+      "basis": "resident_population",
+      "source": "MBS Census 2022 P5",
+      "source_url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2023/07/P5.xlsx",
+      "status": "census",
+      "total": 6755,
+      "school_age": null,
+      "early_childhood": null,
+      "older_adult": null,
+      "working_age": null,
+      "by_age_sex": {},
+      "by_sex": {
+        "both": 6755,
+        "female": 3174,
+        "male": 3581
+      },
+      "by_nationality": {
+        "total": 6755,
+        "Maldivian": 5971,
+        "foreign": 784
+      },
+      "record_count": 9,
+      "demographic_breakdown": false,
+      "localities": [
+        "Vilimaale"
+      ],
+      "qualification": "Census 2022 enumeration wards/phases combined for this island; excludes the unallocatable multi-island harbour row. This is a census count, not a current projection."
+    },
+    {
+      "island_id": "island:1483",
+      "name": "Hulhule",
+      "year": 2022,
+      "basis": "resident_population",
+      "source": "MBS Census 2022 P5",
+      "source_url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2023/07/P5.xlsx",
+      "status": "census",
+      "total": 802,
+      "school_age": null,
+      "early_childhood": null,
+      "older_adult": null,
+      "working_age": null,
+      "by_age_sex": {},
+      "by_sex": {
+        "both": 802,
+        "female": 41,
+        "male": 761
+      },
+      "by_nationality": {
+        "total": 802,
+        "Maldivian": 50,
+        "foreign": 752
+      },
+      "record_count": 9,
+      "demographic_breakdown": false,
+      "localities": [
+        "Hulhule"
+      ],
+      "qualification": "Census 2022 enumeration wards/phases combined for this island; excludes the unallocatable multi-island harbour row. This is a census count, not a current projection."
+    }
+  ],
+  "unassigned_qualified": "All other unavailable island-specific counts remain null, including resort/industrial-island coverage; no population is invented."
+}

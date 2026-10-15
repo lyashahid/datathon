@@ -1,0 +1,12 @@
+{
+  "content_type": "application/json",
+  "endpoint": "local normalized output",
+  "http_status": 200,
+  "parser_version": "normalization-v1",
+  "retrieved_at": "2026-10-13T12:17:20.010584+00:00",
+  "schema_version": 1,
+  "sha256": "dc09e122b3a68ec34a38ad4f730a3c5d73f4e81bcf90db8d6a0a8d9c94c2dd33",
+  "source": "Mobility Sandbox normalized provenance",
+  "source_record_id": null,
+  "status": "fresh"
+}

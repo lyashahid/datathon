@@ -1,0 +1,236 @@
+{
+  "version": "facility-review-validated-v1",
+  "validated_at": "2026-10-13T07:00:00Z",
+  "job_id": "deleg_0ce88116-accepted",
+  "errors": [],
+  "records": [
+    {
+      "facility_id": "facility:health:608",
+      "official_name": "S. Hulhumeedhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "discovery_urls": [
+        "https://api.openstreetmap.org/api/0.6/way/744245617/full.json",
+        "https://www.openstreetmap.org/way/744245617",
+        "https://nominatim.openstreetmap.org/search"
+      ],
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "evidence_note": "Official HEMS identity and island context agree with the live OSM facility object HMHC; category-compatible tags and island-level geometry were independently verified through the OSM object API.",
+      "follow_up": "None; preserve routine live verification.",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:744245617",
+          "osm_url": "https://www.openstreetmap.org/way/744245617",
+          "name": "HMHC",
+          "island": "Hulhumeedhoo / Addu Meedhoo context",
+          "coordinates": [
+            73.22732822,
+            -0.58820616
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "name": "HMHC",
+            "operator": "Ministry of Health, Rep of Maldives",
+            "operator:type": "government"
+          },
+          "status": "live"
+        }
+      ],
+      "selected_candidate": {
+        "osm_object_id": "osm:way:744245617",
+        "osm_url": "https://www.openstreetmap.org/way/744245617",
+        "name": "HMHC",
+        "island": "Hulhumeedhoo / Addu Meedhoo context",
+        "coordinates": [
+          73.22732822,
+          -0.58820616
+        ],
+        "tags": {
+          "amenity": "hospital",
+          "healthcare": "hospital",
+          "name": "HMHC",
+          "operator": "Ministry of Health, Rep of Maldives",
+          "operator:type": "government"
+        }
+      },
+      "live_verification": {
+        "osm_object_id": "osm:way:744245617",
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/way/744245617/full.json"
+      },
+      "derived_tags": {
+        "amenity": "hospital",
+        "healthcare": "hospital",
+        "name": "HMHC",
+        "operator": "Ministry of Health, Rep of Maldives",
+        "operator:type": "government"
+      },
+      "derived_coordinates": [
+        73.22732822,
+        -0.58820616
+      ],
+      "validation": {
+        "checks": {
+          "single_candidate": true,
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        },
+        "approved": true
+      }
+    },
+    {
+      "facility_id": "facility:health:609",
+      "official_name": "S. Feydhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "discovery_urls": [
+        "https://api.openstreetmap.org/api/0.6/way/555723531/full.json",
+        "https://www.openstreetmap.org/way/555723531",
+        "https://nominatim.openstreetmap.org/search"
+      ],
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "evidence_note": "Official HEMS identity and island context agree with the live OSM facility object Feydhoo Health Centre; category-compatible tags and island-level geometry were independently verified through the OSM object API.",
+      "follow_up": "None; preserve routine live verification.",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:555723531",
+          "osm_url": "https://www.openstreetmap.org/way/555723531",
+          "name": "Feydhoo Health Centre",
+          "island": "Feydhoo",
+          "coordinates": [
+            73.1360225,
+            -0.6812083727272727
+          ],
+          "tags": {
+            "building": "hospital",
+            "name": "Feydhoo Health Centre"
+          },
+          "status": "live"
+        }
+      ],
+      "selected_candidate": {
+        "osm_object_id": "osm:way:555723531",
+        "osm_url": "https://www.openstreetmap.org/way/555723531",
+        "name": "Feydhoo Health Centre",
+        "island": "Feydhoo",
+        "coordinates": [
+          73.1360225,
+          -0.6812083727272727
+        ],
+        "tags": {
+          "building": "hospital",
+          "name": "Feydhoo Health Centre"
+        }
+      },
+      "live_verification": {
+        "osm_object_id": "osm:way:555723531",
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/way/555723531/full.json"
+      },
+      "derived_tags": {
+        "building": "hospital",
+        "name": "Feydhoo Health Centre"
+      },
+      "derived_coordinates": [
+        73.1360225,
+        -0.6812083727272727
+      ],
+      "validation": {
+        "checks": {
+          "single_candidate": true,
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        },
+        "approved": true
+      }
+    },
+    {
+      "facility_id": "facility:health:643",
+      "official_name": "Noonu Maafaru Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "discovery_urls": [
+        "https://api.openstreetmap.org/api/0.6/way/1201906805/full.json",
+        "https://www.openstreetmap.org/way/1201906805",
+        "https://nominatim.openstreetmap.org/search"
+      ],
+      "confidence": "medium-high",
+      "decision": "reviewed_osm_match",
+      "evidence_note": "Official HEMS identity and island context agree with the live OSM facility object Maafaru Health Center; category-compatible tags and island-level geometry were independently verified through the OSM object API.",
+      "follow_up": "None; preserve routine live verification.",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:1201906805",
+          "osm_url": "https://www.openstreetmap.org/way/1201906805",
+          "name": "Maafaru Health Center",
+          "island": "Maafaru",
+          "coordinates": [
+            73.47868966,
+            5.8322134
+          ],
+          "tags": {
+            "building": "yes",
+            "healthcare": "yes",
+            "healthcare:speciality": "general",
+            "name": "Maafaru Health Center"
+          },
+          "status": "live"
+        }
+      ],
+      "selected_candidate": {
+        "osm_object_id": "osm:way:1201906805",
+        "osm_url": "https://www.openstreetmap.org/way/1201906805",
+        "name": "Maafaru Health Center",
+        "island": "Maafaru",
+        "coordinates": [
+          73.47868966,
+          5.8322134
+        ],
+        "tags": {
+          "building": "yes",
+          "healthcare": "yes",
+          "healthcare:speciality": "general",
+          "name": "Maafaru Health Center"
+        }
+      },
+      "live_verification": {
+        "osm_object_id": "osm:way:1201906805",
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/way/1201906805/full.json"
+      },
+      "derived_tags": {
+        "building": "yes",
+        "healthcare": "yes",
+        "healthcare:speciality": "general",
+        "name": "Maafaru Health Center"
+      },
+      "derived_coordinates": [
+        73.47868966,
+        5.8322134
+      ],
+      "validation": {
+        "checks": {
+          "single_candidate": true,
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        },
+        "approved": true
+      }
+    }
+  ]
+}

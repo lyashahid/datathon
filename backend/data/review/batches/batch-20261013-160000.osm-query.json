@@ -1,0 +1,167 @@
+{
+  "version": "facility-osm-query-v1",
+  "queried_at": "2026-10-13T10:48:49.144826Z",
+  "record_count": 40,
+  "island_query_count": 3,
+  "results": [
+    {
+      "island_key": "island:1471",
+      "facility_ids": [
+        "facility:health:524"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](4.1194904,73.4348107,4.1234191,73.4389268);nwr[\"healthcare\"](4.1194904,73.4348107,4.1234191,73.4389268);nwr[\"office\"=\"educational_institution\"](4.1194904,73.4348107,4.1234191,73.4389268);nwr[\"building\"~\"^(hospital|clinic|school)$\"](4.1194904,73.4348107,4.1234191,73.4389268););out center tags;",
+      "overpass": {
+        "query_hash": "00e30e35a2def63c294b177d5faa63bc041b77570713d5503e4712040efee590",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "00e30e35a2def63c294b177d5faa63bc041b77570713d5503e4712040efee590",
+          "retrieved_at": "2026-10-13T10:46:40.449532Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "aea8930bae3b39b2ed4468256d2c1a3bbee2c3fee58efcdc5614b557115b2f19",
+          "expires_at": "2026-10-14T10:46:40.449552+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T10:45:08Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:524": {
+          "query_hash": "629c5824c1282399dc5a00597845365703527fd3298fa0de20c51b7762eb0219",
+          "cached": false,
+          "query": {
+            "q": "Velassaru Medical Center, Velassaru, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.4348107,4.1234191,73.4389268,4.1194904",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "629c5824c1282399dc5a00597845365703527fd3298fa0de20c51b7762eb0219",
+            "retrieved_at": "2026-10-13T10:46:40.453511Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Velassaru+Medical+Center%2C+Velassaru%2C+Maldives&viewbox=73.4348107%2C4.1234191%2C73.4389268%2C4.1194904",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:31",
+      "facility_ids": [
+        "facility:health:767"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](4.2578826,72.9664942,4.2626369,72.9858214);nwr[\"healthcare\"](4.2578826,72.9664942,4.2626369,72.9858214);nwr[\"office\"=\"educational_institution\"](4.2578826,72.9664942,4.2626369,72.9858214);nwr[\"building\"~\"^(hospital|clinic|school)$\"](4.2578826,72.9664942,4.2626369,72.9858214););out center tags;",
+      "overpass": {
+        "query_hash": "0d517348233a084b0d8720fe6ed85f381e59bffa14fd01261cd6fb6bad27d287",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "0d517348233a084b0d8720fe6ed85f381e59bffa14fd01261cd6fb6bad27d287",
+          "retrieved_at": "2026-10-13T10:47:25.009090Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "dd4ad551f698d3dfe59d372c21fa7307d52121740fc10037442e4c2058ea5648",
+          "expires_at": "2026-10-14T10:47:25.009249+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T10:46:09Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:767": {
+          "query_hash": "81e9430fdb3fafb29bf303b5e367ca34a34d9cccd4b76ab1da9274c5bcf24ae5",
+          "cached": false,
+          "query": {
+            "q": "Kuramathi Medical Centre, Kuramathi, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.9664942,4.2626369,72.9858214,4.2578826",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "81e9430fdb3fafb29bf303b5e367ca34a34d9cccd4b76ab1da9274c5bcf24ae5",
+            "retrieved_at": "2026-10-13T10:47:25.013098Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Kuramathi+Medical+Centre%2C+Kuramathi%2C+Maldives&viewbox=72.9664942%2C4.2626369%2C72.9858214%2C4.2578826",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:57",
+      "facility_ids": [
+        "facility:health:655"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.6158570,72.7219200,3.6206023,72.7248266);nwr[\"healthcare\"](3.6158570,72.7219200,3.6206023,72.7248266);nwr[\"office\"=\"educational_institution\"](3.6158570,72.7219200,3.6206023,72.7248266);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.6158570,72.7219200,3.6206023,72.7248266););out center tags;",
+      "overpass": {
+        "query_hash": "739a3b081e022377a5a9d55364afae8b4ab5843864237d511a90d263ab88d697",
+        "cached": false,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "739a3b081e022377a5a9d55364afae8b4ab5843864237d511a90d263ab88d697",
+          "retrieved_at": "2026-10-13T10:48:48.269531Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "f584004cbda3338171b31d0eb9efb8e15e2a534ba417d2821b806e9374c63a39",
+          "expires_at": "2026-10-14T10:48:48.269598+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T10:47:12Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:655": {
+          "query_hash": "0faddfbb93bf3d2a5b62f19c45509861f73b4918a3904a9e1c97ce07ff478cfb",
+          "cached": false,
+          "query": {
+            "q": "Rangali Clinic, Rangali, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.7219200,3.6206023,72.7248266,3.6158570",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "0faddfbb93bf3d2a5b62f19c45509861f73b4918a3904a9e1c97ce07ff478cfb",
+            "retrieved_at": "2026-10-13T10:48:48.273683Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Rangali+Clinic%2C+Rangali%2C+Maldives&viewbox=72.7219200%2C3.6206023%2C72.7248266%2C3.6158570",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    }
+  ]
+}

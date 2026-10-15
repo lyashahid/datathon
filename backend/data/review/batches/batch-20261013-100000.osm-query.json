@@ -1,0 +1,242 @@
+{
+  "version": "facility-osm-query-v1",
+  "queried_at": "2026-10-13T09:21:18.807479Z",
+  "record_count": 40,
+  "island_query_count": 3,
+  "results": [
+    {
+      "island_key": "island:1456",
+      "facility_ids": [
+        "facility:health:1354"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](4.1771974,73.4254055,4.1878146,73.4523848);nwr[\"healthcare\"](4.1771974,73.4254055,4.1878146,73.4523848);nwr[\"office\"=\"educational_institution\"](4.1771974,73.4254055,4.1878146,73.4523848);nwr[\"building\"~\"^(hospital|clinic|school)$\"](4.1771974,73.4254055,4.1878146,73.4523848););out center tags;",
+      "overpass": {
+        "query_hash": "36366121b5f5a6c70403c4a4bac3ee6f6ae1edb208a7ce0d521c3d5c44852d07",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "36366121b5f5a6c70403c4a4bac3ee6f6ae1edb208a7ce0d521c3d5c44852d07",
+          "retrieved_at": "2026-10-13T09:19:41.044200Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "e29e710143acbee44e65f73ac140995c935b213f71ef4e2712962bbf07ce1438",
+          "expires_at": "2026-10-14T09:19:41.044224+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T09:17:47Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:1354": {
+          "query_hash": "63839b9ae38c0315e33941de489a38c67648ec6dcc7bf7be01da6897a7c6f84a",
+          "cached": false,
+          "query": {
+            "q": "THILAFUSHI GENERAL CLINIC, Thilafushi, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.4254055,4.1878146,73.4523848,4.1771974",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "63839b9ae38c0315e33941de489a38c67648ec6dcc7bf7be01da6897a7c6f84a",
+            "retrieved_at": "2026-10-13T09:19:41.048223Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=THILAFUSHI+GENERAL+CLINIC%2C+Thilafushi%2C+Maldives&viewbox=73.4254055%2C4.1878146%2C73.4523848%2C4.1771974",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:196",
+      "facility_ids": [
+        "facility:health:103"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](5.0620678,73.0292055,5.0643848,73.0334185);nwr[\"healthcare\"](5.0620678,73.0292055,5.0643848,73.0334185);nwr[\"office\"=\"educational_institution\"](5.0620678,73.0292055,5.0643848,73.0334185);nwr[\"building\"~\"^(hospital|clinic|school)$\"](5.0620678,73.0292055,5.0643848,73.0334185););out center tags;",
+      "overpass": {
+        "query_hash": "78ffd20800f151463fcdf6932e53912eea60639f4d499d40f9751f4cf8f691b9",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "78ffd20800f151463fcdf6932e53912eea60639f4d499d40f9751f4cf8f691b9",
+          "retrieved_at": "2026-10-13T09:21:16.338939Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "e1982b5c459836030a0e23e3a0d792089d105137aa7c25ad2eecd292eabc1652",
+          "expires_at": "2026-10-14T09:21:16.338970+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T09:19:51Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:103": {
+          "query_hash": "2064d22053979ffd4f8d20247bb325f566199775e79395dd57f906fc68d6906b",
+          "cached": false,
+          "query": {
+            "q": "Miriandhoo Medical Services, Miriandhoo, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.0292055,5.0643848,73.0334185,5.0620678",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "2064d22053979ffd4f8d20247bb325f566199775e79395dd57f906fc68d6906b",
+            "retrieved_at": "2026-10-13T09:21:16.343010Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Miriandhoo+Medical+Services%2C+Miriandhoo%2C+Maldives&viewbox=73.0292055%2C5.0643848%2C73.0334185%2C5.0620678",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:692",
+      "facility_ids": [
+        "facility:school:591"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](1.8772222,73.5267255,1.9430205,73.5526094);nwr[\"healthcare\"](1.8772222,73.5267255,1.9430205,73.5526094);nwr[\"office\"=\"educational_institution\"](1.8772222,73.5267255,1.9430205,73.5526094);nwr[\"building\"~\"^(hospital|clinic|school)$\"](1.8772222,73.5267255,1.9430205,73.5526094););out center tags;",
+      "overpass": {
+        "query_hash": "d43be3a578697ce0ddc73a55ef8a9d73cf99875b177c0fbd94626484d0fd2727",
+        "cached": true,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "d43be3a578697ce0ddc73a55ef8a9d73cf99875b177c0fbd94626484d0fd2727",
+          "retrieved_at": "2026-10-13T08:52:17.189698Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "0e1bd3c463df790f46a106d2fbe2ac400c225c7b5d8f5d549743fc0bd0bbdd39",
+          "expires_at": "2026-10-14T08:52:17.189741+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:50:49Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "way",
+              "id": 364839738,
+              "center": {
+                "lat": 1.9316287,
+                "lon": 73.542556
+              },
+              "tags": {
+                "building": "school",
+                "name": "Ihadhdhoo School"
+              }
+            },
+            {
+              "type": "way",
+              "id": 364840338,
+              "center": {
+                "lat": 1.9215892,
+                "lon": 73.5447318
+              },
+              "tags": {
+                "addr:city": "Mathimaradhoo",
+                "addr:street": "Causeway",
+                "amenity": "hospital",
+                "name": "L. Gan Regional Hospital"
+              }
+            },
+            {
+              "type": "way",
+              "id": 364882220,
+              "center": {
+                "lat": 1.9202709,
+                "lon": 73.5469874
+              },
+              "tags": {
+                "building": "school",
+                "name": "Hamad Bin Khaleefa Al-Thani School"
+              }
+            },
+            {
+              "type": "way",
+              "id": 364882221,
+              "center": {
+                "lat": 1.9198217,
+                "lon": 73.5466406
+              },
+              "tags": {
+                "amenity": "school",
+                "name": "Hamadh School Ground"
+              }
+            },
+            {
+              "type": "way",
+              "id": 364882222,
+              "center": {
+                "lat": 1.9198497,
+                "lon": 73.5453281
+              },
+              "tags": {
+                "building": "school",
+                "name": "Dhanaal (Hamadh School)"
+              }
+            },
+            {
+              "type": "way",
+              "id": 364882237,
+              "center": {
+                "lat": 1.920078,
+                "lon": 73.5435041
+              },
+              "tags": {
+                "building": "hospital",
+                "name": "Guraha"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:school:591": {
+          "query_hash": "9debfc0e53ea56a2d65ef323a4722baf4a2a96b94fb05c2889abd76691f115da",
+          "cached": false,
+          "query": {
+            "q": "Hamad Bin Khaleefa Al Thani School, Gan, Laamu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5267255,1.9430205,73.5526094,1.8772222",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "9debfc0e53ea56a2d65ef323a4722baf4a2a96b94fb05c2889abd76691f115da",
+            "retrieved_at": "2026-10-13T09:21:18.312772Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Hamad+Bin+Khaleefa+Al+Thani+School%2C+Gan%2C+Laamu%2C+Maldives&viewbox=73.5267255%2C1.9430205%2C73.5526094%2C1.8772222",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    }
+  ]
+}

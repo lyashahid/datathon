@@ -1,62 +1,52 @@
 # Monthly forecast issue and review workflow
 
-The map's passenger outlook is an exploratory aggregate planning aid. Select a target month explicitly. October 2026 is a **nowcast of the current month**, despite four months from the ferry actual cutoff and five from the bus cutoff. November is a future forecast at five/six months respectively. Dashed intermediate months are estimates; they do not fill missing actuals. Unsupported horizons fail visibly.
+Passenger outlook is an aggregate planning aid under **Analytics → Passenger outlook**. Choose a target month and apply it before freezing a forecast. The target's distance from each category's trusted actual cutoff determines its horizon. A current-month estimate is a nowcast; a later month is a forecast. Dashed intermediate months remain estimates. The checked source ends in June 2026 for ferry endpoints and May 2026 for bus.
 
-## Freeze before evaluating
+## Current statistical policy
 
-The **Freeze issue** button makes a deliberate POST to `/api/prediction/issues`. GET requests never issue forecasts. The CLI offers the same operation:
+FastAPI runs `monthly-locked-selection-calibration-v4`. Nine fixed baseline/statistical methods and a selection-weighted ensemble compete at each 1–12 month horizon. Expanding fits receive only their observed prefix. Earlier origins select the policy; an independent block of 8–12 origins calibrates its range where enough history remains; six later origins evaluate the frozen choice. Horizon-dependent embargoes separate each partition's targets from the next partition's first training cutoff. Complexity must improve earlier mean absolute error by at least 5% over the best simple baseline. Later answers cannot change the policy or range.
 
-```powershell
-node scripts/issue-monthly-forecast.mjs 2026-11
-```
+Nominal 80% empirical ranges use an absolute-calibration-error order statistic. Small samples, serial dependence and drift prevent an assured probability statement. Measured later coverage, bias, error and baseline skill remain visible, including poor results. With insufficient independent calibration history, point forecasts remain available and empirical ranges are unavailable.
 
-Each issue in `data/public/forecast-issues/` preserves all three source-defined categories, their monthly history and actual cutoffs, the selected method and four target-specific baseline estimates, retrospective diagnostics, range, target kind, actual issue timestamp, model/transform version, checked date, latest known publication date, and the four original workbook SHA-256 receipts and publication-sheet labels. A separate fingerprint covers the prepared monthly series plus provenance; unrelated private bus-capture receipts do not change it.
+These are revised-vintage chronological diagnostics. The historical data were already explored; original publication-time vintages and release-time lags have not been reconstructed. The embargo does not resolve that uncertainty. See [the full analysis](data-analysis-and-prediction.md) for source fitness and measured results.
 
-The identity is deterministic for the Maldives issue day, target, monthly source fingerprint and model version. Repeated or concurrent requests return the original complete record. Writing uses a temporary file and an exclusive hard link; an existing issue is never replaced. Integrity hashes detect accidental changes, but are **not a trusted third-party signature**. A model change requires a new declared model version. If source preparation changes, record a new transform version and changed source receipts.
+## Freeze and inspect
 
-Deployment needs persistent writable storage for this directory and controlled access to issuance; an ephemeral/serverless disk cannot preserve this workflow. Back up the issue and score directories. The current local competition prototype has no authenticated operator roles; do not expose unrestricted issuance as an agency production service. No periodic capture, refresh, issuance or scoring is scheduled.
+**Freeze forecast** POSTs `/api/backend/forecasts/issues`, proxied to `POST /api/v1/forecasts/issues`, with `{ "target_month": "2026-11" }` and optional `series_ids`. GET requests never issue forecasts. Read receipts through `GET /api/v1/forecasts/issues` or `/api/v1/forecasts/issues/{issue_id}`. Frozen forecasts exports the receipt JSON. The current app has no forecast-issuance CLI or score-persistence POST endpoint.
 
-## Retrospective checks are not prospective validation
+New issues live under `backend/data/metadata/forecast-issues/`. Each preserves source history/provenance, model version, policy parameters, estimates, ten candidate comparisons, chronology, diagnostic rows, range, target and actual issue timestamp. Deterministic identity combines Maldives issue day, target, source fingerprint and model version. Repeating an unchanged issue returns its first record. A temporary file and exclusive hard link prevent replacement. Integrity hashes detect changed contents; they are local checksums.
 
-Model selection uses earlier expanding reference-month origins, with a horizon-dependent embargo so selected outcomes do not extend beyond the first later evaluation origin. Six later origins measure MAE and WAPE. However, the history was previously explored and uses the currently checked revised workbooks. Original publication-time availability and all historical revisions were not reconstructed. The embargo therefore does not resolve publication lag or revision-vintage bias.
+Earlier receipts in `data/public/forecast-issues/` are retained and integrity-checked with their original canonicalization. The UI labels different versions **Historical model version**. Their original selections, ranges and results belong to that historical policy and are never recomputed or described as v4 results. Create a new issue to preserve a new model/source vintage.
 
-For the checked October target:
+## Review new passenger publications
 
-| Category              | Selected method |       MAE |     WAPE | Latest-month benchmark WAPE | Range covered |
-| --------------------- | --------------- | --------: | -------: | --------------------------: | ------------: |
-| Male' (VM Ferry)      | Six-month mean  | 10,899.08 |  4.8182% |                     6.6230% |         2 / 6 |
-| Villigili' (VM Ferry) | Six-month mean  | 11,316.67 |  4.9780% |                     6.5994% |         2 / 6 |
-| Male'/Hulhumale bus   | Seasonal naive  | 36,925.17 | 12.3298% |                     4.8259% |         3 / 6 |
+Under **Data & method**, download **Source contract**, prepare a complete JSON snapshot from the official MBS publication, then **Validate and stage**. FastAPI routes are:
 
-The selected bus method loses to **all three other tested methods** on these later origins. Do not retune on these outcomes and call the same rows independent validation. The 10th–90th earlier-residual ranges have poor later coverage; they are neither calibrated probability intervals nor assured budget bounds. The presentation defaults to source order rather than choosing its headline using the lowest later error.
+- `GET /api/v1/forecasts/sources/template`: active full source contract without its runtime receipt.
+- `GET /api/v1/forecasts/sources`: active receipt and staged/reviewed version summaries.
+- `POST /api/v1/forecasts/sources/stage`: `{ "source": { ... } }`; validates without activating.
+- `POST /api/v1/forecasts/sources/{version_id}/accept`: meaningful `review_note` and explicit `accept_revisions` when history changed.
 
-Performance changes with the selected target horizon. The real November issue frozen on 11 October 2026 chooses a three-month mean for each ferry and seasonal naive for the bus. All three selected methods lose to the latest-month benchmark at that horizon: Malé WAPE 6.1710% versus 6.0754%; Villigili 6.5250% versus 5.9700%; bus 12.3298% versus 9.5639%. These are historical horizon-specific comparisons, not measured November outcomes. Its scores are pending.
+Validation requires official HTTPS URLs and SHA-256 receipts, matching category IDs/name/mode/geography/unit, finite nonnegative counts, continuous unique months, no removal of previously observed months, a nonfuture publication date and timezone-aware checked date. The UI exposes every added month and historical previous/incoming value. Repeated new counts are flagged. Validation does not independently authenticate uploaded workbook contents: accepted versions are explicitly user-reviewed publication snapshots.
 
-## Later actuals and revisions
+Versions and review notes live under `backend/data/metadata/passenger-sources/`; an atomic active pointer selects the reviewed source. Acceptance updates forecasts, Data Studio and analysis together. The original `data/public/prediction-source.json` and frozen forecasts stay unchanged. If the active version changes after staging, restage against its new baseline. Back up both runtime directories to retain decisions.
 
-GET `/api/prediction/issues` shows each frozen issue and its score status against the currently loaded checked monthly source. Target observations not yet in that source stay **pending** with null actual/error. Scoring requires matching category name, geography and unit and a checked publication dated after the actual issue timestamp. Date-only publication evidence is treated conservatively from midnight; a same-day release cannot prove that its actual was unavailable at the issue instant.
+## Later observations
 
-An eligible observation produces a **later-vintage score**: absolute error for the frozen selected estimate and each frozen benchmark, plus range coverage. This is an issuance-before-later-publication comparison. It is not a claim that the observed value is the first official release or that one issue establishes general forecast accuracy. The code cannot recover a missed first release from later revised workbooks.
+Issue GET responses score against the active checked passenger source. Missing targets remain **pending** with null actual/error. Scoring requires matching category/geography/mode/unit and a publication date later than the issue date. Same-day evidence is treated conservatively. Eligible observations receive a later-vintage score with frozen selected/baseline absolute errors and range coverage. This is not first-release accuracy.
 
-When checked eligible actuals exist, **Preserve this later-vintage score receipt** appends a separate receipt under `data/public/forecast-issues/scores/`, pinned to the actual-source fingerprint/publication/checked timestamp and the unchanged original issue. The equivalent CLI is:
-
-```powershell
-node scripts/issue-monthly-forecast.mjs ISSUE_ID score
-```
-
-Pending scores cannot be recorded. Repeating the same scoring vintage preserves its first receipt. A newly checked actual vintage creates a new receipt; previous scores remain inspectable through the GET API. Do not overwrite the issued forecast or earlier actual-vintage scores when values change. Claims about first-release accuracy require a separate documented complete release archive, which this prototype does not have.
-
-## Operator-owned decision
-
-The resource review captures an accountable reviewer/team, explicit decision purpose, review date, operator-entered consequences of over/under-planning and a checklist. **Prepare review record** shows the accountable owner, completed checks and next evidence requests in the app; downloading is optional. The session record is not permanently stored, so download it to retain a copy. Downloaded JSON carries source provenance, selected estimate and benchmark estimates, completed checks and outstanding evidence. Changing series or target resets evidence checks and scope-specific date/cost inputs. This record prepares a review; it is not an approval to change services.
-
-Before changing resources, MTCC/RTL planners need category reconciliation, current route/direction/peak-period loads, fleet/staffing availability, costs and lead time. MBS can review the statistical definitions and publication trail. No passengers-per-bus, peak load, unique people, terminal boarding direction, street demand or congestion is inferred from these monthly counts. **Show this geography on map** delegates to the shared atlas context; these aggregates cannot be allocated to individual streets or hexagons.
+The migration exposes dynamic scores and exports their source fingerprint/publication/checked date with the receipt. Existing historical score files remain preserved on disk. Retaining an immutable first-release actual archive is the next requirement for stronger prospective validation. No refresh, issuance or acceptance is automatically scheduled.
 
 ## Verification
 
 ```powershell
-npx vitest run src/lib/prediction src/lib/server/data/predictionSource.test.ts src/lib/server/data/predictionSourceLedger.test.ts
+uv run --directory backend pytest tests/test_forecasts.py tests/test_datasets.py -q
 npm run check
+$env:MOBILITY_QA_URL = 'http://127.0.0.1:5173'
+node scripts/verify-forecast-data-browser.mjs
+uv run --directory backend python ../scripts/analyse-mobility-data.py
 ```
 
-Tests independently recompute six-row MAE/WAPE and historical range coverage from published-source backtest rows, verify frozen benchmark arithmetic, explicit horizons and nowcast labeling, chronology/no future evidence, pending and mismatched categories, concurrent never-overwrite issuance, integrity rejection and append-only later-vintage scoring. Future actuals used in workflow tests are synthetic fixtures only; no test actuals are written into the public source or issue ledger.
+Tests cover partition separation, calibration independence, ensemble/complexity rules, metric arithmetic, invalid counts, immutable issuance, later-vintage scoring, import/revision validation and accepted versions reaching Data Studio. Import acceptance tests use isolated temporary directories and synthetic counts. Browser checks use real app responses.
+
+Counts measure monthly movements, not unique residents, occupancy, peak loads, origin–destination demand or vehicle ETA. Resource decisions need dated operational observations with matching route/direction/time and capacity definitions; live snapshots cannot supply them.

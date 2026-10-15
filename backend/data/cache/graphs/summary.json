@@ -1,0 +1,25 @@
+{
+  "air": {
+    "edge_count": 34,
+    "node_count": 34
+  },
+  "demand": {
+    "anchor_count": 1865
+  },
+  "land": {
+    "edge_count": 137842,
+    "island_count": 431,
+    "node_count": 59686
+  },
+  "limitations": [
+    "OSM ferry relations are connectivity candidates, not verified schedules.",
+    "Airport graph contains airport-to-island access gateways, not flight schedules.",
+    "Demand anchors are approximate OSM geometry and have no allocated population until MBS island mapping is approved."
+  ],
+  "marine": {
+    "edge_count": 35,
+    "node_count": 71,
+    "route_relation_count": 7
+  },
+  "routing_version": "routing-v1"
+}

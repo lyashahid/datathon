@@ -1,0 +1,12 @@
+{
+  "version": "online-facility-review-batch-v2",
+  "reviewed_at": "2026-10-13T06:04:05.423013Z",
+  "batch_id": "batch-20261013-102806-01",
+  "facility_ids": [
+    "facility:health:502"
+  ],
+  "confirmed_promotions": [
+    "facility:health:502"
+  ],
+  "provisional_candidates": []
+}

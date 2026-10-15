@@ -1,0 +1,12 @@
+{
+  "content_type": "application/json",
+  "endpoint": "local derived output",
+  "http_status": 200,
+  "parser_version": "routing-v1",
+  "retrieved_at": "2026-10-13T12:17:18.213648+00:00",
+  "schema_version": 1,
+  "sha256": "aaf0de2cbaf858de54eab4b7fe13a8fba9827903704530a1e3df8eb46e468f5b",
+  "source": "Mobility Sandbox OSM demand anchors",
+  "source_record_id": null,
+  "status": "fresh"
+}

@@ -1,0 +1,268 @@
+{
+  "version": "facility-review-validated-v1",
+  "validated_at": "2026-10-13T08:19:05.007011Z",
+  "job_id": "batch-20261013-073000-02",
+  "errors": [],
+  "records": [
+    {
+      "facility_id": "facility:health:738",
+      "official_name": "Shaviyani Komandoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:739",
+      "official_name": "Shaviyani Kan'ditheemu Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:740",
+      "official_name": "Shaviyani Narudhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:741",
+      "official_name": "Shaviyani Feydhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:745",
+      "official_name": "Haa Alifu Filladhoo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:749",
+      "official_name": "Amina Dhiyo Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:750",
+      "official_name": "M. Veyvah Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:754",
+      "official_name": "Amina Rehendhi Health Centre",
+      "category": "health_center",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:460",
+      "official_name": "Makunudhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/460",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:461",
+      "official_name": "Nellaidhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/461",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    }
+  ]
+}

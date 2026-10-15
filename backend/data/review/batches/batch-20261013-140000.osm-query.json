@@ -1,0 +1,1007 @@
+{
+  "version": "facility-osm-query-v1",
+  "queried_at": "2026-10-13T10:35:16.941974Z",
+  "record_count": 40,
+  "island_query_count": 8,
+  "results": [
+    {
+      "island_key": "island:1031",
+      "facility_ids": [
+        "facility:health:333"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](5.6064445,72.9485459,5.6096624,72.9542120);nwr[\"healthcare\"](5.6064445,72.9485459,5.6096624,72.9542120);nwr[\"office\"=\"educational_institution\"](5.6064445,72.9485459,5.6096624,72.9542120);nwr[\"building\"~\"^(hospital|clinic|school)$\"](5.6064445,72.9485459,5.6096624,72.9542120););out center tags;",
+      "overpass": {
+        "query_hash": "592fe5f78335824473e1e411d899a83e36e8f729d597284324933a7ad1743395",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "592fe5f78335824473e1e411d899a83e36e8f729d597284324933a7ad1743395",
+          "retrieved_at": "2026-10-13T10:13:22.587018Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "717e0d7d75f265e4a91bc414bd251387eb7f74d3c54ee9e64d5c1bf8218c8f5a",
+          "expires_at": "2026-10-14T10:13:22.587054+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T10:11:49Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:333": {
+          "query_hash": "b3c8e9d25d969b1e86c90ea9243bd94c5d1c48487aff1fb5bee16d1fb3399514",
+          "cached": false,
+          "query": {
+            "q": "Joali Muravandhoo Clinic, Muravandhoo, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.9485459,5.6096624,72.9542120,5.6064445",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "b3c8e9d25d969b1e86c90ea9243bd94c5d1c48487aff1fb5bee16d1fb3399514",
+            "retrieved_at": "2026-10-13T10:13:22.589413Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Joali+Muravandhoo+Clinic%2C+Muravandhoo%2C+Maldives&viewbox=72.9485459%2C5.6096624%2C72.9542120%2C5.6064445",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1092",
+      "facility_ids": [
+        "facility:health:359"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](5.4738762,72.9484445,5.4768166,72.9586394);nwr[\"healthcare\"](5.4738762,72.9484445,5.4768166,72.9586394);nwr[\"office\"=\"educational_institution\"](5.4738762,72.9484445,5.4768166,72.9586394);nwr[\"building\"~\"^(hospital|clinic|school)$\"](5.4738762,72.9484445,5.4768166,72.9586394););out center tags;",
+      "overpass": {
+        "query_hash": "0365cbd65ade344a2c4fd16f46e615dc155a65001ed2bfacfc764736be0820e2",
+        "cached": false,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "0365cbd65ade344a2c4fd16f46e615dc155a65001ed2bfacfc764736be0820e2",
+          "retrieved_at": "2026-10-13T10:15:29.110671Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "11acdf5501cad17ca54c697513b78838e0d9ab0e1c35604b48261f6b2086bb62",
+          "expires_at": "2026-10-14T10:15:29.110705+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T10:13:51Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:359": {
+          "query_hash": "8fd5afa10823f6cdba22431ea8d52c85f242d4f0c700b299ee804c2656c06376",
+          "cached": false,
+          "query": {
+            "q": "Dhigali Clinic, Dhigali, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.9484445,5.4768166,72.9586394,5.4738762",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "8fd5afa10823f6cdba22431ea8d52c85f242d4f0c700b299ee804c2656c06376",
+            "retrieved_at": "2026-10-13T10:15:29.114871Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Dhigali+Clinic%2C+Dhigali%2C+Maldives&viewbox=72.9484445%2C5.4768166%2C72.9586394%2C5.4738762",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1404",
+      "facility_ids": [
+        "facility:health:32"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](4.2834038,73.4258215,4.2860248,73.4282804);nwr[\"healthcare\"](4.2834038,73.4258215,4.2860248,73.4282804);nwr[\"office\"=\"educational_institution\"](4.2834038,73.4258215,4.2860248,73.4282804);nwr[\"building\"~\"^(hospital|clinic|school)$\"](4.2834038,73.4258215,4.2860248,73.4282804););out center tags;",
+      "overpass": {
+        "query_hash": "7a7629628b5d077f22a80ab0c5a096deb36f739f8f87fcdf8e9745ce0a1ceb6e",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "7a7629628b5d077f22a80ab0c5a096deb36f739f8f87fcdf8e9745ce0a1ceb6e",
+          "retrieved_at": "2026-10-13T10:16:14.356217Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "68fedc11759c5a1a8f757f81ec78e0b851e304e50c970b5809febe428e38793c",
+          "expires_at": "2026-10-14T10:16:14.356243+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T10:14:51Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:32": {
+          "query_hash": "92ce7d19139acca5bd732306f48d975b73d06a84b0e3b78c805efacc830b5edb",
+          "cached": false,
+          "query": {
+            "q": "Baros Clinic, Baros, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.4258215,4.2860248,73.4282804,4.2834038",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "92ce7d19139acca5bd732306f48d975b73d06a84b0e3b78c805efacc830b5edb",
+            "retrieved_at": "2026-10-13T10:16:14.360826Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Baros+Clinic%2C+Baros%2C+Maldives&viewbox=73.4258215%2C4.2860248%2C73.4282804%2C4.2834038",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1442",
+      "facility_ids": [
+        "facility:health:314",
+        "facility:health:33",
+        "facility:health:345"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](4.2007605,73.5320939,4.2412971,73.5519110);nwr[\"healthcare\"](4.2007605,73.5320939,4.2412971,73.5519110);nwr[\"office\"=\"educational_institution\"](4.2007605,73.5320939,4.2412971,73.5519110);nwr[\"building\"~\"^(hospital|clinic|school)$\"](4.2007605,73.5320939,4.2412971,73.5519110););out center tags;",
+      "overpass": {
+        "query_hash": "9795cd3bad693f6223e4f19e86cb67ad5d19063368d07f80caa797cd9b4b5db9",
+        "cached": true,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "9795cd3bad693f6223e4f19e86cb67ad5d19063368d07f80caa797cd9b4b5db9",
+          "retrieved_at": "2026-10-13T08:36:27.213974Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "672a799c4f6d1a0f695bdb5ae94f1e65863fcd053183e105b2fd5003da6f120f",
+          "expires_at": "2026-10-14T08:36:27.214039+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:34:05Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "node",
+              "id": 4565179389,
+              "lat": 4.2162258,
+              "lon": 73.5434435,
+              "tags": {
+                "amenity": "pharmacy",
+                "healthcare": "pharmacy",
+                "name": "City Pharmacy"
+              }
+            },
+            {
+              "type": "node",
+              "id": 6117494710,
+              "lat": 4.2158541,
+              "lon": 73.5433414,
+              "tags": {
+                "amenity": "pharmacy",
+                "healthcare": "pharmacy",
+                "name": "Hulhumalé"
+              }
+            },
+            {
+              "type": "node",
+              "id": 6117496029,
+              "lat": 4.2158407,
+              "lon": 73.5433961,
+              "tags": {
+                "amenity": "pharmacy",
+                "healthcare": "pharmacy",
+                "name": "Sto"
+              }
+            },
+            {
+              "type": "node",
+              "id": 11183603543,
+              "lat": 4.2163886,
+              "lon": 73.5429475,
+              "tags": {
+                "amenity": "pharmacy",
+                "healthcare": "pharmacy",
+                "name:en": "Med City Pharmacy"
+              }
+            },
+            {
+              "type": "node",
+              "id": 11183603544,
+              "lat": 4.2161698,
+              "lon": 73.5437166,
+              "tags": {
+                "amenity": "dentist",
+                "healthcare": "dentist",
+                "name:en": "My Dentist"
+              }
+            },
+            {
+              "type": "node",
+              "id": 11183603546,
+              "lat": 4.2160513,
+              "lon": 73.5441222,
+              "tags": {
+                "amenity": "school",
+                "name": "learnium training centre"
+              }
+            },
+            {
+              "type": "node",
+              "id": 11183603641,
+              "lat": 4.2175848,
+              "lon": 73.5425013,
+              "tags": {
+                "amenity": "school",
+                "name:en": "Stem Center"
+              }
+            },
+            {
+              "type": "node",
+              "id": 11183603939,
+              "lat": 4.2165156,
+              "lon": 73.5425045,
+              "tags": {
+                "amenity": "pharmacy",
+                "healthcare": "pharmacy",
+                "name:en": "STO Pharmacy"
+              }
+            },
+            {
+              "type": "node",
+              "id": 11183603940,
+              "lat": 4.21638,
+              "lon": 73.5429918,
+              "tags": {
+                "amenity": "dentist",
+                "healthcare": "dentist",
+                "name:en": "Unique Dental"
+              }
+            },
+            {
+              "type": "node",
+              "id": 11183604038,
+              "lat": 4.2164578,
+              "lon": 73.542767,
+              "tags": {
+                "amenity": "pharmacy",
+                "healthcare": "pharmacy",
+                "name": "city pharmacy 4"
+              }
+            },
+            {
+              "type": "node",
+              "id": 11183604237,
+              "lat": 4.2163645,
+              "lon": 73.5430155,
+              "tags": {
+                "amenity": "doctors",
+                "healthcare": "doctor",
+                "name:en": "Care Trust"
+              }
+            },
+            {
+              "type": "node",
+              "id": 11183604238,
+              "lat": 4.2162424,
+              "lon": 73.5434038,
+              "tags": {
+                "amenity": "pharmacy",
+                "healthcare": "pharmacy",
+                "name": "pharmacy plus"
+              }
+            },
+            {
+              "type": "node",
+              "id": 11186258448,
+              "lat": 4.2194254,
+              "lon": 73.5461254,
+              "tags": {
+                "amenity": "clinic",
+                "healthcare": "clinic",
+                "name:en": "European Clinic"
+              }
+            },
+            {
+              "type": "node",
+              "id": 11186258644,
+              "lat": 4.2095994,
+              "lon": 73.5400399,
+              "tags": {
+                "addr:street": "Rabarugas Magu",
+                "amenity": "pharmacy",
+                "check_date": "2024-10-09",
+                "healthcare": "pharmacy",
+                "name": "ހުޅުމާލެ އިސްއެރި ފާމަސީ",
+                "name:dv": "ހުޅުމާލެ އިސްއެރި ފާމަސީ",
+                "name:en": "Hulhumale Iseri Pharmacy"
+              }
+            },
+            {
+              "type": "node",
+              "id": 11186280941,
+              "lat": 4.2133608,
+              "lon": 73.5403625,
+              "tags": {
+                "amenity": "pharmacy",
+                "healthcare": "pharmacy",
+                "name:en": "Care Plus Pharmacy"
+              }
+            },
+            {
+              "type": "node",
+              "id": 13006103401,
+              "lat": 4.2300161,
+              "lon": 73.5483008,
+              "tags": {
+                "amenity": "school",
+                "name": "ކާމިލް ދީދީ ޕްރީސްކޫލް",
+                "name:en": "Kaamil Didi Pre School"
+              }
+            },
+            {
+              "type": "node",
+              "id": 13006103601,
+              "lat": 4.2196377,
+              "lon": 73.5442303,
+              "tags": {
+                "amenity": "school",
+                "name": "ހުރަވީ ސްކޫލް",
+                "name:en": "Huravee School"
+              }
+            },
+            {
+              "type": "node",
+              "id": 13415031079,
+              "lat": 4.2157098,
+              "lon": 73.544169,
+              "tags": {
+                "amenity": "pharmacy",
+                "healthcare": "pharmacy",
+                "name": "curemax pharmacy"
+              }
+            },
+            {
+              "type": "node",
+              "id": 13430562045,
+              "lat": 4.2141602,
+              "lon": 73.5417159,
+              "tags": {
+                "amenity": "pharmacy",
+                "healthcare": "pharmacy",
+                "name": "health & beauty"
+              }
+            },
+            {
+              "type": "node",
+              "id": 13439820920,
+              "lat": 4.2160884,
+              "lon": 73.5425397,
+              "tags": {
+                "amenity": "pharmacy",
+                "healthcare": "pharmacy",
+                "name": "adk"
+              }
+            },
+            {
+              "type": "node",
+              "id": 13846123402,
+              "lat": 4.2261383,
+              "lon": 73.5439634,
+              "tags": {
+                "healthcare": "sample_collection",
+                "name": "PORT RESIDENCE TOWER M"
+              }
+            },
+            {
+              "type": "node",
+              "id": 13846123503,
+              "lat": 4.2257842,
+              "lon": 73.5440299,
+              "tags": {
+                "healthcare": "sample_collection",
+                "name": "PORT RESIDENCE TOWER P"
+              }
+            },
+            {
+              "type": "node",
+              "id": 13846123602,
+              "lat": 4.2254492,
+              "lon": 73.5442235,
+              "tags": {
+                "healthcare": "sample_collection",
+                "name": "PORT RESIDENCE TOWER L"
+              }
+            },
+            {
+              "type": "node",
+              "id": 14096487101,
+              "lat": 4.2258721,
+              "lon": 73.5470603,
+              "tags": {
+                "addr:housenumber": "AMAN UDARAS 11",
+                "healthcare": "sample_collection"
+              }
+            },
+            {
+              "type": "node",
+              "id": 14202124601,
+              "lat": 4.2220136,
+              "lon": 73.5418224,
+              "tags": {
+                "healthcare": "sample_collection",
+                "name": "The Creek View"
+              }
+            },
+            {
+              "type": "node",
+              "id": 14268489201,
+              "lat": 4.2340514,
+              "lon": 73.5481447,
+              "tags": {
+                "amenity": "school",
+                "name": "Shaheed Ali School"
+              }
+            },
+            {
+              "type": "way",
+              "id": 383751026,
+              "center": {
+                "lat": 4.2157382,
+                "lon": 73.5431478
+              },
+              "tags": {
+                "amenity": "hospital",
+                "check_date": "2024-10-13",
+                "healthcare": "hospital",
+                "name": "ހުޅުމާލެ ހޮސްޕިޓަލް",
+                "name:dv": "ހުޅުމާލެ ހޮސްޕިޓަލް",
+                "name:en": "Hulhumalé Hospital",
+                "website": "https://hmh.gov.mv"
+              }
+            },
+            {
+              "type": "way",
+              "id": 436189997,
+              "center": {
+                "lat": 4.2185259,
+                "lon": 73.5439335
+              },
+              "tags": {
+                "amenity": "school",
+                "check_date": "2026-08-16",
+                "name": "Brightway International School"
+              }
+            },
+            {
+              "type": "way",
+              "id": 477460243,
+              "center": {
+                "lat": 4.2186684,
+                "lon": 73.5436394
+              },
+              "tags": {
+                "building": "school"
+              }
+            },
+            {
+              "type": "way",
+              "id": 477466315,
+              "center": {
+                "lat": 4.2188918,
+                "lon": 73.5443375
+              },
+              "tags": {
+                "building": "school"
+              }
+            },
+            {
+              "type": "way",
+              "id": 477466316,
+              "center": {
+                "lat": 4.2184312,
+                "lon": 73.5439798
+              },
+              "tags": {
+                "building": "school"
+              }
+            },
+            {
+              "type": "way",
+              "id": 477467764,
+              "center": {
+                "lat": 4.213919,
+                "lon": 73.542775
+              },
+              "tags": {
+                "amenity": "kindergarten",
+                "building": "school",
+                "name": "Preschool"
+              }
+            },
+            {
+              "type": "way",
+              "id": 477471181,
+              "center": {
+                "lat": 4.2156691,
+                "lon": 73.5433358
+              },
+              "tags": {
+                "building": "hospital"
+              }
+            },
+            {
+              "type": "way",
+              "id": 477823126,
+              "center": {
+                "lat": 4.2094839,
+                "lon": 73.5413663
+              },
+              "tags": {
+                "building": "school"
+              }
+            },
+            {
+              "type": "way",
+              "id": 697262511,
+              "center": {
+                "lat": 4.2133576,
+                "lon": 73.5414833
+              },
+              "tags": {
+                "addr:city": "Hulhumalé",
+                "addr:street": "ބޯގަންވިލާ މަގު",
+                "amenity": "school",
+                "grades": "1-10",
+                "name": "Ghaazee School",
+                "operator": "Government of Maldives",
+                "operator:type": "government",
+                "religion": "muslim",
+                "website": "https://ghaazee.edu.mv/",
+                "wikidata": "Q16905629",
+                "wikipedia": "en:Ghaazee School"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1210924794,
+              "center": {
+                "lat": 4.2094742,
+                "lon": 73.5413693
+              },
+              "tags": {
+                "amenity": "school",
+                "check_date": "2024-10-12",
+                "email": "admin@rehendi.edu.mv",
+                "name": "ރެހެންދި ސްކޫލް",
+                "name:dv": "ރެހެންދި ސްކޫލް",
+                "name:en": "Rehendhi School",
+                "operator": "Ministry of Education",
+                "operator:type": "public",
+                "source": "local knowledge"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1210925026,
+              "center": {
+                "lat": 4.2189644,
+                "lon": 73.544048
+              },
+              "tags": {
+                "amenity": "school",
+                "name": "Fiyavathi"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1210925123,
+              "center": {
+                "lat": 4.2207088,
+                "lon": 73.5416929
+              },
+              "tags": {
+                "addr:street": "Kurikeela Magu",
+                "building": "school",
+                "building:levels": "4",
+                "name": "CHSE Hulhumale",
+                "name:dv": "ސެންޓަރ ފޯރ ހަޔަރ ސެކަންޑަރީ އެޑިއުކޭޝަން ހުޅުމާލެ",
+                "name:en": "Centre for Higher Secondary Education Hulhumale'",
+                "official_name": "Centre for Higher Secondary Education"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1210925203,
+              "center": {
+                "lat": 4.2198391,
+                "lon": 73.5397275
+              },
+              "tags": {
+                "building": "school"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1330634426,
+              "center": {
+                "lat": 4.2201568,
+                "lon": 73.539773
+              },
+              "tags": {
+                "building": "school"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1330634427,
+              "center": {
+                "lat": 4.2197399,
+                "lon": 73.5399443
+              },
+              "tags": {
+                "building": "school"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1330634428,
+              "center": {
+                "lat": 4.2198829,
+                "lon": 73.5397441
+              },
+              "tags": {
+                "addr:street": "Moonima Magu",
+                "amenity": "school",
+                "name:en": "Ajiyal International School"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1448574099,
+              "center": {
+                "lat": 4.2124525,
+                "lon": 73.5390602
+              },
+              "tags": {
+                "addr:city": "Hulhumalé",
+                "addr:housenumber": "Lot 10608",
+                "addr:postcode": "23000",
+                "addr:street": "Asurumaa Hingun",
+                "amenity": "hospital",
+                "healthcare": "hospital",
+                "name": "Tree Top Hospital"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1547305510,
+              "center": {
+                "lat": 4.2205972,
+                "lon": 73.5416893
+              },
+              "tags": {
+                "amenity": "school",
+                "education": "school",
+                "name": "CHSE Hulhumale"
+              }
+            },
+            {
+              "type": "relation",
+              "id": 9080106,
+              "center": {
+                "lat": 4.2157286,
+                "lon": 73.5431128
+              },
+              "tags": {
+                "building": "hospital",
+                "type": "multipolygon"
+              }
+            },
+            {
+              "type": "relation",
+              "id": 9690664,
+              "center": {
+                "lat": 4.2132968,
+                "lon": 73.5416723
+              },
+              "tags": {
+                "building": "school",
+                "type": "multipolygon"
+              }
+            },
+            {
+              "type": "relation",
+              "id": 11963822,
+              "center": {
+                "lat": 4.2121069,
+                "lon": 73.5390109
+              },
+              "tags": {
+                "addr:street": "Asurumaa Hingun",
+                "building": "hospital",
+                "building:levels": "6",
+                "name": "Tree Top Hospital",
+                "type": "multipolygon"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:health:314": {
+          "query_hash": "418853da27ec403d0675a41dcf936752de1ca34e50ac1d0d0bf4b3fb895a398b",
+          "cached": false,
+          "query": {
+            "q": "Pearl Medical Centre Hulhumale, Hulhumalé, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5320939,4.2412971,73.5519110,4.2007605",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "418853da27ec403d0675a41dcf936752de1ca34e50ac1d0d0bf4b3fb895a398b",
+            "retrieved_at": "2026-10-13T10:16:15.808063Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Pearl+Medical+Centre+Hulhumale%2C+Hulhumal%C3%A9%2C+Maldives&viewbox=73.5320939%2C4.2412971%2C73.5519110%2C4.2007605",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        },
+        "facility:health:33": {
+          "query_hash": "5d9f036ae52870298dd446fa0a3413ae13b4d8154c634c8e392bf75bfc346a67",
+          "cached": false,
+          "query": {
+            "q": "CyMa Care Hulhumale', Hulhumalé, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5320939,4.2412971,73.5519110,4.2007605",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "5d9f036ae52870298dd446fa0a3413ae13b4d8154c634c8e392bf75bfc346a67",
+            "retrieved_at": "2026-10-13T10:16:17.250993Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=CyMa+Care+Hulhumale%27%2C+Hulhumal%C3%A9%2C+Maldives&viewbox=73.5320939%2C4.2412971%2C73.5519110%2C4.2007605",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        },
+        "facility:health:345": {
+          "query_hash": "77cafcdd3eaec3031e1986b2f4cef7523e83654560251ba9e3811936b941c6da",
+          "cached": false,
+          "query": {
+            "q": "Vision Clinic - Hulhumale', Hulhumalé, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5320939,4.2412971,73.5519110,4.2007605",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "77cafcdd3eaec3031e1986b2f4cef7523e83654560251ba9e3811936b941c6da",
+            "retrieved_at": "2026-10-13T10:16:19.149537Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Vision+Clinic+-+Hulhumale%27%2C+Hulhumal%C3%A9%2C+Maldives&viewbox=73.5320939%2C4.2412971%2C73.5519110%2C4.2007605",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:258",
+      "facility_ids": [
+        "facility:health:365"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.7308417,73.0080040,2.7510829,73.0214891);nwr[\"healthcare\"](2.7308417,73.0080040,2.7510829,73.0214891);nwr[\"office\"=\"educational_institution\"](2.7308417,73.0080040,2.7510829,73.0214891);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.7308417,73.0080040,2.7510829,73.0214891););out center tags;",
+      "overpass": {
+        "query_hash": "68686dde4d92f79e635730dd457dffb41be093741b669954e51e7c551fe369e0",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "68686dde4d92f79e635730dd457dffb41be093741b669954e51e7c551fe369e0",
+          "retrieved_at": "2026-10-13T10:17:54.066307Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "6a4be9d9aa5c535d2e66d314fa7642c83640c79ae6e93a19292c5a76ad801a4f",
+          "expires_at": "2026-10-14T10:17:54.066353+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T10:16:50Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:365": {
+          "query_hash": "8219e46136012071fd08c7f65325a878df05d65986fcbe655137cadd064f8a10",
+          "cached": false,
+          "query": {
+            "q": "Kandima Medical Center, Kan'dinmaa, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.0080040,2.7510829,73.0214891,2.7308417",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "8219e46136012071fd08c7f65325a878df05d65986fcbe655137cadd064f8a10",
+            "retrieved_at": "2026-10-13T10:17:54.069176Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Kandima+Medical+Center%2C+Kan%27dinmaa%2C+Maldives&viewbox=73.0080040%2C2.7510829%2C73.0214891%2C2.7308417",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:343",
+      "facility_ids": [
+        "facility:health:307"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](0.8410156,73.4040772,0.8515341,73.4100682);nwr[\"healthcare\"](0.8410156,73.4040772,0.8515341,73.4100682);nwr[\"office\"=\"educational_institution\"](0.8410156,73.4040772,0.8515341,73.4100682);nwr[\"building\"~\"^(hospital|clinic|school)$\"](0.8410156,73.4040772,0.8515341,73.4100682););out center tags;",
+      "overpass": {
+        "query_hash": "64d8b4c44f79087c34759fd3013fae57902cd2ccc6e8684b07069de383050879",
+        "cached": false,
+        "metadata": {
+          "error": "The read operation timed out"
+        },
+        "data": {
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:307": {
+          "query_hash": "2bbe3dd0aa1ac2ddf44423accd933c721a7398e27785a65b9cf5b7ad34c00414",
+          "cached": false,
+          "query": {
+            "q": "Pullman Maamutaa Maldives Resort Clinic, Maamutaa, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.4040772,0.8515341,73.4100682,0.8410156",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "2bbe3dd0aa1ac2ddf44423accd933c721a7398e27785a65b9cf5b7ad34c00414",
+            "retrieved_at": "2026-10-13T10:23:40.007384Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Pullman+Maamutaa+Maldives+Resort+Clinic%2C+Maamutaa%2C+Maldives&viewbox=73.4040772%2C0.8515341%2C73.4100682%2C0.8410156",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:370",
+      "facility_ids": [
+        "facility:health:381"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](0.7244531,73.4290863,0.7429012,73.4385750);nwr[\"healthcare\"](0.7244531,73.4290863,0.7429012,73.4385750);nwr[\"office\"=\"educational_institution\"](0.7244531,73.4290863,0.7429012,73.4385750);nwr[\"building\"~\"^(hospital|clinic|school)$\"](0.7244531,73.4290863,0.7429012,73.4385750););out center tags;",
+      "overpass": {
+        "query_hash": "55df9f88f7112a603ceee30d76c2e00bec484357d72a5203911e2b6f46cf5d3c",
+        "cached": false,
+        "metadata": {
+          "error": "The read operation timed out"
+        },
+        "data": {
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:381": {
+          "query_hash": "091c28891473d5f94017982042736d0a09ebb6045a249565ee813b40a3651245",
+          "cached": false,
+          "query": {
+            "q": "Mercure Maldives Kooddoo Clinic, Kooddoo, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.4290863,0.7429012,73.4385750,0.7244531",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "091c28891473d5f94017982042736d0a09ebb6045a249565ee813b40a3651245",
+            "retrieved_at": "2026-10-13T10:29:30.962636Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Mercure+Maldives+Kooddoo+Clinic%2C+Kooddoo%2C+Maldives&viewbox=73.4290863%2C0.7429012%2C73.4385750%2C0.7244531",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:980",
+      "facility_ids": [
+        "facility:health:313"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](5.8734208,73.3414757,5.8772580,73.3456149);nwr[\"healthcare\"](5.8734208,73.3414757,5.8772580,73.3456149);nwr[\"office\"=\"educational_institution\"](5.8734208,73.3414757,5.8772580,73.3456149);nwr[\"building\"~\"^(hospital|clinic|school)$\"](5.8734208,73.3414757,5.8772580,73.3456149););out center tags;",
+      "overpass": {
+        "query_hash": "11fa62bb54aec76a2f11df4d489785e3907e3d93e82bb44e3ccff17ec045d267",
+        "cached": false,
+        "metadata": {
+          "error": "The read operation timed out"
+        },
+        "data": {
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:313": {
+          "query_hash": "0c193f76c858a31664d5b30a69d102c0b823cef0a47cdd44d8614794c25c6430",
+          "cached": false,
+          "query": {
+            "q": "Kuredhivaru Clinic, Kuredhivaru, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.3414757,5.8772580,73.3456149,5.8734208",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "0c193f76c858a31664d5b30a69d102c0b823cef0a47cdd44d8614794c25c6430",
+            "retrieved_at": "2026-10-13T10:35:15.952742Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Kuredhivaru+Clinic%2C+Kuredhivaru%2C+Maldives&viewbox=73.3414757%2C5.8772580%2C73.3456149%2C5.8734208",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    }
+  ]
+}

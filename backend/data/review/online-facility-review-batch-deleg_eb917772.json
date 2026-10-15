@@ -1,0 +1,70 @@
+{
+  "version": "online-facility-review-batch-v2",
+  "reviewed_at": "2026-10-13T07:58:57.355494Z",
+  "batch_id": "deleg_eb917772",
+  "source_jobs": [
+    "batch-20261013-073000-01",
+    "batch-20261013-073000-02",
+    "batch-20261013-073000-03",
+    "batch-20261013-073000-04"
+  ],
+  "facility_ids": [
+    "facility:health:722",
+    "facility:health:725",
+    "facility:health:726",
+    "facility:health:727",
+    "facility:health:730",
+    "facility:health:731",
+    "facility:health:732",
+    "facility:health:733",
+    "facility:health:735",
+    "facility:health:737",
+    "facility:health:738",
+    "facility:health:739",
+    "facility:health:740",
+    "facility:health:741",
+    "facility:health:745",
+    "facility:health:749",
+    "facility:health:750",
+    "facility:health:754",
+    "facility:school:460",
+    "facility:school:461",
+    "facility:school:462",
+    "facility:school:463",
+    "facility:school:464",
+    "facility:school:466",
+    "facility:school:467",
+    "facility:school:468",
+    "facility:school:470",
+    "facility:school:471",
+    "facility:school:509",
+    "facility:school:511",
+    "facility:school:513",
+    "facility:school:514",
+    "facility:school:516",
+    "facility:school:517",
+    "facility:school:518",
+    "facility:school:519",
+    "facility:school:520",
+    "facility:school:521",
+    "facility:school:522",
+    "facility:school:530"
+  ],
+  "decision_counts": {
+    "island_context_only": 8,
+    "osm_provisional_review_required": 2,
+    "reviewed_osm_match": 2,
+    "source_not_in_osm": 27,
+    "unresolved": 1
+  },
+  "confirmed_promotions": [
+    "facility:health:732",
+    "facility:health:735"
+  ],
+  "provisional_candidates": [
+    "facility:school:462",
+    "facility:school:511"
+  ],
+  "canonical_files_modified_by_workers": false,
+  "notes": "All 40 records were returned exactly once. Two live identity-supported health-centre objects were promoted; two school cases remain provisional; all other records remain unresolved, island-context-only, source-not-in-OSM, or explicitly rejected."
+}

@@ -1,0 +1,211 @@
+{
+  "generated_at": "2026-10-13T11:50:19.302822+00:00",
+  "population_scope": "P3 only",
+  "cache_directory": "D:\\datathon\\backend\\data\\cache",
+  "access_review": {
+    "onemap": "Machine-readable ArcGIS REST JSON and paginated GeoJSON.",
+    "mbs": "Direct XLSX download; parsed with openpyxl/pandas.",
+    "health": "Public server-rendered HTML with pagination; professionals JSON endpoint is optional enrichment.",
+    "education": "HTML directory plus public HTML school detail pages.",
+    "caa": "HTML certification table plus direct PDF download.",
+    "lga": "HTML council page plus XLSX export; current export is councilor-member data.",
+    "osm": "Direct national PBF download; parsed locally with osmium."
+  },
+  "reconciliation_review": {
+    "osm_geometry_candidates": [
+      "Health facilities without official coordinates",
+      "Education schools without official coordinates",
+      "Council facilities without usable official coordinates",
+      "CAA aerodromes where official coordinates or geometry require matching",
+      "OSM transport features requiring OneMap island assignment"
+    ],
+    "deferred_matching": [
+      "MBS P3 uses atoll codes and locality names; reconciliation to OneMap is deferred to Phase 2.",
+      "HEMS HTML records do not expose a structured island field in the discovery parser.",
+      "Education detail fields require source-specific extraction and island reconciliation in Phase 2.",
+      "LGA council facility identity requires a council registry source separate from the councilor export.",
+      "CAA airport coordinates and OneMap island matching require normalization and review."
+    ],
+    "automation_limits": [
+      "No source required authentication or bypassing access controls during discovery.",
+      "No low-confidence fuzzy match was automatically accepted.",
+      "No live aircraft or vessel providers were queried in Phase 1."
+    ]
+  },
+  "sources": {
+    "mbs": {
+      "status": "ok",
+      "result": {
+        "source": "Maldives Bureau of Statistics Census 2022",
+        "endpoint": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2023/07/P3.xlsx",
+        "file": "D:\\datathon\\backend\\data\\cache\\raw\\mbs\\P3.xlsx",
+        "files": {
+          "P3": "D:\\datathon\\backend\\data\\cache\\raw\\mbs\\P3.xlsx",
+          "P4": "D:\\datathon\\backend\\data\\cache\\raw\\mbs\\P4.xlsx",
+          "P5": "D:\\datathon\\backend\\data\\cache\\raw\\mbs\\P5.xlsx",
+          "P6": "D:\\datathon\\backend\\data\\cache\\raw\\mbs\\P6.xlsx"
+        },
+        "file_size_bytes": 37974,
+        "sheets": [
+          {
+            "name": "P3",
+            "rows": 213,
+            "columns": 11,
+            "preview": [
+              [
+                "Table P3: Resident Population by place of enumeration and by island, 2014-2022",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              [
+                "Atoll",
+                "Locality",
+                "2022",
+                null,
+                null,
+                "2014",
+                null,
+                null,
+                "Intercensal Population Growth Rate  (2014-2022) in %",
+                null,
+                null
+              ],
+              [
+                null,
+                null,
+                "Population",
+                "Maldivian",
+                "Foreign",
+                "Population",
+                "Maldivian",
+                "Foreign",
+                "Population",
+                "Maldivian",
+                "Foreign"
+              ],
+              [
+                "(1)",
+                "(2)",
+                "(3)",
+                "(4)",
+                "(5)",
+                "(6)",
+                "(7)",
+                "(8)",
+                "(9)",
+                "(10)",
+                "(11)"
+              ],
+              [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              [
+                null,
+                "Republic",
+                "515132",
+                "382639",
+                "132493",
+                "402071",
+                "338434",
+                "63637",
+                "0.031013077417004327",
+                "0.015364567014747983",
+                "0.09178157091952437"
+              ],
+              [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            ]
+          }
+        ],
+        "population_candidates": [
+          {
+            "sheet": "P3",
+            "header_row": 2,
+            "island_column": 1,
+            "atoll_column": 0,
+            "population_2022_column": 2,
+            "island_record_count": 186,
+            "island_population_total": 236911,
+            "sample_island_records": [
+              {
+                "atoll_code": "HA",
+                "locality": "Baarah",
+                "population_2022": 1141
+              },
+              {
+                "atoll_code": "HA",
+                "locality": "Dhidhdhoo",
+                "population_2022": 3412
+              },
+              {
+                "atoll_code": "HA",
+                "locality": "Filladhoo",
+                "population_2022": 559
+              },
+              {
+                "atoll_code": "HA",
+                "locality": "Hoarafushi",
+                "population_2022": 1841
+              },
+              {
+                "atoll_code": "HA",
+                "locality": "Ihavandhoo",
+                "population_2022": 2873
+              }
+            ],
+            "matching_status": "deferred_to_phase_2_atoll_and_name_reconciliation"
+          }
+        ],
+        "selected_table": "P3",
+        "demographic_tables": [
+          "P4",
+          "P5",
+          "P6"
+        ],
+        "population_year": 2022
+      }
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "version": "online-facility-review-batch-v2",
+  "reviewed_at": "2026-10-13T07:05:55.380541Z",
+  "batch_id": "deleg_8a3ec541",
+  "source_jobs": [
+    "batch-20261013-102806-01",
+    "batch-20261013-102806-02",
+    "batch-20261013-102806-03",
+    "batch-20261013-102806-04"
+  ],
+  "facility_ids": [
+    "facility:health:490",
+    "facility:health:492",
+    "facility:health:494",
+    "facility:health:500",
+    "facility:health:501",
+    "facility:health:502",
+    "facility:health:504",
+    "facility:health:505",
+    "facility:health:506",
+    "facility:health:507",
+    "facility:health:509",
+    "facility:health:535",
+    "facility:health:536",
+    "facility:health:537",
+    "facility:health:538",
+    "facility:health:540",
+    "facility:health:541",
+    "facility:health:554",
+    "facility:health:555",
+    "facility:health:556",
+    "facility:health:557",
+    "facility:health:562",
+    "facility:health:563",
+    "facility:health:564",
+    "facility:health:565",
+    "facility:health:566",
+    "facility:health:567",
+    "facility:health:568",
+    "facility:health:569",
+    "facility:health:570",
+    "facility:health:571",
+    "facility:health:572",
+    "facility:health:573"
+  ],
+  "decision_counts": {
+    "island_context_only": 28,
+    "osm_provisional_review_required": 1,
+    "rejected_candidate": 1,
+    "reviewed_osm_match": 1,
+    "source_not_in_osm": 2
+  },
+  "confirmed_promotions": [
+    "facility:health:502"
+  ],
+  "provisional_candidates": [
+    "facility:health:505"
+  ],
+  "rejected_or_not_promoted": [
+    "facility:health:504",
+    "facility:health:509"
+  ],
+  "canonical_files_modified_by_workers": false,
+  "notes": "All 33 records were returned exactly once by the four delegated workers. Worker evidence was checked against live HEMS and OSM discovery; only Rinbudhoo was promoted. Rakeedhoo healthcare=yes way remains provisional; Maamigili pharmacy and Vaavu Atoll Hospital were not promoted.",
+  "source_not_promoted": [
+    "facility:health:490",
+    "facility:health:504"
+  ]
+}

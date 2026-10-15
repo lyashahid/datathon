@@ -1,0 +1,1335 @@
+{
+  "version": "facility-review-validated-v1",
+  "validated_at": "2026-10-13T08:32:12.044568Z",
+  "job_id": "batch-20261013-080000",
+  "errors": [],
+  "records": [
+    {
+      "facility_id": "facility:school:532",
+      "official_name": "Gulhee School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/532",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:380915306",
+          "osm_url": "https://www.openstreetmap.org/way/380915306",
+          "name": "",
+          "island": "Gulhi",
+          "coordinates": [
+            73.5091649,
+            3.9893395
+          ],
+          "tags": {
+            "amenity": "school"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": {
+        "osm_object_id": "osm:way:380915306",
+        "osm_url": "https://www.openstreetmap.org/way/380915306",
+        "name": "",
+        "island": "Gulhi",
+        "coordinates": [
+          73.5091649,
+          3.9893395
+        ],
+        "tags": {
+          "amenity": "school"
+        },
+        "status": "discovered_overpass"
+      },
+      "live_verification": {
+        "osm_object_id": "osm:way:380915306",
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/way/380915306/full.json",
+        "payload": {
+          "version": "0.6",
+          "generator": "openstreetmap-cgimap 2.1.0 (3807405 spike-06.openstreetmap.org)",
+          "copyright": "OpenStreetMap and contributors",
+          "attribution": "http://www.openstreetmap.org/copyright",
+          "license": "http://opendatacommons.org/licenses/odbl/1-0/",
+          "elements": [
+            {
+              "type": "node",
+              "id": 3842091267,
+              "lat": 3.9896136,
+              "lon": 73.5088191,
+              "timestamp": "2022-06-10T10:43:12Z",
+              "version": 5,
+              "changeset": 122204666,
+              "user": "ig4map",
+              "uid": 599809
+            },
+            {
+              "type": "node",
+              "id": 3842091468,
+              "lat": 3.9894599,
+              "lon": 73.5087233,
+              "timestamp": "2022-06-10T09:23:24Z",
+              "version": 3,
+              "changeset": 122200996,
+              "user": "ig4map",
+              "uid": 599809
+            },
+            {
+              "type": "node",
+              "id": 3842091563,
+              "lat": 3.9897025,
+              "lon": 73.5088738,
+              "timestamp": "2022-06-10T10:43:12Z",
+              "version": 5,
+              "changeset": 122204666,
+              "user": "ig4map",
+              "uid": 599809
+            },
+            {
+              "type": "node",
+              "id": 3842091570,
+              "lat": 3.9889764,
+              "lon": 73.509428,
+              "timestamp": "2022-06-10T09:23:24Z",
+              "version": 3,
+              "changeset": 122200996,
+              "user": "ig4map",
+              "uid": 599809
+            },
+            {
+              "type": "node",
+              "id": 3842091662,
+              "lat": 3.989208,
+              "lon": 73.5096065,
+              "timestamp": "2022-06-10T09:23:24Z",
+              "version": 2,
+              "changeset": 122200996,
+              "user": "ig4map",
+              "uid": 599809
+            },
+            {
+              "type": "node",
+              "id": 3847158561,
+              "lat": 3.989267,
+              "lon": 73.5089864,
+              "timestamp": "2022-06-10T09:23:24Z",
+              "version": 2,
+              "changeset": 122200996,
+              "user": "ig4map",
+              "uid": 599809
+            },
+            {
+              "type": "node",
+              "id": 3847159164,
+              "lat": 3.9892184,
+              "lon": 73.5090783,
+              "timestamp": "2022-06-10T09:23:24Z",
+              "version": 2,
+              "changeset": 122200996,
+              "user": "ig4map",
+              "uid": 599809
+            },
+            {
+              "type": "way",
+              "id": 380915306,
+              "timestamp": "2015-11-20T17:16:21Z",
+              "version": 4,
+              "changeset": 35466567,
+              "user": "oeoeoe",
+              "uid": 178837,
+              "nodes": [
+                3842091563,
+                3842091267,
+                3842091468,
+                3847158561,
+                3847159164,
+                3842091570,
+                3842091662,
+                3842091563
+              ],
+              "tags": {
+                "amenity": "school"
+              }
+            }
+          ]
+        }
+      },
+      "derived_tags": {
+        "amenity": "school"
+      },
+      "derived_coordinates": [
+        73.5091649,
+        3.9893395
+      ],
+      "validation": {
+        "checks": {
+          "single_candidate": true,
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:535",
+      "official_name": "Ukulhahu School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/535",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:778055729",
+          "osm_url": "https://www.openstreetmap.org/way/778055729",
+          "name": "",
+          "island": "Ukulhas",
+          "coordinates": [
+            72.8618491,
+            4.2173092
+          ],
+          "tags": {
+            "amenity": "school",
+            "building": "yes"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1066856193",
+          "osm_url": "https://www.openstreetmap.org/way/1066856193",
+          "name": "",
+          "island": "Ukulhas",
+          "coordinates": [
+            72.8616539,
+            4.2175696
+          ],
+          "tags": {
+            "building": "school",
+            "nohousenumber": "yes"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:538",
+      "official_name": "Bodufolhudhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/538",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:539",
+      "official_name": "Maalhohu School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/539",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:540",
+      "official_name": "Himandhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/540",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:541",
+      "official_name": "ADh. Atoll Education Centre",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/541",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:542",
+      "official_name": "ADh. Atoll School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/542",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:543",
+      "official_name": "Hangnaameedhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/543",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:544",
+      "official_name": "ADh. Omadhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/544",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:545",
+      "official_name": "Kunburudhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/545",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:546",
+      "official_name": "Mandhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/546",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:547",
+      "official_name": "Dhangethee School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/547",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:548",
+      "official_name": "ADh. Dhidhdhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/548",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:550",
+      "official_name": "Fenfushee School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/550",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:551",
+      "official_name": "V. Atoll Education Centre",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/551",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:553",
+      "official_name": "Keyodhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/553",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:554",
+      "official_name": "Thinadhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/554",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:555",
+      "official_name": "Rakeedhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/555",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:951547163",
+          "osm_url": "https://www.openstreetmap.org/way/951547163",
+          "name": "",
+          "island": "Rakeedhoo",
+          "coordinates": [
+            73.4699533,
+            3.3146125
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": {
+        "osm_object_id": "osm:way:951547163",
+        "osm_url": "https://www.openstreetmap.org/way/951547163",
+        "name": "",
+        "island": "Rakeedhoo",
+        "coordinates": [
+          73.4699533,
+          3.3146125
+        ],
+        "tags": {
+          "building": "school"
+        },
+        "status": "discovered_overpass"
+      },
+      "live_verification": {
+        "osm_object_id": "osm:way:951547163",
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/way/951547163/full.json",
+        "payload": {
+          "version": "0.6",
+          "generator": "openstreetmap-cgimap 2.1.0 (3814576 spike-06.openstreetmap.org)",
+          "copyright": "OpenStreetMap and contributors",
+          "attribution": "http://www.openstreetmap.org/copyright",
+          "license": "http://opendatacommons.org/licenses/odbl/1-0/",
+          "elements": [
+            {
+              "type": "node",
+              "id": 8807587252,
+              "lat": 3.3146798,
+              "lon": 73.4699417,
+              "timestamp": "2021-06-05T20:05:51Z",
+              "version": 1,
+              "changeset": 105896422,
+              "user": "FabianAffolter",
+              "uid": 22199
+            },
+            {
+              "type": "node",
+              "id": 8807587253,
+              "lat": 3.3146237,
+              "lon": 73.4700208,
+              "timestamp": "2021-06-05T20:05:51Z",
+              "version": 1,
+              "changeset": 105896422,
+              "user": "FabianAffolter",
+              "uid": 22199
+            },
+            {
+              "type": "node",
+              "id": 8807587254,
+              "lat": 3.3145453,
+              "lon": 73.469965,
+              "timestamp": "2021-06-05T20:05:51Z",
+              "version": 1,
+              "changeset": 105896422,
+              "user": "FabianAffolter",
+              "uid": 22199
+            },
+            {
+              "type": "node",
+              "id": 8807587255,
+              "lat": 3.3146013,
+              "lon": 73.4698859,
+              "timestamp": "2021-06-05T20:05:51Z",
+              "version": 1,
+              "changeset": 105896422,
+              "user": "FabianAffolter",
+              "uid": 22199
+            },
+            {
+              "type": "way",
+              "id": 951547163,
+              "timestamp": "2024-04-02T02:04:02Z",
+              "version": 2,
+              "changeset": 149458702,
+              "user": "MapTheWalk",
+              "uid": 10499594,
+              "nodes": [
+                8807587252,
+                8807587253,
+                8807587254,
+                8807587255,
+                8807587252
+              ],
+              "tags": {
+                "building": "school"
+              }
+            }
+          ]
+        }
+      },
+      "derived_tags": {
+        "building": "school"
+      },
+      "derived_coordinates": [
+        73.4699533,
+        3.3146125
+      ],
+      "validation": {
+        "checks": {
+          "single_candidate": true,
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:557",
+      "official_name": "M. Atoll School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/557",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:558",
+      "official_name": "Mulaku School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/558",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:559",
+      "official_name": "Dhiggaru School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/559",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:560",
+      "official_name": "Raiymandhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/560",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:561",
+      "official_name": "Veyvashu School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/561",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:562",
+      "official_name": "Naalaafushi School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/562",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:563",
+      "official_name": "M. Maduvvaree School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/563",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:564",
+      "official_name": "F. Atoll Education Centre",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/564",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:565",
+      "official_name": "F. Atoll School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/565",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:567",
+      "official_name": "Bilehdhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/567",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:568",
+      "official_name": "Dharanboodhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/568",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:570",
+      "official_name": "Dh. Atoll School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/570",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:571",
+      "official_name": "Hulhudheli School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/571",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:576",
+      "official_name": "Th. Atoll School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/576",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:577",
+      "official_name": "Dhiyamigili School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/577",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:580",
+      "official_name": "Hirilandhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/580",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:581",
+      "official_name": "Vilufushee School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/581",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:582",
+      "official_name": "Burunee School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/582",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:583",
+      "official_name": "Kandoodhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/583",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:584",
+      "official_name": "Vandhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/584",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:585",
+      "official_name": "Madifushi School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/585",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:school:586",
+      "official_name": "Th. Omadhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/586",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    }
+  ]
+}

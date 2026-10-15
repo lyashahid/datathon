@@ -1,0 +1,238 @@
+{
+  "job_id": "batch-20261013-130000-04",
+  "records": [
+    {
+      "facility_id": "facility:health:274",
+      "official_name": "Mediflex Laboratories",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:275",
+      "official_name": "Vital Care Kulhudhuffushi Anex",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:4823302223",
+          "osm_url": "https://www.openstreetmap.org/node/4823302223",
+          "name": "Kulhudhuffushi Regional Hospital",
+          "island": "Kulhudhuffushi",
+          "coordinates": [
+            73.0690075,
+            6.6176788
+          ],
+          "tags": {
+            "addr:postcode": "02110",
+            "amenity": "hospital",
+            "check_date": "2024-11-30",
+            "healthcare": "hospital",
+            "healthcare:speciality": "general;blood_check",
+            "name": "Kulhudhuffushi Regional Hospital",
+            "opening_hours": "24/7",
+            "phone": "+960 6528864"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1160038798",
+          "osm_url": "https://www.openstreetmap.org/way/1160038798",
+          "name": "Kulhudhuffushi Regional Hospital",
+          "island": "Kulhudhuffushi",
+          "coordinates": [
+            73.0685333,
+            6.6178818
+          ],
+          "tags": {
+            "building": "hospital",
+            "name": "Kulhudhuffushi Regional Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1160038797",
+          "osm_url": "https://www.openstreetmap.org/way/1160038797",
+          "name": "Ufanveni",
+          "island": "Kulhudhuffushi",
+          "coordinates": [
+            73.0679023,
+            6.6178251
+          ],
+          "tags": {
+            "building": "hospital",
+            "name": "Ufanveni"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:784655703",
+          "osm_url": "https://www.openstreetmap.org/way/784655703",
+          "name": "",
+          "island": "Kulhudhuffushi",
+          "coordinates": [
+            73.0685405,
+            6.6172008
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:784655704",
+          "osm_url": "https://www.openstreetmap.org/way/784655704",
+          "name": "",
+          "island": "Kulhudhuffushi",
+          "coordinates": [
+            73.0683058,
+            6.6172155
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:784655705",
+          "osm_url": "https://www.openstreetmap.org/way/784655705",
+          "name": "",
+          "island": "Kulhudhuffushi",
+          "coordinates": [
+            73.0684345,
+            6.6171967
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:784655706",
+          "osm_url": "https://www.openstreetmap.org/way/784655706",
+          "name": "",
+          "island": "Kulhudhuffushi",
+          "coordinates": [
+            73.0687087,
+            6.617196
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1160038799",
+          "osm_url": "https://www.openstreetmap.org/way/1160038799",
+          "name": "",
+          "island": "Kulhudhuffushi",
+          "coordinates": [
+            73.0681105,
+            6.6180125
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:276",
+      "official_name": "Bolifushi Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:277",
+      "official_name": "F & C Medicare, Meedhoo",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:279",
+      "official_name": "RMLS Lab Services",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:28",
+      "official_name": "Eri Maldives Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:281",
+      "official_name": "True Care medicals",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:286",
+      "official_name": "Maldives Mobile Nursing Crae",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:29",
+      "official_name": "Pine Tree Medic Care Sh. Funadhoo",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:293",
+      "official_name": "Vommuli Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    }
+  ],
+  "summary": "deterministic local review"
+}

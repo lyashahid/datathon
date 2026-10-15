@@ -1,0 +1,682 @@
+# Unresolved Facilities (678)
+
+Generated: 2026-10-13T05:44:50.788416Z
+
+- `facility:health:716` A.A. Maalhos Health Centre — unresolved_island_context_only
+- `facility:health:500` A.Dh Dhidhoo Health Centre — unresolved_island_context_only
+- `facility:health:504` A.Dh Maamigilee Health Centre — unresolved_island_context_only
+- `facility:health:501` A.Dh Mandhoo Health Centre — unresolved_island_context_only
+- `facility:health:635` AA. Himandhoo Health center — unresolved_island_context_only
+- `facility:health:261` Aahiyans Medical Clinic — unresolved_source_not_found_current_osm
+- `facility:health:12` Aanugandu Island Resort Clinic — unresolved_source_not_found_current_osm
+- `facility:health:191` Aarah Clinic — unresolved_source_not_found_current_osm
+- `facility:health:199` Emerald Faarufushi Clinic — unresolved_island_context_only
+- `facility:health:41` Emerald Maldives Resort Clinic — unresolved_source_not_found_current_osm
+- `facility:health:28` Eri Maldives Clinic — unresolved_source_not_found_current_osm
+- `facility:health:239` Eriyadu Clinic Closed — unresolved_source_not_found_current_osm
+- `facility:health:246` Esma Dhivehi Beys Clinic Closed — unresolved_source_not_found_current_osm
+- `facility:health:760` Eve Clinic — unresolved_source_not_found_current_osm
+- `facility:health:886` Eve Clinic Vinares — unresolved_source_not_found_current_osm
+- `facility:health:92` Eve Clinic West Park — unresolved_source_not_found_current_osm
+- `facility:health:769` Eye Care Clinic — unresolved_competing_candidates
+- `facility:health:796` Eye Care Clinic, Fareedhee Magu Branch Closed — unresolved_source_not_found_current_osm
+- `facility:health:807` Eye Care Hospital — unresolved_competing_candidates
+- `facility:health:428` Eye Care Opticals — unresolved_source_not_found_current_osm
+- `facility:health:56` Eye to Eye Opticals & Clinic — unresolved_source_not_found_current_osm
+- `facility:health:46` Eye to Eye Opticals & Clinic 2 — unresolved_source_not_found_current_osm
+- `facility:health:25` Eye Zone Clinic — unresolved_source_not_found_current_osm
+- `facility:health:1395` EyeCare Clinic Addu Branch — unresolved_competing_candidates
+- `facility:health:1392` EyeCare Clinic Kulhudhuffushi Branch — unresolved_competing_candidates
+- `facility:health:1393` EyeCare Clinic Laamu Branch — unresolved_competing_candidates
+- `facility:health:806` F & C Medicare — unresolved_competing_candidates
+- `facility:health:457` F & C Medicare and Scan Center — unresolved_source_not_found_current_osm
+- `facility:health:277` F & C Medicare, Meedhoo — unresolved_source_not_found_current_osm
+- `facility:health:712` F. Biledhoo Health Centre — unresolved_island_context_only
+- `facility:health:490` F. Dharanboodhoo Health Centre — unresolved_island_context_only
+- `facility:health:641` F. Feeali Health Center — unresolved_island_context_only
+- `facility:health:777` Family Care Clinic and Scan Center — unresolved_competing_candidates
+- `facility:health:180` Family Dental Care — unresolved_competing_candidates
+- `facility:health:818` Family Planning Centre — unresolved_competing_candidates
+- `facility:health:366` Family Relationship Services — unresolved_source_not_found_current_osm
+- `facility:health:1448` Fari Campus — unresolved_source_not_found_current_osm
+- `facility:health:176` Farook Healthcare Villingili — unresolved_competing_candidates
+- `facility:health:357` Faruvaa Clinic — unresolved_competing_candidates
+- `facility:health:20` Faxys Hijama Clinic — unresolved_source_not_found_current_osm
+- `facility:health:129` Fihalhohi Clinic — unresolved_island_context_only
+- `facility:health:418` Finolhu Clinic — unresolved_source_not_found_current_osm
+- `facility:health:395` Finolhu Clinic Plus — unresolved_source_not_found_current_osm
+- `facility:health:469` Four Seasons Resort Maldives at Kuda Huraa Clinic — unresolved_competing_candidates
+- `facility:health:36` Furana Clinic — unresolved_competing_candidates
+- `facility:health:84` Furaveri Clinic — unresolved_island_context_only
+- `facility:health:97` Fushi Clinic — unresolved_source_not_found_current_osm
+- `facility:health:236` Fuvahmulah Medical Centre — unresolved_competing_candidates
+- `facility:health:606` Fuvammulah Hospital — unresolved_island_context_only
+- `facility:health:585` GA. Dhevvadhoo Health Centre — unresolved_island_context_only
+- `facility:health:589` GA. Gemanafushi Health Centre — unresolved_island_context_only
+- `facility:health:588` GA. Kan'dhuhulhudhoo Health Centre — unresolved_island_context_only
+- `facility:health:591` GA. Kolamafushi Health Centre — unresolved_island_context_only
+- `facility:health:584` GA. Kondey Health Centre — unresolved_island_context_only
+- `facility:health:586` GA. Nilandhoo Health Centre — unresolved_island_context_only
+- `facility:health:592` Gaafu Alifu Atoll Hospital — unresolved_competing_candidates
+- `facility:health:582` Gaafu Dhaalu Gadhdhoo Health Centre — unresolved_island_context_only
+- `facility:health:94` Gagan Clinic — unresolved_source_not_found_current_osm
+- `facility:health:143` Gangehi Clinic — unresolved_island_context_only
+- `facility:health:579` GDh. Faresmaathodaa Health Centre — unresolved_island_context_only
+- `facility:health:580` GDh. Fiyoaree Health Centre — unresolved_island_context_only
+- `facility:health:577` GDh. Hoadedhoo Health Centre — unresolved_competing_candidates
+- `facility:health:576` GDh. Nadella Health Centre — unresolved_island_context_only
+- `facility:health:703` Gdh. Rathafandhoo Health Center — unresolved_island_context_only
+- `facility:health:439` Gili Gets Well — unresolved_source_not_found_current_osm
+- `facility:health:1463` Glow Medical and Aesthetics — unresolved_source_not_found_current_osm
+- `facility:health:4` Grand Clinic — unresolved_competing_candidates
+- `facility:health:242` Great Minds — unresolved_source_not_found_current_osm
+- `facility:health:411` Guest And Staff Clinic — unresolved_source_not_found_current_osm
+- `facility:health:884` Gynova — unresolved_source_not_found_current_osm
+- `facility:health:753` Haa Alifu Atoll Hospital — unresolved_competing_candidates
+- `facility:health:745` Haa Alifu Filladhoo Health Centre — unresolved_island_context_only
+- `facility:health:751` Haa Alifu Hoarafushi Health Centre — unresolved_island_context_only
+- `facility:health:748` Haa Alifu Maarandhoo Health Centre — unresolved_island_context_only
+- `facility:health:804` Haa Alifu Molhadhoo Health Centre — unresolved_island_context_only
+- `facility:health:744` Haa Alifu Muraidhoo Health Centre — unresolved_island_context_only
+- `facility:health:747` Haa Alifu Thuraakurun Health Centre — unresolved_island_context_only
+- `facility:health:752` Haa Alifu Utheemu Health Centre — unresolved_island_context_only
+- `facility:health:720` Haa Alifu Vashafaru Health Centre — unresolved_island_context_only
+- `facility:health:644` Haa Dhaalu Finey Health Center — unresolved_island_context_only
+- `facility:health:742` Haa Dhaalu Hanimaadhoo Health Centre — unresolved_island_context_only
+- `facility:health:613` Haa Dhaalu Hirimaradhoo Health Centre — unresolved_island_context_only
+- `facility:health:614` Haa Dhaalu Kurin'bi Health Centre — unresolved_island_context_only
+- `facility:health:622` Haa Dhaalu Makunudhoo Health Centre — unresolved_island_context_only
+- `facility:health:615` Haa Dhaalu Naivaadhoo Health Centre — unresolved_island_context_only
+- `facility:health:616` Haa Dhaalu Nellaidhoo Health Centre — unresolved_island_context_only
+- `facility:health:619` Haa Dhaalu Neykurendhoo Health Centre — unresolved_island_context_only
+- `facility:health:620` Haa Dhaalu Nolhivaran Health Centre — unresolved_island_context_only
+- `facility:health:90` Haajy Medical Clinic — unresolved_source_not_found_current_osm
+- `facility:health:466` Hadahaa Clinic — unresolved_island_context_only
+- `facility:health:115` Hakuraa Medical Centre — unresolved_competing_candidates
+- `facility:health:65` Halaveli Clinic — unresolved_island_context_only
+- `facility:health:170` Havodda Clinic — unresolved_island_context_only
+- `facility:health:1361` Hayaath Hijama Clinic — unresolved_source_not_found_current_osm
+- `facility:health:1353` HEAL PHYSIO AND WELLNESS CLINIC — unresolved_source_not_found_current_osm
+- `facility:health:89` Healing Care Medical Center — unresolved_competing_candidates
+- `facility:health:53` Heart Care — unresolved_competing_candidates
+- `facility:health:1518` HEBE DHIVEHIBEYS HIJAMA CENTER — unresolved_source_not_found_current_osm
+- `facility:health:85` Helengeli Clinic — unresolved_island_context_only
+- `facility:health:278` Herbal Medi Clinic — unresolved_source_not_found_current_osm
+- `facility:health:918` Hijama Faruva By Manara Clinic — unresolved_source_not_found_current_osm
+- `facility:health:201` Hiyaa Medical Center — unresolved_source_not_found_current_osm
+- `facility:health:1226` Holistic Hijama MV — unresolved_source_not_found_current_osm
+- `facility:health:1815` HOPE CARE — unresolved_source_not_found_current_osm
+- `facility:health:280` Hope Dental Care — unresolved_source_not_found_current_osm
+- `facility:health:403` HPSN Medical Clinic — unresolved_source_not_found_current_osm
+- `facility:health:183` Hudhuranfushi Clinic — unresolved_island_context_only
+- `facility:health:375` Hurawalhi Clinic — unresolved_island_context_only
+- `facility:health:335` Hussain Abduh Samad Memorial Clinic — unresolved_competing_candidates
+- `facility:health:248` Huva Clinic Closed — unresolved_competing_candidates
+- `facility:health:251` Huvadhoo PCR lab Closed — unresolved_source_not_found_current_osm
+- `facility:health:40` Huvadhoo Therapy Clinic — unresolved_source_not_found_current_osm
+- `facility:health:454` Huvafen Fushi Clinic — unresolved_source_not_found_current_osm
+- `facility:health:694` I wear — unresolved_source_not_found_current_osm
+- `facility:health:161` ICATT Maldives- Medical Services — unresolved_source_not_found_current_osm
+- `facility:health:105` Ifuru Clinic — unresolved_island_context_only
+- `facility:health:308` IHG Maamunagau Clinic — unresolved_island_context_only
+- `facility:health:241` Ilaa Ali Adam Clinic — unresolved_source_not_found_current_osm
+- `facility:health:22` Ilaaj Hijama & Alternative Medical Services — unresolved_source_not_found_current_osm
+- `facility:health:775` Image center — unresolved_source_not_found_current_osm
+- `facility:health:815` Imperial Medicare Centre — unresolved_source_not_found_current_osm
+- `facility:health:1142` IMPLANTREE DENTAL & AESTHETICS CLINIC — unresolved_source_not_found_current_osm
+- `facility:health:150` Institute For Counselling And Psychotherapy — unresolved_source_not_found_current_osm
+- `facility:health:415` Institute Of Mental Well Being — unresolved_source_not_found_current_osm
+- `facility:health:14` Island Health Clinic — unresolved_competing_candidates
+- `facility:health:869` Island Polyclinic — unresolved_competing_candidates
+- `facility:health:66` Ithaafushi Clinic — unresolved_island_context_only
+- `facility:health:106` Jawakara Clinic — unresolved_source_not_found_current_osm
+- `facility:health:1086` JIRAA Health Centre — unresolved_source_not_found_current_osm
+- `facility:health:224` Joali Being Clinic — unresolved_source_not_found_current_osm
+- `facility:health:333` Joali Muravandhoo Clinic — unresolved_island_context_only
+- `facility:health:1691` JOY CLINIC — unresolved_source_not_found_current_osm
+- `facility:health:400` JP Memorial Clinic — unresolved_competing_candidates
+- `facility:health:718` K. Gaafaru Health Centre — unresolved_island_context_only
+- `facility:health:511` K.Dhiffushi Health Centre — unresolved_island_context_only
+- `facility:health:512` K.Himmafushi Health Centre — unresolved_competing_candidates
+- `facility:health:824` Abuharee Medical Centre — unresolved_source_not_found_current_osm
+- `facility:health:713` Adh. Fenfushi Health Centre — unresolved_island_context_only
+- `facility:health:484` Adh. Hangnaameedhoo Health Centre — unresolved_island_context_only
+- `facility:health:663` Adh. Kurunburudhoo Health Centre — unresolved_island_context_only
+- `facility:health:715` Adh. Omadhoo Health Centre — unresolved_island_context_only
+- `facility:health:168` ADK Hospital Reach Clinic — unresolved_source_not_found_current_osm
+- `facility:health:340` Advance Diagnostic Center — unresolved_competing_candidates
+- `facility:health:432` AIMS Diagnostic Care — unresolved_source_not_found_current_osm
+- `facility:health:911` AL- KHAIRU MEDICAL CENTRE — unresolved_source_not_found_current_osm
+- `facility:health:30` Alai Clinic — unresolved_source_not_found_current_osm
+- `facility:health:513` K.Kaashidhoo Health Centre — unresolved_island_context_only
+- `facility:health:101` Kaam Medical — unresolved_competing_candidates
+- `facility:health:247` Kagi Clinic — unresolved_island_context_only
+- `facility:health:365` Kandima Medical Center — unresolved_island_context_only
+- `facility:health:136` Kandolhu Clinic — unresolved_competing_candidates
+- `facility:health:649` Kandooma Clinic — unresolved_competing_candidates
+- `facility:health:401` Kani Medical Clinic — unresolved_island_context_only
+- `facility:health:51` Kanuhura Clinic — unresolved_competing_candidates
+- `facility:health:87` Knowhub — unresolved_source_not_found_current_osm
+- `facility:health:931` KODHIPPARU CLINIC — unresolved_island_context_only
+- `facility:health:137` Komandoo Clinic — unresolved_source_not_found_current_osm
+- `facility:health:182` Kothaifaru Clinic — unresolved_island_context_only
+- `facility:health:957` Kudhuraniyage Dhivehibeys Clinic — unresolved_source_not_found_current_osm
+- `facility:health:179` Kulhelama Therapy — unresolved_source_not_found_current_osm
+- `facility:health:342` Kulunu Medical Clinic — unresolved_source_not_found_current_osm
+- `facility:health:142` Kunaavashi Clinic — unresolved_island_context_only
+- `facility:health:767` Kuramathi Medical Centre — unresolved_island_context_only
+- `facility:health:313` Kuredhivaru Clinic — unresolved_island_context_only
+- `facility:health:473` Kurumba Clinic — unresolved_competing_candidates
+- `facility:health:254` KV Clinic — unresolved_competing_candidates
+- `facility:health:543` L. Dhanbidhoo Health Centre — unresolved_island_context_only
+- `facility:health:706` L. Kunahandhoo Health Centre — unresolved_island_context_only
+- `facility:health:546` L. Maabaidhoo Health Centre — unresolved_island_context_only
+- `facility:health:705` L. Maamendhoo Health center — unresolved_island_context_only
+- `facility:health:548` L. Maavashu Health Centre — unresolved_island_context_only
+- `facility:health:542` L. Mundoo Health Centre — unresolved_island_context_only
+- `facility:health:27` Leaf of Life Clinic — unresolved_source_not_found_current_osm
+- `facility:health:192` Leykokaa Medical and Rehabilitation Centre — unresolved_source_not_found_current_osm
+- `facility:health:560` LH. Hinnavaru Health Centre — unresolved_island_context_only
+- `facility:health:559` LH. Kurendhoo Health Centre — unresolved_island_context_only
+- `facility:health:652` Lh.Olhuvelifushi Health Centre — unresolved_island_context_only
+- `facility:health:969` Life Care Medical — unresolved_competing_candidates
+- `facility:health:112` Life Care Medical Centre — unresolved_competing_candidates
+- `facility:health:98` Life Wellness Clinic — unresolved_source_not_found_current_osm
+- `facility:health:762` Listen Clinic — unresolved_source_not_found_current_osm
+- `facility:health:71` Lux Maldives Resort Clinic — unresolved_source_not_found_current_osm
+- `facility:health:487` M. Dhiggaru Health Centre — unresolved_island_context_only
+- `facility:health:486` M. Kolhufushi Health Centre — unresolved_island_context_only
+- `facility:health:646` M. Maduvvaree Health Center — unresolved_island_context_only
+- `facility:health:485` M. Mulaku Health Centre — unresolved_source_not_found_current_osm
+- `facility:health:805` M. Naalaafushi Health Centre — unresolved_island_context_only
+- `facility:health:702` M. Raiymaadhoo Health Centre — unresolved_island_context_only
+- `facility:health:750` M. Veyvah Health Centre — unresolved_island_context_only
+- `facility:health:337` M.C.S. Medical Center 2 — unresolved_competing_candidates
+- `facility:health:213` Maadhoo Clinic — unresolved_source_not_found_current_osm
+- `facility:health:1259` Maafushi Pain Clinic — unresolved_competing_candidates
+- `facility:health:169` Maafushivaru Clinic — unresolved_island_context_only
+- `facility:health:422` Maalifushi By COMO — unresolved_competing_candidates
+- `facility:health:230` Maamigili Clinic — unresolved_island_context_only
+- `facility:health:771` Maandhoo Medical Centre — unresolved_island_context_only
+- `facility:health:238` Maayafushi Clinic — unresolved_island_context_only
+- `facility:health:1466` Madivaru Clinic — unresolved_source_not_found_current_osm
+- `facility:health:223` Mafhaa Diagnostic Centre — unresolved_source_not_found_current_osm
+- `facility:health:149` Magey Physio — unresolved_source_not_found_current_osm
+- `facility:health:814` Maldicare — unresolved_competing_candidates
+- `facility:health:80` Maldives Alternative Medical Centre — unresolved_source_not_found_current_osm
+- `facility:health:218` Maldives Diagnostic Centre — unresolved_source_not_found_current_osm
+- `facility:health:76` Maldives Emergency Medical Services — unresolved_competing_candidates
+- `facility:health:286` Maldives Mobile Nursing Crae — unresolved_source_not_found_current_osm
+- `facility:health:1442` MALDIVES MULTISPECIALITY CLINIC — unresolved_source_not_found_current_osm
+- `facility:health:118` Maldives Neuro Endocrine Medical Facility — unresolved_source_not_found_current_osm
+- `facility:health:482` Male' Eye Clinic — unresolved_island_context_only
+- `facility:health:517` Master Dental Care Centre — unresolved_source_not_found_current_osm
+- `facility:health:376` Master Dental Care Centro — unresolved_source_not_found_current_osm
+- `facility:health:64` Master Medical and Dental Care Centre — unresolved_source_not_found_current_osm
+- `facility:health:1483` Mathiveri Eesa Clinic — unresolved_competing_candidates
+- `facility:health:921` Mavericks Care — unresolved_competing_candidates
+- `facility:health:255` Maya Clinic — unresolved_competing_candidates
+- `facility:health:385` Medhope Medical Centre — unresolved_competing_candidates
+- `facility:health:1478` Medi Trust Centre — unresolved_source_not_found_current_osm
+- `facility:health:460` Medical & Hyperbaric Clinic — unresolved_source_not_found_current_osm
+- `facility:health:249` Mediflex Dental and Maxillofacial Surgery — unresolved_source_not_found_current_osm
+- `facility:health:274` Mediflex Laboratories — unresolved_source_not_found_current_osm
+- `facility:health:226` Mediflex Scan Centre Closed — unresolved_source_not_found_current_osm
+- `facility:health:695` MedLab Diagnostic — unresolved_source_not_found_current_osm
+- `facility:health:317` Mednova Medical Center — unresolved_competing_candidates
+- `facility:health:108` Medplus Dental — unresolved_source_not_found_current_osm
+- `facility:health:181` Meedhupparu Clinic — unresolved_island_context_only
+- `facility:health:631` Meeru Clinic — unresolved_source_not_found_current_osm
+- `facility:health:381` Mercure Maldives Kooddoo Clinic — unresolved_island_context_only
+- `facility:health:197` Milaidhoo Clinic — unresolved_island_context_only
+- `facility:health:81` Mind Space — unresolved_source_not_found_current_osm
+- `facility:health:229` Mindcare Clinic — unresolved_competing_candidates
+- `facility:health:8` MIOT Rehab Centre - Maldives — unresolved_competing_candidates
+- `facility:health:416` Mipstar Clinic — unresolved_source_not_found_current_osm
+- `facility:health:15` Mirage Clinic — unresolved_source_not_found_current_osm
+- `facility:health:103` Miriandhoo Medical Services — unresolved_island_context_only
+- `facility:health:54` Modern Medical Centre — unresolved_source_not_found_current_osm
+- `facility:health:47` Moving Cure — unresolved_source_not_found_current_osm
+- `facility:health:117` MPI Clinique — unresolved_source_not_found_current_osm
+- `facility:health:890` Mudhdhoo Clinic — unresolved_island_context_only
+- `facility:health:488` Muli Regional Hospital — unresolved_island_context_only
+- `facility:health:26` Muraka Clinic — unresolved_competing_candidates
+- `facility:health:125` MV DX Diagnostics — unresolved_source_not_found_current_osm
+- `facility:health:38` My Care Medical Centre — unresolved_source_not_found_current_osm
+- `facility:health:551` My Clinic — unresolved_competing_candidates
+- `facility:health:139` My Dental Care — unresolved_competing_candidates
+- `facility:health:316` My Dentist — unresolved_source_not_found_current_osm
+- `facility:health:78` My Family Dentist — unresolved_competing_candidates
+- `facility:health:50` My Family Dentist Male' — unresolved_competing_candidates
+- `facility:health:250` My Lab Closed — unresolved_source_not_found_current_osm
+- `facility:health:210` My Lab Closed — unresolved_source_not_found_current_osm
+- `facility:health:244` My Lab Dharavandhoo Closed — unresolved_competing_candidates
+- `facility:health:7` My Medical Center — unresolved_competing_candidates
+- `facility:health:121` Nada Clinic — unresolved_competing_candidates
+- `facility:health:196` Nafsu Psychological Services — unresolved_source_not_found_current_osm
+- `facility:health:153` Naifaru Medical Center — unresolved_competing_candidates
+- `facility:health:1030` NALA CLINIC — unresolved_source_not_found_current_osm
+- `facility:health:1200` Nautilus Medical Center — unresolved_source_not_found_current_osm
+- `facility:health:39` NazaHealth — unresolved_competing_candidates
+- `facility:health:68` Niyama Resort Clinic — unresolved_source_not_found_current_osm
+- `facility:health:361` Noo Clinic — unresolved_source_not_found_current_osm
+- `facility:health:575` Noonu Atoll hospital — unresolved_competing_candidates
+- `facility:health:566` Noonu Fodhdhoo Health Centre — unresolved_island_context_only
+- `facility:health:568` Noonu Hen'badhoo Health Centre — unresolved_island_context_only
+- `facility:health:574` Noonu Ken'dhikulhudhoo Health Centre — unresolved_island_context_only
+- `facility:health:569` Noonu Kudafari Health Centre — unresolved_island_context_only
+- `facility:health:573` Noonu Landhoo Health Centre — unresolved_island_context_only
+- `facility:health:571` Noonu Lhohi Health Centre — unresolved_island_context_only
+- `facility:health:643` Noonu Maafaru Health Centre — unresolved_island_context_only
+- `facility:health:572` Noonu Maalhendhoo Health Centre — unresolved_island_context_only
+- `facility:health:567` Noonu Magoodhoo Health Centre — unresolved_island_context_only
+- `facility:health:570` Noonu Miladhoo Health Centre — unresolved_island_context_only
+- `facility:health:737` Noonu Velidhoo Health Centre — unresolved_island_context_only
+- `facility:health:419` Noosandha — unresolved_source_not_found_current_osm
+- `facility:health:127` Noosandha - Addu — unresolved_competing_candidates
+- `facility:health:198` Nova Clinic — unresolved_source_not_found_current_osm
+- `facility:health:227` Novalux Diagnostics Closed — unresolved_source_not_found_current_osm
+- `facility:health:219` Nowall Medical Centre — unresolved_source_not_found_current_osm
+- `facility:health:35` NU Hospitals Clinic — unresolved_competing_candidates
+- `facility:health:225` Oagaa Medical Centre — unresolved_source_not_found_current_osm
+- `facility:health:1035` Oasis Health Clinic — unresolved_source_not_found_current_osm
+- `facility:health:93` Olive Medical Centre — unresolved_competing_candidates
+- `facility:health:349` Omega Medical Centre — unresolved_source_not_found_current_osm
+- `facility:health:11` Omni Care Clinic — unresolved_competing_candidates
+- `facility:health:61` One Medical Care — unresolved_source_not_found_current_osm
+- `facility:health:173` Oracare Dental — unresolved_competing_candidates
+- `facility:health:455` Ouch Clinic — unresolved_source_not_found_current_osm
+- `facility:health:159` Pain Clinic — unresolved_competing_candidates
+- `facility:health:151` Paradise Medical Centre — unresolved_source_not_found_current_osm
+- `facility:health:520` Pearl Medical Centre — unresolved_source_not_found_current_osm
+- `facility:health:144` Alai Play and Learn Therapy Center — unresolved_source_not_found_current_osm
+- `facility:health:443` Ali Rasheed Dhivehi Beys Clinic — unresolved_source_not_found_current_osm
+- `facility:health:252` Alimatha Clinic — unresolved_island_context_only
+- `facility:health:128` AMG Clinic — unresolved_source_not_found_current_osm
+- `facility:health:24` Amilla Sihhath — unresolved_source_not_found_current_osm
+- `facility:health:749` Amina Dhiyo Health Centre — unresolved_competing_candidates
+- `facility:health:754` Amina Rehendhi Health Centre — unresolved_source_not_found_current_osm
+- `facility:health:203` Amingiri Clinic — unresolved_source_not_found_current_osm
+- `facility:health:62` Ana's Aesthetic Clinic — unresolved_source_not_found_current_osm
+- `facility:health:363` Ananatara Dhigu Clinic — unresolved_source_not_found_current_osm
+- `facility:health:206` Anantara Kihavah Villas Clinic — unresolved_source_not_found_current_osm
+- `facility:health:215` Angaga Medicals — unresolved_competing_candidates
+- `facility:health:243` Angsana Velavaru Medical Centre — unresolved_source_not_found_current_osm
+- `facility:health:314` Pearl Medical Centre Hulhumale — unresolved_island_context_only
+- `facility:health:44` Physio & Autism Clinic - Hulhumale' — unresolved_island_context_only
+- `facility:health:237` Physio and Autism Clinic — unresolved_source_not_found_current_osm
+- `facility:health:382` Physio Clinic — unresolved_source_not_found_current_osm
+- `facility:health:57` Physio Cure — unresolved_source_not_found_current_osm
+- `facility:health:231` Physio Solutions — unresolved_source_not_found_current_osm
+- `facility:health:315` Pine Tree Medic Care — unresolved_competing_candidates
+- `facility:health:29` Pine Tree Medic Care Sh. Funadhoo — unresolved_island_context_only
+- `facility:health:887` Point Medical Care — unresolved_competing_candidates
+- `facility:health:133` Popular Clinic — unresolved_source_not_found_current_osm
+- `facility:health:1163` Primary Care — unresolved_competing_candidates
+- `facility:health:521` Primax Medi Care — unresolved_source_not_found_current_osm
+- `facility:health:434` Pro Care Clinic & Dental Centre — unresolved_source_not_found_current_osm
+- `facility:health:307` Pullman Maamutaa Maldives Resort Clinic — unresolved_island_context_only
+- `facility:health:858` Pulse Medical and Diagnostics — unresolved_source_not_found_current_osm
+- `facility:health:917` Pulse Point Medical Center — unresolved_source_not_found_current_osm
+- `facility:health:72` Queen Aesthetic Medical Center — unresolved_source_not_found_current_osm
+- `facility:health:645` Raa Alifushi Health Center — unresolved_island_context_only
+- `facility:health:555` Raa Dhuvaafaru Health Centre — unresolved_island_context_only
+- `facility:health:735` Raa Fainu Health Centre — unresolved_island_context_only
+- `facility:health:554` Raa Hulhudhuffaaru Heath Centre — unresolved_island_context_only
+- `facility:health:730` Raa In'guraidhoo Health Centre — unresolved_island_context_only
+- `facility:health:722` Raa Innamaadhoo Health Centre — unresolved_island_context_only
+- `facility:health:732` Raa Kinolhas Health Centre — unresolved_island_context_only
+- `facility:health:731` Raa Maakurathu Health Centre — unresolved_island_context_only
+- `facility:health:733` Raa Maduvvari Health Centre — unresolved_island_context_only
+- `facility:health:557` Raa Meedhoo Health Centre — unresolved_island_context_only
+- `facility:health:556` Raa Rasgetheemu Health Centre — unresolved_island_context_only
+- `facility:health:639` Raa Rasmaadhoo Health Center — unresolved_island_context_only
+- `facility:health:697` Raa Vaadhoo Health Centre — unresolved_island_context_only
+- `facility:health:37` Raaya Clinic — unresolved_source_not_found_current_osm
+- `facility:health:452` Raffles Clinic — unresolved_source_not_found_current_osm
+- `facility:health:1277` Rah Gili Clinic — unresolved_source_not_found_current_osm
+- `facility:health:655` Rangali Clinic — unresolved_island_context_only
+- `facility:health:190` Rannalhi Clinic — unresolved_island_context_only
+- `facility:health:63` Rasfushi Clinic — unresolved_competing_candidates
+- `facility:health:58` Recovery Room — unresolved_source_not_found_current_osm
+- `facility:health:138` Reethi Beach Clilnic — unresolved_source_not_found_current_osm
+- `facility:health:343` Reethi Faru Clinic — unresolved_source_not_found_current_osm
+- `facility:health:398` Resort Clinic — unresolved_source_not_found_current_osm
+- `facility:health:338` Resort Medical and Laboratory Services — unresolved_source_not_found_current_osm
+- `facility:health:208` Revive Medical Centre — unresolved_source_not_found_current_osm
+- `facility:health:279` RMLS Lab Services — unresolved_source_not_found_current_osm
+- `facility:health:16` Royal Island Medical Center — unresolved_competing_candidates
+- `facility:health:347` Ruhgalu Clinic — unresolved_source_not_found_current_osm
+- `facility:health:185` Rx Medicare — unresolved_competing_candidates
+- `facility:health:609` S. Feydhoo Health Centre — unresolved_island_context_only
+- `facility:health:608` S. Hulhu-Meedhoo Health Centre — unresolved_competing_candidates
+- `facility:health:607` S. Maradhoo Health Centre — unresolved_island_context_only
+- `facility:health:1352` S&R Medical Clinic — unresolved_competing_candidates
+- `facility:health:17` Safari Clinic — unresolved_source_not_found_current_osm
+- `facility:health:1318` SafeSpace Psychological Clinic — unresolved_source_not_found_current_osm
+- `facility:health:222` Sandies Bathala Infirmary — unresolved_source_not_found_current_osm
+- `facility:health:6` Sangeli Clinic — unresolved_competing_candidates
+- `facility:health:5` SC Dental Care — unresolved_competing_candidates
+- `facility:health:943` Seen Hijama & Wellness — unresolved_source_not_found_current_osm
+- `facility:health:272` Senahiya Nothern — unresolved_competing_candidates
+- `facility:health:43` Sha Therapy Dhivehibeys Centre — unresolved_source_not_found_current_osm
+- `facility:health:593` Shaviyani Atoll Hospital — unresolved_competing_candidates
+- `facility:health:601` Shaviyani Bileiyfahi Health Centre — unresolved_island_context_only
+- `facility:health:598` Shaviyani Feevah Health Centre — unresolved_island_context_only
+- `facility:health:741` Shaviyani Feydhoo Health Centre — unresolved_island_context_only
+- `facility:health:599` Shaviyani Foakaidhoo Health Centre — unresolved_island_context_only
+- `facility:health:595` Shaviyani Goidhoo Health Centre — unresolved_island_context_only
+- `facility:health:739` Shaviyani Kan'ditheemu Health Centre — unresolved_island_context_only
+- `facility:health:738` Shaviyani Komandoo Health Centre — unresolved_island_context_only
+- `facility:health:596` Shaviyani Lhaimagu Health Centre — unresolved_island_context_only
+- `facility:health:597` Shaviyani Maroshi Health Centre — unresolved_island_context_only
+- `facility:health:740` Shaviyani Narudhoo Health Centre — unresolved_island_context_only
+- `facility:health:594` Shaviyani Noomaraa Health Centre — unresolved_island_context_only
+- `facility:health:110` Shifaa Medical — unresolved_source_not_found_current_osm
+- `facility:health:130` Shuba's Herbal Medicine Center Closed — unresolved_source_not_found_current_osm
+- `facility:health:857` Shuba's Medical Centre — unresolved_competing_candidates
+- `facility:health:932` SILVER CARE CLINIC — unresolved_competing_candidates
+- `facility:health:23` Siyam World Maldives Clinic — unresolved_source_not_found_current_osm
+- `facility:health:808` Smiles Dental Care — unresolved_competing_candidates
+- `facility:health:45` Smiles Dental Care Hulhumale' — unresolved_island_context_only
+- `facility:health:19` So Caring — unresolved_competing_candidates
+- `facility:health:82` SO/ Maldives Clinic — unresolved_competing_candidates
+- `facility:health:59` Soneva Fushi Clinic — unresolved_source_not_found_current_osm
+- `facility:health:184` Soneva Jani Clinic — unresolved_source_not_found_current_osm
+- `facility:health:221` Southern Care Clinic — unresolved_source_not_found_current_osm
+- `facility:health:18` Spectrum Child Development Center — unresolved_source_not_found_current_osm
+- `facility:health:52` Star Medical — unresolved_source_not_found_current_osm
+- `facility:health:174` Stem Center Closed — unresolved_competing_candidates
+- `facility:health:73` Sukoon Clinic — unresolved_source_not_found_current_osm
+- `facility:health:135` Sun Island Medical Centre — unresolved_competing_candidates
+- `facility:health:171` Sun Siyam Irufushi Maldives Clinic — unresolved_source_not_found_current_osm
+- `facility:health:140` Sun Siyam Iruveli Maldives Clinic — unresolved_source_not_found_current_osm
+- `facility:health:70` Sun Siyam Vilu Reef Maldives Clinic — unresolved_source_not_found_current_osm
+- `facility:health:889` Surgicare Clinic — unresolved_source_not_found_current_osm
+- `facility:health:186` Synergy Care — unresolved_source_not_found_current_osm
+- `facility:health:1415` TAJ CORAL CARE CLINIC — unresolved_competing_candidates
+- `facility:health:134` Taj Exotica Clinic — unresolved_source_not_found_current_osm
+- `facility:health:537` TH. Buruni Health Centre — unresolved_island_context_only
+- `facility:health:538` TH. Dhiyamigili Health Centre — unresolved_island_context_only
+- `facility:health:536` TH. Gaadhifushi Health Centre — unresolved_island_context_only
+- `facility:health:541` TH. Guraidhoo Health Centre — unresolved_island_context_only
+- `facility:health:540` TH. Hirilandhoo Health Centre — unresolved_island_context_only
+- `facility:health:640` Th. Kandoodhoo Health Center — unresolved_island_context_only
+- `facility:health:710` Th. Madifushi Health Centre — unresolved_island_context_only
+- `facility:health:707` Th. Omadhoo Health Centre — unresolved_island_context_only
+- `facility:health:708` Th. Thimarafushi Health Centre — unresolved_island_context_only
+- `facility:health:535` TH. Vandhoo Health Centre — unresolved_island_context_only
+- `facility:health:696` Th. Villifushi Health Centre — unresolved_island_context_only
+- `facility:health:177` Thasalli medical Care — unresolved_competing_candidates
+- `facility:health:825` The Clinic Closed — unresolved_source_not_found_current_osm
+- `facility:health:107` The Clinic at Jumeirah Maldives Olhahali Island — unresolved_source_not_found_current_osm
+- `facility:health:132` The Clinic At Sirru Fen Fushi — unresolved_source_not_found_current_osm
+- `facility:health:888` The Clinic at Summer Island Maldives — unresolved_source_not_found_current_osm
+- `facility:health:86` The Residence Maldives at Dhigurah Clinic — unresolved_competing_candidates
+- `facility:health:257` The Residence Maldives at Falhumaafushi Clinic — unresolved_island_context_only
+- `facility:health:91` The Standard Clinic — unresolved_source_not_found_current_osm
+- `facility:health:122` Therapy Centre — unresolved_source_not_found_current_osm
+- `facility:health:1354` THILAFUSHI GENERAL CLINIC — unresolved_island_context_only
+- `facility:health:95` Thulhagiri Clinic — unresolved_island_context_only
+- `facility:health:404` Thundufushi Medical Clinic — unresolved_island_context_only
+- `facility:health:193` Tiny Drops Medical Services — unresolved_source_not_found_current_osm
+- `facility:health:83` TotalPhysio — unresolved_source_not_found_current_osm
+- `facility:health:281` True Care medicals — unresolved_source_not_found_current_osm
+- `facility:health:166` TTH Clinic — unresolved_source_not_found_current_osm
+- `facility:health:427` Unique Dental — unresolved_source_not_found_current_osm
+- `facility:health:383` Uro Medical Care Closed — unresolved_source_not_found_current_osm
+- `facility:health:507` V. Fulidhoo Health Centre — unresolved_island_context_only
+- `facility:health:509` V. Keyodhoo Health Centre — unresolved_island_context_only
+- `facility:health:505` V. Rakeedhoo Health Centre — unresolved_island_context_only
+- `facility:health:506` V. Thinadhoo Health Centre — unresolved_island_context_only
+- `facility:health:200` Vabbinfaru Clinic — unresolved_island_context_only
+- `facility:health:141` Vadoo Clinic — unresolved_competing_candidates
+- `facility:health:165` Valley Dental — unresolved_source_not_found_current_osm
+- `facility:health:77` Varu Medical Centre — unresolved_source_not_found_current_osm
+- `facility:health:104` VCare Counselling and Psychotherapy Centre — unresolved_source_not_found_current_osm
+- `facility:health:429` Velaa Private Island Clinic — unresolved_source_not_found_current_osm
+- `facility:health:524` Velassaru Medical Center — unresolved_island_context_only
+- `facility:health:145` Veligandu Clinic — unresolved_source_not_found_current_osm
+- `facility:health:202` Verso Medical Centre Alifushi Closed — unresolved_island_context_only
+- `facility:health:721` Vilimale' Hospital — unresolved_source_not_found_current_osm
+- `facility:health:256` Villa Biomedicals Laboratory — unresolved_source_not_found_current_osm
+- `facility:health:102` Vision Care Optical and Eye Clinic — unresolved_source_not_found_current_osm
+- `facility:health:294` Asisa Medical Center — unresolved_source_not_found_current_osm
+- `facility:health:425` Athuruga Medical Clinic — unresolved_competing_candidates
+- `facility:health:111` Atoll Clinic Closed — unresolved_competing_candidates
+- `facility:health:309` Atolls Guest Clinic — unresolved_source_not_found_current_osm
+- `facility:health:147` Avani Clinic — unresolved_competing_candidates
+- `facility:health:472` Ayada Maldives Resort Clinic — unresolved_source_not_found_current_osm
+- `facility:health:160` Ayurvedic Therapy — unresolved_source_not_found_current_osm
+- `facility:health:828` Azmi Naeem Medical and Diagnostic Centre — unresolved_source_not_found_current_osm
+- `facility:health:725` B. Hithaadhoo Health Centre — unresolved_island_context_only
+- `facility:health:565` B. Thulhaadhoo Health Centre — unresolved_island_context_only
+- `facility:health:563` Baa Dhonfanu Health Centre — unresolved_island_context_only
+- `facility:health:562` Baa Fehendhoo Health Centre — unresolved_island_context_only
+- `facility:health:522` Vision Clinic — unresolved_source_not_found_current_osm
+- `facility:health:345` Vision Clinic - Hulhumale' — unresolved_island_context_only
+- `facility:health:451` Vision Clinic-01 — unresolved_source_not_found_current_osm
+- `facility:health:523` Vital Care — unresolved_competing_candidates
+- `facility:health:275` Vital Care Kulhudhuffushi Anex — unresolved_competing_candidates
+- `facility:health:49` VitalCare Dental — unresolved_source_not_found_current_osm
+- `facility:health:164` Vitalcare Huvadhoo — unresolved_competing_candidates
+- `facility:health:526` Vivadent Dental Centre — unresolved_source_not_found_current_osm
+- `facility:health:293` Vommuli Clinic — unresolved_island_context_only
+- `facility:health:1063` WELL CARE MEDICALS — unresolved_source_not_found_current_osm
+- `facility:health:67` Wellcare Physiotherapy & Sports Rehabilitation — unresolved_source_not_found_current_osm
+- `facility:health:9` WTE Medical Clinic — unresolved_source_not_found_current_osm
+- `facility:health:13` Yoonaanee Faruvaa Clinic — unresolved_source_not_found_current_osm
+- `facility:health:178` You & Me Clinic — unresolved_source_not_found_current_osm
+- `facility:health:1460` Zen Medi Clinic — unresolved_competing_candidates
+- `facility:health:916` Zulnoor Hijama Care — unresolved_source_not_found_current_osm
+- `facility:health:636` Baa Kamadhoo Health Center — unresolved_island_context_only
+- `facility:health:564` Baa Kendhoo Health Centre — unresolved_island_context_only
+- `facility:health:727` Baa Kihaadhoo Health Centre — unresolved_island_context_only
+- `facility:health:726` Baa Kudarikilu Health Centre — unresolved_island_context_only
+- `facility:health:653` Baa Maalhos Health Centre — unresolved_island_context_only
+- `facility:health:700` Bandos Medical Clinic and Hyperbaric Treatment Centre — unresolved_competing_candidates
+- `facility:health:32` Baros Clinic — unresolved_island_context_only
+- `facility:health:75` BCare — unresolved_source_not_found_current_osm
+- `facility:health:74` Bliss Care — unresolved_competing_candidates
+- `facility:health:1` Blu Clinic — unresolved_source_not_found_current_osm
+- `facility:health:885` Bluspan Care — unresolved_source_not_found_current_osm
+- `facility:health:891` Bluspan Care Annex - 1 — unresolved_source_not_found_current_osm
+- `facility:health:954` Bluspan Care Dhidhdhoo — unresolved_source_not_found_current_osm
+- `facility:health:1627` Bluspan Care Thulusdhoo — unresolved_competing_candidates
+- `facility:health:189` Blyss Multi-Specialty Therapy Centre — unresolved_source_not_found_current_osm
+- `facility:health:276` Bolifushi Clinic — unresolved_island_context_only
+- `facility:health:31` Bulbul Multi Rehab Clinic — unresolved_source_not_found_current_osm
+- `facility:health:88` Bulbul Multi Rehab Clinic — unresolved_source_not_found_current_osm
+- `facility:health:158` Bulbul Therapy Center — unresolved_source_not_found_current_osm
+- `facility:health:167` Care Max Clinic 1 — unresolved_source_not_found_current_osm
+- `facility:health:154` Care Medicals Services — unresolved_source_not_found_current_osm
+- `facility:health:420` Care Trust Multi Speciality Clinic — unresolved_source_not_found_current_osm
+- `facility:health:1258` CAREMORE MEDICALS — unresolved_source_not_found_current_osm
+- `facility:health:48` CareOne Dental & Clinic — unresolved_competing_candidates
+- `facility:health:1001` Centara Clinic — unresolved_competing_candidates
+- `facility:health:445` Center for Traditional Medicine — unresolved_source_not_found_current_osm
+- `facility:health:1042` CHARM DENTAL & SKIN CLINIC — unresolved_source_not_found_current_osm
+- `facility:health:148` Cheval Blance Randeli Clinic — unresolved_source_not_found_current_osm
+- `facility:health:299` Child Development Clinic — unresolved_source_not_found_current_osm
+- `facility:health:99` Chinese Health Care — unresolved_competing_candidates
+- `facility:health:131` Cinnamon Dhonveli Maldives Medical Clinic — unresolved_competing_candidates
+- `facility:health:211` Cinnamon Velifushi Maldives Medical Clinic — unresolved_source_not_found_current_osm
+- `facility:health:195` City Optical — unresolved_source_not_found_current_osm
+- `facility:health:209` Clinica — unresolved_competing_candidates
+- `facility:health:267` Coco Chic Clinic — unresolved_source_not_found_current_osm
+- `facility:health:216` Cocoa Island Clinic — unresolved_competing_candidates
+- `facility:health:220` Cocogiri Clinic — unresolved_source_not_found_current_osm
+- `facility:health:155` Constance Moofushi Resort Clinic — unresolved_island_context_only
+- `facility:health:1004` CORAL BAY CLINIC — unresolved_source_not_found_current_osm
+- `facility:health:402` Crystal Medicals — unresolved_source_not_found_current_osm
+- `facility:health:326` CyMa Care — unresolved_competing_candidates
+- `facility:health:33` CyMa Care Hulhumale' — unresolved_island_context_only
+- `facility:health:795` D.S.M Clinic — unresolved_competing_candidates
+- `facility:health:163` Dental Care Centre — unresolved_source_not_found_current_osm
+- `facility:health:232` Dental Studio — unresolved_source_not_found_current_osm
+- `facility:health:492` DH. Bandidhoo Health Centre — unresolved_island_context_only
+- `facility:health:494` DH. Hulhudhelee Health Centre — unresolved_island_context_only
+- `facility:health:711` Dh. Meedhoo Health Center — unresolved_island_context_only
+- `facility:health:502` DH. Rinbidhoo Health Centre — unresolved_island_context_only
+- `facility:health:42` Dharavandhoo Medical Center — unresolved_competing_candidates
+- `facility:health:359` Dhigali Clinic — unresolved_island_context_only
+- `facility:health:3` Dhirithi Faruvaa — unresolved_competing_candidates
+- `facility:health:446` Dhivehi Beys Clinic — unresolved_source_not_found_current_osm
+- `facility:health:772` Dhoonidhoo Clinic — unresolved_island_context_only
+- `facility:health:172` Dhugethi Dhivehibeys clinic — unresolved_source_not_found_current_osm
+- `facility:health:872` Dhun-nika dhivehibeys clinic — unresolved_source_not_found_current_osm
+- `facility:health:234` Doctor's Clinic — unresolved_source_not_found_current_osm
+- `facility:health:322` Dr Didi Dental And Medical Center — unresolved_source_not_found_current_osm
+- `facility:health:233` Dr Usama Dental Clinic — unresolved_source_not_found_current_osm
+- `facility:health:802` Dr. Didi Dental Centre — unresolved_source_not_found_current_osm
+- `facility:health:626` Dr. Jihad's Dental and Medical Centre — unresolved_source_not_found_current_osm
+- `facility:health:377` Dr. Usama's Clinic Maafannu — unresolved_source_not_found_current_osm
+- `facility:health:188` Dreamland Clinic — unresolved_competing_candidates
+- `facility:health:187` Early Intervention Therapy Centre — unresolved_source_not_found_current_osm
+- `facility:health:354` Elite Medical Center — unresolved_source_not_found_current_osm
+- `facility:health:892` Embudu Village Clinic — unresolved_source_not_found_current_osm
+- `facility:health:205` Emerald Dental Care — unresolved_source_not_found_current_osm
+- `facility:school:436` Ghaazee Bandaarain School — unresolved_island_context_only
+- `facility:school:438` Filladhoo School — unresolved_island_context_only
+- `facility:school:439` Ha. Atoll Education Centre — unresolved_competing_candidates
+- `facility:school:441` Ihavandhoo School — unresolved_island_context_only
+- `facility:school:442` Baarashu School — unresolved_island_context_only
+- `facility:school:443` Maarandhoo School — unresolved_island_context_only
+- `facility:school:444` Vashafaru School — unresolved_island_context_only
+- `facility:school:445` Molhadhoo School — unresolved_island_context_only
+- `facility:school:446` Muraidhoo School — unresolved_island_context_only
+- `facility:school:447` Thuraakunu School — unresolved_island_context_only
+- `facility:school:453` Hanimaadhoo School — unresolved_island_context_only
+- `facility:school:454` Finey School — unresolved_island_context_only
+- `facility:school:455` Kumundhoo School — unresolved_island_context_only
+- `facility:school:456` Kurinbee School — unresolved_island_context_only
+- `facility:school:457` Naivaadhoo School — unresolved_island_context_only
+- `facility:school:459` Hirimaradhoo School — unresolved_island_context_only
+- `facility:school:460` Makunudhoo School — unresolved_island_context_only
+- `facility:school:461` Nellaidhoo School — unresolved_island_context_only
+- `facility:school:462` Neykurendhoo School — unresolved_island_context_only
+- `facility:school:463` Nolhivaranfaru School — unresolved_island_context_only
+- `facility:school:464` Munavvara School — unresolved_island_context_only
+- `facility:school:465` Sh. Atoll Education Centre — unresolved_competing_candidates
+- `facility:school:466` Sh. Atoll School — unresolved_island_context_only
+- `facility:school:467` Feevaku School — unresolved_island_context_only
+- `facility:school:468` Foakaidhoo School — unresolved_island_context_only
+- `facility:school:470` Bileffahee School — unresolved_island_context_only
+- `facility:school:471` Sh. Feydhoo School — unresolved_island_context_only
+- `facility:school:472` Sh. Goidhoo School — unresolved_island_context_only
+- `facility:school:473` Lhaimagu School — unresolved_island_context_only
+- `facility:school:474` Narudhoo School — unresolved_island_context_only
+- `facility:school:475` Noomaraa School — unresolved_island_context_only
+- `facility:school:476` Funadhoo School — unresolved_island_context_only
+- `facility:school:479` N. Atoll school — unresolved_island_context_only
+- `facility:school:480` Fodhdhoo School — unresolved_island_context_only
+- `facility:school:481` Henbadhoo School — unresolved_island_context_only
+- `facility:school:483` Kendhikulhudhoo School — unresolved_island_context_only
+- `facility:school:485` Landhoo School — unresolved_island_context_only
+- `facility:school:486` Lhohee School — unresolved_island_context_only
+- `facility:school:488` Maalhendhoo School — unresolved_island_context_only
+- `facility:school:489` N. Magoodhoo School — unresolved_island_context_only
+- `facility:school:490` Hidhaya School — unresolved_island_context_only
+- `facility:school:491` R. Atoll Education Centre — unresolved_island_context_only
+- `facility:school:492` R. Atoll school — unresolved_competing_candidates
+- `facility:school:495` Inguraidhoo School — unresolved_island_context_only
+- `facility:school:496` Innamaadhoo School — unresolved_island_context_only
+- `facility:school:498` Maakurathu School — unresolved_island_context_only
+- `facility:school:499` Rasgetheemu School — unresolved_island_context_only
+- `facility:school:500` Rasmaadhoo School — unresolved_island_context_only
+- `facility:school:503` Hulhudhuffaaru School — unresolved_island_context_only
+- `facility:school:509` Dhonfanu School — unresolved_island_context_only
+- `facility:school:511` B. Goidhoo School — unresolved_island_context_only
+- `facility:school:512` Hithaadhoo School — unresolved_island_context_only
+- `facility:school:513` Kamadhoo School — unresolved_island_context_only
+- `facility:school:514` Kendhoo School — unresolved_island_context_only
+- `facility:school:516` Kudarikilu School — unresolved_island_context_only
+- `facility:school:517` Maalhohu School — unresolved_island_context_only
+- `facility:school:518` Fehendhoo School — unresolved_island_context_only
+- `facility:school:519` Thulhaadhoo School — unresolved_island_context_only
+- `facility:school:520` Lh. Atoll Education Centre — unresolved_island_context_only
+- `facility:school:521` Lh. Atoll school — unresolved_island_context_only
+- `facility:school:522` Olhuvelifushi School — unresolved_island_context_only
+- `facility:school:530` Gaafaru School — unresolved_island_context_only
+- `facility:school:532` Gulhee School — unresolved_island_context_only
+- `facility:school:535` Ukulhahu School — unresolved_island_context_only
+- `facility:school:538` Bodufolhudhoo School — unresolved_island_context_only
+- `facility:school:539` Maalhohu School — unresolved_island_context_only
+- `facility:school:540` Himandhoo School — unresolved_island_context_only
+- `facility:school:541` ADh. Atoll Education Centre — unresolved_island_context_only
+- `facility:school:542` ADh. Atoll School — unresolved_island_context_only
+- `facility:school:543` Hangnaameedhoo School — unresolved_island_context_only
+- `facility:school:544` ADh. Omadhoo School — unresolved_island_context_only
+- `facility:school:545` Kunburudhoo School — unresolved_island_context_only
+- `facility:school:546` Mandhoo School — unresolved_island_context_only
+- `facility:school:547` Dhangethee School — unresolved_island_context_only
+- `facility:school:548` ADh. Dhidhdhoo School — unresolved_island_context_only
+- `facility:school:550` Fenfushee School — unresolved_island_context_only
+- `facility:school:551` V. Atoll Education Centre — unresolved_island_context_only
+- `facility:school:553` Keyodhoo School — unresolved_island_context_only
+- `facility:school:554` Thinadhoo School — unresolved_island_context_only
+- `facility:school:555` Rakeedhoo School — unresolved_island_context_only
+- `facility:school:557` M. Atoll School — unresolved_island_context_only
+- `facility:school:558` Mulaku School — unresolved_island_context_only
+- `facility:school:559` Dhiggaru School — unresolved_island_context_only
+- `facility:school:560` Raiymandhoo School — unresolved_island_context_only
+- `facility:school:561` Veyvashu School — unresolved_island_context_only
+- `facility:school:562` Naalaafushi School — unresolved_island_context_only
+- `facility:school:563` M. Maduvvaree School — unresolved_island_context_only
+- `facility:school:564` F. Atoll Education Centre — unresolved_island_context_only
+- `facility:school:565` F. Atoll School — unresolved_island_context_only
+- `facility:school:567` Bilehdhoo School — unresolved_island_context_only
+- `facility:school:568` Dharanboodhoo School — unresolved_island_context_only
+- `facility:school:570` Dh. Atoll School — unresolved_island_context_only
+- `facility:school:571` Hulhudheli School — unresolved_island_context_only
+- `facility:school:576` Th. Atoll School — unresolved_island_context_only
+- `facility:school:577` Dhiyamigili School — unresolved_island_context_only
+- `facility:school:580` Hirilandhoo School — unresolved_island_context_only
+- `facility:school:581` Vilufushee School — unresolved_island_context_only
+- `facility:school:582` Burunee School — unresolved_island_context_only
+- `facility:school:583` Kandoodhoo School — unresolved_island_context_only
+- `facility:school:584` Vandhoo School — unresolved_island_context_only
+- `facility:school:585` Madifushi School — unresolved_island_context_only
+- `facility:school:586` Th. Omadhoo School — unresolved_island_context_only
+- `facility:school:587` Gaadhiffushi School — unresolved_island_context_only
+- `facility:school:588` L. Atoll Education Centre — unresolved_island_context_only
+- `facility:school:589` L. Atoll School — unresolved_island_context_only
+- `facility:school:590` Maavashu School — unresolved_island_context_only
+- `facility:school:593` Kunahandhoo School — unresolved_island_context_only
+- `facility:school:594` Isdhoo School — unresolved_island_context_only
+- `facility:school:595` kalaidhoo School — unresolved_island_context_only
+- `facility:school:596` Mundoo School — unresolved_island_context_only
+- `facility:school:597` L. Maamendhoo School — unresolved_island_context_only
+- `facility:school:598` Dhanbidhoo School — unresolved_island_context_only
+- `facility:school:599` Mukurimagu School — unresolved_competing_candidates
+- `facility:school:600` Ihadhdhoo School — unresolved_competing_candidates
+- `facility:school:601` GA. Atoll Education Centre — unresolved_competing_candidates
+- `facility:school:602` GA. Atoll School — unresolved_island_context_only
+- `facility:school:603` GA. Nilandhoo School — unresolved_island_context_only
+- `facility:school:604` Kondey School — unresolved_island_context_only
+- `facility:school:605` Kanduhulhudhoo School — unresolved_island_context_only
+- `facility:school:608` Sulthan Mohamed School — unresolved_island_context_only
+- `facility:school:609` Gemanafushi School — unresolved_island_context_only
+- `facility:school:610` GDh. Atoll Education Centre — unresolved_island_context_only
+- `facility:school:611` GDh. Atoll School — unresolved_island_context_only
+- `facility:school:612` Aboobakuru School — unresolved_island_context_only
+- `facility:school:613` Hoadedhdhoo School — unresolved_island_context_only
+- `facility:school:614` Nadella School — unresolved_island_context_only
+- `facility:school:615` Rathafandhoo School — unresolved_island_context_only
+- `facility:school:618` Huvadhoo School — unresolved_island_context_only
+- `facility:school:620` Thinadhoo School — unresolved_island_context_only
+- `facility:school:622` Fuvahmulaku School — unresolved_island_context_only
+- `facility:school:630` Irushadhiyya School — unresolved_island_context_only
+- `facility:school:631` Feydhoo School — unresolved_island_context_only
+- `facility:school:632` S. Atoll School — unresolved_competing_candidates
+- `facility:school:634` Jamaluddin School — unresolved_competing_candidates
+- `facility:school:636` Thaajuddeen school — unresolved_competing_candidates
+- `facility:school:639` Majeediyya School — unresolved_competing_candidates
+- `facility:school:641` Hiriya School — unresolved_competing_candidates
+- `facility:school:647` Huravee School — unresolved_competing_candidates
+- `facility:school:648` I'zzudhdheen School — unresolved_source_not_found_current_osm
+- `facility:school:649` Mohamed Qasim Preschool — unresolved_competing_candidates
+- `facility:school:650` Kaamil Didi Primary School — unresolved_island_context_only
+- `facility:school:651` S'alaah'udhdheen School — unresolved_island_context_only
+- `facility:school:652` Centre for Higher Secondary Education Male' — unresolved_island_context_only
+- `facility:school:654` Male' Vocational High School — unresolved_competing_candidates

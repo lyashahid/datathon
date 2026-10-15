@@ -1,0 +1,316 @@
+{
+  "438 Filladhoo": {
+    "bbox": [
+      73.20041,
+      6.86376,
+      73.27041,
+      6.93376
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.20041%2C6.86376%2C73.27041%2C6.93376",
+    "elements": [],
+    "counts": {
+      "nodes": 1724,
+      "ways": 251,
+      "relations": 4
+    }
+  },
+  "443 Maarandhoo": {
+    "bbox": [
+      72.94835,
+      6.8180499999999995,
+      73.01835,
+      6.88805
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.94835%2C6.8180499999999995%2C73.01835%2C6.88805",
+    "elements": [
+      {
+        "osm_type": "node",
+        "osm_id": 10196475671,
+        "tags": {
+          "amenity": "school",
+          "grades": "1;2;3;4;5;6;7;8;9;10",
+          "name": "Madharusathul Shaheedh Ali Thakurufaan",
+          "operator": "Ministry of Education",
+          "operator:type": "government"
+        },
+        "center": [
+          72.995369,
+          6.842382
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/10196475671.json"
+      }
+    ],
+    "counts": {
+      "nodes": 1222,
+      "ways": 124,
+      "relations": 4
+    }
+  },
+  "444 Vashafaru": {
+    "bbox": [
+      73.12407,
+      6.863659999999999,
+      73.19407,
+      6.93366
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.12407%2C6.863659999999999%2C73.19407%2C6.93366",
+    "elements": [],
+    "counts": {
+      "nodes": 1110,
+      "ways": 69,
+      "relations": 6
+    }
+  },
+  "445 Molhadhoo": {
+    "bbox": [
+      72.96225,
+      6.97705,
+      73.03224999999999,
+      7.0470500000000005
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.96225%2C6.97705%2C73.03224999999999%2C7.0470500000000005",
+    "elements": [],
+    "counts": {
+      "nodes": 526,
+      "ways": 44,
+      "relations": 3
+    }
+  },
+  "446 Muraidhoo": {
+    "bbox": [
+      73.13249,
+      6.8034099999999995,
+      73.20249,
+      6.87341
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.13249%2C6.8034099999999995%2C73.20249%2C6.87341",
+    "elements": [],
+    "counts": {
+      "nodes": 2651,
+      "ways": 250,
+      "relations": 9
+    }
+  },
+  "447 Thuraakunu": {
+    "bbox": [
+      72.86496,
+      7.06928,
+      72.93495999999999,
+      7.13928
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.86496%2C7.06928%2C72.93495999999999%2C7.13928",
+    "elements": [
+      {
+        "osm_type": "way",
+        "osm_id": 367880332,
+        "tags": {
+          "building": "school"
+        },
+        "center": [
+          72.92490646,
+          7.08647102
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/367880332.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079696,
+        "tags": {
+          "building": "school"
+        },
+        "center": [
+          72.9246849,
+          7.0868671800000005
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079696.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079697,
+        "tags": {
+          "building": "school"
+        },
+        "center": [
+          72.92484618571429,
+          7.0869214000000005
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079697.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079698,
+        "tags": {
+          "building": "school"
+        },
+        "center": [
+          72.9247347,
+          7.08669994
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079698.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079699,
+        "tags": {
+          "building": "school"
+        },
+        "center": [
+          72.92488657999999,
+          7.086702
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079699.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079700,
+        "tags": {
+          "building": "school"
+        },
+        "center": [
+          72.9249511,
+          7.086592085714286
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079700.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079701,
+        "tags": {
+          "building": "school"
+        },
+        "center": [
+          72.92484942,
+          7.08681198
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079701.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287079702,
+        "tags": {
+          "amenity": "school",
+          "denomination": "sunni",
+          "grades": "1-10",
+          "name": "Uligamu School",
+          "operator": "Uligamu School",
+          "operator:type": "public",
+          "religion": "muslim"
+        },
+        "center": [
+          72.92487236818182,
+          7.0868510863636365
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287079702.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1287159278,
+        "tags": {
+          "building": "yes",
+          "government": "customs",
+          "name": "Maldives Customs Service - Uligan Branch",
+          "office": "government"
+        },
+        "center": [
+          72.92422157272728,
+          7.0852497
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1287159278.json"
+      }
+    ],
+    "counts": {
+      "nodes": 1985,
+      "ways": 342,
+      "relations": 5
+    }
+  },
+  "454 Finey": {
+    "bbox": [
+      73.0189,
+      6.71202,
+      73.0889,
+      6.78202
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.0189%2C6.71202%2C73.0889%2C6.78202",
+    "elements": [],
+    "counts": {
+      "nodes": 924,
+      "ways": 134,
+      "relations": 6
+    }
+  },
+  "455 Kumundhoo": {
+    "bbox": [
+      73.01542,
+      6.53715,
+      73.08542,
+      6.60715
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.01542%2C6.53715%2C73.08542%2C6.60715",
+    "elements": [
+      {
+        "osm_type": "node",
+        "osm_id": 14152834523,
+        "tags": {
+          "amenity": "kindergarten",
+          "name": "ތަރަޙަ ޕްރީ ސްކޫލް",
+          "name:dv": "ތަރަޙަ ޕްރީ ސްކޫލް",
+          "name:en": "Tharaha Pre-School"
+        },
+        "center": [
+          73.0515151,
+          6.5744643
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/14152834523.json"
+      },
+      {
+        "osm_type": "way",
+        "osm_id": 1554432122,
+        "tags": {
+          "amenity": "school",
+          "education": "school"
+        },
+        "center": [
+          73.0505902,
+          6.574872233333334
+        ],
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1554432122.json"
+      }
+    ],
+    "counts": {
+      "nodes": 4293,
+      "ways": 743,
+      "relations": 3
+    }
+  },
+  "456 Kurinbi": {
+    "bbox": [
+      72.96236,
+      6.63053,
+      73.03236,
+      6.7005300000000005
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.96236%2C6.63053%2C73.03236%2C6.7005300000000005",
+    "elements": [],
+    "counts": {
+      "nodes": 303,
+      "ways": 53,
+      "relations": 3
+    }
+  },
+  "457 Naivaadhoo": {
+    "bbox": [
+      72.9002,
+      6.71269,
+      72.97019999999999,
+      6.7826900000000006
+    ],
+    "map_url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.9002%2C6.71269%2C72.97019999999999%2C6.7826900000000006",
+    "elements": [],
+    "counts": {
+      "nodes": 1032,
+      "ways": 133,
+      "relations": 6
+    }
+  }
+}

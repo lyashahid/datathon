@@ -1,0 +1,2318 @@
+{
+  "version": "facility-osm-query-v1",
+  "queried_at": "2026-10-13T08:31:38.132378Z",
+  "record_count": 40,
+  "island_query_count": 40,
+  "results": [
+    {
+      "island_key": "island:1",
+      "facility_ids": [
+        "facility:school:539"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.9844854,72.7143639,3.9884609,72.7236716);nwr[\"healthcare\"](3.9844854,72.7143639,3.9884609,72.7236716);nwr[\"office\"=\"educational_institution\"](3.9844854,72.7143639,3.9884609,72.7236716);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.9844854,72.7143639,3.9884609,72.7236716););out center tags;",
+      "overpass": {
+        "query_hash": "7bc61f941d17b2747861ebd187dc833c9805afb59277bc76ff74ec4787acac7f",
+        "cached": true,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "7bc61f941d17b2747861ebd187dc833c9805afb59277bc76ff74ec4787acac7f",
+          "retrieved_at": "2026-10-13T07:07:32.564558Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "19eec9fc78c121c658059d42ae43f1fd74796f22ef88b4a03f0fbbebcc7d6038",
+          "expires_at": "2026-10-14T07:07:32.564579+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T07:05:36Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:539": {
+          "query_hash": "a8789ace78d9d741fadfd523860d6707f89fbeb14d229a96e62d1a1f2a836d2d",
+          "cached": false,
+          "query": {
+            "q": "Maalhohu School, Maalhos, Alifu Alifu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.7143639,3.9884609,72.7236716,3.9844854",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "a8789ace78d9d741fadfd523860d6707f89fbeb14d229a96e62d1a1f2a836d2d",
+            "retrieved_at": "2026-10-13T07:59:32.104132Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Maalhohu+School%2C+Maalhos%2C+Alifu+Alifu%2C+Maldives&viewbox=72.7143639%2C3.9884609%2C72.7236716%2C3.9844854",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1212",
+      "facility_ids": [
+        "facility:school:584"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.2885808,72.9396545,2.2948978,72.9442352);nwr[\"healthcare\"](2.2885808,72.9396545,2.2948978,72.9442352);nwr[\"office\"=\"educational_institution\"](2.2885808,72.9396545,2.2948978,72.9442352);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.2885808,72.9396545,2.2948978,72.9442352););out center tags;",
+      "overpass": {
+        "query_hash": "b6d0a2c975c68b61efeffc919948cac54a0292133d2fe3d7504ed775ec44d121",
+        "cached": true,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "b6d0a2c975c68b61efeffc919948cac54a0292133d2fe3d7504ed775ec44d121",
+          "retrieved_at": "2026-10-13T07:03:27.616146Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "a52b600181de4964c0072244847bd2f91297344762b58c11962de684d0882732",
+          "expires_at": "2026-10-14T07:03:27.616170+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T07:02:36Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:584": {
+          "query_hash": "e1b3322940bb34ec91cbd1670ba4f7d1028bceea462e240e71540a44c5295566",
+          "cached": false,
+          "query": {
+            "q": "Vandhoo School, Vandhoo, Thaa, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.9396545,2.2948978,72.9442352,2.2885808",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "e1b3322940bb34ec91cbd1670ba4f7d1028bceea462e240e71540a44c5295566",
+            "retrieved_at": "2026-10-13T07:59:33.581811Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Vandhoo+School%2C+Vandhoo%2C+Thaa%2C+Maldives&viewbox=72.9396545%2C2.2948978%2C72.9442352%2C2.2885808",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1218",
+      "facility_ids": [
+        "facility:school:583"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.3136564,72.9137700,2.3295074,72.9195514);nwr[\"healthcare\"](2.3136564,72.9137700,2.3295074,72.9195514);nwr[\"office\"=\"educational_institution\"](2.3136564,72.9137700,2.3295074,72.9195514);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.3136564,72.9137700,2.3295074,72.9195514););out center tags;",
+      "overpass": {
+        "query_hash": "9d7af5aa001e71d77d7ce588c33b9ac7e3de4a606d5c72965e5c8d1b32450d25",
+        "cached": true,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "9d7af5aa001e71d77d7ce588c33b9ac7e3de4a606d5c72965e5c8d1b32450d25",
+          "retrieved_at": "2026-10-13T07:10:17.374878Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "ddd6f92d7be58e684650e47b0cb086614497ebac958e5c2e2332cf33736c8187",
+          "expires_at": "2026-10-14T07:10:17.374902+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T07:08:36Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:583": {
+          "query_hash": "9b9ff1ff9897d5bc82bd5fc98d4c5c0da4dd303982f3e4a8106b409b7965f036",
+          "cached": false,
+          "query": {
+            "q": "Kandoodhoo School, Kandoodhoo, Thaa, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.9137700,2.3295074,72.9195514,2.3136564",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "9b9ff1ff9897d5bc82bd5fc98d4c5c0da4dd303982f3e4a8106b409b7965f036",
+            "retrieved_at": "2026-10-13T07:59:35.477093Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Kandoodhoo+School%2C+Kandoodhoo%2C+Thaa%2C+Maldives&viewbox=72.9137700%2C2.3295074%2C72.9195514%2C2.3136564",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1222",
+      "facility_ids": [
+        "facility:school:582"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.5571603,73.0995025,2.5602929,73.1125191);nwr[\"healthcare\"](2.5571603,73.0995025,2.5602929,73.1125191);nwr[\"office\"=\"educational_institution\"](2.5571603,73.0995025,2.5602929,73.1125191);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.5571603,73.0995025,2.5602929,73.1125191););out center tags;",
+      "overpass": {
+        "query_hash": "dba2ecf77b23f082887a4d5d8cc0e49ff17a3d5e0d509e4382188dd5d70e3452",
+        "cached": true,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "dba2ecf77b23f082887a4d5d8cc0e49ff17a3d5e0d509e4382188dd5d70e3452",
+          "retrieved_at": "2026-10-13T06:23:21.373701Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "6eb9f27ac95e9959cedc1a249ac960a5e2549d10a19b3825d917cc65d95b4f62",
+          "expires_at": "2026-10-14T06:23:21.373727+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T06:21:51Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:582": {
+          "query_hash": "5d59f14c28cd4bcdceeb0600762b15dfd239d1ff973e14e29351ada7b9c16f75",
+          "cached": false,
+          "query": {
+            "q": "Burunee School, Buruni, Thaa, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.0995025,2.5602929,73.1125191,2.5571603",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "5d59f14c28cd4bcdceeb0600762b15dfd239d1ff973e14e29351ada7b9c16f75",
+            "retrieved_at": "2026-10-13T07:59:36.931214Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Burunee+School%2C+Buruni%2C+Thaa%2C+Maldives&viewbox=73.0995025%2C2.5602929%2C73.1125191%2C2.5571603",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1229",
+      "facility_ids": [
+        "facility:school:581"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.4975449,73.3037580,2.5086034,73.3121256);nwr[\"healthcare\"](2.4975449,73.3037580,2.5086034,73.3121256);nwr[\"office\"=\"educational_institution\"](2.4975449,73.3037580,2.5086034,73.3121256);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.4975449,73.3037580,2.5086034,73.3121256););out center tags;",
+      "overpass": {
+        "query_hash": "0e4d68e7386452c5cf2e25a13829fe1687f4d4922298fff2d816f2ca77670214",
+        "cached": true,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "0e4d68e7386452c5cf2e25a13829fe1687f4d4922298fff2d816f2ca77670214",
+          "retrieved_at": "2026-10-13T07:11:01.941178Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "dbc180fa0decf250eb28ad510b02984916bd42bec3cc4f145a66fe2a93fefa9e",
+          "expires_at": "2026-10-14T07:11:01.941204+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T07:09:33Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:581": {
+          "query_hash": "ae8fb7caf44f0aa97fb7d4ea6e5ec5c34d2769241e3609bdf94384d919747007",
+          "cached": false,
+          "query": {
+            "q": "Vilufushee School, Vilufushi, Thaa, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.3037580,2.5086034,73.3121256,2.4975449",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "ae8fb7caf44f0aa97fb7d4ea6e5ec5c34d2769241e3609bdf94384d919747007",
+            "retrieved_at": "2026-10-13T07:59:38.429639Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Vilufushee+School%2C+Vilufushi%2C+Thaa%2C+Maldives&viewbox=73.3037580%2C2.5086034%2C73.3121256%2C2.4975449",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1234",
+      "facility_ids": [
+        "facility:school:580"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.2651117,72.9283056,2.2742762,72.9368957);nwr[\"healthcare\"](2.2651117,72.9283056,2.2742762,72.9368957);nwr[\"office\"=\"educational_institution\"](2.2651117,72.9283056,2.2742762,72.9368957);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.2651117,72.9283056,2.2742762,72.9368957););out center tags;",
+      "overpass": {
+        "query_hash": "69dd79d368e6207530f23245ead285e8d3999d5cb8c27c488e79ca02bd0ec033",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "69dd79d368e6207530f23245ead285e8d3999d5cb8c27c488e79ca02bd0ec033",
+          "retrieved_at": "2026-10-13T08:00:22.853047Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "63d9c72df83028ede39df36e3012483a1879d83842112267ca5b1139b4bd22e0",
+          "expires_at": "2026-10-14T08:00:22.853077+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T07:58:35Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:580": {
+          "query_hash": "107bb09464fc60548fd7f58c0264a32b78b4754365c838587e562ee28ed55c10",
+          "cached": false,
+          "query": {
+            "q": "Hirilandhoo School, Hirilandhoo, Thaa, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.9283056,2.2742762,72.9368957,2.2651117",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "107bb09464fc60548fd7f58c0264a32b78b4754365c838587e562ee28ed55c10",
+            "retrieved_at": "2026-10-13T08:00:22.854825Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Hirilandhoo+School%2C+Hirilandhoo%2C+Thaa%2C+Maldives&viewbox=72.9283056%2C2.2742762%2C72.9368957%2C2.2651117",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1242",
+      "facility_ids": [
+        "facility:school:586"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.1641894,73.0184215,2.1707274,73.0289087);nwr[\"healthcare\"](2.1641894,73.0184215,2.1707274,73.0289087);nwr[\"office\"=\"educational_institution\"](2.1641894,73.0184215,2.1707274,73.0289087);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.1641894,73.0184215,2.1707274,73.0289087););out center tags;",
+      "overpass": {
+        "query_hash": "77fd4c7599296500415181d2ea53d03b5ba9c84e06cd9f55e98d5e80d791c864",
+        "cached": true,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "77fd4c7599296500415181d2ea53d03b5ba9c84e06cd9f55e98d5e80d791c864",
+          "retrieved_at": "2026-10-13T07:11:25.253622Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "dbc180fa0decf250eb28ad510b02984916bd42bec3cc4f145a66fe2a93fefa9e",
+          "expires_at": "2026-10-14T07:11:25.253647+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T07:09:33Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:586": {
+          "query_hash": "78d815e1cae1e885eb1dbff2a59fac0c0778e150f4fb7f3745ef095c9821e8b5",
+          "cached": false,
+          "query": {
+            "q": "Th. Omadhoo School, Omadhoo, Thaa, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.0184215,2.1707274,73.0289087,2.1641894",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "78d815e1cae1e885eb1dbff2a59fac0c0778e150f4fb7f3745ef095c9821e8b5",
+            "retrieved_at": "2026-10-13T08:00:24.389752Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Th.+Omadhoo+School%2C+Omadhoo%2C+Thaa%2C+Maldives&viewbox=73.0184215%2C2.1707274%2C73.0289087%2C2.1641894",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1274",
+      "facility_ids": [
+        "facility:school:576"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.3169529,73.3114408,2.3276888,73.3237381);nwr[\"healthcare\"](2.3169529,73.3114408,2.3276888,73.3237381);nwr[\"office\"=\"educational_institution\"](2.3169529,73.3114408,2.3276888,73.3237381);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.3169529,73.3114408,2.3276888,73.3237381););out center tags;",
+      "overpass": {
+        "query_hash": "cfeeeb2aced86bc9d02ab3154bc41d1be5c61947dffa01f61b16ef3c6c554fa5",
+        "cached": true,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "cfeeeb2aced86bc9d02ab3154bc41d1be5c61947dffa01f61b16ef3c6c554fa5",
+          "retrieved_at": "2026-10-13T06:32:53.004493Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "c8da2bfe1e4f0df0e7a1bcf84b36c6388e577edc74fd9c1cfacaa991c54b4b97",
+          "expires_at": "2026-10-14T06:32:53.004560+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T06:31:03Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:576": {
+          "query_hash": "f2150d7caaf0ad310ad69756e54c89c2dde2f80f62c9d6d7323e3d61981bbc38",
+          "cached": false,
+          "query": {
+            "q": "Th. Atoll School, Guraidhoo, Thaa, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.3114408,2.3276888,73.3237381,2.3169529",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "f2150d7caaf0ad310ad69756e54c89c2dde2f80f62c9d6d7323e3d61981bbc38",
+            "retrieved_at": "2026-10-13T08:00:26.392126Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Th.+Atoll+School%2C+Guraidhoo%2C+Thaa%2C+Maldives&viewbox=73.3114408%2C2.3276888%2C73.3237381%2C2.3169529",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1275",
+      "facility_ids": [
+        "facility:school:577"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.3359065,73.3336153,2.3444924,73.3399006);nwr[\"healthcare\"](2.3359065,73.3336153,2.3444924,73.3399006);nwr[\"office\"=\"educational_institution\"](2.3359065,73.3336153,2.3444924,73.3399006);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.3359065,73.3336153,2.3444924,73.3399006););out center tags;",
+      "overpass": {
+        "query_hash": "646812d8666b0928c144d997fbdd18809dca1e6bf332b398dddf2186e5c8fe24",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "646812d8666b0928c144d997fbdd18809dca1e6bf332b398dddf2186e5c8fe24",
+          "retrieved_at": "2026-10-13T08:02:09.263377Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "6ccc9c686b2d5533bab2d169842824f722503d95fbee1c677419e8d3044ce72c",
+          "expires_at": "2026-10-14T08:02:09.263399+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:00:36Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:577": {
+          "query_hash": "145c18af4c32d3106df5b947fd33fb48b8c1252263f42b905147e4d8a9eaef00",
+          "cached": false,
+          "query": {
+            "q": "Dhiyamigili School, Dhiyamigili, Thaa, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.3336153,2.3444924,73.3399006,2.3359065",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "145c18af4c32d3106df5b947fd33fb48b8c1252263f42b905147e4d8a9eaef00",
+            "retrieved_at": "2026-10-13T08:02:09.264789Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Dhiyamigili+School%2C+Dhiyamigili%2C+Thaa%2C+Maldives&viewbox=73.3336153%2C2.3444924%2C73.3399006%2C2.3359065",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1281",
+      "facility_ids": [
+        "facility:school:585"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.3518870,73.3502377,2.3626410,73.3585544);nwr[\"healthcare\"](2.3518870,73.3502377,2.3626410,73.3585544);nwr[\"office\"=\"educational_institution\"](2.3518870,73.3502377,2.3626410,73.3585544);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.3518870,73.3502377,2.3626410,73.3585544););out center tags;",
+      "overpass": {
+        "query_hash": "2d2d6d86188d6a63bcc015896c15f7029d7070b606cd849fc38af802f11a1e84",
+        "cached": true,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "2d2d6d86188d6a63bcc015896c15f7029d7070b606cd849fc38af802f11a1e84",
+          "retrieved_at": "2026-10-13T07:13:21.356761Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "112f060a9505e3a654566e800b8a1fb0b535716e516703ac1bf03ee9ef3b844d",
+          "expires_at": "2026-10-14T07:13:21.356784+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T07:11:40Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:585": {
+          "query_hash": "e048cd13c04e7a327a2fadde73255e1dea6cb660aba13e50ed62b7cbdb1a9a53",
+          "cached": false,
+          "query": {
+            "q": "Madifushi School, Madifushi, Thaa, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.3502377,2.3626410,73.3585544,2.3518870",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "e048cd13c04e7a327a2fadde73255e1dea6cb660aba13e50ed62b7cbdb1a9a53",
+            "retrieved_at": "2026-10-13T08:02:10.759324Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Madifushi+School%2C+Madifushi%2C+Thaa%2C+Maldives&viewbox=73.3502377%2C2.3626410%2C73.3585544%2C2.3518870",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1290",
+      "facility_ids": [
+        "facility:school:554"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.4856746,73.5352752,3.4898761,73.5410831);nwr[\"healthcare\"](3.4856746,73.5352752,3.4898761,73.5410831);nwr[\"office\"=\"educational_institution\"](3.4856746,73.5352752,3.4898761,73.5410831);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.4856746,73.5352752,3.4898761,73.5410831););out center tags;",
+      "overpass": {
+        "query_hash": "bfc308fba99a04d7de650ecdd379eb0fa0e589c0ba65762ea71064e6d3717dc2",
+        "cached": true,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "bfc308fba99a04d7de650ecdd379eb0fa0e589c0ba65762ea71064e6d3717dc2",
+          "retrieved_at": "2026-10-13T06:53:48.208061Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "4062ee53fc295fedeb63c55c300e9569c1b141e04b529954065f5b134a9b4666",
+          "expires_at": "2026-10-14T06:53:48.208080+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T06:52:33Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:554": {
+          "query_hash": "933e84a6de4b92c52d4cf53d5f98fe6dc4f9bee1a733fef7a53bec925f38eda0",
+          "cached": false,
+          "query": {
+            "q": "Thinadhoo School, Thinadhoo, Vaavu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5352752,3.4898761,73.5410831,3.4856746",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "933e84a6de4b92c52d4cf53d5f98fe6dc4f9bee1a733fef7a53bec925f38eda0",
+            "retrieved_at": "2026-10-13T08:02:12.566979Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Thinadhoo+School%2C+Thinadhoo%2C+Vaavu%2C+Maldives&viewbox=73.5352752%2C3.4898761%2C73.5410831%2C3.4856746",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1291",
+      "facility_ids": [
+        "facility:school:551"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.4701524,73.5442130,3.4738449,73.5495887);nwr[\"healthcare\"](3.4701524,73.5442130,3.4738449,73.5495887);nwr[\"office\"=\"educational_institution\"](3.4701524,73.5442130,3.4738449,73.5495887);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.4701524,73.5442130,3.4738449,73.5495887););out center tags;",
+      "overpass": {
+        "query_hash": "1ca496f518e8e0abc3faaec77ba1fef1f55a48500eafd33702b6a0851df2ea49",
+        "cached": false,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "1ca496f518e8e0abc3faaec77ba1fef1f55a48500eafd33702b6a0851df2ea49",
+          "retrieved_at": "2026-10-13T08:04:25.401214Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "38b0041ca5c9ce9aac5499ae75f8686a0084c823716dc668ccc2f1c0ba5dc830",
+          "expires_at": "2026-10-14T08:04:25.401246+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:02:36Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "node",
+              "id": 7208742088,
+              "lat": 3.4711742,
+              "lon": 73.5461258,
+              "tags": {
+                "amenity": "pharmacy",
+                "name:en": "STO Pharmacy"
+              }
+            },
+            {
+              "type": "node",
+              "id": 7208742187,
+              "lat": 3.4708637,
+              "lon": 73.545913,
+              "tags": {
+                "amenity": "hospital",
+                "name:en": "Vaavu Atoll Hospital"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:school:551": {
+          "query_hash": "e2fa2357d601ca0e5cd795265332af86e955db27e724701c7635ab3c40b6000c",
+          "cached": false,
+          "query": {
+            "q": "V. Atoll Education Centre, Felidhoo, Vaavu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5442130,3.4738449,73.5495887,3.4701524",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "e2fa2357d601ca0e5cd795265332af86e955db27e724701c7635ab3c40b6000c",
+            "retrieved_at": "2026-10-13T08:04:25.403407Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=V.+Atoll+Education+Centre%2C+Felidhoo%2C+Vaavu%2C+Maldives&viewbox=73.5442130%2C3.4738449%2C73.5495887%2C3.4701524",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1292",
+      "facility_ids": [
+        "facility:school:553"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.4601657,73.5477424,3.4640536,73.5526498);nwr[\"healthcare\"](3.4601657,73.5477424,3.4640536,73.5526498);nwr[\"office\"=\"educational_institution\"](3.4601657,73.5477424,3.4640536,73.5526498);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.4601657,73.5477424,3.4640536,73.5526498););out center tags;",
+      "overpass": {
+        "query_hash": "1d954308ca9638d271beb54a93575bf9089b3524051bfaf2fe917dbd049c72d1",
+        "cached": true,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "1d954308ca9638d271beb54a93575bf9089b3524051bfaf2fe917dbd049c72d1",
+          "retrieved_at": "2026-10-13T06:37:33.084933Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "63715cb3e8104937d85604a58de290953ff519764898212d8b8dd95a4a056cb3",
+          "expires_at": "2026-10-14T06:37:33.084969+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T06:36:03Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:553": {
+          "query_hash": "4f2353dfda9de4687d47de2d94aad175ff382158ccfc35221e660dcd6bc172e9",
+          "cached": false,
+          "query": {
+            "q": "Keyodhoo School, Keyodhoo, Vaavu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5477424,3.4640536,73.5526498,3.4601657",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "4f2353dfda9de4687d47de2d94aad175ff382158ccfc35221e660dcd6bc172e9",
+            "retrieved_at": "2026-10-13T08:04:27.410709Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Keyodhoo+School%2C+Keyodhoo%2C+Vaavu%2C+Maldives&viewbox=73.5477424%2C3.4640536%2C73.5526498%2C3.4601657",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1302",
+      "facility_ids": [
+        "facility:school:555"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.3134861,73.4679838,3.3163421,73.4712417);nwr[\"healthcare\"](3.3134861,73.4679838,3.3163421,73.4712417);nwr[\"office\"=\"educational_institution\"](3.3134861,73.4679838,3.3163421,73.4712417);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.3134861,73.4679838,3.3163421,73.4712417););out center tags;",
+      "overpass": {
+        "query_hash": "4fe247ca5781f6a8fc85091dd0dc27de8eea7f4089ea33027de6ace39e843dd1",
+        "cached": true,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "4fe247ca5781f6a8fc85091dd0dc27de8eea7f4089ea33027de6ace39e843dd1",
+          "retrieved_at": "2026-10-13T07:03:18.854024Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "ea9f52e8ca9ce955b187906e1fbb63b2348cbb94171274e85b25ac404765f559",
+          "expires_at": "2026-10-14T07:03:18.854048+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T07:01:36Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "way",
+              "id": 723034027,
+              "center": {
+                "lat": 3.3156124,
+                "lon": 73.4697731
+              },
+              "tags": {
+                "healthcare": "yes"
+              }
+            },
+            {
+              "type": "way",
+              "id": 951547163,
+              "center": {
+                "lat": 3.3146125,
+                "lon": 73.4699533
+              },
+              "tags": {
+                "building": "school"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:school:555": {
+          "query_hash": "3190d40b6543574b091bba73309fbebcc75d2209f238bdb5fe6c18daabff39a2",
+          "cached": false,
+          "query": {
+            "q": "Rakeedhoo School, Rakeedhoo, Vaavu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.4679838,3.3163421,73.4712417,3.3134861",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "3190d40b6543574b091bba73309fbebcc75d2209f238bdb5fe6c18daabff39a2",
+            "retrieved_at": "2026-10-13T08:04:29.307585Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Rakeedhoo+School%2C+Rakeedhoo%2C+Vaavu%2C+Maldives&viewbox=73.4679838%2C3.3163421%2C73.4712417%2C3.3134861",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1464",
+      "facility_ids": [
+        "facility:school:532"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.9883918,73.5071725,3.9938158,73.5104239);nwr[\"healthcare\"](3.9883918,73.5071725,3.9938158,73.5104239);nwr[\"office\"=\"educational_institution\"](3.9883918,73.5071725,3.9938158,73.5104239);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.9883918,73.5071725,3.9938158,73.5104239););out center tags;",
+      "overpass": {
+        "query_hash": "7b4d09417eb4ba1b688dc300765ba40636cb879927d4cf3ca50638067efff205",
+        "cached": false,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "7b4d09417eb4ba1b688dc300765ba40636cb879927d4cf3ca50638067efff205",
+          "retrieved_at": "2026-10-13T08:06:34.030218Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "f88b901fe5fdf7115fa631cf7506ccfa221a5d93569767d5ed0ae920cf52721a",
+          "expires_at": "2026-10-14T08:06:34.030244+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:04:34Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "way",
+              "id": 380915306,
+              "center": {
+                "lat": 3.9893395,
+                "lon": 73.5091649
+              },
+              "tags": {
+                "amenity": "school"
+              }
+            },
+            {
+              "type": "way",
+              "id": 384227881,
+              "center": {
+                "lat": 3.9900977,
+                "lon": 73.5100982
+              },
+              "tags": {
+                "amenity": "hospital",
+                "building": "yes",
+                "healthcare": "hospital",
+                "name": "Island Clinic"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:school:532": {
+          "query_hash": "b8878e528cb2f8468907558c964675be69467e093e2326bf0c33ef0c77404c65",
+          "cached": false,
+          "query": {
+            "q": "Gulhee School, Gulhi, Kaafu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5071725,3.9938158,73.5104239,3.9883918",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "b8878e528cb2f8468907558c964675be69467e093e2326bf0c33ef0c77404c65",
+            "retrieved_at": "2026-10-13T08:06:34.031839Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Gulhee+School%2C+Gulhi%2C+Kaafu%2C+Maldives&viewbox=73.5071725%2C3.9938158%2C73.5104239%2C3.9883918",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:15",
+      "facility_ids": [
+        "facility:school:538"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](4.1836675,72.7716701,4.1880319,72.7754206);nwr[\"healthcare\"](4.1836675,72.7716701,4.1880319,72.7754206);nwr[\"office\"=\"educational_institution\"](4.1836675,72.7716701,4.1880319,72.7754206);nwr[\"building\"~\"^(hospital|clinic|school)$\"](4.1836675,72.7716701,4.1880319,72.7754206););out center tags;",
+      "overpass": {
+        "query_hash": "a95b95540929daf0d22fc75f8e606334dd54e80c0e78478027eed3175fe307fb",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "a95b95540929daf0d22fc75f8e606334dd54e80c0e78478027eed3175fe307fb",
+          "retrieved_at": "2026-10-13T08:07:18.329173Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "172a1c62a4c59dc8b2d3fc68a67845f4674cbdb6d3dbfe592e1cb015a5920c93",
+          "expires_at": "2026-10-14T08:07:18.329218+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:05:35Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "way",
+              "id": 1066962466,
+              "center": {
+                "lat": 4.1861384,
+                "lon": 72.7725821
+              },
+              "tags": {
+                "amenity": "clinic",
+                "building": "yes",
+                "healthcare": "clinic",
+                "name": "hospital",
+                "source": "microsoft/BuildingFootprints"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:school:538": {
+          "query_hash": "7af55609ce15dac516cc873b2fd5a71e48086b476dd9251cb1db873d5223f53a",
+          "cached": false,
+          "query": {
+            "q": "Bodufolhudhoo School, Bodufolhudhoo, Alifu Alifu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.7716701,4.1880319,72.7754206,4.1836675",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "7af55609ce15dac516cc873b2fd5a71e48086b476dd9251cb1db873d5223f53a",
+            "retrieved_at": "2026-10-13T08:07:18.332558Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Bodufolhudhoo+School%2C+Bodufolhudhoo%2C+Alifu+Alifu%2C+Maldives&viewbox=72.7716701%2C4.1880319%2C72.7754206%2C4.1836675",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1531",
+      "facility_ids": [
+        "facility:school:541"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.7550509,72.9644281,3.7591353,72.9731737);nwr[\"healthcare\"](3.7550509,72.9644281,3.7591353,72.9731737);nwr[\"office\"=\"educational_institution\"](3.7550509,72.9644281,3.7591353,72.9731737);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.7550509,72.9644281,3.7591353,72.9731737););out center tags;",
+      "overpass": {
+        "query_hash": "36f16a66e57b39c2f754cc84da5ea07f300a79fddcccdd90be1a3f7e6ecf5bda",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "36f16a66e57b39c2f754cc84da5ea07f300a79fddcccdd90be1a3f7e6ecf5bda",
+          "retrieved_at": "2026-10-13T08:08:08.380418Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "55e8bd4fddc320147fa94adb8d07a1d32be2ba1422a9d8016100e51686d841c4",
+          "expires_at": "2026-10-14T08:08:08.380445+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:06:36Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "way",
+              "id": 465261224,
+              "center": {
+                "lat": 3.7576509,
+                "lon": 72.9664257
+              },
+              "tags": {
+                "amenity": "hospital",
+                "healthcare": "hospital",
+                "name": "South Ari District Medical Center",
+                "phone": "+960 668-0529"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:school:541": {
+          "query_hash": "7fbb8f6596d1be5ea7ccc8514bf7adc9a774f8eabdb95d7df18b7647d0e66a90",
+          "cached": false,
+          "query": {
+            "q": "ADh. Atoll Education Centre, Mahibadhoo, Alifu Dhaalu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.9644281,3.7591353,72.9731737,3.7550509",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "7fbb8f6596d1be5ea7ccc8514bf7adc9a774f8eabdb95d7df18b7647d0e66a90",
+            "retrieved_at": "2026-10-13T08:08:08.382729Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=ADh.+Atoll+Education+Centre%2C+Mahibadhoo%2C+Alifu+Dhaalu%2C+Maldives&viewbox=72.9644281%2C3.7591353%2C72.9731737%2C3.7550509",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1552",
+      "facility_ids": [
+        "facility:school:542"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.4688091,72.8167023,3.4825836,72.8457307);nwr[\"healthcare\"](3.4688091,72.8167023,3.4825836,72.8457307);nwr[\"office\"=\"educational_institution\"](3.4688091,72.8167023,3.4825836,72.8457307);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.4688091,72.8167023,3.4825836,72.8457307););out center tags;",
+      "overpass": {
+        "query_hash": "58d3810a089db1a1e1305f21eb8f820b547dadad613baca63e10fdd93eb54806",
+        "cached": true,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "58d3810a089db1a1e1305f21eb8f820b547dadad613baca63e10fdd93eb54806",
+          "retrieved_at": "2026-10-13T06:43:28.858144Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "daf30f676f01a751bfbf9485c51165db5039fd93976b5a2edd1f83e18b7afc93",
+          "expires_at": "2026-10-14T06:43:28.858164+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T06:42:06Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "node",
+              "id": 12925283001,
+              "lat": 3.4763473,
+              "lon": 72.8381995,
+              "tags": {
+                "amenity": "pharmacy"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:school:542": {
+          "query_hash": "ffeefcb2c25df5b2257d0406d8beb47a8474705e7c6b3fdd33f4a2870b6a9bf7",
+          "cached": false,
+          "query": {
+            "q": "ADh. Atoll School, Maamigili, Alifu Dhaalu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.8167023,3.4825836,72.8457307,3.4688091",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "ffeefcb2c25df5b2257d0406d8beb47a8474705e7c6b3fdd33f4a2870b6a9bf7",
+            "retrieved_at": "2026-10-13T08:08:10.255583Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=ADh.+Atoll+School%2C+Maamigili%2C+Alifu+Dhaalu%2C+Maldives&viewbox=72.8167023%2C3.4825836%2C72.8457307%2C3.4688091",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:23",
+      "facility_ids": [
+        "facility:school:540"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.9191055,72.7406727,3.9233661,72.7481675);nwr[\"healthcare\"](3.9191055,72.7406727,3.9233661,72.7481675);nwr[\"office\"=\"educational_institution\"](3.9191055,72.7406727,3.9233661,72.7481675);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.9191055,72.7406727,3.9233661,72.7481675););out center tags;",
+      "overpass": {
+        "query_hash": "7cc1c11e89dc22128d1774c829e75209f26cc01e2ba117079415e3c026d2df22",
+        "cached": true,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "7cc1c11e89dc22128d1774c829e75209f26cc01e2ba117079415e3c026d2df22",
+          "retrieved_at": "2026-10-13T07:26:13.376531Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "42228bab5fb17e81edca36ff94a56e96ea4dea0a6932295819e697608cf5e6fd",
+          "expires_at": "2026-10-14T07:26:13.376555+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T07:24:56Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:540": {
+          "query_hash": "7f7ce203ec4ffe6535b4b9351f673d9bb092abe31f5f4058e20e4824e0d8a26c",
+          "cached": false,
+          "query": {
+            "q": "Himandhoo School, Himandhoo, Alifu Alifu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.7406727,3.9233661,72.7481675,3.9191055",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "7f7ce203ec4ffe6535b4b9351f673d9bb092abe31f5f4058e20e4824e0d8a26c",
+            "retrieved_at": "2026-10-13T08:08:11.647131Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Himandhoo+School%2C+Himandhoo%2C+Alifu+Alifu%2C+Maldives&viewbox=72.7406727%2C3.9233661%2C72.7481675%2C3.9191055",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:25",
+      "facility_ids": [
+        "facility:school:535"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](4.2110530,72.8606515,4.2184922,72.8674010);nwr[\"healthcare\"](4.2110530,72.8606515,4.2184922,72.8674010);nwr[\"office\"=\"educational_institution\"](4.2110530,72.8606515,4.2184922,72.8674010);nwr[\"building\"~\"^(hospital|clinic|school)$\"](4.2110530,72.8606515,4.2184922,72.8674010););out center tags;",
+      "overpass": {
+        "query_hash": "88a6751b1e3bf81d677a00d7fa8bae9aa28f08a3e78dae8f1e27aa08475c4f17",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "88a6751b1e3bf81d677a00d7fa8bae9aa28f08a3e78dae8f1e27aa08475c4f17",
+          "retrieved_at": "2026-10-13T08:08:55.313902Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "410815a52f0f3d336272a46cd1ac3cd94f4c5776743f3d76a3073d24f312af13",
+          "expires_at": "2026-10-14T08:08:55.313936+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:07:36Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "way",
+              "id": 778055729,
+              "center": {
+                "lat": 4.2173092,
+                "lon": 72.8618491
+              },
+              "tags": {
+                "amenity": "school",
+                "building": "yes"
+              }
+            },
+            {
+              "type": "way",
+              "id": 924568541,
+              "center": {
+                "lat": 4.2158099,
+                "lon": 72.8628341
+              },
+              "tags": {
+                "amenity": "pharmacy",
+                "building": "yes",
+                "healthcare": "pharmacy",
+                "name": "STO Pharmacy"
+              }
+            },
+            {
+              "type": "way",
+              "id": 924568542,
+              "center": {
+                "lat": 4.2158988,
+                "lon": 72.8627161
+              },
+              "tags": {
+                "amenity": "hospital",
+                "building": "yes",
+                "healthcare": "yes",
+                "name": "Ukulhas Hospital"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1066856193,
+              "center": {
+                "lat": 4.2175696,
+                "lon": 72.8616539
+              },
+              "tags": {
+                "building": "school",
+                "nohousenumber": "yes"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:school:535": {
+          "query_hash": "4247aaf55b5a7f00ccaa1c4a6244f768725817dad7963cb2bf0a924458dba8df",
+          "cached": false,
+          "query": {
+            "q": "Ukulhahu School, Ukulhas, Alifu Alifu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.8606515,4.2184922,72.8674010,4.2110530",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "4247aaf55b5a7f00ccaa1c4a6244f768725817dad7963cb2bf0a924458dba8df",
+            "retrieved_at": "2026-10-13T08:08:55.316491Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Ukulhahu+School%2C+Ukulhas%2C+Alifu+Alifu%2C+Maldives&viewbox=72.8606515%2C4.2184922%2C72.8674010%2C4.2110530",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:267",
+      "facility_ids": [
+        "facility:school:571"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.8565597,72.8423106,2.8602607,72.8510261);nwr[\"healthcare\"](2.8565597,72.8423106,2.8602607,72.8510261);nwr[\"office\"=\"educational_institution\"](2.8565597,72.8423106,2.8602607,72.8510261);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.8565597,72.8423106,2.8602607,72.8510261););out center tags;",
+      "overpass": {
+        "query_hash": "2e48255ada5e9640f07f4131ed249f5497d54f50f504751797aa69f60bc2ebf8",
+        "cached": true,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "2e48255ada5e9640f07f4131ed249f5497d54f50f504751797aa69f60bc2ebf8",
+          "retrieved_at": "2026-10-13T06:15:02.763682Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "8bf226046120dc43a686fe30d6f7d3f00ea656cca56f6e92677f5ed3940372cc",
+          "expires_at": "2026-10-14T06:15:02.763705+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T06:13:36Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:571": {
+          "query_hash": "b3eb08921c444c6a597517ddcb7139d4d89c8fa87bb43fa0b27afda30994efdf",
+          "cached": false,
+          "query": {
+            "q": "Hulhudheli School, Hulhudheli, Dhaalu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.8423106,2.8602607,72.8510261,2.8565597",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "b3eb08921c444c6a597517ddcb7139d4d89c8fa87bb43fa0b27afda30994efdf",
+            "retrieved_at": "2026-10-13T08:08:56.687572Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Hulhudheli+School%2C+Hulhudheli%2C+Dhaalu%2C+Maldives&viewbox=72.8423106%2C2.8602607%2C72.8510261%2C2.8565597",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:282",
+      "facility_ids": [
+        "facility:school:570"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.9943903,73.0037410,3.0015427,73.0105632);nwr[\"healthcare\"](2.9943903,73.0037410,3.0015427,73.0105632);nwr[\"office\"=\"educational_institution\"](2.9943903,73.0037410,3.0015427,73.0105632);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.9943903,73.0037410,3.0015427,73.0105632););out center tags;",
+      "overpass": {
+        "query_hash": "e8ad9edde7127bac95472d94908bca3c168e615464eab0245038662ea7894c1e",
+        "cached": true,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "e8ad9edde7127bac95472d94908bca3c168e615464eab0245038662ea7894c1e",
+          "retrieved_at": "2026-10-13T07:14:25.174227Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "9ea448b339e56b9d89cc2fca50457fddba01d382dd05c22f17f8921a726c78c9",
+          "expires_at": "2026-10-14T07:14:25.174256+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T07:12:38Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:570": {
+          "query_hash": "fa4c535d5fd99057c642d9ac13e225ee9b4c91bd72e6cacb7b93f54354ca7068",
+          "cached": false,
+          "query": {
+            "q": "Dh. Atoll School, Meedhoo, Dhaalu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.0037410,3.0015427,73.0105632,2.9943903",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "fa4c535d5fd99057c642d9ac13e225ee9b4c91bd72e6cacb7b93f54354ca7068",
+            "retrieved_at": "2026-10-13T08:08:58.138547Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Dh.+Atoll+School%2C+Meedhoo%2C+Dhaalu%2C+Maldives&viewbox=73.0037410%2C3.0015427%2C73.0105632%2C2.9943903",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:315",
+      "facility_ids": [
+        "facility:school:564"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.0522853,72.8837113,3.0623482,72.8935620);nwr[\"healthcare\"](3.0522853,72.8837113,3.0623482,72.8935620);nwr[\"office\"=\"educational_institution\"](3.0522853,72.8837113,3.0623482,72.8935620);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.0522853,72.8837113,3.0623482,72.8935620););out center tags;",
+      "overpass": {
+        "query_hash": "3154c8c8fba4ac3eb9f7d2888b75b1c320ba33757756c1ae954f982674192480",
+        "cached": false,
+        "metadata": {
+          "error": "The read operation timed out"
+        },
+        "data": {
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:564": {
+          "query_hash": "5a2da01cc1c6140aa860b68ad30a4480242a41113eeade16d6b00653ef89bdc7",
+          "cached": false,
+          "query": {
+            "q": "F. Atoll Education Centre, Nilandhoo, Faafu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.8837113,3.0623482,72.8935620,3.0522853",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "5a2da01cc1c6140aa860b68ad30a4480242a41113eeade16d6b00653ef89bdc7",
+            "retrieved_at": "2026-10-13T08:14:48.617536Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=F.+Atoll+Education+Centre%2C+Nilandhoo%2C+Faafu%2C+Maldives&viewbox=72.8837113%2C3.0623482%2C72.8935620%2C3.0522853",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:316",
+      "facility_ids": [
+        "facility:school:568"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.0607778,72.9195577,3.0653099,72.9313642);nwr[\"healthcare\"](3.0607778,72.9195577,3.0653099,72.9313642);nwr[\"office\"=\"educational_institution\"](3.0607778,72.9195577,3.0653099,72.9313642);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.0607778,72.9195577,3.0653099,72.9313642););out center tags;",
+      "overpass": {
+        "query_hash": "726d06c515d400028ebe1805209029d06e66e4021d2b64b5307e66b50ecb4534",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "726d06c515d400028ebe1805209029d06e66e4021d2b64b5307e66b50ecb4534",
+          "retrieved_at": "2026-10-13T08:15:35.064650Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "5d6fedc33a46ba92c75ab6c236f3b658289568c346482b3eb9d176c876828dd9",
+          "expires_at": "2026-10-14T08:15:35.064673+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:13:46Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:568": {
+          "query_hash": "63b2dee18b982219a5642b394f8215c3513c486fd04aee0ac2e45af0d8e4d084",
+          "cached": false,
+          "query": {
+            "q": "Dharanboodhoo School, Dharanboodhoo, Faafu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.9195577,3.0653099,72.9313642,3.0607778",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "63b2dee18b982219a5642b394f8215c3513c486fd04aee0ac2e45af0d8e4d084",
+            "retrieved_at": "2026-10-13T08:15:35.068694Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Dharanboodhoo+School%2C+Dharanboodhoo%2C+Faafu%2C+Maldives&viewbox=72.9195577%2C3.0653099%2C72.9313642%2C3.0607778",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:318",
+      "facility_ids": [
+        "facility:school:567"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.1151314,72.9802264,3.1216564,72.9875096);nwr[\"healthcare\"](3.1151314,72.9802264,3.1216564,72.9875096);nwr[\"office\"=\"educational_institution\"](3.1151314,72.9802264,3.1216564,72.9875096);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.1151314,72.9802264,3.1216564,72.9875096););out center tags;",
+      "overpass": {
+        "query_hash": "9a6e6c4e383a986765e8a2681200502c7e0b576237863e6a535e65565061490f",
+        "cached": true,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "9a6e6c4e383a986765e8a2681200502c7e0b576237863e6a535e65565061490f",
+          "retrieved_at": "2026-10-13T07:28:16.258730Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "8560258e6c6ce7a9852f67f04eff38a2c4c3c289e3d96b0e3382573ce3be28be",
+          "expires_at": "2026-10-14T07:28:16.258755+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T07:26:58Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:567": {
+          "query_hash": "bac5f8889c05094db7d5abf24b86c91770bfdcbd82cd200c31a98c8b1dd3a1f2",
+          "cached": false,
+          "query": {
+            "q": "Bilehdhoo School, Bileiydhoo, Faafu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.9802264,3.1216564,72.9875096,3.1151314",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "bac5f8889c05094db7d5abf24b86c91770bfdcbd82cd200c31a98c8b1dd3a1f2",
+            "retrieved_at": "2026-10-13T08:15:36.628203Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Bilehdhoo+School%2C+Bileiydhoo%2C+Faafu%2C+Maldives&viewbox=72.9802264%2C3.1216564%2C72.9875096%2C3.1151314",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:329",
+      "facility_ids": [
+        "facility:school:565"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.2676143,72.9986673,3.2722925,73.0043407);nwr[\"healthcare\"](3.2676143,72.9986673,3.2722925,73.0043407);nwr[\"office\"=\"educational_institution\"](3.2676143,72.9986673,3.2722925,73.0043407);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.2676143,72.9986673,3.2722925,73.0043407););out center tags;",
+      "overpass": {
+        "query_hash": "50bf5e20ac8e1a7feab84f57cf7c6dee0d03e6dcaa4845aa3ebc7e8cd6fd4195",
+        "cached": true,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "50bf5e20ac8e1a7feab84f57cf7c6dee0d03e6dcaa4845aa3ebc7e8cd6fd4195",
+          "retrieved_at": "2026-10-13T07:28:38.349407Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "8560258e6c6ce7a9852f67f04eff38a2c4c3c289e3d96b0e3382573ce3be28be",
+          "expires_at": "2026-10-14T07:28:38.349442+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T07:26:58Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:565": {
+          "query_hash": "f1249e20509e95fbbcb728609483d32acf1dab821900a9c9c66389f9322a6abf",
+          "cached": false,
+          "query": {
+            "q": "F. Atoll School, Feeali, Faafu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.9986673,3.2722925,73.0043407,3.2676143",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "f1249e20509e95fbbcb728609483d32acf1dab821900a9c9c66389f9322a6abf",
+            "retrieved_at": "2026-10-13T08:15:38.115465Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=F.+Atoll+School%2C+Feeali%2C+Faafu%2C+Maldives&viewbox=72.9986673%2C3.2722925%2C73.0043407%2C3.2676143",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:47",
+      "facility_ids": [
+        "facility:school:544"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.7899236,72.9567993,3.7933781,72.9664865);nwr[\"healthcare\"](3.7899236,72.9567993,3.7933781,72.9664865);nwr[\"office\"=\"educational_institution\"](3.7899236,72.9567993,3.7933781,72.9664865);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.7899236,72.9567993,3.7933781,72.9664865););out center tags;",
+      "overpass": {
+        "query_hash": "52449efd970df5708407730852c392469f5f222966a041d8053148caf4e39d09",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "52449efd970df5708407730852c392469f5f222966a041d8053148caf4e39d09",
+          "retrieved_at": "2026-10-13T08:16:22.155354Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "267ebbf60ca5961a12b71ed7772178e830a18558fbfaa1b7d293157f77641289",
+          "expires_at": "2026-10-14T08:16:22.155378+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:14:48Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "way",
+              "id": 1133986301,
+              "center": {
+                "lat": 3.7922892,
+                "lon": 72.9620556
+              },
+              "tags": {
+                "amenity": "pharmacy",
+                "building": "yes",
+                "healthcare": "pharmacy"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:school:544": {
+          "query_hash": "dc5d67df9fb0910672d218d038c0be46df7cf2dcf4e7b56e71880b9253b0fa6e",
+          "cached": false,
+          "query": {
+            "q": "ADh. Omadhoo School, Omadhoo, Alifu Dhaalu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.9567993,3.7933781,72.9664865,3.7899236",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "dc5d67df9fb0910672d218d038c0be46df7cf2dcf4e7b56e71880b9253b0fa6e",
+            "retrieved_at": "2026-10-13T08:16:22.156845Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=ADh.+Omadhoo+School%2C+Omadhoo%2C+Alifu+Dhaalu%2C+Maldives&viewbox=72.9567993%2C3.7933781%2C72.9664865%2C3.7899236",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:54",
+      "facility_ids": [
+        "facility:school:546"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.6916506,72.7072436,3.7041995,72.7127757);nwr[\"healthcare\"](3.6916506,72.7072436,3.7041995,72.7127757);nwr[\"office\"=\"educational_institution\"](3.6916506,72.7072436,3.7041995,72.7127757);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.6916506,72.7072436,3.7041995,72.7127757););out center tags;",
+      "overpass": {
+        "query_hash": "fca7e93d7c59631a13f78e70eb6ff7252160e3cc295da4a47814a29b7af5d5b4",
+        "cached": true,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "fca7e93d7c59631a13f78e70eb6ff7252160e3cc295da4a47814a29b7af5d5b4",
+          "retrieved_at": "2026-10-13T06:17:58.429773Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "f58491237193d1d0e65d9e940f1f6c74ee0f0062f2f2610941137ac430c6915e",
+          "expires_at": "2026-10-14T06:17:58.429798+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T06:16:45Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:546": {
+          "query_hash": "d3db68a32c64ff6a8d910ae37f4ca69ecc597185c4b8f3d5b5a5dcbb3838909a",
+          "cached": false,
+          "query": {
+            "q": "Mandhoo School, Mandhoo, Alifu Dhaalu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.7072436,3.7041995,72.7127757,3.6916506",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "d3db68a32c64ff6a8d910ae37f4ca69ecc597185c4b8f3d5b5a5dcbb3838909a",
+            "retrieved_at": "2026-10-13T08:16:23.970087Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Mandhoo+School%2C+Mandhoo%2C+Alifu+Dhaalu%2C+Maldives&viewbox=72.7072436%2C3.7041995%2C72.7127757%2C3.6916506",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:60",
+      "facility_ids": [
+        "facility:school:547"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.6031232,72.9535548,3.6121412,72.9588939);nwr[\"healthcare\"](3.6031232,72.9535548,3.6121412,72.9588939);nwr[\"office\"=\"educational_institution\"](3.6031232,72.9535548,3.6121412,72.9588939);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.6031232,72.9535548,3.6121412,72.9588939););out center tags;",
+      "overpass": {
+        "query_hash": "62f3b94e005cf159bd9e0afb5781a1eabe5b4c27b364f22b3ed8df6c257027ee",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "62f3b94e005cf159bd9e0afb5781a1eabe5b4c27b364f22b3ed8df6c257027ee",
+          "retrieved_at": "2026-10-13T08:17:10.617912Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "b2f39ed53bcba4b26db80fe70acd436b243f999285337cbfe7783f8ac5c23a4a",
+          "expires_at": "2026-10-14T08:17:10.617937+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:15:48Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "node",
+              "id": 10142752041,
+              "lat": 3.6079172,
+              "lon": 72.9543177,
+              "tags": {
+                "amenity": "pharmacy",
+                "dispensing": "yes",
+                "healthcare": "pharmacy"
+              }
+            },
+            {
+              "type": "node",
+              "id": 10142752042,
+              "lat": 3.6079057,
+              "lon": 72.9543957,
+              "tags": {
+                "amenity": "doctors",
+                "healthcare": "doctor",
+                "name": "Hussan Abdul Samad memorial clinic"
+              }
+            },
+            {
+              "type": "way",
+              "id": 465261680,
+              "center": {
+                "lat": 3.6073705,
+                "lon": 72.9561765
+              },
+              "tags": {
+                "amenity": "hospital",
+                "healthcare": "hospital",
+                "name": "Dhangethi medical post"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:school:547": {
+          "query_hash": "d66879f2e17ab67b560d90c18bca049c1d93288ba345094a220b75b2c16b6136",
+          "cached": false,
+          "query": {
+            "q": "Dhangethee School, Dhangethi, Alifu Dhaalu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.9535548,3.6121412,72.9588939,3.6031232",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "d66879f2e17ab67b560d90c18bca049c1d93288ba345094a220b75b2c16b6136",
+            "retrieved_at": "2026-10-13T08:17:10.621704Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Dhangethee+School%2C+Dhangethi%2C+Alifu+Dhaalu%2C+Maldives&viewbox=72.9535548%2C3.6121412%2C72.9588939%2C3.6031232",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:66",
+      "facility_ids": [
+        "facility:school:548"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.4808849,72.8740699,3.4891407,72.8846677);nwr[\"healthcare\"](3.4808849,72.8740699,3.4891407,72.8846677);nwr[\"office\"=\"educational_institution\"](3.4808849,72.8740699,3.4891407,72.8846677);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.4808849,72.8740699,3.4891407,72.8846677););out center tags;",
+      "overpass": {
+        "query_hash": "8b141da03da2765b2a688564837bce4fa58aa94ab0544f37e9554b0d58b1008b",
+        "cached": true,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "8b141da03da2765b2a688564837bce4fa58aa94ab0544f37e9554b0d58b1008b",
+          "retrieved_at": "2026-10-13T06:23:46.235564Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "6eb9f27ac95e9959cedc1a249ac960a5e2549d10a19b3825d917cc65d95b4f62",
+          "expires_at": "2026-10-14T06:23:46.235587+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T06:21:51Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:548": {
+          "query_hash": "413180e89236f2536bbbf58ebecb8b0a98ea0ca9a460f54009d25133b9b41f52",
+          "cached": false,
+          "query": {
+            "q": "ADh. Dhidhdhoo School, Dhidhdhoo, Alifu Dhaalu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.8740699,3.4891407,72.8846677,3.4808849",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "413180e89236f2536bbbf58ebecb8b0a98ea0ca9a460f54009d25133b9b41f52",
+            "retrieved_at": "2026-10-13T08:17:12.072913Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=ADh.+Dhidhdhoo+School%2C+Dhidhdhoo%2C+Alifu+Dhaalu%2C+Maldives&viewbox=72.8740699%2C3.4891407%2C72.8846677%2C3.4808849",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:68",
+      "facility_ids": [
+        "facility:school:550"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.4861702,72.7758458,3.4917066,72.7886413);nwr[\"healthcare\"](3.4861702,72.7758458,3.4917066,72.7886413);nwr[\"office\"=\"educational_institution\"](3.4861702,72.7758458,3.4917066,72.7886413);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.4861702,72.7758458,3.4917066,72.7886413););out center tags;",
+      "overpass": {
+        "query_hash": "39872bf671a8c93e695ecf20b5dc044faf39607feaac24012754eb594d34a9a3",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "39872bf671a8c93e695ecf20b5dc044faf39607feaac24012754eb594d34a9a3",
+          "retrieved_at": "2026-10-13T08:17:55.899378Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "eb5d2c7c98dfbc8111149440842c1fa45b33ded825af981f2958916691766db1",
+          "expires_at": "2026-10-14T08:17:55.899402+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:15:48Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:550": {
+          "query_hash": "0b858b1d5b3396d029945baef092b3174b3f1169b161b3db9505d72df4b80b25",
+          "cached": false,
+          "query": {
+            "q": "Fenfushee School, Fenfushi, Alifu Dhaalu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.7758458,3.4917066,72.7886413,3.4861702",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "0b858b1d5b3396d029945baef092b3174b3f1169b161b3db9505d72df4b80b25",
+            "retrieved_at": "2026-10-13T08:17:55.900795Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Fenfushee+School%2C+Fenfushi%2C+Alifu+Dhaalu%2C+Maldives&viewbox=72.7758458%2C3.4917066%2C72.7886413%2C3.4861702",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:74",
+      "facility_ids": [
+        "facility:school:545"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.7744315,72.9210287,3.7762899,72.9274167);nwr[\"healthcare\"](3.7744315,72.9210287,3.7762899,72.9274167);nwr[\"office\"=\"educational_institution\"](3.7744315,72.9210287,3.7762899,72.9274167);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.7744315,72.9210287,3.7762899,72.9274167););out center tags;",
+      "overpass": {
+        "query_hash": "ecfb5c6848da3ae28b37429026e385533494a2cf6539040b8b5f2de76142ddec",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "ecfb5c6848da3ae28b37429026e385533494a2cf6539040b8b5f2de76142ddec",
+          "retrieved_at": "2026-10-13T08:19:31.466048Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "09b9d389b93422fc1ee51e9737d0e82414e014635243ee1de2460887523a40e7",
+          "expires_at": "2026-10-14T08:19:31.466086+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:17:51Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:545": {
+          "query_hash": "4cd2a695f2c30857641e0b5f817a0c34520dd4e5f75ce404a24910e4e280099d",
+          "cached": false,
+          "query": {
+            "q": "Kunburudhoo School, Kunburudhoo, Alifu Dhaalu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.9210287,3.7762899,72.9274167,3.7744315",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "4cd2a695f2c30857641e0b5f817a0c34520dd4e5f75ce404a24910e4e280099d",
+            "retrieved_at": "2026-10-13T08:19:31.467825Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Kunburudhoo+School%2C+Kunburudhoo%2C+Alifu+Dhaalu%2C+Maldives&viewbox=72.9210287%2C3.7762899%2C72.9274167%2C3.7744315",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:859",
+      "facility_ids": [
+        "facility:school:559"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.1091805,73.5630229,3.1143598,73.5672896);nwr[\"healthcare\"](3.1091805,73.5630229,3.1143598,73.5672896);nwr[\"office\"=\"educational_institution\"](3.1091805,73.5630229,3.1143598,73.5672896);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.1091805,73.5630229,3.1143598,73.5672896););out center tags;",
+      "overpass": {
+        "query_hash": "67e330c427a3e64989af7fb63f1ae3867e8aee6585658e17a10d74927bd6fa7e",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "67e330c427a3e64989af7fb63f1ae3867e8aee6585658e17a10d74927bd6fa7e",
+          "retrieved_at": "2026-10-13T08:20:17.263392Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "48b19865b3722c18e0fc0d9d442843cfb2a4cef5293e95e4b9d970f0025cb44a",
+          "expires_at": "2026-10-14T08:20:17.263419+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:18:50Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:559": {
+          "query_hash": "1fe2f1b6395ac79231fdc312b04f1861e221f37a99e9e0d7efec181a255c5f9d",
+          "cached": false,
+          "query": {
+            "q": "Dhiggaru School, Dhiggaru, Meemu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5630229,3.1143598,73.5672896,3.1091805",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "1fe2f1b6395ac79231fdc312b04f1861e221f37a99e9e0d7efec181a255c5f9d",
+            "retrieved_at": "2026-10-13T08:20:17.265103Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Dhiggaru+School%2C+Dhiggaru%2C+Meemu%2C+Maldives&viewbox=73.5630229%2C3.1143598%2C73.5672896%2C3.1091805",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:879",
+      "facility_ids": [
+        "facility:school:562"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.8915157,73.5764762,2.8997050,73.5784459);nwr[\"healthcare\"](2.8915157,73.5764762,2.8997050,73.5784459);nwr[\"office\"=\"educational_institution\"](2.8915157,73.5764762,2.8997050,73.5784459);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.8915157,73.5764762,2.8997050,73.5784459););out center tags;",
+      "overpass": {
+        "query_hash": "d375be1814ea0f8b905641f1ddaad306ea747501545dd7893daa155d3ed2dec2",
+        "cached": false,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "d375be1814ea0f8b905641f1ddaad306ea747501545dd7893daa155d3ed2dec2",
+          "retrieved_at": "2026-10-13T08:22:21.536796Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "d154b0d121150b4b02ba1e203845cb2d7f730fa656de2baf1a8262330df03835",
+          "expires_at": "2026-10-14T08:22:21.536820+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:20:46Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:562": {
+          "query_hash": "c5b351a8906355206b2592e1efaa0151edfbec4878c1615f956d0517b3406ee1",
+          "cached": false,
+          "query": {
+            "q": "Naalaafushi School, Naalaafushi, Meemu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5764762,2.8997050,73.5784459,2.8915157",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "c5b351a8906355206b2592e1efaa0151edfbec4878c1615f956d0517b3406ee1",
+            "retrieved_at": "2026-10-13T08:22:21.541115Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Naalaafushi+School%2C+Naalaafushi%2C+Meemu%2C+Maldives&viewbox=73.5764762%2C2.8997050%2C73.5784459%2C2.8915157",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:895",
+      "facility_ids": [
+        "facility:school:563"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.1017738,73.5713859,3.1076080,73.5747121);nwr[\"healthcare\"](3.1017738,73.5713859,3.1076080,73.5747121);nwr[\"office\"=\"educational_institution\"](3.1017738,73.5713859,3.1076080,73.5747121);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.1017738,73.5713859,3.1076080,73.5747121););out center tags;",
+      "overpass": {
+        "query_hash": "0dcc7f8ff4496289f42f7a89677c26996f634533092f6938219feb51ed119d8e",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "0dcc7f8ff4496289f42f7a89677c26996f634533092f6938219feb51ed119d8e",
+          "retrieved_at": "2026-10-13T08:23:12.990013Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "9d355ca3d9b9a1bc197397503d66e5f688743ec68746d8009b83135e34e5c30d",
+          "expires_at": "2026-10-14T08:23:12.990051+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:21:51Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:563": {
+          "query_hash": "5f7f95d37a875face2c6fad8e1100fdab0c69a294a1e91cdb10bb59947e924f7",
+          "cached": false,
+          "query": {
+            "q": "M. Maduvvaree School, Maduvvari, Meemu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5713859,3.1076080,73.5747121,3.1017738",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "5f7f95d37a875face2c6fad8e1100fdab0c69a294a1e91cdb10bb59947e924f7",
+            "retrieved_at": "2026-10-13T08:23:12.992386Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=M.+Maduvvaree+School%2C+Maduvvari%2C+Meemu%2C+Maldives&viewbox=73.5713859%2C3.1076080%2C73.5747121%2C3.1017738",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:896",
+      "facility_ids": [
+        "facility:school:561"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.9497364,73.5964996,2.9629669,73.6030673);nwr[\"healthcare\"](2.9497364,73.5964996,2.9629669,73.6030673);nwr[\"office\"=\"educational_institution\"](2.9497364,73.5964996,2.9629669,73.6030673);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.9497364,73.5964996,2.9629669,73.6030673););out center tags;",
+      "overpass": {
+        "query_hash": "633c72dcb08a1dbde81db69e5f827702a2c3d53d1dac6cbaa678a6e4c65f46be",
+        "cached": true,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "633c72dcb08a1dbde81db69e5f827702a2c3d53d1dac6cbaa678a6e4c65f46be",
+          "retrieved_at": "2026-10-13T08:14:27.302176Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "73d6968a2a69a4fbe56f6a31ee462bd8e36ad0cc5aa9c43ec621265e1a0b6bbe",
+          "expires_at": "2026-10-14T08:14:27.302197+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:12:39Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:561": {
+          "query_hash": "133c07bfc92fa035f0eb313297a70d60ae441383b7dc3c186e11c81e27211d8c",
+          "cached": false,
+          "query": {
+            "q": "Veyvashu School, Veyvah, Meemu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5964996,2.9629669,73.6030673,2.9497364",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "133c07bfc92fa035f0eb313297a70d60ae441383b7dc3c186e11c81e27211d8c",
+            "retrieved_at": "2026-10-13T08:23:14.985870Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Veyvashu+School%2C+Veyvah%2C+Meemu%2C+Maldives&viewbox=73.5964996%2C2.9629669%2C73.6030673%2C2.9497364",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:90",
+      "facility_ids": [
+        "facility:school:543"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.8479161,72.9507875,3.8507481,72.9600336);nwr[\"healthcare\"](3.8479161,72.9507875,3.8507481,72.9600336);nwr[\"office\"=\"educational_institution\"](3.8479161,72.9507875,3.8507481,72.9600336);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.8479161,72.9507875,3.8507481,72.9600336););out center tags;",
+      "overpass": {
+        "query_hash": "da9bce380abc8c75cd3e3c3ffa0412811fa7cc03e055cd8343843b36ade4b941",
+        "cached": false,
+        "metadata": {
+          "error": "The read operation timed out"
+        },
+        "data": {
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:543": {
+          "query_hash": "61e4fb8f8a855bce0a9689f6d0524915d7b69051d75e88cf8a1abd787fe435fa",
+          "cached": false,
+          "query": {
+            "q": "Hangnaameedhoo School, Hangnaameedhoo, Alifu Dhaalu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.9507875,3.8507481,72.9600336,3.8479161",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "61e4fb8f8a855bce0a9689f6d0524915d7b69051d75e88cf8a1abd787fe435fa",
+            "retrieved_at": "2026-10-13T08:29:08.866062Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Hangnaameedhoo+School%2C+Hangnaameedhoo%2C+Alifu+Dhaalu%2C+Maldives&viewbox=72.9507875%2C3.8507481%2C72.9600336%2C3.8479161",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:904",
+      "facility_ids": [
+        "facility:school:557"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.7698600,73.4197944,2.7842727,73.4283661);nwr[\"healthcare\"](2.7698600,73.4197944,2.7842727,73.4283661);nwr[\"office\"=\"educational_institution\"](2.7698600,73.4197944,2.7842727,73.4283661);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.7698600,73.4197944,2.7842727,73.4283661););out center tags;",
+      "overpass": {
+        "query_hash": "1f5ca1104797e2ade73f650e90b8f492fb5f0189bf73669a7893b55332457fbc",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "1f5ca1104797e2ade73f650e90b8f492fb5f0189bf73669a7893b55332457fbc",
+          "retrieved_at": "2026-10-13T08:29:58.404934Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "2f10c1553578cf9b352cbaaf4db3eff6a8ae03a9cb5b4a7917ae4164c206f054",
+          "expires_at": "2026-10-14T08:29:58.404954+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:27:56Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:557": {
+          "query_hash": "52fcfa8b971870da357908641fa4f303a0127f622a9767e589102202fea2c37d",
+          "cached": false,
+          "query": {
+            "q": "M. Atoll School, Kolhufushi, Meemu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.4197944,2.7842727,73.4283661,2.7698600",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "52fcfa8b971870da357908641fa4f303a0127f622a9767e589102202fea2c37d",
+            "retrieved_at": "2026-10-13T08:29:58.406321Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=M.+Atoll+School%2C+Kolhufushi%2C+Meemu%2C+Maldives&viewbox=73.4197944%2C2.7842727%2C73.4283661%2C2.7698600",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:906",
+      "facility_ids": [
+        "facility:school:558"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.9406508,73.5790492,2.9524478,73.5892852);nwr[\"healthcare\"](2.9406508,73.5790492,2.9524478,73.5892852);nwr[\"office\"=\"educational_institution\"](2.9406508,73.5790492,2.9524478,73.5892852);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.9406508,73.5790492,2.9524478,73.5892852););out center tags;",
+      "overpass": {
+        "query_hash": "4925b36467ec5d2eab3f744646b5b3faa80271f34bed5f879bf2c26f6722be5d",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "4925b36467ec5d2eab3f744646b5b3faa80271f34bed5f879bf2c26f6722be5d",
+          "retrieved_at": "2026-10-13T08:31:35.670783Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "377f0c0a4e8728ab299252a44096bc08d5e5ac19164a6ed6d5a55661c0256864",
+          "expires_at": "2026-10-14T08:31:35.670822+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T08:29:58Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:558": {
+          "query_hash": "186315289b19aee751d6f8a001a10a33943f854229bece2f0dded0b0560a2f3d",
+          "cached": false,
+          "query": {
+            "q": "Mulaku School, Mulah, Meemu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5790492,2.9524478,73.5892852,2.9406508",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "186315289b19aee751d6f8a001a10a33943f854229bece2f0dded0b0560a2f3d",
+            "retrieved_at": "2026-10-13T08:31:35.673628Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Mulaku+School%2C+Mulah%2C+Meemu%2C+Maldives&viewbox=73.5790492%2C2.9524478%2C73.5892852%2C2.9406508",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:907",
+      "facility_ids": [
+        "facility:school:560"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.0846546,73.6366737,3.0934627,73.6416198);nwr[\"healthcare\"](3.0846546,73.6366737,3.0934627,73.6416198);nwr[\"office\"=\"educational_institution\"](3.0846546,73.6366737,3.0934627,73.6416198);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.0846546,73.6366737,3.0934627,73.6416198););out center tags;",
+      "overpass": {
+        "query_hash": "fc446dd7c734fee6b0ddd1f6fa0cdc382daf16afa71923d64bfee36213b9c377",
+        "cached": true,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "fc446dd7c734fee6b0ddd1f6fa0cdc382daf16afa71923d64bfee36213b9c377",
+          "retrieved_at": "2026-10-13T07:22:08.852661Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "5a41d5f68b95182dfca8941b3fce1e9ddbc1904e74d700140eb843026d78c91b",
+          "expires_at": "2026-10-14T07:22:08.852717+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T07:20:48Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:school:560": {
+          "query_hash": "7f2df4543abeb5b3ea13b52018eb57cacc9f35ea990ec983c3833b11cba142d3",
+          "cached": false,
+          "query": {
+            "q": "Raiymandhoo School, Raiymandhoo, Meemu, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.6366737,3.0934627,73.6416198,3.0846546",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "7f2df4543abeb5b3ea13b52018eb57cacc9f35ea990ec983c3833b11cba142d3",
+            "retrieved_at": "2026-10-13T08:31:37.230313Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Raiymandhoo+School%2C+Raiymandhoo%2C+Meemu%2C+Maldives&viewbox=73.6366737%2C3.0934627%2C73.6416198%2C3.0846546",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    }
+  ]
+}

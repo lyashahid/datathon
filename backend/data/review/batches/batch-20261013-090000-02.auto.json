@@ -1,0 +1,239 @@
+{
+  "job_id": "batch-20261013-090000-02",
+  "records": [
+    {
+      "facility_id": "facility:school:599",
+      "official_name": "Mukurimagu School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/599",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:364839738",
+          "osm_url": "https://www.openstreetmap.org/way/364839738",
+          "name": "Ihadhdhoo School",
+          "island": "Gan",
+          "coordinates": [
+            73.542556,
+            1.9316287
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Ihadhdhoo School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:364882221",
+          "osm_url": "https://www.openstreetmap.org/way/364882221",
+          "name": "Hamadh School Ground",
+          "island": "Gan",
+          "coordinates": [
+            73.5466406,
+            1.9198217
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "Hamadh School Ground"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:364882222",
+          "osm_url": "https://www.openstreetmap.org/way/364882222",
+          "name": "Dhanaal (Hamadh School)",
+          "island": "Gan",
+          "coordinates": [
+            73.5453281,
+            1.9198497
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Dhanaal (Hamadh School)"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:364882220",
+          "osm_url": "https://www.openstreetmap.org/way/364882220",
+          "name": "Hamad Bin Khaleefa Al-Thani School",
+          "island": "Gan",
+          "coordinates": [
+            73.5469874,
+            1.9202709
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Hamad Bin Khaleefa Al-Thani School"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:600",
+      "official_name": "Ihadhdhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/600",
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:364839738",
+          "osm_url": "https://www.openstreetmap.org/way/364839738",
+          "name": "Ihadhdhoo School",
+          "island": "Gan",
+          "coordinates": [
+            73.542556,
+            1.9316287
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Ihadhdhoo School"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge.",
+      "follow_up": "Live-validate and merge if all checks pass."
+    },
+    {
+      "facility_id": "facility:school:602",
+      "official_name": "GA. Atoll School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/602",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:603",
+      "official_name": "GA. Nilandhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/603",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:604",
+      "official_name": "Kondey School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/604",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:605",
+      "official_name": "Kanduhulhudhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/605",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:608",
+      "official_name": "Sulthan Mohamed School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/608",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:609",
+      "official_name": "Gemanafushi School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/609",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:610",
+      "official_name": "GDh. Atoll Education Centre",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/610",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:962507713",
+          "osm_url": "https://www.openstreetmap.org/way/962507713",
+          "name": "Gaaf Dhaal Atoll Education Centre",
+          "island": "Thinadhoo",
+          "coordinates": [
+            72.998637,
+            0.5306652
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Gaaf Dhaal Atoll Education Centre"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1000764503",
+          "osm_url": "https://www.openstreetmap.org/way/1000764503",
+          "name": "Thinadhoo School",
+          "island": "Thinadhoo",
+          "coordinates": [
+            72.9977109,
+            0.5339866
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Thinadhoo School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:962507715",
+          "osm_url": "https://www.openstreetmap.org/way/962507715",
+          "name": "Aboobakuru School",
+          "island": "Thinadhoo",
+          "coordinates": [
+            72.9956232,
+            0.5253296
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Aboobakuru School"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:611",
+      "official_name": "GDh. Atoll School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/611",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    }
+  ],
+  "summary": "deterministic local review"
+}

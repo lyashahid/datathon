@@ -1,0 +1,390 @@
+{
+  "version": "online-facility-search-batch-v2",
+  "batch": 2,
+  "searched_at": "2026-10-12T19:51:12Z",
+  "record_count": 10,
+  "scope": "ten unresolved HEMS facilities supplied by the parent task",
+  "canonical_files_modified": false,
+  "source_method_notes": {
+    "official": "HEMS Ministry of Health establishment directory and the normalized HEMS record cache",
+    "google": "Google Maps place/search discovery was usable; Google Search returned an unusual-traffic interstitial in the browser",
+    "nominatim": "Nominatim API name searches returned no exact facility records; the public OSM search UI was used for resort/island context",
+    "overpass": "Overpass queries were attempted against public mirrors but returned 504/timeouts; no Overpass-only candidate was accepted",
+    "osm_api": "Live OSM API fetches returned HTTP 200 for every listed OSM object"
+  },
+  "records": [
+    {
+      "facility_id": "facility:health:14",
+      "official_name": "Island Health Clinic",
+      "official_category": "clinic",
+      "official_operator": "A. W Medplus Maldives Private Limited",
+      "official_address_or_island": null,
+      "official_contact": "3341775 / 4000999",
+      "official_status": "open",
+      "official_registration": "HF-25/ALP/PVT/835",
+      "official_source_urls": ["https://hems.health.gov.mv/establishments", "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"],
+      "google_maps_discovery": {
+        "query": "Island Health Clinic Maldives",
+        "observed": "No exact place card. Results included Island Polyclinic at Bulaa Fair, Hanimaadhoo and unrelated Male clinics; this is not evidence that Island Health Clinic is at either location.",
+        "url": "https://www.google.com/maps/search/?api=1&query=Island+Health+Clinic+Maldives"
+      },
+      "osm_candidates": [
+        {
+          "osm_id": "osm:way:384227881",
+          "name": "Island Clinic",
+          "tags": {"amenity": "hospital", "building": "yes", "healthcare": "hospital", "name": "Island Clinic"},
+          "coords": [73.5100916167, 3.9901168667],
+          "context": "Gulhi",
+          "live_api_url": "https://api.openstreetmap.org/api/0.6/way/384227881.json",
+          "browse_url": "https://www.openstreetmap.org/way/384227881",
+          "comparison": "name/category superficially similar, but no official island/operator/address agreement"
+        },
+        {
+          "osm_id": "osm:node:4823483321",
+          "name": "Nolhivaranfaru Health post",
+          "tags": {"amenity": "hospital", "healthcare": "hospital", "name": "Nolhivaranfaru Health post", "opening_hours": "Su-Th 09:00-18:00"},
+          "coords": [73.1202471, 6.7020334],
+          "context": "Nolhivaranfaru",
+          "live_api_url": "https://api.openstreetmap.org/api/0.6/node/4823483321.json",
+          "browse_url": "https://www.openstreetmap.org/node/4823483321",
+          "comparison": "wrong identity and no official location agreement"
+        }
+      ],
+      "category_comparison": "HEMS clinic vs OSM hospital/healthcare=hospital candidates; neither has identity corroboration.",
+      "decision": "unresolved",
+      "confidence": "high_confidence_non_match",
+      "evidence_note": "No official island/address was recoverable. The two same-ish-name OSM objects are on unrelated islands and are rejected rather than attached."
+    },
+    {
+      "facility_id": "facility:health:869",
+      "official_name": "Island Polyclinic",
+      "official_category": "clinic",
+      "official_operator": "Island Polyclinic Pvt Ltd",
+      "official_address_or_island": "Bulaa Fair, Ameenee Magu, Hanimaadhoo 02020",
+      "official_contact": "9459739",
+      "official_status": "open",
+      "official_registration": "HF-25/ALP/PVT/868",
+      "official_source_urls": ["https://hems.health.gov.mv/establishments", "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"],
+      "google_maps_discovery": {
+        "query": "Island Polyclinic Maldives",
+        "place_text": "Island Polyclinic, Medical clinic, Bulaa Fair, Ameenee Magu, Hanimaadhoo 02020; plus code Q58G+4P Hanimaadhoo; phone 756-0995",
+        "center_observed": [73.5454024, 4.20938615],
+        "url": "https://www.google.com/maps/search/?api=1&query=Island+Polyclinic+Maldives"
+      },
+      "osm_candidates": [
+        {
+          "osm_id": "osm:way:384227881",
+          "name": "Island Clinic",
+          "tags": {"amenity": "hospital", "building": "yes", "healthcare": "hospital", "name": "Island Clinic"},
+          "coords": [73.5100916167, 3.9901168667],
+          "context": "Gulhi",
+          "live_api_url": "https://api.openstreetmap.org/api/0.6/way/384227881.json",
+          "browse_url": "https://www.openstreetmap.org/way/384227881",
+          "comparison": "wrong island; reject"
+        }
+      ],
+      "nearby_osm_context": "Live OSM map around [73.535,4.195,73.555,4.22] showed no named Island Polyclinic/clinic object at the Google-discovered Hanimaadhoo location; it did show unrelated hotels and other medical objects elsewhere in the larger bbox.",
+      "category_comparison": "HEMS area-specific clinic vs no matching OSM facility; the tempting OSM hospital object is wrong island.",
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "evidence_note": "Google Maps independently identifies the official place in Hanimaadhoo, but current OSM coverage does not contain a defensible facility-level object there."
+    },
+    {
+      "facility_id": "facility:health:400",
+      "official_name": "JP Memorial Clinic",
+      "official_category": "clinic",
+      "official_operator": "Robinson Club Maldives Ovt Ltd (C196-2009)",
+      "official_address_or_island": "Robinson Club Maldives / Funamadua, North Huvadhu Atoll (operator-derived context)",
+      "official_contact": "3009094, 3009095",
+      "official_status": "open",
+      "official_registration": "HF-15/ALP/PVT/449",
+      "official_source_urls": ["https://hems.health.gov.mv/establishments", "https://www.robinson.com/en/en/maldives/"],
+      "google_maps_discovery": {
+        "query": "JP Memorial Clinic Maldives",
+        "observed": "No exact place card; results were Male clinics and hospitals, not Robinson Club Maldives.",
+        "url": "https://www.google.com/maps/search/?api=1&query=JP+Memorial+Clinic+Maldives"
+      },
+      "osm_candidates": [
+        {
+          "osm_id": "osm:node:9559425955",
+          "name": "Marina Clinic",
+          "tags": {"amenity": "hospital", "healthcare": "hospital", "name": "Marina Clinic"},
+          "coords": [73.4634643, 4.1238569],
+          "context": "Ehmafushi",
+          "live_api_url": "https://api.openstreetmap.org/api/0.6/node/9559425955.json",
+          "browse_url": "https://www.openstreetmap.org/node/9559425955",
+          "comparison": "wrong island/name"
+        },
+        {
+          "osm_id": "osm:way:762119227",
+          "name": "Medica",
+          "tags": {"amenity": "clinic", "building": "yes", "healthcare": "clinic", "name": "Medica"},
+          "coords": [73.50947986, 4.17868744],
+          "context": "Malé",
+          "live_api_url": "https://api.openstreetmap.org/api/0.6/way/762119227.json",
+          "browse_url": "https://www.openstreetmap.org/way/762119227",
+          "comparison": "wrong island/name"
+        },
+        {
+          "osm_id": "osm:way:969492568",
+          "name": "Dr. Abdul Samadh Memorial Hospital",
+          "tags": {"amenity": "hospital", "healthcare": "hospital", "name": "Dr. Abdul Samadh Memorial Hospital"},
+          "coords": [72.99861707, 0.52838592],
+          "context": "Thinadhoo",
+          "live_api_url": "https://api.openstreetmap.org/api/0.6/way/969492568.json",
+          "browse_url": "https://www.openstreetmap.org/way/969492568",
+          "comparison": "wrong island/name"
+        },
+        {
+          "osm_id": "osm:node:2612598813",
+          "name": "Robinson Club Maldives",
+          "tags": {"alt_name": "Robinson Club Malediven", "name": "Robinson Club Maldives", "tourism": "hotel", "wheelchair": "limited"},
+          "coords": [73.190008, 0.5338353],
+          "context": "Funamadua",
+          "live_api_url": "https://api.openstreetmap.org/api/0.6/node/2612598813.json",
+          "browse_url": "https://www.openstreetmap.org/node/2612598813",
+          "comparison": "operator/island context only; generic hotel object, not a clinic"
+        }
+      ],
+      "category_comparison": "HEMS clinic vs OSM hospital/clinic false positives; resort hotel is context only.",
+      "decision": "island_context_only",
+      "confidence": "medium",
+      "evidence_note": "The operator makes Funamadua/Robinson Club the best context, but no OSM clinic/doctor object was found on the resort island. Do not attach the generic hotel node."
+    },
+    {
+      "facility_id": "facility:health:649",
+      "official_name": "Kandooma Clinic",
+      "official_category": "clinic",
+      "official_operator": "leisure holiday pvt ltd",
+      "official_address_or_island": "Holiday Inn Resort Kandooma Maldives / Kandooma Fushi (operator and OSM context)",
+      "official_contact": "—",
+      "official_status": "open",
+      "official_registration": "HF-10/ALP/PVT/185",
+      "official_source_urls": ["https://hems.health.gov.mv/establishments", "https://www.maldives.holidayinnresorts.com"],
+      "google_maps_discovery": {
+        "query": "Kandooma Clinic Maldives",
+        "observed": "No exact place card; results were Male/Hulhumale clinics and did not identify the resort clinic.",
+        "url": "https://www.google.com/maps/search/?api=1&query=Kandooma+Clinic+Maldives"
+      },
+      "osm_candidates": [
+        {
+          "osm_id": "osm:node:2670929876",
+          "name": "Doctor",
+          "tags": {"amenity": "doctors", "name": "Doctor"},
+          "coords": [73.4736421, 3.9040274],
+          "context": "inside Holiday Inn Resort Kandooma",
+          "live_api_url": "https://api.openstreetmap.org/api/0.6/node/2670929876.json",
+          "browse_url": "https://www.openstreetmap.org/node/2670929876",
+          "comparison": "same resort/island and plausible internal medical point, but generic name and no operator tag"
+        },
+        {
+          "osm_id": "osm:way:19881903",
+          "name": "Holiday Inn Resort Kandooma Maldives",
+          "tags": {"alt_name:en": "Kandooma Fushi", "name": "Holiday Inn Resort Kandooma Maldives", "natural": "coastline", "place": "islet", "website": "https://www.maldives.holidayinnresorts.com"},
+          "coords": [73.4733951, 3.9039056],
+          "context": "resort/islet",
+          "live_api_url": "https://api.openstreetmap.org/api/0.6/way/19881903.json",
+          "browse_url": "https://www.openstreetmap.org/way/19881903",
+          "comparison": "identity context only, not facility geometry"
+        }
+      ],
+      "category_comparison": "HEMS clinic vs OSM amenity=doctors; cross-category but physically plausible.",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium-high",
+      "evidence_note": "This is the strongest candidate in the batch: the generic OSM Doctor node is inside the exact Kandooma resort/islet named by the official operator context. Keep provisional because the node lacks the clinic name/operator and the resort object must not be used as the facility geometry."
+    },
+    {
+      "facility_id": "facility:health:51",
+      "official_name": "Kanuhura Clinic",
+      "official_category": "clinic",
+      "official_operator": "Leisure Oceans Privat Limited",
+      "official_address_or_island": "Kanuhura Maldives / Faadhippolhu (operator and OSM context)",
+      "official_contact": "7786424",
+      "official_status": "open",
+      "official_registration": "HF-24/ALP/PVT/798",
+      "official_source_urls": ["https://hems.health.gov.mv/establishments", "https://www.kanuhura.com/"],
+      "google_maps_discovery": {
+        "query": "Kanuhura Clinic Maldives",
+        "observed": "Returned Kulunu Medical Clinic in Malé, not Kanuhura; rejected as a false discovery.",
+        "url": "https://www.google.com/maps/search/?api=1&query=Kanuhura+Clinic+Maldives"
+      },
+      "osm_candidates": [
+        {
+          "osm_id": "osm:node:4788275665",
+          "name": "Kanuhura Maldives",
+          "tags": {"leisure": "resort", "name": "Kanuhura Maldives", "website": "https://www.kanuhura.com/"},
+          "coords": [73.5067427, 5.5326673],
+          "context": "Kanuhura/Faadhippolhu",
+          "live_api_url": "https://api.openstreetmap.org/api/0.6/node/4788275665.json",
+          "browse_url": "https://www.openstreetmap.org/node/4788275665",
+          "comparison": "resort context only"
+        },
+        {
+          "osm_id": "osm:node:13520045994",
+          "name": "Six Senses Kanuhura",
+          "tags": {"brand": "Six Senses", "name": "Six Senses Kanuhura", "tourism": "hotel"},
+          "coords": [73.5061178, 5.5337054],
+          "context": "same resort island",
+          "live_api_url": "https://api.openstreetmap.org/api/0.6/node/13520045994.json",
+          "browse_url": "https://www.openstreetmap.org/node/13520045994",
+          "comparison": "resort/hotel context only; no clinic/doctor tag"
+        }
+      ],
+      "category_comparison": "HEMS clinic vs OSM resort/hotel; no facility-level health category found.",
+      "decision": "island_context_only",
+      "confidence": "medium-high",
+      "evidence_note": "The owner/name strongly identify the Kanuhura resort context, but live OSM has only resort/hotel objects. Do not attach either generic resort object."
+    },
+    {
+      "facility_id": "facility:health:473",
+      "official_name": "Kurumba Clinic",
+      "official_category": "clinic",
+      "official_operator": "Vihamanaafushi Holdings Pvt ltd (C-0448/2011)",
+      "official_address_or_island": "Kurumba Maldives / Vihamanaafushi (operator and OSM context)",
+      "official_contact": "3323080",
+      "official_status": "open",
+      "official_registration": "HF-12/ALP/PVT/370",
+      "official_source_urls": ["https://hems.health.gov.mv/establishments", "https://www.kurumba.com/"],
+      "google_maps_discovery": {
+        "query": "Kurumba Clinic Maldives",
+        "observed": "Returned Niva Kurumba Maldives hotel and unrelated Male clinics; no clinic place card.",
+        "url": "https://www.google.com/maps/search/?api=1&query=Kurumba+Clinic+Maldives"
+      },
+      "osm_candidates": [
+        {
+          "osm_id": "osm:node:13923790801",
+          "name": "Kurumba Maldives",
+          "tags": {"addr:postcode": "08340", "addr:street": "Reethigas Magu", "check_date": "2026-06-09", "name": "Kurumba Maldives", "tourism": "hotel"},
+          "coords": [73.5204335, 4.2256194],
+          "context": "Vihamanaafushi",
+          "live_api_url": "https://api.openstreetmap.org/api/0.6/node/13923790801.json",
+          "browse_url": "https://www.openstreetmap.org/node/13923790801",
+          "comparison": "hotel context only"
+        },
+        {
+          "osm_id": "osm:way:19881993",
+          "name": "Vihamanaafushi",
+          "tags": {"access": "customers", "alt_name": "Kurumba", "alt_name:en": "Kurumba Village", "name": "Vihamanaafushi", "place": "islet", "tourism": "hotel", "website": "https://www.kurumba.com/"},
+          "coords": [73.5198865, 4.2261351],
+          "context": "resort/islet",
+          "live_api_url": "https://api.openstreetmap.org/api/0.6/way/19881993.json",
+          "browse_url": "https://www.openstreetmap.org/way/19881993",
+          "comparison": "identity context only"
+        }
+      ],
+      "category_comparison": "HEMS clinic vs OSM tourism=hotel/place=islet; no clinic/doctor object found.",
+      "decision": "island_context_only",
+      "confidence": "medium-high",
+      "evidence_note": "The official operator and OSM resort context agree on Vihamanaafushi/Kurumba, but the clinic itself is not separately represented in current OSM."
+    },
+    {
+      "facility_id": "facility:health:254",
+      "official_name": "KV Clinic",
+      "official_category": "clinic",
+      "official_operator": "MFAR KUDA VILLINGILI PRIVATE LIMITED",
+      "official_address_or_island": "Kuda Villingili Resort Maldives / Villingilimathidhahuraa (operator and OSM context)",
+      "official_contact": "7300130",
+      "official_status": "open",
+      "official_registration": "HF-21/ALP/PVT/595",
+      "official_source_urls": ["https://hems.health.gov.mv/establishments", "https://www.kudavillingili.com"],
+      "google_maps_discovery": {
+        "query": "KV Clinic Maldives",
+        "observed": "No exact place card; results were unrelated Male clinics.",
+        "url": "https://www.google.com/maps/search/?api=1&query=KV+Clinic+Maldives"
+      },
+      "osm_candidates": [
+        {
+          "osm_id": "osm:way:19882152",
+          "name": "Villingilimathidhahuraa",
+          "tags": {"alt_name": "Kuda Villigili", "alt_name:en": "Kuda Villingili Resort Maldives", "name": "Villingilimathidhahuraa", "natural": "coastline", "place": "islet", "website": "https://www.kudavillingili.com", "wikidata": "Q3089429"},
+          "coords": [73.66377, 4.37743],
+          "context": "Kuda Villingili resort/islet",
+          "live_api_url": "https://api.openstreetmap.org/api/0.6/way/19882152.json",
+          "browse_url": "https://www.openstreetmap.org/way/19882152",
+          "comparison": "same resort identity context only; no clinic/doctor object"
+        }
+      ],
+      "nearby_osm_context": "Live OSM map around the resort showed named construction of K. Thulusdhoo Hospital outside the resort context, but no KV Clinic/medical object on the resort islet; it is rejected.",
+      "category_comparison": "HEMS clinic vs OSM place=islet/tourism context; no facility-level category match.",
+      "decision": "island_context_only",
+      "confidence": "medium",
+      "evidence_note": "The owner name is a strong Kuda Villingili identity clue, but the only live OSM object is the resort/islet and must not be used as clinic geometry."
+    },
+    {
+      "facility_id": "facility:health:969",
+      "official_name": "Life Care Medical",
+      "official_category": "clinic",
+      "official_operator": "Life Care Holding PVT LTD",
+      "official_address_or_island": "11382 Rabarugas Magu, Malé (Google Maps place; plus code 6G5Q+4W Malé)",
+      "official_contact": "7764929",
+      "official_status": "open",
+      "official_registration": "HF-25/ALP/PVT/869",
+      "official_source_urls": ["https://hems.health.gov.mv/establishments", "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"],
+      "google_maps_discovery": {
+        "query": "Life Care Medical Maldives",
+        "place_text": "Life Care Medical Centre, Medical Center, 11382 Rabarugas Magu, Malé; website lifecaremedicalcenters.com; phone 926-3949; plus code 6G5Q+4W Malé",
+        "url": "https://www.google.com/maps/search/?api=1&query=Life+Care+Medical+Maldives"
+      },
+      "duplicate_records": [{"facility_id": "facility:health:112", "official_name": "Life Care Medical Centre", "same_owner": true, "shared_contact": "7764929", "comparison": "likely same establishment/renaming or duplicate registration; different license/registration IDs"}],
+      "osm_candidates": [{"osm_id": "osm:node:6294957686", "name": "Family Care", "tags": {"amenity": "clinic", "healthcare": "clinic", "name": "Family Care"}, "coords": [73.5159113, 4.1708825], "context": "Malé", "live_api_url": "https://api.openstreetmap.org/api/0.6/node/6294957686.json", "browse_url": "https://www.openstreetmap.org/node/6294957686", "comparison": "wrong name; reject"}],
+      "category_comparison": "HEMS clinic vs OSM unrelated clinic; Google place identity is not an OSM object.",
+      "decision": "unresolved_duplicate_review",
+      "confidence": "high_duplicate_confidence; low_osm_mapping_confidence",
+      "evidence_note": "Google Maps supports a Malé Life Care Medical Centre identity and the HEMS cache contains a near-identical record 112. No live OSM object with Life Care identity was found; do not attach Family Care."
+    },
+    {
+      "facility_id": "facility:health:340",
+      "official_name": "Advance Diagnostic Center",
+      "official_category": "clinic",
+      "official_operator": "North West Maldives Pvt Ltd (C-0251/2018)",
+      "official_address_or_island": "4339+FXP, Mueenuhdheen Magu (Google Maps place; Malé-area context)",
+      "official_contact": "7785320",
+      "official_status": "open",
+      "official_registration": "HF-18/ALP/PVT/509",
+      "official_source_urls": ["https://hems.health.gov.mv/establishments", "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"],
+      "google_maps_discovery": {
+        "query": "Advance Diagnostic Center Maldives",
+        "place_text": "Advance Diagnostic Center, Medical clinic, 4339+FXP, Mueenuhdheen Magu; phone 781-7473; no reviews",
+        "other_results": "Advance Medical Clinic on Lonuziyaarai Magu and AMDC Clinic on Shaariu Varudhee were separate results and were not treated as the official facility.",
+        "url": "https://www.google.com/maps/search/?api=1&query=Advance+Diagnostic+Center+Maldives"
+      },
+      "osm_candidates": [{"osm_id": "osm:node:9951457715", "name": "Advance Medical Clinic", "tags": {"amenity": "clinic", "healthcare": "clinic", "name": "Advance Medical Clinic", "phone": "+960****7788"}, "coords": [73.5099234, 4.1726376], "context": "Malé", "live_api_url": "https://api.openstreetmap.org/api/0.6/node/9951457715.json", "browse_url": "https://www.openstreetmap.org/node/9951457715", "comparison": "different name, different masked phone and no operator/address corroboration; reject"}],
+      "category_comparison": "HEMS clinic vs OSM clinic candidate with a different name; Google exact place remains unpaired to OSM.",
+      "decision": "unresolved",
+      "confidence": "high_confidence_non_match_for_osm_candidate",
+      "evidence_note": "The exact Google place may be the official facility, but the available OSM Advance Medical Clinic is not defensible as the same place."
+    },
+    {
+      "facility_id": "facility:health:101",
+      "official_name": "Kaam Medical",
+      "official_category": "clinic",
+      "official_operator": "Kaam Pvt Ltd",
+      "official_address_or_island": "10414 Ahigas Magu, Malé (Google Maps place; plus code 6G8V+2V Malé)",
+      "official_contact": "7675776",
+      "official_status": "open",
+      "official_registration": "HF-23/ALP/PVT/749",
+      "official_source_urls": ["https://hems.health.gov.mv/establishments", "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"],
+      "google_maps_discovery": {
+        "query": "Kaam Medical Maldives",
+        "place_text": "KAAM Medical, Medical clinic, 10414 Ahigas Magu, Malé; plus code 6G8V+2V Malé; phone 733-1612",
+        "url": "https://www.google.com/maps/search/?api=1&query=Kaam+Medical+Maldives"
+      },
+      "osm_candidates": [{"osm_id": "osm:way:485054780", "name": "Kelaa Health Centre", "tags": {"amenity": "hospital", "name": "Kelaa Health Centre"}, "coords": [73.21148152, 6.95895812], "context": "Kelaa", "live_api_url": "https://api.openstreetmap.org/api/0.6/way/485054780.json", "browse_url": "https://www.openstreetmap.org/way/485054780", "comparison": "wrong island/name; reject"}],
+      "nearby_osm_context": "Live OSM map of the Malé/Hulhumalé area contained many medical objects but no KAAM Medical object at the Google-discovered address; generic Male clinics were not attached.",
+      "category_comparison": "HEMS clinic vs no same-identity OSM object.",
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "evidence_note": "Google Maps provides a concrete Malé place identity, but the live OSM candidates are unrelated and no KAAM-tagged facility was found."
+    }
+  ],
+  "summary": {
+    "accepted_confirmed_mappings": 0,
+    "provisional_review_required": 1,
+    "island_context_only": 4,
+    "source_not_in_osm": 2,
+    "unresolved": 2,
+    "unresolved_duplicate_review": 1,
+    "duplicate_notes": ["facility:health:969 likely overlaps facility:health:112 (Life Care Medical / Life Care Medical Centre); no canonical file changed"],
+    "overpass_issue": "Public Overpass mirrors returned 504/timeouts during exact and bounded queries; candidate decisions rely on live OSM API/map extracts plus Nominatim/Google/official sources."
+  }
+}

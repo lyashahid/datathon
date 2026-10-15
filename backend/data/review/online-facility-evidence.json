@@ -1,0 +1,1230 @@
+{
+  "version": "online-facility-evidence-v1",
+  "review_scope": "Accumulated official/OSM evidence including subsequent full-dataset batches",
+  "reviewed_at": "2026-10-13T10:54:36.139227Z",
+  "source_hierarchy": [
+    "Ministry of Education official school directory",
+    "OpenStreetMap object/API metadata and cached Maldives OSM geometry"
+  ],
+  "records": [
+    {
+      "facility_id": "facility:school:482",
+      "official_name": "Meyna School",
+      "category": "school",
+      "official_island": "Holhudhoo",
+      "official_atoll": "Noonu",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/482",
+        "title": "Ministry of Education school directory: Meyna School",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "quote": "Meyna School, Hassankaleyfaanu Magu, N. Holhudhoo, 04110"
+      },
+      "osm_object_id": "osm:way:1322873196",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/way/1322873196",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1322873196.json",
+        "title": "OpenStreetMap way 1322873196",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "name": "މޭނާ ސްކޫލް",
+        "name_en": "Meyna School",
+        "amenity": "school",
+        "operator": "Ministry of Education",
+        "website": "https://meyna.edu.mv/"
+      },
+      "geometry": {
+        "source": "cached Maldives OSM PBF normalized feature",
+        "coordinates": [
+          73.26423214,
+          5.75585748
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Official name, official Holhudhoo address, OSM name:en, operator, website, and same-island geometry agree. OSM way 1322873197 is a nearby second building for the same school and is retained as an alternate claim, not a second official facility."
+    },
+    {
+      "facility_id": "facility:school:621",
+      "official_name": "Gn. Atoll Education Centre",
+      "category": "school",
+      "official_island": "Fuvahmulah",
+      "official_atoll": "Gnaviyani",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/621",
+        "title": "Ministry of Education school directory: Gn. Atoll Education Centre",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "quote": "Gn. Atoll Education Centre, Feendhifannu Magu, Gn. Fuvahmulah, 18015"
+      },
+      "osm_object_id": "osm:way:651281003",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/way/651281003",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/651281003.json",
+        "title": "OpenStreetMap way 651281003",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "name": "ޏ.އަތޮޅު ތައުލީމީ މަރުކަޒު",
+        "name_en": "Gn.Atoll Education Centre",
+        "amenity": "school",
+        "operator": "Government",
+        "website": "http://gnaec.edu.mv"
+      },
+      "geometry": {
+        "source": "cached Maldives OSM PBF normalized feature",
+        "coordinates": [
+          73.42357342857143,
+          -0.295454
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Official Fuvahmulah address and school identity agree with OSM name:en, government operator, school website, and same-island geometry."
+    },
+    {
+      "facility_id": "facility:school:628",
+      "official_name": "Addu High School",
+      "category": "school",
+      "official_island": "Hithadhoo",
+      "official_atoll": "Seenu",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/628",
+        "title": "Ministry of Education school directory: Addu High School",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "quote": "Addu High School, Sharafuddin Magu, S. Hithadhoo, 19020"
+      },
+      "osm_object_id": "osm:node:5200094223",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/node/5200094223",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/5200094223.json",
+        "title": "OpenStreetMap node 5200094223",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "name": null,
+        "name_en": "Addu High School",
+        "amenity": "school",
+        "operator": "Ministry of Education",
+        "website": "https://ahs.edupage.org/",
+        "address": "Sharafuddin Magu"
+      },
+      "geometry": {
+        "source": "live OSM node metadata",
+        "coordinates": [
+          73.0950266,
+          -0.6117587
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Official S. Hithadhoo address, OSM name:en, Ministry of Education operator, school website, street address, and same-island geometry agree."
+    },
+    {
+      "facility_id": "facility:school:640",
+      "official_name": "Dharumavantha School",
+      "category": "school",
+      "official_island": "Male'",
+      "official_atoll": "Kaafu",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/640",
+        "title": "Ministry of Education school directory: Dharumavantha School",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "quote": "Dharumavantha School, Rahdhebai Hingun, K. Male', 20078"
+      },
+      "osm_object_id": "osm:way:1320069203",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/way/1320069203",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1320069203.json",
+        "title": "OpenStreetMap way 1320069203",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "name": "ދަރުމަވަންތަ ސްކޫލް",
+        "name_en": "Dharumavantha School",
+        "amenity": "school",
+        "website": "https://www.dharuma.edu.mv"
+      },
+      "geometry": {
+        "source": "cached Maldives OSM PBF normalized feature",
+        "coordinates": [
+          73.50958451428572,
+          4.169741971428571
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Official Male' address, exact OSM name:en, school website, and same-island geometry agree."
+    },
+    {
+      "facility_id": "facility:school:646",
+      "official_name": "Rehendhi School",
+      "category": "school",
+      "official_island": "Hulhumale'",
+      "official_atoll": "Kaafu",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/646",
+        "title": "Ministry of Education school directory: Rehendhi School",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "quote": "Rehendhi School, Chabeylee Magu, K. Hulhumale', 23000"
+      },
+      "osm_object_id": "osm:way:1210924794",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/way/1210924794",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1210924794.json",
+        "title": "OpenStreetMap way 1210924794",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "name": "ރެހެންދި ސްކޫލް",
+        "name_en": "Rehendhi School",
+        "amenity": "school",
+        "operator": "Ministry of Education",
+        "email": "admin@rehendi.edu.mv"
+      },
+      "geometry": {
+        "source": "cached Maldives OSM PBF normalized feature",
+        "coordinates": [
+          73.54139792,
+          4.2093931
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Official Hulhumale' address, exact OSM name:en, Ministry of Education operator, school email, and same-island geometry agree."
+    },
+    {
+      "facility_id": "facility:school:650",
+      "official_name": "Kaamil Didi Primary School",
+      "category": "school",
+      "official_island": "Hulhumale'",
+      "official_atoll": "Kaafu",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/650",
+        "title": "Ministry of Education school directory: Kaamil Didi Primary School",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "quote": "Kaamil Didi Primary School, Nirolhu Magu, K. Hulhumale' Phase 2, 24000"
+      },
+      "osm_object_id": "osm:node:13006103401",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/node/13006103401",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/13006103401.json",
+        "title": "OpenStreetMap node 13006103401",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "name": "ކާމިލް ދީދީ ޕްރީސްކޫލް",
+        "name_en": "Kaamil Didi Pre School",
+        "amenity": "school"
+      },
+      "geometry": {
+        "source": "live OSM node metadata",
+        "coordinates": [
+          73.5483008,
+          4.2300161
+        ]
+      },
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium",
+      "evidence_note": "The provider name and Hulhumale' context agree, but the official record is a Primary School while OSM says Pre School and has no operator/address. Do not accept until the facility-level identity is confirmed."
+    },
+    {
+      "facility_id": "facility:school:622",
+      "official_name": "Fuvahmulaku School",
+      "category": "school",
+      "official_island": "Fuvahmulah",
+      "official_atoll": "Gnaviyani",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/622",
+        "title": "Ministry of Education school directory: Fuvahmulaku School",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "quote": "Fuvahmulaku School, Dhashiadi Magu, Gn. Fuvahmulah, 18011"
+      },
+      "osm_object_id": null,
+      "osm_source": {
+        "search_scope": "same-island school features in cached Maldives OSM PBF",
+        "accessed_at": "2026-10-12T18:16:05Z"
+      },
+      "geometry": null,
+      "decision": "unresolved",
+      "confidence": "insufficient",
+      "evidence_note": "The official page confirms Fuvahmulah, but the same-island OSM school features checked have different identities, including Gn. Atoll Education Centre and Mohamed Jamaaludheen School. No defensible OSM identity was found; do not use a nearby school or island centroid."
+    },
+    {
+      "facility_id": "facility:school:630",
+      "official_name": "Irushadhiyya School",
+      "category": "school",
+      "official_island": "Maradhoo",
+      "official_atoll": "Seenu",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/630",
+        "title": "Ministry of Education school directory: Irushadhiyya School",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "quote": "Irushadhiyya School, Raivilaa Magu, Maradhoo Feydhoo, S. Maradhoo, 19050"
+      },
+      "osm_object_id": "osm:way:531757805",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/way/531757805",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/531757805.json",
+        "title": "OpenStreetMap way 531757805",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "name": "Maradhoo School",
+        "amenity": "school"
+      },
+      "geometry": null,
+      "decision": "rejected_candidate",
+      "confidence": "insufficient",
+      "evidence_note": "The official page identifies Irushadhiyya School in Maradhoo/Maradhoo Feydhoo. The same-island OSM feature is named Maradhoo School, not Irushadhiyya School; same-island context alone is insufficient. No geometry was attached."
+    },
+    {
+      "facility_id": "facility:school:652",
+      "official_name": "Centre for Higher Secondary Education Male'",
+      "category": "school",
+      "official_island": "Male'",
+      "official_atoll": "Kaafu",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/652",
+        "title": "Ministry of Education school directory: Centre for Higher Secondary Education Male'",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "quote": "Centre for Higher Secondary Education Male', Lily Magu, K. Male'"
+      },
+      "osm_object_id": "osm:way:1547305510",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/way/1547305510",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1547305510.json",
+        "title": "OpenStreetMap way 1547305510",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "name": "CHSE Hulhumale",
+        "amenity": "school"
+      },
+      "geometry": null,
+      "decision": "rejected_candidate",
+      "confidence": "insufficient",
+      "evidence_note": "The official record is CHSE Male' on Male'. The tempting OSM abbreviation CHSE Hulhumale is a different facility on a different island, so it was rejected."
+    },
+    {
+      "facility_id": "facility:school:512",
+      "official_name": "Hithaadhoo School",
+      "category": "school",
+      "official_island": "Hithaadhoo",
+      "official_atoll": "Baa",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/512",
+        "title": "Ministry of Education school directory: Hithaadhoo School",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "quote": "Hithaadhoo School, B. Hithaadhoo, 06100"
+      },
+      "osm_object_id": "osm:node:5200094223",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/node/5200094223",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/5200094223.json",
+        "title": "OpenStreetMap node 5200094223",
+        "accessed_at": "2026-10-12T18:16:05Z",
+        "name": null,
+        "name_en": "Addu High School",
+        "amenity": "school"
+      },
+      "geometry": null,
+      "decision": "rejected_candidate",
+      "confidence": "insufficient",
+      "evidence_note": "The official page identifies B. Hithaadhoo. The OSM object with the superficially similar Hithadhoo context is Addu High School in S. Hithadhoo, a different official facility and island; it was not attached."
+    },
+    {
+      "facility_id": "facility:health:508",
+      "official_name": "Vaavu Atoll Hospital",
+      "category": "hospital",
+      "official_island": "Felidhoo (resolved from Vaavu context)",
+      "official_atoll": "Vaavu",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-12T18:35:12Z",
+        "quote": "Vaavu Atoll Hospital; Hospital Grade 1; owner: Ministry of Health, Family and Welfare"
+      },
+      "osm_object_id": "osm:node:7208742187",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/node/7208742187",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/7208742187.json",
+        "title": "OpenStreetMap node 7208742187",
+        "accessed_at": "2026-10-12T18:35:12Z",
+        "name_en": "Vaavu Atoll Hospital",
+        "amenity": "hospital"
+      },
+      "geometry": {
+        "source": "cached Maldives OSM PBF normalized feature; live OSM node metadata verified",
+        "coordinates": [
+          73.545913,
+          3.4708637
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Exact facility name and hospital category agree. The OSM object is on Felidhoo in Vaavu Atoll, consistent with the official Vaavu hospital context."
+    },
+    {
+      "facility_id": "facility:health:632",
+      "official_name": "Hulhumale' Hospital",
+      "category": "hospital",
+      "official_island": "Hulhumale",
+      "official_atoll": "Kaafu/Malé context",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-12T18:35:12Z",
+        "quote": "Hulhumale' Hospital; Tertiary Hospital; owner: Male' Hospitals Board of Trustees"
+      },
+      "osm_object_id": "osm:way:383751026",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/way/383751026",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/383751026.json",
+        "title": "OpenStreetMap way 383751026",
+        "accessed_at": "2026-10-12T18:35:12Z",
+        "name_en": "Hulhumalé Hospital",
+        "amenity": "hospital",
+        "healthcare": "hospital",
+        "website": "https://hmh.gov.mv"
+      },
+      "geometry": {
+        "source": "cached Maldives OSM PBF normalized feature; live OSM way metadata verified",
+        "coordinates": [
+          73.54310778,
+          4.21581964
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Official HEMS identity and Hulhumale island context agree with OSM name:en, hospital category, hospital healthcare tag, website, and same-island geometry."
+    },
+    {
+      "facility_id": "facility:health:228",
+      "official_name": "MACL Medical Clinic",
+      "category": "clinic",
+      "official_island": "Hulhule (airport island)",
+      "official_atoll": "Kaafu",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-12T18:35:12Z",
+        "quote": "MACL Medical Clinic; General Clinic; owner: Maldives Airports Company Limited"
+      },
+      "osm_object_id": "osm:node:11190861038",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/node/11190861038",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/11190861038.json",
+        "title": "OpenStreetMap node 11190861038",
+        "accessed_at": "2026-10-12T18:35:12Z",
+        "name_en": "MACL Medical Clinic",
+        "amenity": "clinic",
+        "healthcare": "clinic"
+      },
+      "geometry": {
+        "source": "cached Maldives OSM PBF normalized feature; live OSM node metadata verified",
+        "coordinates": [
+          73.5268796,
+          4.1883365
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Exact facility name and clinic category agree. The official owner MACL is consistent with the OSM location on Hulhule airport island; the record had no structured island context before this verification."
+    },
+    {
+      "facility_id": "facility:school:439",
+      "official_name": "Ha. Atoll Education Centre",
+      "category": "school",
+      "official_island": "Dhidhdhoo",
+      "official_atoll": "Haa Alifu",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/439",
+        "title": "Ministry of Education school directory: Ha. Atoll Education Centre",
+        "accessed_at": "2026-10-12T18:42:00Z",
+        "quote": "HA. Atoll Education Centre, HA. Dhidhdhdoo"
+      },
+      "osm_object_id": "osm:node:4735490021",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/node/4735490021",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/4735490021.json",
+        "title": "OpenStreetMap node 4735490021",
+        "accessed_at": "2026-10-12T18:42:00Z",
+        "name": "HDh.Atoll Education Centre",
+        "amenity": "school"
+      },
+      "geometry": null,
+      "decision": "rejected_candidate",
+      "confidence": "high",
+      "evidence_note": "The highest-scoring OSM candidate is HDh. Atoll Education Centre on Kulhudhuffushi, Haa Dhaalu, not the official Haa Alifu Dhidhdhoo record. No candidate has the official island context; no mapping was attached."
+    },
+    {
+      "facility_id": "facility:school:465",
+      "official_name": "Sh. Atoll Education Centre",
+      "category": "school",
+      "official_island": "Komandhoo",
+      "official_atoll": "Shaviyani",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/465",
+        "title": "Ministry of Education school directory: Sh. Atoll Education Centre",
+        "accessed_at": "2026-10-12T18:42:00Z",
+        "quote": "Sh. Atoll Education Centre, Sh. Komandhoo"
+      },
+      "osm_object_id": "osm:node:4735490021",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/node/4735490021",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/4735490021.json",
+        "title": "OpenStreetMap node 4735490021",
+        "accessed_at": "2026-10-12T18:42:00Z",
+        "name": "HDh.Atoll Education Centre",
+        "amenity": "school"
+      },
+      "geometry": null,
+      "decision": "rejected_candidate",
+      "confidence": "high",
+      "evidence_note": "The highest-scoring OSM candidate is HDh. Atoll Education Centre on Kulhudhuffushi, Haa Dhaalu, not the official Shaviyani Komandhoo record. Other candidates are also different atoll education centres; no mapping was attached."
+    },
+    {
+      "facility_id": "facility:school:601",
+      "official_name": "GA. Atoll Education Centre",
+      "category": "school",
+      "official_atoll": "Gaafu Alifu",
+      "official_island": "Villingili",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/601",
+        "title": "Ministry of Education school directory: GA. Atoll Education Centre",
+        "accessed_at": "2026-10-12T18:42:00Z",
+        "quote": "GA. Atoll Education Centre, GA. Villingili"
+      },
+      "osm_object_id": "osm:node:4735490021",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/node/4735490021",
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/4735490021.json",
+        "title": "OpenStreetMap node 4735490021",
+        "accessed_at": "2026-10-12T18:42:00Z",
+        "name": "HDh.Atoll Education Centre",
+        "amenity": "school"
+      },
+      "geometry": null,
+      "decision": "rejected_candidate",
+      "confidence": "high",
+      "evidence_note": "The highest-scoring OSM candidate is HDh. Atoll Education Centre on Kulhudhuffushi, Haa Dhaalu, not the official Gaafu Alifu Villingili record. No candidate matches the official island context; no mapping was attached."
+    },
+    {
+      "facility_id": "facility:school:632",
+      "official_name": "S. Atoll School",
+      "category": "school",
+      "official_island": "Hulhumeedhoo",
+      "official_atoll": "Seenu",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/632",
+        "title": "Ministry of Education school directory: S. Atoll School",
+        "accessed_at": "2026-10-12T18:42:00Z",
+        "quote": "S. Atoll School, S. Hulhumeedhoo"
+      },
+      "osm_object_id": "osm:way:935256114",
+      "osm_source": {
+        "browse_url": "https://www.openstreetmap.org/way/935256114",
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/935256114.json",
+        "title": "OpenStreetMap way 935256114",
+        "accessed_at": "2026-10-12T18:42:00Z",
+        "name": "HDh Atoll School",
+        "amenity": "school"
+      },
+      "geometry": null,
+      "decision": "rejected_candidate",
+      "confidence": "high",
+      "evidence_note": "The top OSM candidate is HDh Atoll School on Vaikaradhoo, Haa Dhaalu. The Seenu candidate is on Addu Meedhoo, not the official Hulhumeedhoo island; no mapping was attached."
+    },
+    {
+      "facility_id": "facility:health:394",
+      "official_name": "European Clinic Maldives Closed",
+      "category": "clinic",
+      "official_island": "Male",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "HEMS establishment directory",
+        "accessed_at": "2026-10-13T02:48:23+00:00",
+        "quote": "European Clinic Maldives Closed; closed official HEMS record"
+      },
+      "osm_object_id": "osm:node:11186258448",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/11186258448.json",
+        "browse_url": "https://www.openstreetmap.org/node/11186258448",
+        "accessed_at": "2026-10-13T02:48:23+00:00",
+        "name_en": "European Clinic",
+        "amenity": "clinic",
+        "healthcare": "clinic"
+      },
+      "geometry": {
+        "source": "live OSM API node",
+        "coordinates": [
+          73.5461254,
+          4.2194254
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Exact clinic identity and compatible OSM clinic tags agree. HEMS/HPA and Google evidence support the closed historical facility identity; current OSM object is in Male. No duplicate facility claim was attached."
+    },
+    {
+      "facility_id": "facility:health:782",
+      "official_name": "I.M.D.C Multi Speciality Hospital",
+      "category": "hospital",
+      "official_island": "Hithadhoo",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "title": "HEMS establishment directory",
+        "accessed_at": "2026-10-13T02:48:23+00:00",
+        "quote": "I.M.D.C Multi Speciality Hospital; Hithadhoo official record"
+      },
+      "osm_object_id": "osm:node:6723361843",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/6723361843.json",
+        "browse_url": "https://www.openstreetmap.org/node/6723361843",
+        "accessed_at": "2026-10-13T02:48:23+00:00",
+        "name": "IMDC",
+        "amenity": "hospital",
+        "healthcare": "hospital"
+      },
+      "geometry": {
+        "source": "live OSM API node; adjacent hospital way retained as companion evidence",
+        "coordinates": [
+          73.0872262,
+          -0.6019436
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Official HEMS/HPA Hithadhoo identity agrees with OSM IMDC acronym, hospital tags, and same-island geometry. OSM way 715366841 is the named hospital building companion and is not attached as a second facility claim."
+    },
+    {
+      "facility_id": "facility:health:499",
+      "official_name": "Alifu Alifu Atoll Hospital",
+      "category": "hospital",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments?search=Alifu%20Alifu%20Atoll%20Hospital",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-13T04:21:42.494319+00:00"
+      },
+      "official_island": "Rasdhoo",
+      "osm_object_id": "osm:node:4800490223",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/4800490223.json",
+        "browse_url": "https://www.openstreetmap.org/node/4800490223",
+        "accessed_at": "2026-10-13T04:21:42.494319+00:00",
+        "name_en": "Rasdhoo hospital",
+        "amenity": "hospital",
+        "healthcare": "hospital"
+      },
+      "geometry": {
+        "source": "live OSM node metadata",
+        "coordinates": [
+          72.9906215,
+          4.2625744
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Official government hospital record and Rasdhoo island context agree with live OSM hospital object; the OSM short name is a localized/name variant."
+    },
+    {
+      "facility_id": "facility:health:714",
+      "official_name": "Alifu Dhaalu Atoll Hospital",
+      "category": "hospital",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments?search=Alifu%20Dhaalu%20Atoll%20Hospital",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-13T04:21:42.494319+00:00"
+      },
+      "official_island": "Mahibadhoo",
+      "osm_object_id": "osm:way:465261224",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/465261224/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/465261224",
+        "accessed_at": "2026-10-13T04:21:42.494319+00:00",
+        "name": "South Ari District Medical Center",
+        "amenity": "hospital",
+        "healthcare": "hospital",
+        "phone": "+960 668-0529"
+      },
+      "geometry": {
+        "source": "live OSM way metadata; centroid of way geometry",
+        "coordinates": [
+          72.9663885875,
+          3.7575868
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "medium",
+      "evidence_note": "Official Mahibadhoo hospital context and live OSM hospital category agree; OSM carries the alternate South Ari District Medical Center name, so retain reviewed rather than exact status."
+    },
+    {
+      "facility_id": "facility:health:723",
+      "official_name": "Baa Atoll Hospital",
+      "category": "hospital",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments?search=Baa%20Atoll%20Hospital",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-13T04:21:42.494319+00:00"
+      },
+      "official_island": "Eydhafushi",
+      "osm_object_id": "osm:way:1317416264",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1317416264/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/1317416264",
+        "accessed_at": "2026-10-13T04:21:42.494319+00:00",
+        "name": "Baa Atoll Hospital",
+        "building": "hospital"
+      },
+      "geometry": {
+        "source": "live OSM way metadata; centroid of way geometry",
+        "coordinates": [
+          73.06792168125,
+          5.1043622
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Exact official hospital name and Eydhafushi island context agree with the live OSM hospital building."
+    },
+    {
+      "facility_id": "facility:health:617",
+      "official_name": "Haa Dhaalu Kumundhoo Health Centre",
+      "category": "health_center",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments?search=Haa+Dhaalu+Kumundhoo+Health+Centre",
+        "title": "Ministry of Health HEMS establishment directory",
+        "accessed_at": "2026-10-13T04:47:59.162851+00:00"
+      },
+      "official_island": "Kumundhoo",
+      "osm_object_id": "osm:way:1554432119",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1554432119.json",
+        "browse_url": "https://www.openstreetmap.org/way/1554432119",
+        "accessed_at": "2026-10-13T04:47:59.162851+00:00",
+        "name_en": "Kumundhoo health Center",
+        "healthcare": "yes"
+      },
+      "geometry": {
+        "source": "live OSM way metadata; centroid of way geometry",
+        "coordinates": [
+          73.0500106625,
+          6.57448856875
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "medium-high",
+      "evidence_note": "Official HEMS/Maaharaa island and facility identity agree with live OSM name:en and healthcare=yes on Kumundhoo. The broad healthcare tag is supplemented by a facility-specific exact name."
+    },
+    {
+      "facility_id": "facility:school:477",
+      "official_name": "Maaungoodhoo School",
+      "category": "school",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/477",
+        "title": "Ministry of Education school directory",
+        "accessed_at": "2026-10-13T04:47:59.162851+00:00"
+      },
+      "official_island": "Maaungoodhoo",
+      "osm_object_id": "osm:way:1118550872",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1118550872.json",
+        "browse_url": "https://www.openstreetmap.org/way/1118550872",
+        "accessed_at": "2026-10-13T04:47:59.162851+00:00",
+        "name": "Sh. Maaungoodhoo School",
+        "building": "yes"
+      },
+      "geometry": {
+        "source": "live OSM way metadata; centroid of way geometry",
+        "coordinates": [
+          73.2816484,
+          6.036264
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "medium",
+      "evidence_note": "Official Ministry identity and correct Shaviyani Maaungoodhoo island agree with exact-name live OSM school building. OSM lacks amenity=school and operator tags, so this remains a medium-confidence reviewed name/island match."
+    },
+    {
+      "facility_id": "facility:health:547",
+      "official_name": "L. Isdhoo Health Centre",
+      "category": "health_center",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments/feedback/547",
+        "title": "Ministry of Health HEMS establishment record",
+        "accessed_at": "2026-10-13T05:14:58.412140+00:00"
+      },
+      "official_island": "Isdhoo",
+      "osm_object_id": "osm:way:1167904137",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1167904137.json",
+        "browse_url": "https://www.openstreetmap.org/way/1167904137",
+        "accessed_at": "2026-10-13T05:14:58.412140+00:00",
+        "name": "L.Isdhоо Health Centre (IHC)",
+        "amenity": "hospital",
+        "healthcare": "hospital",
+        "operator": "Gamu Regional Hospital (GRH)",
+        "website": "https://www.facebook.com/IsdhooHealthCentre"
+      },
+      "geometry": {
+        "source": "live OSM way metadata; centroid of way geometry",
+        "coordinates": [
+          73.56939,
+          2.11784364
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "alternate_osm_object_ids": [
+        "osm:node:10861839404"
+      ],
+      "evidence_note": "Official HEMS/Maaharaa identity, Isdhoo island, address, operator and facility website agree with the live OSM named health-centre object. The nearby OSM node is a duplicate representation of the same facility and is not attached separately."
+    },
+    {
+      "facility_id": "facility:health:175",
+      "official_name": "Island Doctor Clinic",
+      "category": "clinic",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments?page=36",
+        "title": "Current HEMS establishment record for ID 175",
+        "accessed_at": "2026-10-13T05:14:58.412140+00:00"
+      },
+      "official_island": "Olhuveli",
+      "osm_object_id": "osm:way:622011138",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/622011138.json",
+        "browse_url": "https://www.openstreetmap.org/way/622011138",
+        "accessed_at": "2026-10-13T05:14:58.412140+00:00",
+        "name": "Olhuveli Clinic",
+        "amenity": "doctors",
+        "healthcare": "yes"
+      },
+      "geometry": {
+        "source": "live OSM way metadata; centroid of way geometry",
+        "coordinates": [
+          73.4555427,
+          3.8519779
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "medium",
+      "evidence_note": "The current HEMS row for ID 175 is Sun Siyam Olhuveli Maldives Clinic; live operator evidence confirms an onsite clinic and OSM has a facility-level Olhuveli Clinic object in the matching resort context. The requested historical Island Doctor Clinic label remains an alias requiring separate historical confirmation."
+    },
+    {
+      "facility_id": "facility:health:704",
+      "official_name": "L.Hithadhoo Health Center",
+      "category": "health_center",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments?page=22",
+        "accessed_at": "2026-10-13T05:42:09.936367Z"
+      },
+      "osm_object_id": "osm:way:1126434800",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1126434800/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/1126434800",
+        "accessed_at": "2026-10-13T05:42:09.936377Z",
+        "name": "Laamu Hithadhoo Health Centre",
+        "addr:city": "Hithadhoo",
+        "addr:postcode": "15110",
+        "healthcare": "hospital",
+        "healthcare:speciality": "gynaecology;general;paediatrics;vaccination;radiology;community",
+        "operator": "Ministry of Health, Rep. of Maldives"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.38890465,
+          1.7999891
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Official HEMS identity and Laamu Hithadhoo operator/news evidence agree with the live OSM named health-centre object, address, operator and compatible hospital healthcare tag."
+    },
+    {
+      "facility_id": "facility:school:494",
+      "official_name": "Fainu School",
+      "category": "school",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/494",
+        "accessed_at": "2026-10-13T05:42:09.936394Z"
+      },
+      "osm_object_id": "osm:node:13586575555",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/13586575555.json",
+        "browse_url": "https://www.openstreetmap.org/node/13586575555",
+        "accessed_at": "2026-10-13T05:42:09.936396Z",
+        "name": "Fainu School",
+        "office": "educational_institution"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.036115,
+          5.4640163
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "The official Ministry page places Fainu School at Saharaa Magu, R. Fainu. The live primary node is on the same island and carries the exact school name and alternate facility-level education category. Node 13586575556 is retained as a supporting campus component."
+    },
+    {
+      "facility_id": "facility:school:505",
+      "official_name": "Maduvvaree School",
+      "category": "school",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/505",
+        "accessed_at": "2026-10-13T05:42:09.936408Z"
+      },
+      "osm_object_id": "osm:way:849713608",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/849713608/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/849713608",
+        "accessed_at": "2026-10-13T05:42:09.936409Z",
+        "name": "Maduvvari School",
+        "building": "school"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8964839,
+          5.48522705
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "The Ministry page identifies Maduvvaree School on R. Maduvvari. The live OSM way is on that island, is tagged building=school and carries the documented Maduvvari spelling variant."
+    },
+    {
+      "facility_id": "facility:school:506",
+      "official_name": "Duvaafaru Primary School",
+      "category": "school",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/506",
+        "accessed_at": "2026-10-13T05:42:09.936419Z"
+      },
+      "osm_object_id": "osm:way:1038348911",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1038348911/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/1038348911",
+        "accessed_at": "2026-10-13T05:42:09.936420Z",
+        "name": "Dhuvaafaru Primary School",
+        "building": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.04196731,
+          5.62576592
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "The Ministry page identifies Duvaafaru Primary School at Dhandehelu Magu, R. Dhuvaafaru. The live OSM way is on the same island and carries the exact name with the documented Duvaafaru/Dhuvaafaru spelling variant."
+    },
+    {
+      "facility_id": "facility:health:502",
+      "official_name": "DH. Rinbidhoo Health Centre",
+      "category": "health_center",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments?page=8",
+        "accessed_at": "2026-10-13T06:04:05.422994Z"
+      },
+      "osm_object_id": "osm:node:12163204712",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/12163204712.json",
+        "browse_url": "https://www.openstreetmap.org/node/12163204712",
+        "accessed_at": "2026-10-13T06:04:05.423006Z",
+        "name": "Rinbudhoo Health Center",
+        "amenity": "doctors",
+        "healthcare": "doctor"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8959053,
+          2.9235708
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Official HEMS/Maaharaa identity for Dh. Rinbudhoo Health Centre and the Rinbudhoo island agree with the live OSM node's exact name variant and compatible doctors/doctor tags."
+    },
+    {
+      "facility_id": "facility:health:608",
+      "official_name": "S. Hulhumeedhoo Health Centre",
+      "category": "health_center",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "accessed_at": "2026-10-13T07:30:27.357307Z"
+      },
+      "osm_object_id": "osm:way:744245617",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/744245617/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/744245617",
+        "accessed_at": "2026-10-13T07:30:27.357318Z",
+        "name": "HMHC",
+        "amenity": "hospital",
+        "healthcare": "hospital",
+        "operator": "Ministry of Health, Rep of Maldives",
+        "operator:type": "government"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.22732822,
+          -0.58820616
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Official HEMS identity and island context agree with the live OSM facility object HMHC; category-compatible tags and island-level geometry were independently verified through the OSM object API."
+    },
+    {
+      "facility_id": "facility:health:609",
+      "official_name": "S. Feydhoo Health Centre",
+      "category": "health_center",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "accessed_at": "2026-10-13T07:30:27.357339Z"
+      },
+      "osm_object_id": "osm:way:555723531",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/555723531/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/555723531",
+        "accessed_at": "2026-10-13T07:30:27.357341Z",
+        "name": "Feydhoo Health Centre",
+        "building": "hospital"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.1360225,
+          -0.6812083727272727
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Official HEMS identity and island context agree with the live OSM facility object Feydhoo Health Centre; category-compatible tags and island-level geometry were independently verified through the OSM object API."
+    },
+    {
+      "facility_id": "facility:health:643",
+      "official_name": "Noonu Maafaru Health Centre",
+      "category": "health_center",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "accessed_at": "2026-10-13T07:30:27.357356Z"
+      },
+      "osm_object_id": "osm:way:1201906805",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1201906805/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/1201906805",
+        "accessed_at": "2026-10-13T07:30:27.357357Z",
+        "name": "Maafaru Health Center",
+        "building": "yes",
+        "healthcare": "yes",
+        "healthcare:speciality": "general"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.47868966,
+          5.8322134
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "medium-high",
+      "evidence_note": "Official HEMS identity and island context agree with the live OSM facility object Maafaru Health Center; category-compatible tags and island-level geometry were independently verified through the OSM object API."
+    },
+    {
+      "facility_id": "facility:health:732",
+      "official_name": "Raa Kinolhas Health Centre",
+      "category": "health_center",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "accessed_at": "2026-10-13T07:57:26.672526Z"
+      },
+      "osm_object_id": "osm:way:1122700184",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1122700184/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/1122700184",
+        "accessed_at": "2026-10-13T07:57:26.672548Z",
+        "name": "Kinolhas Health Center",
+        "healthcare": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.02978944545454,
+          5.447952763636364
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "medium-high",
+      "evidence_note": "Official HEMS identity and island context agree with live OSM facility-level object Kinolhas Health Center; category-compatible healthcare tagging and live geometry were independently verified."
+    },
+    {
+      "facility_id": "facility:health:735",
+      "official_name": "Raa Fainu Health Centre",
+      "category": "health_center",
+      "official_source": {
+        "url": "https://hems.health.gov.mv/establishments",
+        "accessed_at": "2026-10-13T07:57:26.672583Z"
+      },
+      "osm_object_id": "osm:node:13586575558",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/node/13586575558.json",
+        "browse_url": "https://www.openstreetmap.org/node/13586575558",
+        "accessed_at": "2026-10-13T07:57:26.672587Z",
+        "name": "Fainu Health Centre",
+        "healthcare": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.0346721,
+          5.4652336
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "medium-high",
+      "evidence_note": "Official HEMS identity and island context agree with live OSM facility-level object Fainu Health Centre; category-compatible healthcare tagging and live geometry were independently verified."
+    },
+    {
+      "facility_id": "facility:school:600",
+      "official_name": "Ihadhdhoo School",
+      "category": "school",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/600",
+        "accessed_at": "2026-10-13T09:16:25.925480Z"
+      },
+      "osm_object_id": "osm:way:364839738",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/364839738/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/364839738",
+        "accessed_at": "2026-10-13T09:16:25.925489Z",
+        "name": "Ihadhdhoo School",
+        "building": "school"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.542556,
+          1.9316287
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge."
+    },
+    {
+      "facility_id": "facility:school:612",
+      "official_name": "Aboobakuru School",
+      "category": "school",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/612",
+        "accessed_at": "2026-10-13T09:16:25.925507Z"
+      },
+      "osm_object_id": "osm:way:962507715",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/962507715/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/962507715",
+        "accessed_at": "2026-10-13T09:16:25.925510Z",
+        "name": "Aboobakuru School",
+        "building": "school"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.9956232,
+          0.5253296
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge."
+    },
+    {
+      "facility_id": "facility:school:620",
+      "official_name": "Thinadhoo School",
+      "category": "school",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/620",
+        "accessed_at": "2026-10-13T09:16:25.925523Z"
+      },
+      "osm_object_id": "osm:way:1000764503",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/1000764503/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/1000764503",
+        "accessed_at": "2026-10-13T09:16:25.925524Z",
+        "name": "Thinadhoo School",
+        "building": "school"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.9977109,
+          0.5339866
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge."
+    },
+    {
+      "facility_id": "facility:school:631",
+      "official_name": "Feydhoo School",
+      "category": "school",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/631",
+        "accessed_at": "2026-10-13T09:16:25.925536Z"
+      },
+      "osm_object_id": "osm:relation:9994380",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/relation/9994380/full.json",
+        "browse_url": "https://www.openstreetmap.org/relation/9994380",
+        "accessed_at": "2026-10-13T09:16:25.925537Z",
+        "name": "Feydhoo School",
+        "amenity": "school",
+        "type": "site",
+        "building": "school"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.1354185,
+          -0.6823775
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge."
+    },
+    {
+      "facility_id": "facility:school:591",
+      "official_name": "Hamad Bin Khaleefa Al Thani School",
+      "category": "school",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/591",
+        "accessed_at": "2026-10-13T09:21:49.991677Z"
+      },
+      "osm_object_id": "osm:way:364882220",
+      "osm_source": {
+        "api_url": "https://api.openstreetmap.org/api/0.6/way/364882220/full.json",
+        "browse_url": "https://www.openstreetmap.org/way/364882220",
+        "accessed_at": "2026-10-13T09:21:49.991688Z",
+        "name": "Hamad Bin Khaleefa Al-Thani School",
+        "building": "school"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.5469874,
+          1.9202709
+        ]
+      },
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge."
+    }
+  ],
+  "summary": {
+    "records_reviewed": 26,
+    "confirmed_matches": 17,
+    "provisional_matches": 1,
+    "rejected_candidates": 7,
+    "still_unresolved": 1,
+    "duplicate_osm_claims": [
+      {
+        "facility_id": "facility:school:482",
+        "selected_osm_object_id": "osm:way:1322873196",
+        "alternate_same_school_osm_object_id": "osm:way:1322873197",
+        "status": "documented_alternate_same_school_geometry_not_attached_as_second_claim"
+      }
+    ]
+  }
+}

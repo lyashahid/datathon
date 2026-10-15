@@ -1,0 +1,158 @@
+{
+  "job_id": "batch-20261013-150000-02",
+  "records": [
+    {
+      "facility_id": "facility:health:416",
+      "official_name": "Mipstar Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:419",
+      "official_name": "Noosandha",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:42",
+      "official_name": "Dharavandhoo Medical Center",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:14267725202",
+          "osm_url": "https://www.openstreetmap.org/node/14267725202",
+          "name": "Dharavandhoo Medical Centre",
+          "island": "Dharavandhoo",
+          "coordinates": [
+            73.1334513,
+            5.1564975
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "check_date": "2026-10-09",
+            "check_date:opening_hours": "2026-10-09",
+            "healthcare": "hospital",
+            "name": "Dharavandhoo Medical Centre",
+            "opening_hours": "Sa-Th 08:00-16:00"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:8439398536",
+          "osm_url": "https://www.openstreetmap.org/node/8439398536",
+          "name": "Dharavandhoo Health Centre",
+          "island": "Dharavandhoo",
+          "coordinates": [
+            73.1349001,
+            5.1578716
+          ],
+          "tags": {
+            "addr:city": "Dharavandhoo",
+            "addr:postcode": "06060",
+            "check_date": "2026-10-09",
+            "check_date:opening_hours": "2026-10-09",
+            "healthcare": "hospital",
+            "name": "Dharavandhoo Health Centre",
+            "opening_hours": "24/7",
+            "operator": "Ministry of Health",
+            "phone": "+9606600040"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:422",
+      "official_name": "Maalifushi By COMO",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:425",
+      "official_name": "Athuruga Medical Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:427",
+      "official_name": "Unique Dental",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:429",
+      "official_name": "Velaa Private Island Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:43",
+      "official_name": "Sha Therapy Dhivehibeys Centre",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:432",
+      "official_name": "AIMS Diagnostic Care",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:434",
+      "official_name": "Pro Care Clinic & Dental Centre",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    }
+  ],
+  "summary": "deterministic local review"
+}

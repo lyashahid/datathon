@@ -1,0 +1,12 @@
+{
+  "content_type": "application/json",
+  "endpoint": "local derived output",
+  "http_status": 200,
+  "parser_version": "accessibility-v1",
+  "retrieved_at": "2026-10-14T16:00:56.292246+00:00",
+  "schema_version": 1,
+  "sha256": "239bed92d985305a1b7abcfa3df9cd95bcf5864ba9907493500bf6abad1ad27d",
+  "source": "Mobility Sandbox default accessibility scores",
+  "source_record_id": null,
+  "status": "fresh"
+}

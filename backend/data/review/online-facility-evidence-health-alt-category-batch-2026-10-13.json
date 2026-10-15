@@ -1,0 +1,630 @@
+{
+  "version": "online-facility-evidence-health-alt-category-batch-2026-10-13-v1",
+  "review_scope": "ten unresolved official HEMS health centres; alternate-category OSM investigation",
+  "reviewed_at": "2026-10-13T00:58:49+05:00",
+  "access_date": "2026-10-13",
+  "canonical_files_modified": false,
+  "source_hierarchy": [
+    "local public HEMS normalized record cache",
+    "official HEMS establishment directory / public health-facility list",
+    "Google Maps public place discovery",
+    "live OpenStreetMap API map bboxes and object API",
+    "Nominatim island searches (discovery only; partially rate-limited)"
+  ],
+  "global_method_note": "Island agreement was required. Generic nearby buildings, resort/island polygons, pharmacies, and unrelated facilities were not mapped as health centres. A successful HTTP response was treated as retrieval only; category and island identity were checked separately. A combined Overpass query was also attempted against overpass-api.de (HTTP 504) and overpass.kumi.systems (read timeout); no Overpass-only candidate was accepted.",
+  "summary": {
+    "records": 10,
+    "safe_mappings_accepted": 0,
+    "source_not_in_osm": 7,
+    "island_context_only": 3,
+    "rejected_osm_candidates": 1,
+    "canonical_files_modified": false,
+    "bottom_line": "Seven facilities have exact Google island-specific place evidence but no defensible facility-level OSM object. Three remain island-context-only after no exact Google result and no OSM health object. No safe OSM mappings accepted."
+  },
+  "records": [
+    {
+      "facility_id": "facility:health:716",
+      "official_name": "A.A. Maalhos Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 1",
+      "official_owner": "Ministry of Health",
+      "official_island": "Maalhos",
+      "official_atoll": "Alifu Alifu",
+      "official_source_record_id": "716",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "query": "A.A. Maalhos Health Centre Maldives",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=A.A.+Maalhos+Health+Centre+Maldives",
+        "result_type": "exact_place",
+        "title": "AA.Maalhos Health Center",
+        "category": "Hospital",
+        "location_text": "XPPC+RPV, aa. male, Maalhos",
+        "phone": "666-0863",
+        "observation": "Exact place card; Google normalizes Centre→Center and shows the official island Maalhos."
+      },
+      "nominatim_island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Maalhos+Maldives&format=jsonv2&addressdetails=1&limit=10",
+        "used_for_decision": false,
+        "note": "Nominatim exact facility-name searches returned no exact facility in successful attempts; later requests were rate-limited (HTTP 429), so OSM map/API evidence—not Nominatim absence—drives the decision."
+      },
+      "osm_island_scan": {
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.7128639,3.9829854,72.7251716,3.9899609",
+        "http_status": 200,
+        "island_name": "Maalhos",
+        "bbox": [
+          72.71286390534681,
+          3.98298535333977,
+          72.7251716024322,
+          3.98996091707423
+        ],
+        "relevant_tagged_object_count": 2,
+        "alternate_categories_checked": [
+          "amenity=clinic",
+          "amenity=hospital",
+          "amenity=doctors",
+          "amenity=pharmacy",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=doctor",
+          "name/alt_name tokens: health, clinic, hospital, doctor, medical, pharmacy, dispensary, centre, center, post"
+        ],
+        "facility_level_health_candidates": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplied an exact island-specific place (AA.Maalhos Health Center) but the live OSM island bbox scan found no defensible facility-level object under alternate health tags; no facility-level OSM candidate was found."
+    },
+    {
+      "facility_id": "facility:health:500",
+      "official_name": "A.Dh Dhidhoo Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 1",
+      "official_owner": "Ministry of Health",
+      "official_island": "Dhidhdhoo",
+      "official_atoll": "Alifu Dhaalu",
+      "official_source_record_id": "500",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "query": "A.Dh Dhidhoo Health Centre Maldives",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=A.Dh+Dhidhoo+Health+Centre+Maldives",
+        "result_type": "no_exact_place",
+        "title": null,
+        "category": null,
+        "location_text": null,
+        "phone": null,
+        "observation": "Search list showed unrelated Dh. Meedhoo, Thulusdhoo, A Dh Dhigurah and a generic Health Center; no Dhidhdhoo place card."
+      },
+      "nominatim_island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Dhidhdhoo+Maldives&format=jsonv2&addressdetails=1&limit=10",
+        "used_for_decision": false,
+        "note": "Nominatim exact facility-name searches returned no exact facility in successful attempts; later requests were rate-limited (HTTP 429), so OSM map/API evidence—not Nominatim absence—drives the decision."
+      },
+      "osm_island_scan": {
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.8725699,3.4793849,72.8861677,3.4906407",
+        "http_status": 200,
+        "island_name": "Dhidhdhoo",
+        "bbox": [
+          72.87256994310631,
+          3.47938488638363,
+          72.88616769280489,
+          3.4906407371695702
+        ],
+        "relevant_tagged_object_count": 0,
+        "alternate_categories_checked": [
+          "amenity=clinic",
+          "amenity=hospital",
+          "amenity=doctors",
+          "amenity=pharmacy",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=doctor",
+          "name/alt_name tokens: health, clinic, hospital, doctor, medical, pharmacy, dispensary, centre, center, post"
+        ],
+        "facility_level_health_candidates": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "island_context_only",
+      "confidence": "medium-high",
+      "safe_mapping": false,
+      "evidence_note": "Official HEMS/OneMap island context is retained, but Google Maps did not return an exact place and the live OSM island bbox scan found no health/medical facility object. Keep island context only; do not invent geometry."
+    },
+    {
+      "facility_id": "facility:health:504",
+      "official_name": "A.Dh Maamigilee Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 4",
+      "official_owner": "Ministry of Health",
+      "official_island": "Maamigili",
+      "official_atoll": "Alifu Dhaalu",
+      "official_source_record_id": "504",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "query": "A.Dh Maamigilee Health Centre Maldives",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=A.Dh+Maamigilee+Health+Centre+Maldives",
+        "result_type": "exact_place",
+        "title": "Maamigili Health Centre",
+        "category": "Community health center",
+        "location_text": "Ameenee Magu, Maamigili 00100; FRGQ+H5 Maamigili",
+        "phone": "668-0713",
+        "observation": "Google corrected Maamigilee→Maamigili and returned an exact Maamigili health-centre place."
+      },
+      "nominatim_island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Maamigili+Maldives&format=jsonv2&addressdetails=1&limit=10",
+        "used_for_decision": false,
+        "note": "Nominatim exact facility-name searches returned no exact facility in successful attempts; later requests were rate-limited (HTTP 429), so OSM map/API evidence—not Nominatim absence—drives the decision."
+      },
+      "osm_island_scan": {
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.8152023,3.4673091,72.8472307,3.4840836",
+        "http_status": 200,
+        "island_name": "Maamigili",
+        "bbox": [
+          72.81520225435311,
+          3.46730912764633,
+          72.8472307324477,
+          3.48408355678983
+        ],
+        "relevant_tagged_object_count": 13,
+        "alternate_categories_checked": [
+          "amenity=clinic",
+          "amenity=hospital",
+          "amenity=doctors",
+          "amenity=pharmacy",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=doctor",
+          "name/alt_name tokens: health, clinic, hospital, doctor, medical, pharmacy, dispensary, centre, center, post"
+        ],
+        "facility_level_health_candidates": [
+          {
+            "osm_id": "osm:node:12925283001",
+            "type": "node",
+            "id": "12925283001",
+            "tags": {
+              "amenity": "pharmacy"
+            },
+            "coordinates": [
+              72.8381995,
+              3.4763473
+            ],
+            "api_url": "https://api.openstreetmap.org/api/0.6/node/12925283001.json",
+            "browse_url": "https://www.openstreetmap.org/node/12925283001",
+            "candidate_decision": "rejected_candidate",
+            "reason": "Unnamed amenity=pharmacy only; no health-centre/clinic name, operator, or compatible category. It is ~42 m from the decoded Google local plus-code centre, so proximity alone is not enough."
+          }
+        ]
+      },
+      "candidate_osm_objects": [
+        {
+          "osm_id": "osm:node:12925283001",
+          "type": "node",
+          "id": "12925283001",
+          "tags": {
+            "amenity": "pharmacy"
+          },
+          "coordinates": [
+            72.8381995,
+            3.4763473
+          ],
+          "api_url": "https://api.openstreetmap.org/api/0.6/node/12925283001.json",
+          "browse_url": "https://www.openstreetmap.org/node/12925283001",
+          "candidate_decision": "rejected_candidate",
+          "reason": "Unnamed amenity=pharmacy only; no health-centre/clinic name, operator, or compatible category. It is ~42 m from the decoded Google local plus-code centre, so proximity alone is not enough."
+        }
+      ],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplied an exact island-specific place (Maamigili Health Centre) but the live OSM island bbox scan found no defensible facility-level object under alternate health tags; the nearby pharmacy candidate is rejected."
+    },
+    {
+      "facility_id": "facility:health:501",
+      "official_name": "A.Dh Mandhoo Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 1",
+      "official_owner": "Ministry of Health",
+      "official_island": "Mandhoo",
+      "official_atoll": "Alifu Dhaalu",
+      "official_source_record_id": "501",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "query": "A.Dh Mandhoo Health Centre Maldives",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=A.Dh+Mandhoo+Health+Centre+Maldives",
+        "result_type": "no_exact_place",
+        "title": null,
+        "category": null,
+        "location_text": null,
+        "phone": null,
+        "observation": "Search list showed unrelated Dh. Meedhoo, Baa Fehendhoo, ADK Hospital, A Dh Dhigurah and a Male clinic; no Mandhoo place card."
+      },
+      "nominatim_island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Mandhoo+Maldives&format=jsonv2&addressdetails=1&limit=10",
+        "used_for_decision": false,
+        "note": "Nominatim exact facility-name searches returned no exact facility in successful attempts; later requests were rate-limited (HTTP 429), so OSM map/API evidence—not Nominatim absence—drives the decision."
+      },
+      "osm_island_scan": {
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.7057436,3.6901506,72.7142757,3.7056995",
+        "http_status": 200,
+        "island_name": "Mandhoo",
+        "bbox": [
+          72.7057436401143,
+          3.69015062904807,
+          72.7142757351285,
+          3.70569952352911
+        ],
+        "relevant_tagged_object_count": 0,
+        "alternate_categories_checked": [
+          "amenity=clinic",
+          "amenity=hospital",
+          "amenity=doctors",
+          "amenity=pharmacy",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=doctor",
+          "name/alt_name tokens: health, clinic, hospital, doctor, medical, pharmacy, dispensary, centre, center, post"
+        ],
+        "facility_level_health_candidates": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "island_context_only",
+      "confidence": "medium-high",
+      "safe_mapping": false,
+      "evidence_note": "Official HEMS/OneMap island context is retained, but Google Maps did not return an exact place and the live OSM island bbox scan found no health/medical facility object. Keep island context only; do not invent geometry."
+    },
+    {
+      "facility_id": "facility:health:635",
+      "official_name": "AA. Himandhoo Health center",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 1",
+      "official_owner": "Ministry of Health",
+      "official_island": "Himandhoo",
+      "official_atoll": "Alifu Alifu",
+      "official_source_record_id": "635",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "query": "AA Himandhoo Health Centre Maldives",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=AA+Himandhoo+Health+Centre+Maldives",
+        "result_type": "exact_place",
+        "title": "Himandhoo Health Center",
+        "category": "Public health department",
+        "location_text": "WPCV+2MV, Beach Rd, Himandhoo 09080",
+        "phone": "666-0857",
+        "observation": "Exact place card on Himandhoo; Google uses Center and public-health-department category."
+      },
+      "nominatim_island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Himandhoo+Maldives&format=jsonv2&addressdetails=1&limit=10",
+        "used_for_decision": false,
+        "note": "Nominatim exact facility-name searches returned no exact facility in successful attempts; later requests were rate-limited (HTTP 429), so OSM map/API evidence—not Nominatim absence—drives the decision."
+      },
+      "osm_island_scan": {
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.7391727,3.9176055,72.7496675,3.9248661",
+        "http_status": 200,
+        "island_name": "Himandhoo",
+        "bbox": [
+          72.73917270337611,
+          3.91760545094193,
+          72.7496674933186,
+          3.92486609723143
+        ],
+        "relevant_tagged_object_count": 0,
+        "alternate_categories_checked": [
+          "amenity=clinic",
+          "amenity=hospital",
+          "amenity=doctors",
+          "amenity=pharmacy",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=doctor",
+          "name/alt_name tokens: health, clinic, hospital, doctor, medical, pharmacy, dispensary, centre, center, post"
+        ],
+        "facility_level_health_candidates": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplied an exact island-specific place (Himandhoo Health Center) but the live OSM island bbox scan found no defensible facility-level object under alternate health tags; no facility-level OSM candidate was found."
+    },
+    {
+      "facility_id": "facility:health:712",
+      "official_name": "F. Biledhoo Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 2",
+      "official_owner": "Ministry of Health",
+      "official_island": "Bileiydhoo",
+      "official_atoll": "Faafu",
+      "official_source_record_id": "712",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "query": "F Biledhoo Health Centre Maldives",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=F+Biledhoo+Health+Centre+Maldives",
+        "result_type": "exact_place",
+        "title": "Bilehdhoo Health Center",
+        "category": "Hospital",
+        "location_text": "4X9J+QRQ, Bileiydhoo",
+        "phone": "790-2915",
+        "observation": "Google corrected Biledhoo/Bilehdhoo spelling and returned an exact Bileiydhoo health-centre place."
+      },
+      "nominatim_island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Bileiydhoo+Maldives&format=jsonv2&addressdetails=1&limit=10",
+        "used_for_decision": false,
+        "note": "Nominatim exact facility-name searches returned no exact facility in successful attempts; later requests were rate-limited (HTTP 429), so OSM map/API evidence—not Nominatim absence—drives the decision."
+      },
+      "osm_island_scan": {
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.9787264,3.1136314,72.9890096,3.1231564",
+        "http_status": 200,
+        "island_name": "Bileiydhoo",
+        "bbox": [
+          72.97872638090341,
+          3.1136313688752,
+          72.98900955740939,
+          3.1231563776274402
+        ],
+        "relevant_tagged_object_count": 0,
+        "alternate_categories_checked": [
+          "amenity=clinic",
+          "amenity=hospital",
+          "amenity=doctors",
+          "amenity=pharmacy",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=doctor",
+          "name/alt_name tokens: health, clinic, hospital, doctor, medical, pharmacy, dispensary, centre, center, post"
+        ],
+        "facility_level_health_candidates": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplied an exact island-specific place (Bilehdhoo Health Center) but the live OSM island bbox scan found no defensible facility-level object under alternate health tags; no facility-level OSM candidate was found."
+    },
+    {
+      "facility_id": "facility:health:490",
+      "official_name": "F. Dharanboodhoo Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 1",
+      "official_owner": "Ministry of Health",
+      "official_island": "Dharanboodhoo",
+      "official_atoll": "Faafu",
+      "official_source_record_id": "490",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "query": "F Dharanboodhoo Health Centre Maldives",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=F+Dharanboodhoo+Health+Centre+Maldives",
+        "result_type": "exact_place",
+        "title": "Dharanboodhoo health centre",
+        "category": "Hospital",
+        "location_text": "3W7G+HG8, Lilee Magu, Dharanboodhoo",
+        "phone": null,
+        "observation": "Exact place card on Dharanboodhoo."
+      },
+      "nominatim_island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Dharanboodhoo+Maldives&format=jsonv2&addressdetails=1&limit=10",
+        "used_for_decision": false,
+        "note": "Nominatim exact facility-name searches returned no exact facility in successful attempts; later requests were rate-limited (HTTP 429), so OSM map/API evidence—not Nominatim absence—drives the decision."
+      },
+      "osm_island_scan": {
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.9180577,3.0592778,72.9328642,3.0668099",
+        "http_status": 200,
+        "island_name": "Dharan'boodhoo",
+        "bbox": [
+          72.91805766914531,
+          3.05927781252506,
+          72.9328642305177,
+          3.06680992626368
+        ],
+        "relevant_tagged_object_count": 0,
+        "alternate_categories_checked": [
+          "amenity=clinic",
+          "amenity=hospital",
+          "amenity=doctors",
+          "amenity=pharmacy",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=doctor",
+          "name/alt_name tokens: health, clinic, hospital, doctor, medical, pharmacy, dispensary, centre, center, post"
+        ],
+        "facility_level_health_candidates": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplied an exact island-specific place (Dharanboodhoo health centre) but the live OSM island bbox scan found no defensible facility-level object under alternate health tags; no facility-level OSM candidate was found."
+    },
+    {
+      "facility_id": "facility:health:641",
+      "official_name": "F. Feeali Health Center",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 2",
+      "official_owner": "Ministry of Health",
+      "official_island": "Feeali",
+      "official_atoll": "Faafu",
+      "official_source_record_id": "641",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "query": "F Feeali Health Center Maldives",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=F+Feeali+Health+Center+Maldives",
+        "result_type": "no_result",
+        "title": null,
+        "category": null,
+        "location_text": null,
+        "phone": null,
+        "observation": "Limited-view Maps page returned no text/place result for this query."
+      },
+      "nominatim_island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Feeali+Maldives&format=jsonv2&addressdetails=1&limit=10",
+        "used_for_decision": false,
+        "note": "Nominatim exact facility-name searches returned no exact facility in successful attempts; later requests were rate-limited (HTTP 429), so OSM map/API evidence—not Nominatim absence—drives the decision."
+      },
+      "osm_island_scan": {
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=72.9971673,3.2661143,73.0058407,3.2737925",
+        "http_status": 200,
+        "island_name": "Feeali",
+        "bbox": [
+          72.997167336619,
+          3.26611434326942,
+          73.0058407249493,
+          3.27379251532681
+        ],
+        "relevant_tagged_object_count": 3,
+        "alternate_categories_checked": [
+          "amenity=clinic",
+          "amenity=hospital",
+          "amenity=doctors",
+          "amenity=pharmacy",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=doctor",
+          "name/alt_name tokens: health, clinic, hospital, doctor, medical, pharmacy, dispensary, centre, center, post"
+        ],
+        "facility_level_health_candidates": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "island_context_only",
+      "confidence": "medium-high",
+      "safe_mapping": false,
+      "evidence_note": "Official HEMS/OneMap island context is retained, but Google Maps did not return an exact place and the live OSM island bbox scan found no health/medical facility object. Keep island context only; do not invent geometry."
+    },
+    {
+      "facility_id": "facility:health:585",
+      "official_name": "GA. Dhevvadhoo Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 3",
+      "official_owner": "Ministry of Health",
+      "official_island": "Dhevvadhoo",
+      "official_atoll": "Gaafu Alifu",
+      "official_source_record_id": "585",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "query": "GA Dhevvadhoo Health Centre Maldives",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=GA+Dhevvadhoo+Health+Centre+Maldives",
+        "result_type": "exact_place",
+        "title": "Dhevvadhoo Health Centre",
+        "category": "Community health center",
+        "location_text": "H64R+JCH, Dhevvadhoo",
+        "phone": "682-4754",
+        "observation": "Exact place card on Dhevvadhoo."
+      },
+      "nominatim_island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Dhevvadhoo+Maldives&format=jsonv2&addressdetails=1&limit=10",
+        "used_for_decision": false,
+        "note": "Nominatim exact facility-name searches returned no exact facility in successful attempts; later requests were rate-limited (HTTP 429), so OSM map/API evidence—not Nominatim absence—drives the decision."
+      },
+      "osm_island_scan": {
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.2375153,0.5528761,73.2466846,0.5607730",
+        "http_status": 200,
+        "island_name": "Dhevvadhoo",
+        "bbox": [
+          73.23751531979191,
+          0.5528761125935101,
+          73.24668460690509,
+          0.5607730381193969
+        ],
+        "relevant_tagged_object_count": 2,
+        "alternate_categories_checked": [
+          "amenity=clinic",
+          "amenity=hospital",
+          "amenity=doctors",
+          "amenity=pharmacy",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=doctor",
+          "name/alt_name tokens: health, clinic, hospital, doctor, medical, pharmacy, dispensary, centre, center, post"
+        ],
+        "facility_level_health_candidates": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplied an exact island-specific place (Dhevvadhoo Health Centre) but the live OSM island bbox scan found no defensible facility-level object under alternate health tags; no facility-level OSM candidate was found."
+    },
+    {
+      "facility_id": "facility:health:589",
+      "official_name": "GA. Gemanafushi Health Centre",
+      "official_category": "health_center",
+      "official_facility_level": "Health Centre Grade 3",
+      "official_owner": "Ministry of Health",
+      "official_island": "Gemanafushi",
+      "official_atoll": "Gaafu Alifu",
+      "official_source_record_id": "589",
+      "official_source_urls": [
+        "https://hems.health.gov.mv/establishments",
+        "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+      ],
+      "google_maps_discovery": {
+        "query": "GA Gemanafushi Health Centre Maldives",
+        "search_url": "https://www.google.com/maps/search/?api=1&query=GA+Gemanafushi+Health+Centre+Maldives",
+        "result_type": "exact_place",
+        "title": "Gemanafushi Health Center",
+        "category": "Hospital",
+        "location_text": "CHR8+XX4, Gemanafushi",
+        "phone": null,
+        "observation": "Exact Gemanafushi result in a two-result list; another result was unrelated Himmafushi Health Centre."
+      },
+      "nominatim_island_query": {
+        "url": "https://nominatim.openstreetmap.org/search?q=Gemanafushi+Maldives&format=jsonv2&addressdetails=1&limit=10",
+        "used_for_decision": false,
+        "note": "Nominatim exact facility-name searches returned no exact facility in successful attempts; later requests were rate-limited (HTTP 429), so OSM map/API evidence—not Nominatim absence—drives the decision."
+      },
+      "osm_island_scan": {
+        "url": "https://api.openstreetmap.org/api/0.6/map?bbox=73.5637282,0.4334633,73.5727517,0.4509902",
+        "http_status": 200,
+        "island_name": "Gemanafushi",
+        "bbox": [
+          73.5637281980689,
+          0.433463311123645,
+          73.57275172095079,
+          0.450990216653804
+        ],
+        "relevant_tagged_object_count": 0,
+        "alternate_categories_checked": [
+          "amenity=clinic",
+          "amenity=hospital",
+          "amenity=doctors",
+          "amenity=pharmacy",
+          "healthcare=*",
+          "building=healthcare|clinic|hospital",
+          "office=doctor",
+          "name/alt_name tokens: health, clinic, hospital, doctor, medical, pharmacy, dispensary, centre, center, post"
+        ],
+        "facility_level_health_candidates": []
+      },
+      "candidate_osm_objects": [],
+      "decision": "source_not_in_osm",
+      "confidence": "high",
+      "safe_mapping": false,
+      "evidence_note": "Google Maps supplied an exact island-specific place (Gemanafushi Health Center) but the live OSM island bbox scan found no defensible facility-level object under alternate health tags; no facility-level OSM candidate was found."
+    }
+  ]
+}

@@ -1,0 +1,385 @@
+{
+  "version": "alternate-category-osm-hems-review-v1",
+  "reviewed_at": "2026-10-13T03:21:26Z",
+  "scope": "Ten unresolved HEMS clinic/optical records; alternate OSM categories and duplicate/closed-vs-active identity checks.",
+  "canonical_files_modified": false,
+  "source_hierarchy": [
+    "Live HEMS Ministry of Health establishment directory",
+    "Official HPA/health-regulatory listings and EyeCare operator material where available",
+    "OSM API, Nominatim, and targeted Overpass scans",
+    "Google Maps/Search discovery for address and branch context only"
+  ],
+  "source_access_issues": [
+    "The indexed HPA private-facilities PDF URLs returned HTTP 404 when fetched directly during this review; HPA search-indexed evidence was retained as secondary context, while live HEMS was used for current status/identity."
+  ],
+  "osm_tag_scope": [
+    "name",
+    "name:en",
+    "alt_name",
+    "operator",
+    "amenity=clinic|doctors|hospital|pharmacy",
+    "healthcare=*",
+    "shop=optician|chemist|medical_supply|yes",
+    "office=*",
+    "building=*",
+    "nearby address/island context"
+  ],
+  "decision_policy": "An exact or plausible name under shop=optician, amenity=doctors, healthcare=doctor, pharmacy, generic office, building, hospital, or resort context is not a confirmed clinic mapping without compatible identity/category and location evidence. Absence from OSM is coverage evidence only, not proof of nonexistence.",
+  "summary": {
+    "record_count": 10,
+    "confirmed_osm_matches": 0,
+    "provisional_review_required": 1,
+    "unresolved_or_rejected": 9,
+    "safe_geometry_changes": 0,
+    "decision_counts": {
+      "osm_provisional_review_required": 1,
+      "rejected_candidate_keep_unresolved": 1,
+      "unresolved_no_osm_candidate": 5,
+      "unresolved_source_not_in_current_osm_coverage": 3
+    }
+  },
+  "shared_sources": {
+    "hems_directory": "https://hems.health.gov.mv/establishments",
+    "hems_page_10": "https://hems.health.gov.mv/establishments?page=10",
+    "hems_page_11": "https://hems.health.gov.mv/establishments?page=11",
+    "hems_page_12": "https://hems.health.gov.mv/establishments?page=12",
+    "maaharaa_directory": "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare",
+    "hpa_private_facilities_pdf_indexed": "https://hpa.gov.mv/wp-content/uploads/2025/03/Private-Health-Facilities.pdf",
+    "osm_api": "https://api.openstreetmap.org/api/0.6/",
+    "nominatim": "https://nominatim.openstreetmap.org/search",
+    "overpass": "https://overpass-api.de/api/interpreter",
+    "google_maps_search": "https://www.google.com/maps/search/?api=1&query="
+  },
+  "records": [
+    {
+      "facility_id": "facility:health:92",
+      "official_name": "Eve Clinic West Park",
+      "hems": {
+        "status": "open",
+        "owner": "Hussain Mohamed Fulhu",
+        "level": "General Clinic",
+        "registration_number": "HF-24/ALP/PVT/758",
+        "license_number": "PVT-GC-24-495-00",
+        "contact": "7902415",
+        "directory_page": "https://hems.health.gov.mv/establishments?page=10"
+      },
+      "official_context": {
+        "address_hint": "M. Laalpoolge Aage, Boduthakurufaanu Magu, Block 333, Male'",
+        "sources": [
+          "https://maaharaa.health.gov.mv/Public/Home/FacilityDetail/6085",
+          "https://www.google.com/maps/search/?api=1&query=Eve+Clinic+West+Park+Maldives"
+        ]
+      },
+      "osm_search": {
+        "nominatim_queries": ["Eve Clinic West Park Maldives", "Eve Clinic Westpark Maldives", "Eve Clinic Maldives"],
+        "overpass_area": "Male/Hulhumale bbox; name/name:en/alt_name/operator plus amenity, healthcare, shop, office, building",
+        "candidates": [],
+        "rejected_context": [
+          "Eve Clinic and Eve Clinic Vinares are separate HEMS records on the same HEMS page.",
+          "Google discovery for other Eve branches must not be reused for West Park."
+        ]
+      },
+      "decision": "unresolved_no_osm_candidate",
+      "confidence": "high",
+      "evidence_note": "Live HEMS confirms an open West Park establishment distinct from the older Eve Clinic and newer Eve Clinic Vinares records. No exact facility-level OSM object or alternate-category representation was found; do not map a generic Male building or another Eve branch."
+    },
+    {
+      "facility_id": "facility:health:796",
+      "official_name": "Eye Care Clinic, Fareedhee Magu Branch Closed",
+      "hems": {
+        "status": "closed",
+        "owner": "Eye Care Pvt Ltd (C-308/2002)",
+        "level": "Area Specific Clinic",
+        "registration_number": "HF-11/ALP/PVT/038",
+        "license_number": "PVT-ASC-22-147-00",
+        "contact": "3324300",
+        "directory_page": "https://hems.health.gov.mv/establishments?page=10"
+      },
+      "official_context": {
+        "address_hint": "Fareedhee Magu, Male'",
+        "sources": [
+          "https://www.google.com/maps/search/?api=1&query=Eye+Care+Clinic+Fareedhee+Magu+Branch+Maldives",
+          "https://www.google.com/maps/search/?api=1&query=Eye+Care+Clinic+Fareedhee+Magu+Maldives"
+        ]
+      },
+      "osm_search": {
+        "candidates": [
+          {
+            "osm_id": "osm:node:12289743584",
+            "api_url": "https://api.openstreetmap.org/api/0.6/node/12289743584.json",
+            "coordinates": [73.5099048, 4.1780459],
+            "tags": {"name": "Eye Care Opticals", "shop": "optician"},
+            "candidate_role": "separate HEMS optical record 428, not this closed clinic"
+          }
+        ],
+        "rejection_reason": "The OSM object is an active-looking optical-shop representation with the distinct name Eye Care Opticals and is already the plausible candidate for facility 428. It cannot safely represent the closed clinic record 796."
+      },
+      "decision": "rejected_candidate_keep_unresolved",
+      "confidence": "high",
+      "evidence_note": "Closed status is explicit in live HEMS. The exact-brand OSM optical node is a duplicate/alternate-category trap, not proof of the closed clinic's geometry; preserve the closed HEMS record without an OSM mapping."
+    },
+    {
+      "facility_id": "facility:health:428",
+      "official_name": "Eye Care Opticals",
+      "hems": {
+        "status": "open",
+        "owner": "—",
+        "level": "Area Specific Clinic",
+        "registration_number": "HF-14/ALP/PVT/416",
+        "license_number": "PVT-ASC-22-309-00",
+        "contact": "—",
+        "directory_page": "https://hems.health.gov.mv/establishments?page=10"
+      },
+      "official_context": {
+        "address_hint": "M. Jupiter, Fareedhee Magu, Male'",
+        "sources": [
+          "https://www.google.com/maps/search/?api=1&query=Eye+Care+Opticals+Maldives",
+          "https://maaharaa.health.gov.mv/Public/Home/FacilityDetail/2365"
+        ]
+      },
+      "osm_search": {
+        "candidates": [
+          {
+            "osm_id": "osm:node:12289743584",
+            "api_url": "https://api.openstreetmap.org/api/0.6/node/12289743584.json",
+            "browse_url": "https://www.openstreetmap.org/node/12289743584",
+            "coordinates": [73.5099048, 4.1780459],
+            "version": 1,
+            "timestamp": "2024-10-26T08:39:15Z",
+            "tags": {"name": "Eye Care Opticals", "shop": "optician"},
+            "nominatim_display": "Eye Care Opticals, Fareedhee Magu, Male', Maldives"
+          },
+          {
+            "osm_id": "osm:node:13414962127",
+            "api_url": "https://api.openstreetmap.org/api/0.6/node/13414962127.json",
+            "coordinates": [73.5445324, 4.2152011],
+            "version": 1,
+            "timestamp": "2025-12-29T05:44:55Z",
+            "tags": {"name": "eyecare opticals", "shop": "optician"},
+            "candidate_role": "separate Hulhumale optical representation; rejected for Male record"
+          }
+        ]
+      },
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium",
+      "evidence_note": "Node 12289743584 has an exact name, Fareedhee Magu context, and alternate optical tag, making it the strongest OSM candidate. It is not confirmed because HEMS classifies the licensed establishment as a clinic, OSM only says shop=optician, and no official coordinate/operator linkage was recovered. Keep outside canonical deterministic mappings."
+    },
+    {
+      "facility_id": "facility:health:56",
+      "official_name": "Eye to Eye Opticals & Clinic",
+      "hems": {
+        "status": "open",
+        "owner": "NAX World Maldives Private Limited",
+        "level": "Area Specific Clinic",
+        "registration_number": "HF-24/ALP/PVT/793",
+        "license_number": "PVT-ASC-24-512-00",
+        "contact": "9637947",
+        "directory_page": "https://hems.health.gov.mv/establishments?page=10"
+      },
+      "official_context": {
+        "address_hint": "M. Sileyha, Funagoalhi, Male'",
+        "sources": [
+          "https://hpa.gov.mv/wp-content/uploads/2025/03/Private-Health-Facilities.pdf",
+          "https://www.google.com/maps/search/?api=1&query=Eye+to+Eye+Opticals+%26+Clinic+M.+Sileyha+Male+Maldives"
+        ]
+      },
+      "osm_search": {
+        "candidates": [
+          "Vision Opticals node 11182545441 (shop=optician)",
+          "Advance Optical node 14134376519 (shop=optician)",
+          "Eye Care Opticals node 12289743584 (shop=optician)"
+        ],
+        "rejection_reason": "No candidate carries Eye to Eye identity, NAX operator, M. Sileyha address, or a compatible clinic/optical name."
+      },
+      "decision": "unresolved_no_osm_candidate",
+      "confidence": "high",
+      "evidence_note": "Other Male optical shops are alternate-category context only. Do not map this NAX clinic to a nearby optical shop or generic building."
+    },
+    {
+      "facility_id": "facility:health:46",
+      "official_name": "Eye to Eye Opticals & Clinic 2",
+      "hems": {
+        "status": "open",
+        "owner": "NAX World Maldives Private Limited",
+        "level": "Area Specific Clinic",
+        "registration_number": "HF-24/ALP/PVT/803",
+        "license_number": "PVT-ASC-24-522-00",
+        "contact": "7999595 / 9784084",
+        "directory_page": "https://hems.health.gov.mv/establishments?page=10"
+      },
+      "official_context": {
+        "address_hint": "M. Dhiyaneru, Handhuvaree Hingun, Male'",
+        "sources": [
+          "https://hpa.gov.mv/wp-content/uploads/2025/03/Private-Health-Facilities.pdf",
+          "https://www.google.com/maps/search/?api=1&query=Eye+to+Eye+Opticals+%26+Clinic+2+M.+Dhiyaneru+Male+Maldives"
+        ]
+      },
+      "osm_search": {
+        "candidates": [
+          "Vision Opticals node 11182545441 (shop=optician)",
+          "Advance Optical node 14134376519 (shop=optician)",
+          "Eye Care Opticals node 12289743584 (shop=optician)"
+        ],
+        "rejection_reason": "No candidate carries Eye to Eye 2 identity, NAX operator, M. Dhiyaneru address, or a compatible clinic/optical name."
+      },
+      "decision": "unresolved_no_osm_candidate",
+      "confidence": "high",
+      "evidence_note": "Eye to Eye 2 is a separate HEMS registration from facility 56. No safe OSM representation was found; do not merge the two records or reuse another optical node."
+    },
+    {
+      "facility_id": "facility:health:25",
+      "official_name": "Eye Zone Clinic",
+      "hems": {
+        "status": "open",
+        "owner": "Azumeelath Inayath",
+        "level": "Area Specific Clinic",
+        "registration_number": "HF-24/ALP/PVT/824",
+        "license_number": "PVT-ASC-24-546-00",
+        "contact": "7370884",
+        "directory_page": "https://hems.health.gov.mv/establishments?page=11"
+      },
+      "official_context": {
+        "address_hint": "Zenith, Fandiyaaru Magu, GDh. Thinadhoo",
+        "sources": [
+          "https://hpa.gov.mv/wp-content/uploads/2025/03/Private-Health-Facilities.pdf",
+          "https://www.google.com/maps/search/?api=1&query=Eye+Zone+Clinic+Thinadhoo+Maldives"
+        ]
+      },
+      "osm_search": {
+        "overpass_area": "GDh. Thinadhoo bbox 0.51 to 0.55 N, 72.98 to 73.02 E",
+        "nearby_context": [
+          "way 969492568 Dr. Abdul Samadh Memorial Hospital, amenity=hospital, healthcare=hospital",
+          "way 969739401 Thinadhoo Zone Stadium, leisure=stadium"
+        ],
+        "rejection_reason": "No Eye Zone/optical/clinic object; nearby hospital and stadium are different identities."
+      },
+      "decision": "unresolved_no_osm_candidate",
+      "confidence": "high",
+      "evidence_note": "The official island and address context is specific, but the bounded Overpass scan found no matching facility-level object under health, optical, office, or building representations."
+    },
+    {
+      "facility_id": "facility:health:1393",
+      "official_name": "EyeCare Clinic Laamu Branch",
+      "hems": {
+        "status": "open",
+        "owner": "EyeCare Pvt Ltd",
+        "level": "Area Specific Clinic",
+        "registration_number": "HF-26/ALP/PVT/902",
+        "license_number": "PVT-ASC-26-619-00",
+        "contact": "+960 722 0652",
+        "directory_page": "https://hems.health.gov.mv/establishments?page=11"
+      },
+      "official_context": {
+        "address_hint": "Mathivaru 10-B, Sinaeemagu, Mathimaradhoo, Laamu Gan",
+        "sources": [
+          "https://eyecare.mv/branches",
+          "https://www.google.com/maps/search/?api=1&query=EyeCare+Clinic+Laamu+Branch+Mathimaradhoo+Maldives"
+        ]
+      },
+      "osm_search": {
+        "overpass_area": "Laamu Gan/Mathimaradhoo bbox 1.88 to 1.98 N, 73.50 to 73.58 E",
+        "nearby_context": [
+          "way 364840338 L. Gan Regional Hospital, amenity=hospital",
+          "way 364882237 Guraha, building=hospital"
+        ],
+        "rejection_reason": "No EyeCare/optical/clinic object; hospital context is a separate facility."
+      },
+      "decision": "unresolved_source_not_in_current_osm_coverage",
+      "confidence": "high",
+      "evidence_note": "This is a newly listed EyeCare branch with a specific Laamu address and a distinct HEMS registration. The checked Gan area has no matching OSM facility object; do not map the regional hospital or a generic building."
+    },
+    {
+      "facility_id": "facility:health:457",
+      "official_name": "F & C Medicare and Scan Center",
+      "hems": {
+        "status": "open",
+        "owner": "F & C PVT LTD (C-0122/99)",
+        "level": "General Clinic",
+        "registration_number": "HF-12/ALP/PVT/387",
+        "license_number": "PVT-GC-23-367-00",
+        "contact": "3333536",
+        "directory_page": "https://hems.health.gov.mv/establishments?page=11"
+      },
+      "official_context": {
+        "address_hint": "M. Fesdhoo, Majeedhee Magu, Male'",
+        "sources": [
+          "https://www.google.com/maps/search/?api=1&query=F+%26+C+Medicare+and+Scan+Center+M.+Fesdhoo+Male+Maldives",
+          "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+        ]
+      },
+      "osm_search": {
+        "candidates": [
+          "node 9886526803 F & C Chemist 3, amenity=pharmacy, healthcare=pharmacy, Hithadhoo",
+          "Male health/optical objects including unrelated clinics and optical shops"
+        ],
+        "rejection_reason": "F & C Chemist 3 is a pharmacy on Hithadhoo and is not the Male scan center. No F & C Medicare/Scan Center identity was found in the Male scan."
+      },
+      "decision": "unresolved_source_not_in_current_osm_coverage",
+      "confidence": "high",
+      "evidence_note": "Same-company branches are separate HEMS records: F & C Medicare, F & C Medicare and Scan Center, and F & C Medicare Meedhoo. Do not merge them with the Hithadhoo pharmacy or a generic Male building."
+    },
+    {
+      "facility_id": "facility:health:277",
+      "official_name": "F & C Medicare, Meedhoo",
+      "hems": {
+        "status": "open",
+        "owner": "F & C PVT LTD (C-0122/99)",
+        "level": "General Clinic",
+        "registration_number": "HF-20/ALP/PVT/572",
+        "license_number": "PVT-GC-23-365-00",
+        "contact": "3333536",
+        "directory_page": "https://hems.health.gov.mv/establishments?page=11"
+      },
+      "official_context": {
+        "address_hint": "Mirihaana, S. Meedhoo / Hulhumeedhoo",
+        "sources": [
+          "https://www.google.com/maps/search/?api=1&query=F+%26+C+Medicare+Meedhoo+Maldives",
+          "https://maaharaa.health.gov.mv/Public/Home/ListHealthCare"
+        ]
+      },
+      "osm_search": {
+        "overpass_area": "S. Meedhoo/Hulhumeedhoo bbox -0.60 to -0.57, 73.20 to 73.25",
+        "nearby_context": [
+          "way 744245617 HMHC, amenity=hospital, healthcare=hospital, government operator",
+          "node 10012560021 unnamed amenity=pharmacy",
+          "node 10012560119 STO pharmacy, amenity=pharmacy"
+        ],
+        "rejection_reason": "No F & C Medicare/clinic/optical object; hospital and pharmacies are separate identities."
+      },
+      "decision": "unresolved_source_not_in_current_osm_coverage",
+      "confidence": "high",
+      "evidence_note": "The S. Meedhoo name is ambiguous nationally, but the official context is the southern Hulhumeedhoo island. The bounded local scan found no matching facility object; do not map the health centre or a pharmacy."
+    },
+    {
+      "facility_id": "facility:health:366",
+      "official_name": "Family Relationship Services",
+      "hems": {
+        "status": "open",
+        "owner": "Aminatha Siyana (A022795)",
+        "level": "General Clinic",
+        "registration_number": "HF-17/ALP/PVT/483",
+        "license_number": "PVT-GC-21-084-00",
+        "contact": "9989282",
+        "directory_page": "https://hems.health.gov.mv/establishments?page=12"
+      },
+      "official_context": {
+        "sources": [
+          "https://hems.health.gov.mv/establishments?page=12",
+          "https://www.google.com/maps/search/?api=1&query=Family+Relationship+Services+Maldives"
+        ]
+      },
+      "osm_search": {
+        "overpass_area": "Male bbox; name/name:en/alt_name/operator plus amenity, healthcare, shop, office, building",
+        "candidates": [
+          "Family Court way 420317760, amenity=courthouse",
+          "Family Protection Authority node 11185404460, office=government",
+          "Ministry of Health, Family, and Welfare node 11185404244, office=government"
+        ],
+        "rejection_reason": "These are contextual government/court objects, not Family Relationship Services; no exact facility-level OSM identity was found."
+      },
+      "decision": "unresolved_no_osm_candidate",
+      "confidence": "high",
+      "evidence_note": "Exact-name and alternate-category searches found only unrelated family/government context. Do not map the clinic to Family Court, Family Protection Authority, or a generic office/building."
+    }
+  ]
+}

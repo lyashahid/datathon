@@ -1,0 +1,12 @@
+{
+  "content_type": "application/json",
+  "endpoint": "local normalized output",
+  "http_status": 200,
+  "parser_version": "normalization-v1",
+  "retrieved_at": "2026-10-13T12:17:20.001265+00:00",
+  "schema_version": 1,
+  "sha256": "cc6f99905373ef3d3b3125f563274c959df58d6ac88b71aefd159fa1cbc82376",
+  "source": "Mobility Sandbox normalized OSM transport data",
+  "source_record_id": null,
+  "status": "fresh"
+}

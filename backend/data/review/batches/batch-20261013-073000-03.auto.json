@@ -1,0 +1,229 @@
+{
+  "job_id": "batch-20261013-073000-03",
+  "records": [
+    {
+      "facility_id": "facility:school:462",
+      "official_name": "Neykurendhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/462",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:463",
+      "official_name": "Nolhivaranfaru School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/463",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:464",
+      "official_name": "Munavvara School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/464",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:466",
+      "official_name": "Sh. Atoll School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/466",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:467",
+      "official_name": "Feevaku School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/467",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:468",
+      "official_name": "Foakaidhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/468",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:470",
+      "official_name": "Bileffahee School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/470",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:471",
+      "official_name": "Sh. Feydhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/471",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:509",
+      "official_name": "Dhonfanu School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/509",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:511",
+      "official_name": "B. Goidhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/511",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:783239335",
+          "osm_url": "https://www.openstreetmap.org/way/783239335",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9958683,
+            4.8774084
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:783239336",
+          "osm_url": "https://www.openstreetmap.org/way/783239336",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9958051,
+            4.8775411
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:783239342",
+          "osm_url": "https://www.openstreetmap.org/way/783239342",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9954437,
+            4.8772472
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:783239343",
+          "osm_url": "https://www.openstreetmap.org/way/783239343",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9956682,
+            4.8772143
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:891363893",
+          "osm_url": "https://www.openstreetmap.org/way/891363893",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9954491,
+            4.8776333
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1049832930",
+          "osm_url": "https://www.openstreetmap.org/way/1049832930",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9952748,
+            4.8772476
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1284784813",
+          "osm_url": "https://www.openstreetmap.org/way/1284784813",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9952988,
+            4.8776375
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1284784814",
+          "osm_url": "https://www.openstreetmap.org/way/1284784814",
+          "name": "",
+          "island": "Goidhoo",
+          "coordinates": [
+            72.9955544,
+            4.8774398
+          ],
+          "tags": {
+            "amenity": "school"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    }
+  ],
+  "summary": "deterministic local review"
+}

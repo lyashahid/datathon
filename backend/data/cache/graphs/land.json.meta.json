@@ -1,0 +1,12 @@
+{
+  "content_type": "application/json",
+  "endpoint": "local normalized output",
+  "http_status": 200,
+  "parser_version": "routing-v1",
+  "retrieved_at": "2026-10-13T12:17:18.093859+00:00",
+  "schema_version": 1,
+  "sha256": "e91f67d5d1d2ec72a2e768cb3be768026fb79fdc42d4d3532483d38101c7a0a0",
+  "source": "Mobility Sandbox OSM land graph",
+  "source_record_id": null,
+  "status": "fresh"
+}

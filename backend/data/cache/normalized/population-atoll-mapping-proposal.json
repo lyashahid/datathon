@@ -1,0 +1,122 @@
+[
+  {
+    "atoll_code": "HA",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Haa Alifu",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "HDh",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Haa Dhaalu",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "Sh",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Shaviyani",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "N",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Noonu",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "R",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Raa",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "B",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Baa",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "Lh",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Lhaviyani",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "K",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Kaafu",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "AA",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Alifu Alifu",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "Adh",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Alifu Dhaalu",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "V",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Vaavu",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "M",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Meemu",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "F",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Faafu",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "Dh",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Dhaalu",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "Th",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Thaa",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "L",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Laamu",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "GA",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Gaafu Alifu",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "GDh",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Gaafu Dhaalu",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "Gn",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Gnaviyani",
+    "requires_review": true
+  },
+  {
+    "atoll_code": "S",
+    "basis": "explicit standard-code proposal; requires review",
+    "proposed_atoll": "Seenu",
+    "requires_review": true
+  }
+]

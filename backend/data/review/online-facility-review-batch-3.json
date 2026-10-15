@@ -1,0 +1,93 @@
+{
+  "version": "online-facility-review-batch-3",
+  "reviewed_at": "2026-10-13T04:21:42.494319+00:00",
+  "batches": [
+    {
+      "batch": "health_centres_751_613",
+      "facility_ids": [
+        "facility:health:751",
+        "facility:health:748",
+        "facility:health:804",
+        "facility:health:744",
+        "facility:health:747",
+        "facility:health:752",
+        "facility:health:720",
+        "facility:health:644",
+        "facility:health:742",
+        "facility:health:613"
+      ],
+      "confirmed": 0,
+      "provisional": 2,
+      "unresolved": 8,
+      "transcript": "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_4415625f/task-0.log"
+    },
+    {
+      "batch": "schools_436_453",
+      "facility_ids": [
+        "facility:school:436",
+        "facility:school:438",
+        "facility:school:441",
+        "facility:school:442",
+        "facility:school:443",
+        "facility:school:444",
+        "facility:school:445",
+        "facility:school:446",
+        "facility:school:447",
+        "facility:school:453"
+      ],
+      "confirmed": 0,
+      "provisional": 1,
+      "unresolved": 9,
+      "transcript": "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_4415625f/task-1.log"
+    },
+    {
+      "batch": "clinics_1395_84",
+      "facility_ids": [
+        "facility:health:1395",
+        "facility:health:1392",
+        "facility:health:806",
+        "facility:health:1448",
+        "facility:health:20",
+        "facility:health:129",
+        "facility:health:418",
+        "facility:health:395",
+        "facility:health:469",
+        "facility:health:84"
+      ],
+      "confirmed": 0,
+      "provisional": 0,
+      "unresolved": 10,
+      "transcript": "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_4415625f/task-2.log"
+    },
+    {
+      "batch": "hospitals_488_723_plus_clinics",
+      "facility_ids": [
+        "facility:health:488",
+        "facility:health:575",
+        "facility:health:499",
+        "facility:health:714",
+        "facility:health:593",
+        "facility:health:721",
+        "facility:health:723",
+        "facility:health:84",
+        "facility:health:97",
+        "facility:health:236"
+      ],
+      "confirmed": 3,
+      "provisional": 0,
+      "unresolved": 7,
+      "transcript": "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_4415625f/task-3.log"
+    }
+  ],
+  "policy": "Subagent findings were independently validated for the three promoted OSM objects through live OSM API fetches; provisional candidates remain outside normalized geometry; unresolved results remain explicit.",
+  "confirmed_promotions": [
+    "facility:health:499",
+    "facility:health:714",
+    "facility:health:723"
+  ],
+  "provisional_candidates": [
+    "facility:health:751",
+    "facility:health:752",
+    "facility:school:441"
+  ]
+}

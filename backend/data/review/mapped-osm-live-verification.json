@@ -1,0 +1,3477 @@
+{
+  "version": "mapped-osm-live-verification-v1",
+  "refreshed_at": "2026-10-13T10:55:40.241460Z",
+  "object_count": 169,
+  "results": [
+    {
+      "osm_object_id": "osm:node:10025963494",
+      "url": "https://api.openstreetmap.org/api/0.6/node/10025963494.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 10025963494,
+        "lat": 5.8824784,
+        "lon": 73.3994493,
+        "timestamp": "2022-09-15T01:06:46Z",
+        "version": 1,
+        "changeset": 126201863,
+        "user": "BigRockMapologist",
+        "uid": 16754447,
+        "tags": {
+          "amenity": "school",
+          "contact:facebook": "https://www.facebook.com/KudafareeSchool",
+          "name": "Kudafaree School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:10196475671",
+      "url": "https://api.openstreetmap.org/api/0.6/node/10196475671.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 10196475671,
+        "lat": 6.842382,
+        "lon": 72.995369,
+        "timestamp": "2022-11-17T09:33:13Z",
+        "version": 2,
+        "changeset": 129030365,
+        "user": "Fayaz Quill",
+        "uid": 16823171,
+        "tags": {
+          "amenity": "school",
+          "grades": "1;2;3;4;5;6;7;8;9;10",
+          "name": "Madharusathul Shaheedh Ali Thakurufaan",
+          "operator": "Ministry of Education",
+          "operator:type": "government"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:10196643638",
+      "url": "https://api.openstreetmap.org/api/0.6/node/10196643638.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 10196643638,
+        "lat": 6.8433461,
+        "lon": 72.9950104,
+        "timestamp": "2022-11-19T15:06:59Z",
+        "version": 2,
+        "changeset": 129127441,
+        "user": "Fayaz Quill",
+        "uid": 16823171,
+        "tags": {
+          "alt_name": "Thakandhoo Health Center",
+          "alt_name:dv": "ތަކަންދޫ ހެލްތު ސެންޓަރު",
+          "amenity": "clinic",
+          "name": "Health Center",
+          "name:dv": " ހެލްތު ސެންޓަރު"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:11186258448",
+      "url": "https://api.openstreetmap.org/api/0.6/node/11186258448.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 11186258448,
+        "lat": 4.2194254,
+        "lon": 73.5461254,
+        "timestamp": "2024-03-17T11:06:52Z",
+        "version": 2,
+        "changeset": 148766953,
+        "user": "Flynn_",
+        "uid": 21081459,
+        "tags": {
+          "amenity": "clinic",
+          "healthcare": "clinic",
+          "name:en": "European Clinic"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:11190861038",
+      "url": "https://api.openstreetmap.org/api/0.6/node/11190861038.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 11190861038,
+        "lat": 4.1883365,
+        "lon": 73.5268796,
+        "timestamp": "2023-11-11T12:12:00Z",
+        "version": 2,
+        "changeset": 143897173,
+        "user": "user_20033850",
+        "uid": 20033850,
+        "tags": {
+          "amenity": "clinic",
+          "healthcare": "clinic",
+          "name:en": "MACL Medical Clinic"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:11221710523",
+      "url": "https://api.openstreetmap.org/api/0.6/node/11221710523.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 11221710523,
+        "lat": 5.1039385,
+        "lon": 73.0702702,
+        "timestamp": "2024-09-22T17:12:07Z",
+        "version": 2,
+        "changeset": 156961612,
+        "user": "realswede14",
+        "uid": 21635910,
+        "tags": {
+          "addr:city": "އޭދަފުށި",
+          "addr:street": "Roashanee Hingun",
+          "amenity": "school",
+          "grades": "1-12",
+          "name": "Baa Atoll Education Centre",
+          "name:dv": "ބ. އަތޮޅު ތައުލީމީ މަރުކަޒު",
+          "name:en": "Baa Atoll Education Centre",
+          "operator": "Government of Maldives",
+          "operator:type": "government",
+          "religion": "muslim",
+          "website": "https://baec.edu.mv/",
+          "wikidata": "Q4837097",
+          "wikipedia": "en:Baa Atoll Education Centre"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:11221812118",
+      "url": "https://api.openstreetmap.org/api/0.6/node/11221812118.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 11221812118,
+        "lat": 0.2219726,
+        "lon": 73.1382166,
+        "timestamp": "2023-09-27T06:17:19Z",
+        "version": 1,
+        "changeset": 141801729,
+        "user": "mshaun1999",
+        "uid": 20244901,
+        "tags": {
+          "addr:city": "Fiyoari",
+          "addr:street": "Baraasil Magu",
+          "amenity": "school",
+          "description": "Fiyoaree School is a school in Fiyoaree, an island of Gaafu Dhaalu Atoll, Maldives. The school was opened on 17 September 1980 under the name of Fiyoaree Makthab.",
+          "mobile": "(+960)7983086",
+          "name": "Fiyoaree School",
+          "name:dv": "ފިޔޯރީ ސްކޫލް",
+          "name:en": "Fiyoaree School",
+          "operator": "Government of Maldives",
+          "operator:type": "government",
+          "religion": "muslim",
+          "website": "https://fiyoarischool.edupage.org/",
+          "wikidata": "Q27961820",
+          "wikipedia": "en:Fiyoaree School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:11222055209",
+      "url": "https://api.openstreetmap.org/api/0.6/node/11222055209.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 11222055209,
+        "lat": 2.166613,
+        "lon": 73.0670683,
+        "timestamp": "2023-09-27T08:56:30Z",
+        "version": 1,
+        "changeset": 141808701,
+        "user": "mshaun1999",
+        "uid": 20244901,
+        "tags": {
+          "addr:city": "Kinbidhoo",
+          "addr:postcode": "14120",
+          "addr:street": "Ghaazee Magu",
+          "amenity": "school",
+          "description": "Kinbidhoo School is the school in Kinbidhoo, Thaa Atoll, Maldives.",
+          "grades": "1-10",
+          "mobile": "+960 6780095",
+          "name": "Kinbidhoo School",
+          "operator": "Government of Maldives",
+          "operator:type": "government",
+          "religion": "muslim",
+          "website": "https://kinbidhooschool.edupage.org/",
+          "wikidata": "Q6410421",
+          "wikipedia": "en:Kinbidhoo School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:11631471886",
+      "url": "https://api.openstreetmap.org/api/0.6/node/11631471886.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 11631471886,
+        "lat": 3.0805874,
+        "lon": 72.9651296,
+        "timestamp": "2024-02-16T18:21:26Z",
+        "version": 1,
+        "changeset": 147543817,
+        "user": "seastar3879",
+        "uid": 6238941,
+        "tags": {
+          "amenity": "school"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:11633175417",
+      "url": "https://api.openstreetmap.org/api/0.6/node/11633175417.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 11633175417,
+        "lat": 3.0803249,
+        "lon": 72.9664519,
+        "timestamp": "2024-02-17T07:03:02Z",
+        "version": 3,
+        "changeset": 147558667,
+        "user": "seastar3879",
+        "uid": 6238941,
+        "tags": {
+          "amenity": "clinic",
+          "name:en": "F. Magoodhoo Health Centre"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:12163204712",
+      "url": "https://api.openstreetmap.org/api/0.6/node/12163204712.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 12163204712,
+        "lat": 2.9235708,
+        "lon": 72.8959053,
+        "timestamp": "2024-09-08T09:42:20Z",
+        "version": 1,
+        "changeset": 156342917,
+        "user": "mapsmy_tsunami",
+        "uid": 21752943,
+        "tags": {
+          "amenity": "doctors",
+          "healthcare": "doctor",
+          "name": "Rinbudhoo Health Center"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:12319802702",
+      "url": "https://api.openstreetmap.org/api/0.6/node/12319802702.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 12319802702,
+        "lat": 7.0831229,
+        "lon": 72.9258539,
+        "timestamp": "2024-11-07T01:46:12Z",
+        "version": 1,
+        "changeset": 158838473,
+        "user": "Tezleen",
+        "uid": 22150730,
+        "tags": {
+          "amenity": "hospital",
+          "opening_hours": "Sa-We 09:00-16:00"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:12462668301",
+      "url": "https://api.openstreetmap.org/api/0.6/node/12462668301.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 12462668301,
+        "lat": 4.3752275,
+        "lon": 73.6510393,
+        "timestamp": "2026-01-14T06:41:26Z",
+        "version": 3,
+        "changeset": 177206679,
+        "user": "Hory1989",
+        "uid": 11392454,
+        "tags": {
+          "amenity": "hospital",
+          "emergency": "yes",
+          "healthcare": "hospital",
+          "name:en": "Hospital of Thulusdhoo",
+          "name:ru": "больница"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:12584499285",
+      "url": "https://api.openstreetmap.org/api/0.6/node/12584499285.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 12584499285,
+        "lat": 4.3742796,
+        "lon": 73.6517804,
+        "timestamp": "2025-02-13T08:44:53Z",
+        "version": 1,
+        "changeset": 162457196,
+        "user": "Pan Perníček",
+        "uid": 9641379,
+        "tags": {
+          "amenity": "school",
+          "name": "Kaafu Atoll Education Centre"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:12895354033",
+      "url": "https://api.openstreetmap.org/api/0.6/node/12895354033.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 12895354033,
+        "lat": -0.690811,
+        "lon": 73.1557259,
+        "timestamp": "2025-11-28T11:59:52Z",
+        "version": 2,
+        "changeset": 175235493,
+        "user": "Prasanna A B",
+        "uid": 22490830,
+        "tags": {
+          "addr:city": "Addu atoll",
+          "aeroway": "aerodrome",
+          "iata": "GAN",
+          "icao": "VRMG",
+          "name": "Gan Island International Airport",
+          "wikidata": "Q1431353",
+          "wikipedia": "en:Gan International Airport"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:13586575555",
+      "url": "https://api.openstreetmap.org/api/0.6/node/13586575555.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 13586575555,
+        "lat": 5.4640163,
+        "lon": 73.036115,
+        "timestamp": "2026-02-21T11:00:09Z",
+        "version": 1,
+        "changeset": 178853183,
+        "user": "Fainu_Council",
+        "uid": 23851998,
+        "tags": {
+          "name": "Fainu School",
+          "office": "educational_institution"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:13586575558",
+      "url": "https://api.openstreetmap.org/api/0.6/node/13586575558.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 13586575558,
+        "lat": 5.4652336,
+        "lon": 73.0346721,
+        "timestamp": "2026-02-21T11:00:09Z",
+        "version": 1,
+        "changeset": 178853183,
+        "user": "Fainu_Council",
+        "uid": 23851998,
+        "tags": {
+          "healthcare": "yes",
+          "name": "Fainu Health Centre"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:13823271980",
+      "url": "https://api.openstreetmap.org/api/0.6/node/13823271980.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 13823271980,
+        "lat": 5.7929974,
+        "lon": 73.0066477,
+        "timestamp": "2026-05-13T05:29:43Z",
+        "version": 1,
+        "changeset": 182582473,
+        "user": "asd@12",
+        "uid": 24089051,
+        "tags": {
+          "amenity": "hospital",
+          "healthcare": "hospital",
+          "name": "R. Angolhitheemu Health Center"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:13823271983",
+      "url": "https://api.openstreetmap.org/api/0.6/node/13823271983.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 13823271983,
+        "lat": 5.7940756,
+        "lon": 73.0063491,
+        "timestamp": "2026-05-13T05:29:43Z",
+        "version": 1,
+        "changeset": 182582473,
+        "user": "asd@12",
+        "uid": 24089051,
+        "tags": {
+          "amenity": "school",
+          "education": "school",
+          "name": "R. Angolhitheemu School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:13970065170",
+      "url": "https://api.openstreetmap.org/api/0.6/node/13970065170.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 13970065170,
+        "lat": 2.6746844,
+        "lon": 72.8937596,
+        "timestamp": "2026-06-27T09:29:19Z",
+        "version": 1,
+        "changeset": 184686813,
+        "user": "Saalhanga media",
+        "uid": 24250179,
+        "tags": {
+          "amenity": "hospital",
+          "healthcare": "hospital",
+          "name": "Dhaal Atoll Hospital"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:14267725202",
+      "url": "https://api.openstreetmap.org/api/0.6/node/14267725202.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 14267725202,
+        "lat": 5.1564975,
+        "lon": 73.1334513,
+        "timestamp": "2026-10-09T12:18:41Z",
+        "version": 1,
+        "changeset": 190250192,
+        "user": "silvan h",
+        "uid": 4562806,
+        "tags": {
+          "amenity": "hospital",
+          "check_date": "2026-10-09",
+          "check_date:opening_hours": "2026-10-09",
+          "healthcare": "hospital",
+          "name": "Dharavandhoo Medical Centre",
+          "opening_hours": "Sa-Th 08:00-16:00"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:14268489201",
+      "url": "https://api.openstreetmap.org/api/0.6/node/14268489201.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 14268489201,
+        "lat": 4.2340514,
+        "lon": 73.5481447,
+        "timestamp": "2026-10-09T16:25:33Z",
+        "version": 1,
+        "changeset": 190262350,
+        "user": "guangguanng",
+        "uid": 24643024,
+        "tags": {
+          "amenity": "school",
+          "name": "Shaheed Ali School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:14268681101",
+      "url": "https://api.openstreetmap.org/api/0.6/node/14268681101.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 14268681101,
+        "lat": 4.8842386,
+        "lon": 72.9376361,
+        "timestamp": "2026-10-09T18:21:51Z",
+        "version": 1,
+        "changeset": 190267571,
+        "user": "silvan h",
+        "uid": 4562806,
+        "tags": {
+          "amenity": "hospital",
+          "check_date": "2026-10-09",
+          "check_date:opening_hours": "2026-10-09",
+          "healthcare": "hospital",
+          "name": "Baa Fulhadhoo Health Centre",
+          "opening_hours": "Su-Th 08:00-15:00, 20:00-21:00; Sa 20:00-21:00"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:14268849901",
+      "url": "https://api.openstreetmap.org/api/0.6/node/14268849901.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 14268849901,
+        "lat": 4.8851979,
+        "lon": 72.9353559,
+        "timestamp": "2026-10-09T19:00:09Z",
+        "version": 1,
+        "changeset": 190269124,
+        "user": "silvan h",
+        "uid": 4562806,
+        "tags": {
+          "amenity": "school",
+          "check_date": "2026-10-10",
+          "education": "school",
+          "name": "Fulhadhoo School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:1677799555",
+      "url": "https://api.openstreetmap.org/api/0.6/node/1677799555.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 1677799555,
+        "lat": 2.9380016,
+        "lon": 72.9900805,
+        "timestamp": "2012-03-17T03:36:18Z",
+        "version": 1,
+        "changeset": 11004355,
+        "user": "hamee78",
+        "uid": 631110,
+        "tags": {
+          "addr:street": "Izzuddin Magu",
+          "amenity": "school",
+          "name": "Ban'didhoo School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:2722414091",
+      "url": "https://api.openstreetmap.org/api/0.6/node/2722414091.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 2722414091,
+        "lat": 0.7328555,
+        "lon": 73.4343885,
+        "timestamp": "2024-11-22T11:07:19Z",
+        "version": 7,
+        "changeset": 159453882,
+        "user": "BodhidharmaI",
+        "uid": 10255266,
+        "tags": {
+          "aeroway": "aerodrome",
+          "iata": "GKK",
+          "icao": "VRMO",
+          "name": "Kuddoo",
+          "wikidata": "Q6430520"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:2990393947",
+      "url": "https://api.openstreetmap.org/api/0.6/node/2990393947.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 2990393947,
+        "lat": 3.6806186,
+        "lon": 73.4170865,
+        "timestamp": "2015-12-17T14:23:19Z",
+        "version": 2,
+        "changeset": 36010109,
+        "user": "highflyer74",
+        "uid": 2545951,
+        "tags": {
+          "amenity": "school",
+          "name": "Vaavu Atoll School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:3979112656",
+      "url": "https://api.openstreetmap.org/api/0.6/node/3979112656.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 3979112656,
+        "lat": 0.6203059,
+        "lon": 73.4616448,
+        "timestamp": "2016-01-31T06:48:08Z",
+        "version": 1,
+        "changeset": 36910474,
+        "user": "Yoosuf",
+        "uid": 3134824,
+        "tags": {
+          "amenity": "hospital",
+          "name": "Dhaandhoo Health Centre"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:3979113477",
+      "url": "https://api.openstreetmap.org/api/0.6/node/3979113477.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 3979113477,
+        "lat": 0.6204151,
+        "lon": 73.4611959,
+        "timestamp": "2016-01-31T06:50:36Z",
+        "version": 1,
+        "changeset": 36910487,
+        "user": "Yoosuf",
+        "uid": 3134824,
+        "tags": {
+          "amenity": "school",
+          "name": "Dhaandhoo School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:4016346106",
+      "url": "https://api.openstreetmap.org/api/0.6/node/4016346106.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4016346106,
+        "lat": 5.6656585,
+        "lon": 73.0302361,
+        "timestamp": "2026-05-21T20:58:43Z",
+        "version": 2,
+        "changeset": 182995210,
+        "user": "GKLS",
+        "uid": 24091639,
+        "tags": {
+          "amenity": "hospital",
+          "healthcare": "hospital",
+          "name": "Ungoofaaru Regional Hospital"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:4174150465",
+      "url": "https://api.openstreetmap.org/api/0.6/node/4174150465.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4174150465,
+        "lat": 4.1936219,
+        "lon": 72.7468876,
+        "timestamp": "2026-05-14T17:19:14Z",
+        "version": 5,
+        "changeset": 182662004,
+        "user": "Jacob Rosendal Kristensen",
+        "uid": 730016,
+        "tags": {
+          "addr:city": "Mathiveri",
+          "addr:postcode": "09040",
+          "addr:street": "Sosun Magu",
+          "amenity": "hospital",
+          "emergency": "yes",
+          "healthcare": "hospital",
+          "name": "Mathiveri Health Centre",
+          "operator": "ministry of health",
+          "phone": "+9606660858"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:4340333890",
+      "url": "https://api.openstreetmap.org/api/0.6/node/4340333890.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4340333890,
+        "lat": 2.9205858,
+        "lon": 73.5806953,
+        "timestamp": "2016-08-07T20:31:18Z",
+        "version": 1,
+        "changeset": 41311517,
+        "user": "Imran mohamed",
+        "uid": 4383718,
+        "tags": {
+          "addr:postcode": "11050",
+          "amenity": "school",
+          "name": "MAEC"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:4502629775",
+      "url": "https://api.openstreetmap.org/api/0.6/node/4502629775.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4502629775,
+        "lat": 5.7076162,
+        "lon": 73.0252199,
+        "timestamp": "2022-09-26T21:29:56Z",
+        "version": 5,
+        "changeset": 126672740,
+        "user": "IknowJoseph",
+        "uid": 30587,
+        "tags": {
+          "aeroway": "aerodrome",
+          "iata": "IFU",
+          "icao": "VREI",
+          "name": "Ifuru",
+          "wikidata": "Q31871149"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:4508136626",
+      "url": "https://api.openstreetmap.org/api/0.6/node/4508136626.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4508136626,
+        "lat": 2.2124794,
+        "lon": 73.1524596,
+        "timestamp": "2021-03-05T22:01:26Z",
+        "version": 3,
+        "changeset": 100516302,
+        "user": "MAF-TTS",
+        "uid": 1768757,
+        "tags": {
+          "aeroway": "aerodrome",
+          "iata": "TMF",
+          "icao": "VRNT",
+          "name": "Thimarafushi",
+          "wikidata": "Q14911912"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:4721519795",
+      "url": "https://api.openstreetmap.org/api/0.6/node/4721519795.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4721519795,
+        "lat": 6.9847309,
+        "lon": 72.8951727,
+        "timestamp": "2017-03-07T07:07:49Z",
+        "version": 1,
+        "changeset": 46643085,
+        "user": "Salagrama Sharma",
+        "uid": 5442942,
+        "tags": {
+          "addr:street": "Hoarafushi",
+          "amenity": "school",
+          "name:en": "HA Atoll School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:4735485322",
+      "url": "https://api.openstreetmap.org/api/0.6/node/4735485322.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4735485322,
+        "lat": 6.6268663,
+        "lon": 73.0702023,
+        "timestamp": "2025-09-26T13:43:47Z",
+        "version": 6,
+        "changeset": 172486898,
+        "user": "tg4567",
+        "uid": 12500589,
+        "tags": {
+          "addr:street": "Ameeneemagu",
+          "amenity": "school",
+          "check_date": "2024-12-01",
+          "name": "Jalaluddin School",
+          "name:en": "Jalaluddin School",
+          "phone": "+9606528815",
+          "wikidata": "Q6125812",
+          "wikipedia": "en:Jalaluddin School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:4735490021",
+      "url": "https://api.openstreetmap.org/api/0.6/node/4735490021.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4735490021,
+        "lat": 6.6259477,
+        "lon": 73.0702311,
+        "timestamp": "2023-09-27T04:43:11Z",
+        "version": 5,
+        "changeset": 141798899,
+        "user": "mshaun1999",
+        "uid": 20244901,
+        "tags": {
+          "addr:postcode": "02110",
+          "addr:street": "Ameenee Magu",
+          "amenity": "school",
+          "name": "HDh.Atoll Education Centre",
+          "name:dv": "ހދ. އަތޮޅު ތައުލީމީ މަރުކަޒު",
+          "name:en": "HDh.Atoll Education Centre",
+          "operator": "Government of Maldives",
+          "operator:type": "government",
+          "religion": "muslim",
+          "website": "http://hdhaec.edu.mv/",
+          "wikidata": "Q19458793",
+          "wikipedia": "en:Haa Dhaalu Atoll Education Centre"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:4800490223",
+      "url": "https://api.openstreetmap.org/api/0.6/node/4800490223.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4800490223,
+        "lat": 4.2625744,
+        "lon": 72.9906215,
+        "timestamp": "2022-03-31T11:44:09Z",
+        "version": 2,
+        "changeset": 119156074,
+        "user": "ig4map",
+        "uid": 599809,
+        "tags": {
+          "amenity": "hospital",
+          "healthcare": "hospital",
+          "name:en": "Rasdhoo hospital"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:4823302223",
+      "url": "https://api.openstreetmap.org/api/0.6/node/4823302223.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4823302223,
+        "lat": 6.6176788,
+        "lon": 73.0690075,
+        "timestamp": "2024-11-30T20:47:29Z",
+        "version": 6,
+        "changeset": 159787368,
+        "user": "DarkGem69",
+        "uid": 22236323,
+        "tags": {
+          "addr:postcode": "02110",
+          "amenity": "hospital",
+          "check_date": "2024-11-30",
+          "healthcare": "hospital",
+          "healthcare:speciality": "general;blood_check",
+          "name": "Kulhudhuffushi Regional Hospital",
+          "opening_hours": "24/7",
+          "phone": "+960 6528864"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:4823483321",
+      "url": "https://api.openstreetmap.org/api/0.6/node/4823483321.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4823483321,
+        "lat": 6.7020334,
+        "lon": 73.1202471,
+        "timestamp": "2024-10-03T09:52:51Z",
+        "version": 4,
+        "changeset": 157410618,
+        "user": "dhoru",
+        "uid": 21936107,
+        "tags": {
+          "amenity": "hospital",
+          "healthcare": "hospital",
+          "name": "Nolhivaranfaru Health post",
+          "name:en": "Nolhivaranfaru Health post",
+          "opening_hours": "Su-Th 09:00-18:00"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:4824126825",
+      "url": "https://api.openstreetmap.org/api/0.6/node/4824126825.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4824126825,
+        "lat": 6.6152056,
+        "lon": 73.0703274,
+        "timestamp": "2024-11-30T12:47:18Z",
+        "version": 5,
+        "changeset": 159772501,
+        "user": "DarkGem69",
+        "uid": 22236323,
+        "tags": {
+          "addr:postcode": "02110",
+          "addr:street": "Ameenee Magu",
+          "amenity": "school",
+          "check_date": "2024-11-30",
+          "name": "Afeefuddin School",
+          "opening_hours": "Su-Th 06:45-18:00"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:4866622621",
+      "url": "https://api.openstreetmap.org/api/0.6/node/4866622621.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4866622621,
+        "lat": 4.1711205,
+        "lon": 73.5109306,
+        "timestamp": "2024-10-02T07:37:31Z",
+        "version": 5,
+        "changeset": 157366440,
+        "user": "dhoru",
+        "uid": 21936107,
+        "tags": {
+          "addr:city": "Malé",
+          "addr:country": "MV",
+          "addr:postcode": "20144",
+          "addr:street": "Ameenee Magu",
+          "amenity": "school",
+          "check_date": "2024-10-02",
+          "description": "Imaduddin School is one of the youngest schools in the Maldives, it was officially inaugurated by former President, Maumoon Abdul Gayyoom on September 5th 2001",
+          "grades": "1-10",
+          "mobile": "+9603315759",
+          "name": "Imaduddin School",
+          "name:dv": "އިމާދުއްދީން ސްކޫލް",
+          "name:en": "Imaduddin School",
+          "operator": "Government of Maldives",
+          "operator:type": "government",
+          "religion": "muslim",
+          "website": "https://ims.edu.mv",
+          "wheelchair": "yes",
+          "wikidata": "Q6002015",
+          "wikipedia": "en:Imaduddin School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:5157162191",
+      "url": "https://api.openstreetmap.org/api/0.6/node/5157162191.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5157162191,
+        "lat": -0.6008287,
+        "lon": 73.0868168,
+        "timestamp": "2019-08-19T05:08:42Z",
+        "version": 2,
+        "changeset": 73479196,
+        "user": "Saafy",
+        "uid": 10200295,
+        "tags": {
+          "amenity": "school",
+          "name": "Noorani School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:5163050680",
+      "url": "https://api.openstreetmap.org/api/0.6/node/5163050680.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5163050680,
+        "lat": 3.5351881,
+        "lon": 72.9281234,
+        "timestamp": "2022-03-04T17:42:42Z",
+        "version": 3,
+        "changeset": 118102415,
+        "user": "ig4map",
+        "uid": 599809,
+        "tags": {
+          "amenity": "school",
+          "name": "Dhigurah School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:5200094223",
+      "url": "https://api.openstreetmap.org/api/0.6/node/5200094223.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5200094223,
+        "lat": -0.6117587,
+        "lon": 73.0950266,
+        "timestamp": "2025-07-28T10:15:12Z",
+        "version": 6,
+        "changeset": 169604313,
+        "user": "Basya001",
+        "uid": 18782854,
+        "tags": {
+          "addr:street": "Sharafuddin Magu",
+          "amenity": "school",
+          "email": "info@ahs.edu.mv",
+          "name:en": "Addu High School",
+          "opening_hours": "Su-Th 08:00-14:00",
+          "operator": "Ministry of Education",
+          "phone": "6885796",
+          "website": "https://ahs.edupage.org/",
+          "wikidata": "Q4681403"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:5574309273",
+      "url": "https://api.openstreetmap.org/api/0.6/node/5574309273.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5574309273,
+        "lat": 3.0560067,
+        "lon": 72.8894855,
+        "timestamp": "2023-10-24T20:09:35Z",
+        "version": 4,
+        "changeset": 143082074,
+        "user": "tg4567",
+        "uid": 12500589,
+        "tags": {
+          "amenity": "hospital",
+          "email": "faafu.hospital@gmail.com",
+          "fax": "+960 674 0089",
+          "name": "Faafu Atoll Hospital",
+          "phone": "+960 674 0086",
+          "website": "http://www.fah.gov.mv/index.html",
+          "wikidata": "Q5427549",
+          "wikipedia": "en:Faafu Atoll Hospital"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:5636226150",
+      "url": "https://api.openstreetmap.org/api/0.6/node/5636226150.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5636226150,
+        "lat": 5.4443473,
+        "lon": 73.3644046,
+        "timestamp": "2022-09-26T21:29:55Z",
+        "version": 2,
+        "changeset": 126672740,
+        "user": "IknowJoseph",
+        "uid": 30587,
+        "tags": {
+          "amenity": "school",
+          "name": "Madhrasathul Ifthithaah",
+          "wikidata": "Q25043792"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:5729756639",
+      "url": "https://api.openstreetmap.org/api/0.6/node/5729756639.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5729756639,
+        "lat": 0.2304413,
+        "lon": 73.2710992,
+        "timestamp": "2018-06-30T08:05:18Z",
+        "version": 1,
+        "changeset": 60296343,
+        "user": "Hattttu",
+        "uid": 8485696,
+        "tags": {
+          "amenity": "hospital",
+          "healthcare": "hospital"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:6723361843",
+      "url": "https://api.openstreetmap.org/api/0.6/node/6723361843.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6723361843,
+        "lat": -0.6019436,
+        "lon": 73.0872262,
+        "timestamp": "2019-08-19T11:27:28Z",
+        "version": 1,
+        "changeset": 73492500,
+        "user": "Saafy",
+        "uid": 10200295,
+        "tags": {
+          "amenity": "hospital",
+          "healthcare": "hospital",
+          "name": "IMDC"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:6823692106",
+      "url": "https://api.openstreetmap.org/api/0.6/node/6823692106.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6823692106,
+        "lat": 5.6660579,
+        "lon": 73.2727488,
+        "timestamp": "2025-02-18T07:25:33Z",
+        "version": 3,
+        "changeset": 162647979,
+        "user": "Dhivehieditor",
+        "uid": 22524289,
+        "tags": {
+          "amenity": "school",
+          "contact:facebook": "https://www.facebook.com/noonuaec/",
+          "name": "Noonu Atoll Education Centre",
+          "name:dv": "ނ.އަތޮޅު ތައުލީމީ މަރުކަޒު"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:7208742187",
+      "url": "https://api.openstreetmap.org/api/0.6/node/7208742187.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 7208742187,
+        "lat": 3.4708637,
+        "lon": 73.545913,
+        "timestamp": "2020-02-13T15:35:02Z",
+        "version": 1,
+        "changeset": 80965341,
+        "user": "wittli",
+        "uid": 5449790,
+        "tags": {
+          "amenity": "hospital",
+          "name:en": "Vaavu Atoll Hospital"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:8392088123",
+      "url": "https://api.openstreetmap.org/api/0.6/node/8392088123.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 8392088123,
+        "lat": -0.2912265,
+        "lon": 73.4157223,
+        "timestamp": "2021-02-03T20:57:19Z",
+        "version": 2,
+        "changeset": 98666558,
+        "user": "atollkid",
+        "uid": 12600612,
+        "tags": {
+          "amenity": "school",
+          "grades": "1-10",
+          "name": "Mohamed Jamaaludheen School (MJS)",
+          "operator": "Ministry of Education (Maldives)",
+          "operator:type": "government",
+          "phone": "+960686-0003",
+          "religion": "muslim",
+          "website": "https://www.facebook.com/GN.MJS/"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:8526293513",
+      "url": "https://api.openstreetmap.org/api/0.6/node/8526293513.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 8526293513,
+        "lat": 0.2256304,
+        "lon": 73.2719821,
+        "timestamp": "2021-03-16T21:54:42Z",
+        "version": 1,
+        "changeset": 101146065,
+        "user": "Hattttu",
+        "uid": 8485696,
+        "tags": {
+          "amenity": "school",
+          "name": "Jamaaluddin School",
+          "operator": "Ministry Of Education",
+          "operator:type": "government"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:9283732117",
+      "url": "https://api.openstreetmap.org/api/0.6/node/9283732117.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9283732117,
+        "lat": 4.2642526,
+        "lon": 72.9907341,
+        "timestamp": "2021-11-25T17:33:28Z",
+        "version": 1,
+        "changeset": 114232555,
+        "user": "TomCZ",
+        "uid": 4731499,
+        "tags": {
+          "amenity": "school",
+          "name:en": "Jerrys Dive Club and Watersports Rasdhoo",
+          "website": "https://jerrysdiveclub.com/"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:9620924475",
+      "url": "https://api.openstreetmap.org/api/0.6/node/9620924475.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9620924475,
+        "lat": 5.4482377,
+        "lon": 73.0297331,
+        "timestamp": "2022-03-29T13:02:00Z",
+        "version": 1,
+        "changeset": 119069336,
+        "user": "ig4map",
+        "uid": 599809,
+        "tags": {
+          "amenity": "school"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:9621817425",
+      "url": "https://api.openstreetmap.org/api/0.6/node/9621817425.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9621817425,
+        "lat": 5.9672622,
+        "lon": 72.9535243,
+        "timestamp": "2022-03-29T19:06:44Z",
+        "version": 1,
+        "changeset": 119084971,
+        "user": "ig4map",
+        "uid": 599809,
+        "tags": {
+          "amenity": "school",
+          "name": "Alifushi school"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:9889458135",
+      "url": "https://api.openstreetmap.org/api/0.6/node/9889458135.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9889458135,
+        "lat": -0.6088931,
+        "lon": 73.0923618,
+        "timestamp": "2022-07-15T10:10:06Z",
+        "version": 1,
+        "changeset": 123645636,
+        "user": "BasyasBas",
+        "uid": 16511887,
+        "tags": {
+          "amenity": "school",
+          "grades": "1-10",
+          "name": "Sharafuddin School"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:9951457715",
+      "url": "https://api.openstreetmap.org/api/0.6/node/9951457715.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9951457715,
+        "lat": 4.1726376,
+        "lon": 73.5099234,
+        "timestamp": "2026-08-18T19:18:07Z",
+        "version": 3,
+        "changeset": 187656853,
+        "user": "dhoru",
+        "uid": 21936107,
+        "tags": {
+          "amenity": "clinic",
+          "healthcare": "clinic",
+          "name": "Advance Medical Clinic",
+          "phone": "+9603007788"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:9951500245",
+      "url": "https://api.openstreetmap.org/api/0.6/node/9951500245.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9951500245,
+        "lat": 4.1750642,
+        "lon": 73.5059555,
+        "timestamp": "2023-11-11T12:15:59Z",
+        "version": 2,
+        "changeset": 143897321,
+        "user": "user_20033850",
+        "uid": 20033850,
+        "tags": {
+          "amenity": "clinic",
+          "healthcare": "clinic",
+          "name": "Central Clinic",
+          "phone": "+9603312221"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:node:9951513836",
+      "url": "https://api.openstreetmap.org/api/0.6/node/9951513836.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9951513836,
+        "lat": 4.1716899,
+        "lon": 73.516507,
+        "timestamp": "2023-11-18T19:02:01Z",
+        "version": 3,
+        "changeset": 144186994,
+        "user": "b-jazz-bot",
+        "uid": 9451067,
+        "tags": {
+          "addr:street": "Moonlight Hingun, Malé, Maldives",
+          "amenity": "hospital",
+          "healthcare": "hospital",
+          "name": "Senahiya Military Hospital",
+          "opening_hours": "Mo-Su 06:00-06:00",
+          "phone": "+9603019899",
+          "website": "https://senahiya.business.site/"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:relation:9994380",
+      "url": "https://api.openstreetmap.org/api/0.6/relation/9994380/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5360965564,
+        "lat": -0.6824325,
+        "lon": 73.1352226,
+        "timestamp": "2018-01-25T12:51:15Z",
+        "version": 1,
+        "changeset": 55739985,
+        "user": "Simon700",
+        "uid": 7512528
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1000764503",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1000764503/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 8568887651,
+        "lat": 0.5337276,
+        "lon": 72.9975202,
+        "timestamp": "2023-09-05T16:50:36Z",
+        "version": 4,
+        "changeset": 140859554,
+        "user": "goosven",
+        "uid": 19712242
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1001991808",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1001991808/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9247890565,
+        "lat": 4.4414179,
+        "lon": 73.7129249,
+        "timestamp": "2021-11-13T10:21:14Z",
+        "version": 1,
+        "changeset": 113725010,
+        "user": "lemos",
+        "uid": 994025
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1032953203",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1032953203/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9517105515,
+        "lat": -0.2971407,
+        "lon": 73.425995,
+        "timestamp": "2022-09-12T06:47:55Z",
+        "version": 2,
+        "changeset": 126074204,
+        "user": "Shafaau",
+        "uid": 8656042
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1033583587",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1033583587/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9522386368,
+        "lat": -0.3025826,
+        "lon": 73.426084,
+        "timestamp": "2022-02-20T18:29:30Z",
+        "version": 1,
+        "changeset": 117649880,
+        "user": "ig4map",
+        "uid": 599809
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1038348911",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1038348911/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9563434616,
+        "lat": 5.6261452,
+        "lon": 73.0420028,
+        "timestamp": "2022-03-08T20:04:36Z",
+        "version": 1,
+        "changeset": 118250959,
+        "user": "eclipse28",
+        "uid": 11629545
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1066958751",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1066958751/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9796955771,
+        "lat": 4.0518338,
+        "lon": 72.7277657,
+        "timestamp": "2022-06-05T17:36:03Z",
+        "version": 1,
+        "changeset": 121988017,
+        "user": "ig4map",
+        "uid": 599809
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1066962466",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1066962466/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9797027140,
+        "lat": 4.1860789,
+        "lon": 72.7726381,
+        "timestamp": "2022-06-05T17:53:41Z",
+        "version": 1,
+        "changeset": 121988661,
+        "user": "ig4map",
+        "uid": 599809
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1118550871",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1118550871/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 10230137091,
+        "lat": 6.0362047,
+        "lon": 73.282666,
+        "timestamp": "2022-12-16T06:53:16Z",
+        "version": 2,
+        "changeset": 130141426,
+        "user": "LakeTopozero",
+        "uid": 17110754
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1118550872",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1118550872/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 7139406656,
+        "lat": 6.0363343,
+        "lon": 73.2810413,
+        "timestamp": "2022-12-16T06:53:16Z",
+        "version": 3,
+        "changeset": 130141426,
+        "user": "LakeTopozero",
+        "uid": 17110754
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1122700184",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1122700184/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 10268011837,
+        "lat": 5.4480027,
+        "lon": 73.0297292,
+        "timestamp": "2022-12-16T16:58:01Z",
+        "version": 1,
+        "changeset": 130163637,
+        "user": "Achille BN",
+        "uid": 17434378
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1126419152",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1126419152/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 1635102538,
+        "lat": 1.7991304,
+        "lon": 73.3876057,
+        "timestamp": "2023-01-02T08:54:37Z",
+        "version": 3,
+        "changeset": 130777428,
+        "user": "CyberartLive",
+        "uid": 18151249
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1126434800",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1126434800/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 10300108145,
+        "lat": 1.8002299,
+        "lon": 73.3887392,
+        "timestamp": "2023-01-02T08:54:37Z",
+        "version": 1,
+        "changeset": 130777428,
+        "user": "CyberartLive",
+        "uid": 18151249
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1155312673",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1155312673/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 10744145447,
+        "lat": 5.2734669,
+        "lon": 73.5874894,
+        "timestamp": "2023-03-18T21:03:50Z",
+        "version": 1,
+        "changeset": 133838323,
+        "user": "BertoUCF",
+        "uid": 349063
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1165473041",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1165473041/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 414936581,
+        "lat": 0.487558,
+        "lon": 72.9965034,
+        "timestamp": "2023-04-25T20:06:49Z",
+        "version": 4,
+        "changeset": 135358815,
+        "user": "PierZen",
+        "uid": 226516
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1165473042",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1165473042/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 8075680669,
+        "lat": 0.3377231,
+        "lon": 73.5110926,
+        "timestamp": "2026-05-07T19:29:35Z",
+        "version": 7,
+        "changeset": 182354301,
+        "user": "maxwellward",
+        "uid": 21854367
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1167904137",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1167904137/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 10861878805,
+        "lat": 2.1178061,
+        "lon": 73.5698363,
+        "timestamp": "2023-05-02T08:09:27Z",
+        "version": 1,
+        "changeset": 135604452,
+        "user": "Mohamed Saaif",
+        "uid": 19132082
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1197569810",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1197569810/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 11111008834,
+        "lat": 4.1922087,
+        "lon": 72.7476585,
+        "timestamp": "2023-08-13T03:29:28Z",
+        "version": 1,
+        "changeset": 139807727,
+        "user": "Muammar1982",
+        "uid": 3937830
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1201901731",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1201901731/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 11143333775,
+        "lat": 5.8309849,
+        "lon": 73.480797,
+        "timestamp": "2023-08-27T06:06:52Z",
+        "version": 2,
+        "changeset": 140437246,
+        "user": "LAHFA_AccLab",
+        "uid": 19030539
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1201906805",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1201906805/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 11143347945,
+        "lat": 5.8321753,
+        "lon": 73.4786264,
+        "timestamp": "2023-08-25T10:49:56Z",
+        "version": 1,
+        "changeset": 140365800,
+        "user": "LAHFA_AccLab",
+        "uid": 19030539
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1207054212",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1207054212/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 7120526126,
+        "lat": 4.1778877,
+        "lon": 73.5131672,
+        "timestamp": "2023-09-12T02:23:26Z",
+        "version": 2,
+        "changeset": 141139435,
+        "user": "Omnific",
+        "uid": 1408522
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1210924794",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1210924794/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4422458481,
+        "lat": 4.2090689,
+        "lon": 73.5415122,
+        "timestamp": "2023-09-26T07:42:54Z",
+        "version": 2,
+        "changeset": 141761041,
+        "user": "Omnific",
+        "uid": 1408522
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1255413502",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1255413502/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 11670297764,
+        "lat": 6.9749869,
+        "lon": 72.8929589,
+        "timestamp": "2024-02-27T23:49:39Z",
+        "version": 2,
+        "changeset": 147993373,
+        "user": "0235",
+        "uid": 2066768
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1256311744",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1256311744/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 11678837339,
+        "lat": 5.4637711,
+        "lon": 73.3698351,
+        "timestamp": "2026-07-24T22:42:00Z",
+        "version": 3,
+        "changeset": 186321502,
+        "user": "woodpeck_repair",
+        "uid": 145231
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1287079702",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1287079702/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 11937211149,
+        "lat": 7.0872189,
+        "lon": 72.9244831,
+        "timestamp": "2024-05-27T13:42:40Z",
+        "version": 1,
+        "changeset": 151900698,
+        "user": "ValidFiber40770",
+        "uid": 21234954
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1314127765",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1314127765/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 12163204714,
+        "lat": 2.9240374,
+        "lon": 72.8948134,
+        "timestamp": "2024-09-08T09:42:20Z",
+        "version": 1,
+        "changeset": 156342917,
+        "user": "mapsmy_tsunami",
+        "uid": 21752943
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1317416264",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1317416264/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 12193028132,
+        "lat": 5.1040906,
+        "lon": 73.0677415,
+        "timestamp": "2024-09-22T16:48:21Z",
+        "version": 1,
+        "changeset": 156960651,
+        "user": "realswede14",
+        "uid": 21635910
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1317921914",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1317921914/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4202518111,
+        "lat": 4.1709551,
+        "lon": 73.514941,
+        "timestamp": "2024-09-24T15:21:13Z",
+        "version": 2,
+        "changeset": 157044891,
+        "user": "dhoru",
+        "uid": 21936107
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1317929099",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1317929099/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4740948374,
+        "lat": 4.1749904,
+        "lon": 73.5156567,
+        "timestamp": "2024-09-24T16:02:58Z",
+        "version": 3,
+        "changeset": 157046765,
+        "user": "dhoru",
+        "uid": 21936107
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1317950376",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1317950376/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 3356589896,
+        "lat": 4.1728349,
+        "lon": 73.4853144,
+        "timestamp": "2024-09-24T18:21:44Z",
+        "version": 3,
+        "changeset": 157052130,
+        "user": "dhoru",
+        "uid": 21936107
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1319728541",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1319728541/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 208535492,
+        "lat": 3.4694455,
+        "lon": 72.8255422,
+        "timestamp": "2015-12-17T14:36:58Z",
+        "version": 3,
+        "changeset": 36010381,
+        "user": "highflyer74",
+        "uid": 2545951,
+        "tags": {
+          "source": "PGS"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1320069203",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1320069203/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 12215864160,
+        "lat": 4.1701997,
+        "lon": 73.5094392,
+        "timestamp": "2024-10-02T11:25:56Z",
+        "version": 1,
+        "changeset": 157374861,
+        "user": "dhoru",
+        "uid": 21936107
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1320350102",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1320350102/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 12218276125,
+        "lat": 6.6658407,
+        "lon": 73.0832074,
+        "timestamp": "2024-10-03T09:30:53Z",
+        "version": 1,
+        "changeset": 157409998,
+        "user": "dhoru",
+        "uid": 21936107
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1322873196",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1322873196/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 12241103712,
+        "lat": 5.7555665,
+        "lon": 73.2643853,
+        "timestamp": "2026-03-03T17:09:50Z",
+        "version": 2,
+        "changeset": 179313084,
+        "user": "City2368",
+        "uid": 22043433
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1323678631",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1323678631/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 12248843403,
+        "lat": 4.1770275,
+        "lon": 73.5097741,
+        "timestamp": "2024-10-13T18:22:06Z",
+        "version": 1,
+        "changeset": 157847214,
+        "user": "dhoru",
+        "uid": 21936107
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1323805892",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1323805892/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 12250077544,
+        "lat": 5.7564269,
+        "lon": 73.2624991,
+        "timestamp": "2026-03-03T17:09:50Z",
+        "version": 2,
+        "changeset": 179313084,
+        "user": "City2368",
+        "uid": 22043433
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:143013442",
+      "url": "https://api.openstreetmap.org/api/0.6/way/143013442/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 1564849870,
+        "lat": 4.0059944,
+        "lon": 72.9492075,
+        "timestamp": "2011-12-28T08:23:28Z",
+        "version": 1,
+        "changeset": 10223171,
+        "user": "staehler",
+        "uid": 118856
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1448574099",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1448574099/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 8180124285,
+        "lat": 4.2131798,
+        "lon": 73.539112,
+        "timestamp": "2023-09-26T07:43:15Z",
+        "version": 2,
+        "changeset": 141761053,
+        "user": "Omnific",
+        "uid": 1408522
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1478463933",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1478463933/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 13563350002,
+        "lat": 5.8581973,
+        "lon": 72.9911641,
+        "timestamp": "2026-02-14T02:28:50Z",
+        "version": 1,
+        "changeset": 178527593,
+        "user": "BholeKiBhasam",
+        "uid": 2063042
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:151403710",
+      "url": "https://api.openstreetmap.org/api/0.6/way/151403710/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 1642263991,
+        "lat": 4.1729297,
+        "lon": 73.5022561,
+        "timestamp": "2018-03-05T23:42:04Z",
+        "version": 2,
+        "changeset": 56918818,
+        "user": "geoJenn",
+        "uid": 6172634
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1532937539",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1532937539/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 13970055957,
+        "lat": 2.6716227,
+        "lon": 72.894554,
+        "timestamp": "2026-06-29T05:06:10Z",
+        "version": 2,
+        "changeset": 184775792,
+        "user": "Saalhanga media",
+        "uid": 24250179
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1535333527",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1535333527/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 3798821287,
+        "lat": 5.6674537,
+        "lon": 73.030403,
+        "timestamp": "2026-07-05T04:25:22Z",
+        "version": 3,
+        "changeset": 185122217,
+        "user": "Ecx Enem",
+        "uid": 24280099
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1547305510",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1547305510/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 14073386627,
+        "lat": 4.2210294,
+        "lon": 73.541494,
+        "timestamp": "2026-08-17T18:26:31Z",
+        "version": 2,
+        "changeset": 187603189,
+        "user": "dhoru",
+        "uid": 21936107
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1548839614",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1548839614/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 1642263991,
+        "lat": 4.1729297,
+        "lon": 73.5022561,
+        "timestamp": "2018-03-05T23:42:04Z",
+        "version": 2,
+        "changeset": 56918818,
+        "user": "geoJenn",
+        "uid": 6172634
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1554432119",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1554432119/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 14141815802,
+        "lat": 6.5745648,
+        "lon": 73.0504239,
+        "timestamp": "2026-09-02T09:55:00Z",
+        "version": 1,
+        "changeset": 188409720,
+        "user": "Saudhullah",
+        "uid": 24499294
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1557297319",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1557297319/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 14162234552,
+        "lat": 2.909691,
+        "lon": 73.5825151,
+        "timestamp": "2026-09-08T10:13:11Z",
+        "version": 1,
+        "changeset": 188713894,
+        "user": "vietnam321",
+        "uid": 11196308
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:1557300131",
+      "url": "https://api.openstreetmap.org/api/0.6/way/1557300131/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 10109548557,
+        "lat": 0.1949905,
+        "lon": 73.1939861,
+        "timestamp": "2026-09-08T10:27:20Z",
+        "version": 2,
+        "changeset": 188714520,
+        "user": "vietnam321",
+        "uid": 11196308
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:216221235",
+      "url": "https://api.openstreetmap.org/api/0.6/way/216221235/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 2255734910,
+        "lat": 3.9413425,
+        "lon": 73.4901806,
+        "timestamp": "2018-12-05T05:25:44Z",
+        "version": 2,
+        "changeset": 65183421,
+        "user": "GOwin",
+        "uid": 1041828
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:216221260",
+      "url": "https://api.openstreetmap.org/api/0.6/way/216221260/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 2255735140,
+        "lat": 3.9422815,
+        "lon": 73.4903663,
+        "timestamp": "2013-04-07T16:34:22Z",
+        "version": 1,
+        "changeset": 15643004,
+        "user": "sebastor",
+        "uid": 1212376
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:298204766",
+      "url": "https://api.openstreetmap.org/api/0.6/way/298204766/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 3021044227,
+        "lat": 6.2872247,
+        "lon": 73.2442679,
+        "timestamp": "2014-08-16T20:54:14Z",
+        "version": 1,
+        "changeset": 24794962,
+        "user": "Xihuny",
+        "uid": 2255994
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:298204771",
+      "url": "https://api.openstreetmap.org/api/0.6/way/298204771/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 3021044448,
+        "lat": 6.2884493,
+        "lon": 73.2435721,
+        "timestamp": "2014-08-16T20:54:14Z",
+        "version": 1,
+        "changeset": 24794962,
+        "user": "Xihuny",
+        "uid": 2255994
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:364839738",
+      "url": "https://api.openstreetmap.org/api/0.6/way/364839738/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 3688764337,
+        "lat": 1.9322544,
+        "lon": 73.5424858,
+        "timestamp": "2015-08-10T03:09:28Z",
+        "version": 1,
+        "changeset": 33230176,
+        "user": "Nadym00",
+        "uid": 3135691
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:364840338",
+      "url": "https://api.openstreetmap.org/api/0.6/way/364840338/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 3688770935,
+        "lat": 1.922359,
+        "lon": 73.5443991,
+        "timestamp": "2015-08-10T03:35:15Z",
+        "version": 1,
+        "changeset": 33230308,
+        "user": "Nadym00",
+        "uid": 3135691
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:364882220",
+      "url": "https://api.openstreetmap.org/api/0.6/way/364882220/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 3689091441,
+        "lat": 1.9205362,
+        "lon": 73.5463964,
+        "timestamp": "2015-08-10T09:39:35Z",
+        "version": 1,
+        "changeset": 33234886,
+        "user": "Nadym00",
+        "uid": 3135691
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:364915911",
+      "url": "https://api.openstreetmap.org/api/0.6/way/364915911/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 3689381758,
+        "lat": 1.8307462,
+        "lon": 73.4980488,
+        "timestamp": "2015-08-10T12:50:21Z",
+        "version": 1,
+        "changeset": 33239074,
+        "user": "Nadym00",
+        "uid": 3135691
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:371295897",
+      "url": "https://api.openstreetmap.org/api/0.6/way/371295897/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 3748716258,
+        "lat": 5.2156829,
+        "lon": 73.1235867,
+        "timestamp": "2017-09-20T16:35:49Z",
+        "version": 2,
+        "changeset": 52216502,
+        "user": "Jesús Gómez",
+        "uid": 6389
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:383751026",
+      "url": "https://api.openstreetmap.org/api/0.6/way/383751026/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 3870671749,
+        "lat": 4.2161226,
+        "lon": 73.5429523,
+        "timestamp": "2016-09-28T16:47:17Z",
+        "version": 3,
+        "changeset": 42499283,
+        "user": "accay",
+        "uid": 3976173
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:384227881",
+      "url": "https://api.openstreetmap.org/api/0.6/way/384227881/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 3846807457,
+        "lat": 3.9901473,
+        "lon": 73.5101103,
+        "timestamp": "2022-06-10T09:23:24Z",
+        "version": 3,
+        "changeset": 122200996,
+        "user": "ig4map",
+        "uid": 599809,
+        "tags": {
+          "entrance": "main"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:465261224",
+      "url": "https://api.openstreetmap.org/api/0.6/way/465261224/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4602501277,
+        "lat": 3.7574665,
+        "lon": 72.9664932,
+        "timestamp": "2022-08-14T14:03:21Z",
+        "version": 2,
+        "changeset": 124889240,
+        "user": "Osmosefixer2021",
+        "uid": 10820890
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:465261680",
+      "url": "https://api.openstreetmap.org/api/0.6/way/465261680/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4602503842,
+        "lat": 3.6075612,
+        "lon": 72.9560692,
+        "timestamp": "2017-01-11T20:21:12Z",
+        "version": 1,
+        "changeset": 45086338,
+        "user": "EdwinHoogland",
+        "uid": 5113514
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:465261759",
+      "url": "https://api.openstreetmap.org/api/0.6/way/465261759/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4602505160,
+        "lat": 3.5349202,
+        "lon": 72.9284731,
+        "timestamp": "2022-06-05T16:00:38Z",
+        "version": 2,
+        "changeset": 121984201,
+        "user": "ig4map",
+        "uid": 599809
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:485054780",
+      "url": "https://api.openstreetmap.org/api/0.6/way/485054780/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4778161652,
+        "lat": 6.9590721,
+        "lon": 73.2112653,
+        "timestamp": "2017-04-06T06:24:39Z",
+        "version": 1,
+        "changeset": 47496282,
+        "user": "Umarey",
+        "uid": 5153397
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:485066760",
+      "url": "https://api.openstreetmap.org/api/0.6/way/485066760/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4810550309,
+        "lat": 6.9590748,
+        "lon": 73.2124748,
+        "timestamp": "2025-01-08T11:11:09Z",
+        "version": 2,
+        "changeset": 161129242,
+        "user": "Adam Hauner",
+        "uid": 305487
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:501718359",
+      "url": "https://api.openstreetmap.org/api/0.6/way/501718359/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4502615114,
+        "lat": -0.3101927,
+        "lon": 73.4374435,
+        "timestamp": "2023-04-26T22:47:10Z",
+        "version": 5,
+        "changeset": 135404550,
+        "user": "PierZen",
+        "uid": 226516
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:508266761",
+      "url": "https://api.openstreetmap.org/api/0.6/way/508266761/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4584491571,
+        "lat": 4.1757754,
+        "lon": 73.5097429,
+        "timestamp": "2024-09-21T11:16:50Z",
+        "version": 5,
+        "changeset": 156907341,
+        "user": "dhoru",
+        "uid": 21936107
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:529663160",
+      "url": "https://api.openstreetmap.org/api/0.6/way/529663160/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5144875872,
+        "lat": 4.9588768,
+        "lon": 73.4629313,
+        "timestamp": "2017-10-03T11:39:49Z",
+        "version": 1,
+        "changeset": 52593517,
+        "user": "mapmeld",
+        "uid": 401297
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:531757805",
+      "url": "https://api.openstreetmap.org/api/0.6/way/531757805/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5161421928,
+        "lat": -0.6662794,
+        "lon": 73.1215993,
+        "timestamp": "2019-09-03T06:09:32Z",
+        "version": 2,
+        "changeset": 74021532,
+        "user": "shaamil",
+        "uid": 403692
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:555723531",
+      "url": "https://api.openstreetmap.org/api/0.6/way/555723531/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5361058705,
+        "lat": -0.681103,
+        "lon": 73.1360033,
+        "timestamp": "2018-01-25T13:52:18Z",
+        "version": 1,
+        "changeset": 55741295,
+        "user": "Simon700",
+        "uid": 7512528
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:590298924",
+      "url": "https://api.openstreetmap.org/api/0.6/way/590298924/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5457780651,
+        "lat": 5.4450346,
+        "lon": 73.3650661,
+        "timestamp": "2018-05-23T00:52:50Z",
+        "version": 3,
+        "changeset": 59195399,
+        "user": "Flih",
+        "uid": 7528084
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:602758011",
+      "url": "https://api.openstreetmap.org/api/0.6/way/602758011/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 208543650,
+        "lat": 2.666374,
+        "lon": 72.8956115,
+        "timestamp": "2018-06-28T00:28:39Z",
+        "version": 3,
+        "changeset": 60231630,
+        "user": "zaizone",
+        "uid": 1122708,
+        "tags": {
+          "source": "PGS"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:614086854",
+      "url": "https://api.openstreetmap.org/api/0.6/way/614086854/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5809183652,
+        "lat": 4.0527823,
+        "lon": 72.7251321,
+        "timestamp": "2026-01-09T21:54:13Z",
+        "version": 2,
+        "changeset": 177042847,
+        "user": "settler_",
+        "uid": 2485465
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:616114846",
+      "url": "https://api.openstreetmap.org/api/0.6/way/616114846/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5825328417,
+        "lat": 2.1898192,
+        "lon": 73.0936904,
+        "timestamp": "2022-03-04T08:55:52Z",
+        "version": 3,
+        "changeset": 118084063,
+        "user": "Hassaan AR",
+        "uid": 14267486
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:616114858",
+      "url": "https://api.openstreetmap.org/api/0.6/way/616114858/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5825331160,
+        "lat": 2.189507,
+        "lon": 73.093265,
+        "timestamp": "2022-03-11T18:25:04Z",
+        "version": 4,
+        "changeset": 118374800,
+        "user": "Hassaan AR",
+        "uid": 14267486
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:622011138",
+      "url": "https://api.openstreetmap.org/api/0.6/way/622011138/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 5876170717,
+        "lat": 3.8519263,
+        "lon": 73.4556001,
+        "timestamp": "2018-09-03T15:09:18Z",
+        "version": 3,
+        "changeset": 62250843,
+        "user": "Ollie",
+        "uid": 10785
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:650454845",
+      "url": "https://api.openstreetmap.org/api/0.6/way/650454845/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6102131407,
+        "lat": 2.1709935,
+        "lon": 73.0687288,
+        "timestamp": "2018-11-29T06:21:05Z",
+        "version": 1,
+        "changeset": 64997753,
+        "user": "Yamaany",
+        "uid": 9142609
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:651281003",
+      "url": "https://api.openstreetmap.org/api/0.6/way/651281003/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6107968034,
+        "lat": -0.2956123,
+        "lon": 73.4230586,
+        "timestamp": "2018-12-01T00:28:54Z",
+        "version": 1,
+        "changeset": 65061398,
+        "user": "azzketit",
+        "uid": 9174737
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:659921836",
+      "url": "https://api.openstreetmap.org/api/0.6/way/659921836/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6178583024,
+        "lat": 3.9022594,
+        "lon": 73.4669527,
+        "timestamp": "2022-06-12T21:39:16Z",
+        "version": 2,
+        "changeset": 122298785,
+        "user": "ig4map",
+        "uid": 599809
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:665479493",
+      "url": "https://api.openstreetmap.org/api/0.6/way/665479493/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6228702751,
+        "lat": 3.9008581,
+        "lon": 73.4679903,
+        "timestamp": "2022-06-12T21:25:05Z",
+        "version": 3,
+        "changeset": 122298496,
+        "user": "ig4map",
+        "uid": 599809
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:672670306",
+      "url": "https://api.openstreetmap.org/api/0.6/way/672670306/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6271158290,
+        "lat": 4.4384524,
+        "lon": 72.9608873,
+        "timestamp": "2019-02-24T15:15:39Z",
+        "version": 2,
+        "changeset": 67519366,
+        "user": "DemoLogin",
+        "uid": 1709753
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:672670311",
+      "url": "https://api.openstreetmap.org/api/0.6/way/672670311/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6299197996,
+        "lat": 4.4385092,
+        "lon": 72.9620021,
+        "timestamp": "2024-10-24T07:58:57Z",
+        "version": 3,
+        "changeset": 158284385,
+        "user": "bad_mapper",
+        "uid": 10532296
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:677448171",
+      "url": "https://api.openstreetmap.org/api/0.6/way/677448171/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6343227970,
+        "lat": 2.695927,
+        "lon": 72.9618995,
+        "timestamp": "2019-03-17T15:32:56Z",
+        "version": 1,
+        "changeset": 68231210,
+        "user": "modeissey",
+        "uid": 5733497
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:677448182",
+      "url": "https://api.openstreetmap.org/api/0.6/way/677448182/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6343227985,
+        "lat": 2.6967682,
+        "lon": 72.964009,
+        "timestamp": "2019-03-17T15:32:56Z",
+        "version": 1,
+        "changeset": 68231210,
+        "user": "modeissey",
+        "uid": 5733497
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:679843731",
+      "url": "https://api.openstreetmap.org/api/0.6/way/679843731/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6365413926,
+        "lat": 4.3323843,
+        "lon": 73.6003508,
+        "timestamp": "2019-03-27T17:39:37Z",
+        "version": 2,
+        "changeset": 68595781,
+        "user": "mbethke",
+        "uid": 248338
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:679844567",
+      "url": "https://api.openstreetmap.org/api/0.6/way/679844567/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6362746242,
+        "lat": 4.3312517,
+        "lon": 73.598969,
+        "timestamp": "2022-06-04T21:56:10Z",
+        "version": 4,
+        "changeset": 121954943,
+        "user": "ig4map",
+        "uid": 599809
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:683081961",
+      "url": "https://api.openstreetmap.org/api/0.6/way/683081961/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6398079052,
+        "lat": 4.3094395,
+        "lon": 73.5724676,
+        "timestamp": "2019-04-11T09:51:20Z",
+        "version": 1,
+        "changeset": 69108709,
+        "user": "d-travel",
+        "uid": 5743410
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:697262511",
+      "url": "https://api.openstreetmap.org/api/0.6/way/697262511/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 4422455600,
+        "lat": 4.2128874,
+        "lon": 73.5419118,
+        "timestamp": "2019-06-15T03:45:58Z",
+        "version": 3,
+        "changeset": 71270510,
+        "user": "GOwin",
+        "uid": 1041828
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:715008220",
+      "url": "https://api.openstreetmap.org/api/0.6/way/715008220/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6720486984,
+        "lat": -0.5928282,
+        "lon": 73.0788616,
+        "timestamp": "2019-10-21T16:17:23Z",
+        "version": 3,
+        "changeset": 76008279,
+        "user": "Avocadough!",
+        "uid": 6967122
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:715658099",
+      "url": "https://api.openstreetmap.org/api/0.6/way/715658099/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6725841141,
+        "lat": -0.6194882,
+        "lon": 73.0962348,
+        "timestamp": "2022-07-15T10:10:06Z",
+        "version": 2,
+        "changeset": 123645636,
+        "user": "BasyasBas",
+        "uid": 16511887
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:744245617",
+      "url": "https://api.openstreetmap.org/api/0.6/way/744245617/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6965605777,
+        "lat": -0.5879799,
+        "lon": 73.2271281,
+        "timestamp": "2021-07-19T04:20:27Z",
+        "version": 3,
+        "changeset": 108215384,
+        "user": "naubay",
+        "uid": 13763250
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:747425647",
+      "url": "https://api.openstreetmap.org/api/0.6/way/747425647/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 208428265,
+        "lat": 5.813221,
+        "lon": 73.4606428,
+        "timestamp": "2019-11-20T20:13:39Z",
+        "version": 3,
+        "changeset": 77343100,
+        "user": "birdlawyer",
+        "uid": 9461087,
+        "tags": {
+          "source": "PGS"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:747433190",
+      "url": "https://api.openstreetmap.org/api/0.6/way/747433190/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 1068639385,
+        "lat": 6.7565604,
+        "lon": 73.1707478,
+        "timestamp": "2026-10-09T20:21:48Z",
+        "version": 3,
+        "changeset": 190272229,
+        "user": "cpeuvrel",
+        "uid": 24483601
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:747440857",
+      "url": "https://api.openstreetmap.org/api/0.6/way/747440857/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 20854886,
+        "lat": 4.1898543,
+        "lon": 73.5326897,
+        "timestamp": "2019-12-04T09:13:20Z",
+        "version": 4,
+        "changeset": 77922356,
+        "user": "Trastevere",
+        "uid": 8976477
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:749871864",
+      "url": "https://api.openstreetmap.org/api/0.6/way/749871864/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 208444505,
+        "lat": 5.1552552,
+        "lon": 73.1363543,
+        "timestamp": "2019-11-26T17:53:38Z",
+        "version": 5,
+        "changeset": 77589873,
+        "user": "Dan Lincke",
+        "uid": 10431070,
+        "tags": {
+          "source": "PGS"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:751742951",
+      "url": "https://api.openstreetmap.org/api/0.6/way/751742951/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 7027429493,
+        "lat": 0.458465,
+        "lon": 73.0005464,
+        "timestamp": "2019-12-04T20:18:18Z",
+        "version": 2,
+        "changeset": 77959185,
+        "user": "pyram",
+        "uid": 497849
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:752541163",
+      "url": "https://api.openstreetmap.org/api/0.6/way/752541163/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 208415775,
+        "lat": 6.6280762,
+        "lon": 73.0739735,
+        "timestamp": "2019-12-04T13:52:28Z",
+        "version": 4,
+        "changeset": 77942695,
+        "user": "Dan Lincke",
+        "uid": 10431070,
+        "tags": {
+          "source": "PGS"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:757319579",
+      "url": "https://api.openstreetmap.org/api/0.6/way/757319579/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 208421215,
+        "lat": 6.1612872,
+        "lon": 73.2865752,
+        "timestamp": "2019-12-20T15:14:18Z",
+        "version": 5,
+        "changeset": 78688993,
+        "user": "Dan Lincke",
+        "uid": 10431070,
+        "tags": {
+          "source": "PGS"
+        }
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:762119227",
+      "url": "https://api.openstreetmap.org/api/0.6/way/762119227/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 7120526135,
+        "lat": 4.178738,
+        "lon": 73.5094081,
+        "timestamp": "2020-01-09T23:36:14Z",
+        "version": 1,
+        "changeset": 79396008,
+        "user": "Asif101",
+        "uid": 9603515
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:783239341",
+      "url": "https://api.openstreetmap.org/api/0.6/way/783239341/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 7314525472,
+        "lat": 4.8768562,
+        "lon": 72.9951298,
+        "timestamp": "2024-05-08T13:20:35Z",
+        "version": 2,
+        "changeset": 151056059,
+        "user": "dpolovinkin",
+        "uid": 6710042
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:791616201",
+      "url": "https://api.openstreetmap.org/api/0.6/way/791616201/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 7400533420,
+        "lat": 2.2057686,
+        "lon": 73.141761,
+        "timestamp": "2020-04-14T05:36:17Z",
+        "version": 1,
+        "changeset": 83508465,
+        "user": "Samooh",
+        "uid": 11024455
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:814112443",
+      "url": "https://api.openstreetmap.org/api/0.6/way/814112443/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 7605019245,
+        "lat": 6.5481177,
+        "lon": 72.9521468,
+        "timestamp": "2022-09-22T08:10:30Z",
+        "version": 2,
+        "changeset": 126493295,
+        "user": "Abdullah Wafir",
+        "uid": 15055292
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:849713608",
+      "url": "https://api.openstreetmap.org/api/0.6/way/849713608/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 7927611792,
+        "lat": 5.4855141,
+        "lon": 72.8963176,
+        "timestamp": "2020-09-21T08:42:59Z",
+        "version": 1,
+        "changeset": 91213743,
+        "user": "Samooh",
+        "uid": 11024455
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:908907992",
+      "url": "https://api.openstreetmap.org/api/0.6/way/908907992/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 6909752036,
+        "lat": 5.1578177,
+        "lon": 73.1309213,
+        "timestamp": "2021-02-20T21:25:50Z",
+        "version": 3,
+        "changeset": 99660764,
+        "user": "MVKhaled",
+        "uid": 12688899
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:924568542",
+      "url": "https://api.openstreetmap.org/api/0.6/way/924568542/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 8580990044,
+        "lat": 4.2160105,
+        "lon": 72.8627671,
+        "timestamp": "2022-06-02T12:07:08Z",
+        "version": 2,
+        "changeset": 121849430,
+        "user": "mustermannxx",
+        "uid": 166143
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:935256114",
+      "url": "https://api.openstreetmap.org/api/0.6/way/935256114/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 8666878999,
+        "lat": 6.5492649,
+        "lon": 72.952628,
+        "timestamp": "2022-09-22T08:10:30Z",
+        "version": 2,
+        "changeset": 126493295,
+        "user": "Abdullah Wafir",
+        "uid": 15055292
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:953821186",
+      "url": "https://api.openstreetmap.org/api/0.6/way/953821186/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 8828145063,
+        "lat": 0.4604357,
+        "lon": 73.0000923,
+        "timestamp": "2025-11-15T05:16:00Z",
+        "version": 2,
+        "changeset": 174673753,
+        "user": "naisam_",
+        "uid": 22911869
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:962507715",
+      "url": "https://api.openstreetmap.org/api/0.6/way/962507715/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 8568887541,
+        "lat": 0.5246776,
+        "lon": 72.9957822,
+        "timestamp": "2023-09-05T16:40:48Z",
+        "version": 2,
+        "changeset": 140859229,
+        "user": "goosven",
+        "uid": 19712242
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:969492568",
+      "url": "https://api.openstreetmap.org/api/0.6/way/969492568/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 8568887618,
+        "lat": 0.5286302,
+        "lon": 72.9991298,
+        "timestamp": "2023-10-12T03:28:07Z",
+        "version": 2,
+        "changeset": 142458475,
+        "user": "ARRW",
+        "uid": 12938303
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:976103994",
+      "url": "https://api.openstreetmap.org/api/0.6/way/976103994/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9033077213,
+        "lat": 0.7142601,
+        "lon": 73.4381392,
+        "timestamp": "2021-08-24T19:48:35Z",
+        "version": 1,
+        "changeset": 110191268,
+        "user": "yazeedh",
+        "uid": 11849554
+      },
+      "error": null
+    },
+    {
+      "osm_object_id": "osm:way:976103995",
+      "url": "https://api.openstreetmap.org/api/0.6/way/976103995/full.json",
+      "http_status": 200,
+      "status": "ok",
+      "element": {
+        "type": "node",
+        "id": 9033077217,
+        "lat": 0.7157867,
+        "lon": 73.4379205,
+        "timestamp": "2021-08-24T19:48:35Z",
+        "version": 1,
+        "changeset": 110191268,
+        "user": "yazeedh",
+        "uid": 11849554
+      },
+      "error": null
+    }
+  ]
+}

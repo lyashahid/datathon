@@ -1,0 +1,14 @@
+{
+  "facility:school:455": {
+    "official_address": "Zamaanee Hingun, HDh. Kumundhoo",
+    "osm_road": {
+      "type": "way",
+      "id": 122946797,
+      "url": "https://api.openstreetmap.org/api/0.6/way/122946797/full.json",
+      "tags": {"highway": "residential", "name": "Zamaany Hingun"},
+      "name_note": "Likely spelling variant of the Ministry address street; not facility identity evidence.",
+      "min_school_polygon_node_to_road_node_distance_m": 5
+    },
+    "decision_impact": "Supports same-island plausibility only; the school way 1554432122 has no name/operator/government tag, so retain osm_provisional_review_required."
+  }
+}

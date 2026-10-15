@@ -1,0 +1,1560 @@
+{
+  "edges": [
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1614.104,
+      "from_id": "marine-route:osm:relation:20956727:start",
+      "geometry": [
+        [
+          73.4874435,
+          4.1751932
+        ],
+        [
+          73.5015803,
+          4.1717402
+        ]
+      ],
+      "id": "marine:osm:relation:20956727:forward",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:20956727",
+      "to_id": "marine-route:osm:relation:20956727:end"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1614.104,
+      "from_id": "marine-route:osm:relation:20956727:end",
+      "geometry": [
+        [
+          73.5015803,
+          4.1717402
+        ],
+        [
+          73.4874435,
+          4.1751932
+        ]
+      ],
+      "id": "marine:osm:relation:20956727:marine-route:osm:relation:20956727:end:marine-route:osm:relation:20956727:start",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:20956727",
+      "to_id": "marine-route:osm:relation:20956727:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 2687.971,
+      "from_id": "marine-route:osm:relation:20956727:start",
+      "geometry": [
+        [
+          73.4874435,
+          4.1751932
+        ],
+        [
+          73.5112754,
+          4.1795992
+        ]
+      ],
+      "id": "marine:osm:relation:20956727:marine-route:osm:relation:20956727:start:marine-route:osm:relation:9350043:end",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:20956727",
+      "to_id": "marine-route:osm:relation:9350043:end"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1614.104,
+      "from_id": "marine-route:osm:relation:20956727:end",
+      "geometry": [
+        [
+          73.5015803,
+          4.1717402
+        ],
+        [
+          73.4874435,
+          4.1751932
+        ]
+      ],
+      "id": "marine:osm:relation:20956727:reverse",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:20956727",
+      "to_id": "marine-route:osm:relation:20956727:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 67165.806,
+      "from_id": "marine-route:osm:relation:9350043:start",
+      "geometry": [
+        [
+          72.9643923,
+          4.439346
+        ],
+        [
+          73.5112754,
+          4.1795992
+        ]
+      ],
+      "id": "marine:osm:relation:9350043:forward",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350043",
+      "to_id": "marine-route:osm:relation:9350043:end"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 67165.806,
+      "from_id": "marine-route:osm:relation:9350043:end",
+      "geometry": [
+        [
+          73.5112754,
+          4.1795992
+        ],
+        [
+          72.9643923,
+          4.439346
+        ]
+      ],
+      "id": "marine:osm:relation:9350043:marine-route:osm:relation:9350043:end:marine-route:osm:relation:9350043:start",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350043",
+      "to_id": "marine-route:osm:relation:9350043:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 68215.825,
+      "from_id": "marine-route:osm:relation:9350043:start",
+      "geometry": [
+        [
+          72.9643923,
+          4.439346
+        ],
+        [
+          73.5266944,
+          4.19042035
+        ]
+      ],
+      "id": "marine:osm:relation:9350043:marine-route:osm:relation:9350043:start:osm:way:204916160",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350043",
+      "to_id": "osm:way:204916160"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 67165.806,
+      "from_id": "marine-route:osm:relation:9350043:end",
+      "geometry": [
+        [
+          73.5112754,
+          4.1795992
+        ],
+        [
+          72.9643923,
+          4.439346
+        ]
+      ],
+      "id": "marine:osm:relation:9350043:reverse",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350043",
+      "to_id": "marine-route:osm:relation:9350043:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350044:start",
+      "geometry": [
+        [
+          73.5260929,
+          4.1885346
+        ],
+        [
+          73.5112754,
+          4.1795992
+        ]
+      ],
+      "id": "marine:osm:relation:9350044:forward",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350044",
+      "to_id": "marine-route:osm:relation:9350044:end"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350044:end",
+      "geometry": [
+        [
+          73.5112754,
+          4.1795992
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350044:marine-route:osm:relation:9350044:end:marine-route:osm:relation:9350044:start",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350044",
+      "to_id": "marine-route:osm:relation:9350044:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350044:end",
+      "geometry": [
+        [
+          73.5112754,
+          4.1795992
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350044:reverse",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350044",
+      "to_id": "marine-route:osm:relation:9350044:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350044:end",
+      "geometry": [
+        [
+          73.5112754,
+          4.1795992
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350045:marine-route:osm:relation:9350044:end:marine-route:osm:relation:9350044:start",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350045",
+      "to_id": "marine-route:osm:relation:9350044:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350046:start",
+      "geometry": [
+        [
+          73.5260929,
+          4.1885346
+        ],
+        [
+          73.5112754,
+          4.1795992
+        ]
+      ],
+      "id": "marine:osm:relation:9350046:forward",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350046",
+      "to_id": "marine-route:osm:relation:9350046:end"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 67165.806,
+      "from_id": "marine-route:osm:relation:9350043:end",
+      "geometry": [
+        [
+          73.5112754,
+          4.1795992
+        ],
+        [
+          72.9643923,
+          4.439346
+        ]
+      ],
+      "id": "marine:osm:relation:9350046:marine-route:osm:relation:9350043:end:marine-route:osm:relation:9350043:start",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350046",
+      "to_id": "marine-route:osm:relation:9350043:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 67165.806,
+      "from_id": "marine-route:osm:relation:9350043:start",
+      "geometry": [
+        [
+          72.9643923,
+          4.439346
+        ],
+        [
+          73.5112754,
+          4.1795992
+        ]
+      ],
+      "id": "marine:osm:relation:9350046:marine-route:osm:relation:9350043:start:marine-route:osm:relation:9350044:end",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350046",
+      "to_id": "marine-route:osm:relation:9350044:end"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350044:end",
+      "geometry": [
+        [
+          73.5112754,
+          4.1795992
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350046:marine-route:osm:relation:9350044:end:marine-route:osm:relation:9350044:start",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350046",
+      "to_id": "marine-route:osm:relation:9350044:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350044:start",
+      "geometry": [
+        [
+          73.5260929,
+          4.1885346
+        ],
+        [
+          73.5112754,
+          4.1795992
+        ]
+      ],
+      "id": "marine:osm:relation:9350046:marine-route:osm:relation:9350044:start:marine-route:osm:relation:9350046:end",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350046",
+      "to_id": "marine-route:osm:relation:9350046:end"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350046:end",
+      "geometry": [
+        [
+          73.5112754,
+          4.1795992
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350046:marine-route:osm:relation:9350046:end:marine-route:osm:relation:9350046:start",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350046",
+      "to_id": "marine-route:osm:relation:9350046:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350046:end",
+      "geometry": [
+        [
+          73.5112754,
+          4.1795992
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350046:reverse",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350046",
+      "to_id": "marine-route:osm:relation:9350046:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1548.574,
+      "from_id": "marine-route:osm:relation:9350049:start",
+      "geometry": [
+        [
+          73.5260929,
+          4.1885346
+        ],
+        [
+          73.5170283,
+          4.1779411
+        ]
+      ],
+      "id": "marine:osm:relation:9350049:forward",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350049",
+      "to_id": "marine-route:osm:relation:9350049:end"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350044:end",
+      "geometry": [
+        [
+          73.5112754,
+          4.1795992
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350049:marine-route:osm:relation:9350044:end:marine-route:osm:relation:9350044:start",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350049",
+      "to_id": "marine-route:osm:relation:9350044:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350044:start",
+      "geometry": [
+        [
+          73.5260929,
+          4.1885346
+        ],
+        [
+          73.5112754,
+          4.1795992
+        ]
+      ],
+      "id": "marine:osm:relation:9350049:marine-route:osm:relation:9350044:start:marine-route:osm:relation:9350046:end",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350049",
+      "to_id": "marine-route:osm:relation:9350046:end"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350046:end",
+      "geometry": [
+        [
+          73.5112754,
+          4.1795992
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350049:marine-route:osm:relation:9350046:end:marine-route:osm:relation:9350046:start",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350049",
+      "to_id": "marine-route:osm:relation:9350046:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1548.574,
+      "from_id": "marine-route:osm:relation:9350046:start",
+      "geometry": [
+        [
+          73.5260929,
+          4.1885346
+        ],
+        [
+          73.5170283,
+          4.1779411
+        ]
+      ],
+      "id": "marine:osm:relation:9350049:marine-route:osm:relation:9350046:start:marine-route:osm:relation:9350049:end",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350049",
+      "to_id": "marine-route:osm:relation:9350049:end"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1548.574,
+      "from_id": "marine-route:osm:relation:9350049:end",
+      "geometry": [
+        [
+          73.5170283,
+          4.1779411
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350049:marine-route:osm:relation:9350049:end:marine-route:osm:relation:9350049:start",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350049",
+      "to_id": "marine-route:osm:relation:9350049:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1548.574,
+      "from_id": "marine-route:osm:relation:9350049:end",
+      "geometry": [
+        [
+          73.5170283,
+          4.1779411
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350049:reverse",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350049",
+      "to_id": "marine-route:osm:relation:9350049:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1548.574,
+      "from_id": "marine-route:osm:relation:9350050:start",
+      "geometry": [
+        [
+          73.5260929,
+          4.1885346
+        ],
+        [
+          73.5170283,
+          4.1779411
+        ]
+      ],
+      "id": "marine:osm:relation:9350050:forward",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350050",
+      "to_id": "marine-route:osm:relation:9350050:end"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350044:end",
+      "geometry": [
+        [
+          73.5112754,
+          4.1795992
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350050:marine-route:osm:relation:9350044:end:marine-route:osm:relation:9350044:start",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350050",
+      "to_id": "marine-route:osm:relation:9350044:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350044:start",
+      "geometry": [
+        [
+          73.5260929,
+          4.1885346
+        ],
+        [
+          73.5112754,
+          4.1795992
+        ]
+      ],
+      "id": "marine:osm:relation:9350050:marine-route:osm:relation:9350044:start:marine-route:osm:relation:9350046:end",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350050",
+      "to_id": "marine-route:osm:relation:9350046:end"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1920.266,
+      "from_id": "marine-route:osm:relation:9350046:end",
+      "geometry": [
+        [
+          73.5112754,
+          4.1795992
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350050:marine-route:osm:relation:9350046:end:marine-route:osm:relation:9350046:start",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350050",
+      "to_id": "marine-route:osm:relation:9350046:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1548.574,
+      "from_id": "marine-route:osm:relation:9350046:start",
+      "geometry": [
+        [
+          73.5260929,
+          4.1885346
+        ],
+        [
+          73.5170283,
+          4.1779411
+        ]
+      ],
+      "id": "marine:osm:relation:9350050:marine-route:osm:relation:9350046:start:marine-route:osm:relation:9350049:end",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350050",
+      "to_id": "marine-route:osm:relation:9350049:end"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1548.574,
+      "from_id": "marine-route:osm:relation:9350049:end",
+      "geometry": [
+        [
+          73.5170283,
+          4.1779411
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350050:marine-route:osm:relation:9350049:end:marine-route:osm:relation:9350049:start",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350050",
+      "to_id": "marine-route:osm:relation:9350049:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1548.574,
+      "from_id": "marine-route:osm:relation:9350049:start",
+      "geometry": [
+        [
+          73.5260929,
+          4.1885346
+        ],
+        [
+          73.5170283,
+          4.1779411
+        ]
+      ],
+      "id": "marine:osm:relation:9350050:marine-route:osm:relation:9350049:start:marine-route:osm:relation:9350050:end",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350050",
+      "to_id": "marine-route:osm:relation:9350050:end"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1548.574,
+      "from_id": "marine-route:osm:relation:9350050:end",
+      "geometry": [
+        [
+          73.5170283,
+          4.1779411
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350050:marine-route:osm:relation:9350050:end:marine-route:osm:relation:9350050:start",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350050",
+      "to_id": "marine-route:osm:relation:9350050:start"
+    },
+    {
+      "active_status": "osm_route_candidate",
+      "cargo_eligible": false,
+      "distance_m": 1548.574,
+      "from_id": "marine-route:osm:relation:9350050:end",
+      "geometry": [
+        [
+          73.5170283,
+          4.1779411
+        ],
+        [
+          73.5260929,
+          4.1885346
+        ]
+      ],
+      "id": "marine:osm:relation:9350050:reverse",
+      "mode": "ferry_candidate",
+      "passenger_eligible": false,
+      "source": "OpenStreetMap",
+      "source_relation_id": "osm:relation:9350050",
+      "to_id": "marine-route:osm:relation:9350050:start"
+    }
+  ],
+  "nodes": [
+    {
+      "category": "ferry_route_endpoint",
+      "coordinates": [
+        73.5015803,
+        4.1717402
+      ],
+      "id": "marine-route:osm:relation:20956727:end",
+      "island_id": "island:1443",
+      "name": "Vilimale Ferry",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_route_endpoint",
+      "coordinates": [
+        73.4874435,
+        4.1751932
+      ],
+      "id": "marine-route:osm:relation:20956727:start",
+      "island_id": "island:1382",
+      "name": "Vilimale Ferry",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_route_endpoint",
+      "coordinates": [
+        73.5112754,
+        4.1795992
+      ],
+      "id": "marine-route:osm:relation:9350043:end",
+      "island_id": "island:1443",
+      "name": "Thoddoo - Airport - Male",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_route_endpoint",
+      "coordinates": [
+        72.9643923,
+        4.439346
+      ],
+      "id": "marine-route:osm:relation:9350043:start",
+      "island_id": "island:16",
+      "name": "Thoddoo - Airport - Male",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_route_endpoint",
+      "coordinates": [
+        73.5112754,
+        4.1795992
+      ],
+      "id": "marine-route:osm:relation:9350044:end",
+      "island_id": "island:1443",
+      "name": "Airport - Male",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_route_endpoint",
+      "coordinates": [
+        73.5260929,
+        4.1885346
+      ],
+      "id": "marine-route:osm:relation:9350044:start",
+      "island_id": "island:1483",
+      "name": "Airport - Male",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_route_endpoint",
+      "coordinates": [
+        73.5112754,
+        4.1795992
+      ],
+      "id": "marine-route:osm:relation:9350046:end",
+      "island_id": "island:1443",
+      "name": "Male - Airport - Thoddoo",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_route_endpoint",
+      "coordinates": [
+        73.5260929,
+        4.1885346
+      ],
+      "id": "marine-route:osm:relation:9350046:start",
+      "island_id": "island:1483",
+      "name": "Male - Airport - Thoddoo",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_route_endpoint",
+      "coordinates": [
+        73.5170283,
+        4.1779411
+      ],
+      "id": "marine-route:osm:relation:9350049:end",
+      "island_id": "island:1461",
+      "name": "Airport Shuttle",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_route_endpoint",
+      "coordinates": [
+        73.5260929,
+        4.1885346
+      ],
+      "id": "marine-route:osm:relation:9350049:start",
+      "island_id": "island:1483",
+      "name": "Airport Shuttle",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_route_endpoint",
+      "coordinates": [
+        73.5170283,
+        4.1779411
+      ],
+      "id": "marine-route:osm:relation:9350050:end",
+      "island_id": "island:1461",
+      "name": "Airport Shuttle",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_route_endpoint",
+      "coordinates": [
+        73.5260929,
+        4.1885346
+      ],
+      "id": "marine-route:osm:relation:9350050:start",
+      "island_id": "island:1483",
+      "name": "Airport Shuttle",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        72.9858789,
+        4.2596658
+      ],
+      "id": "osm:node:1487261272",
+      "island_id": "island:8",
+      "name": null,
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        72.7268912,
+        4.0533596
+      ],
+      "id": "osm:node:1504737644",
+      "island_id": "island:9",
+      "name": "Ferry Terminal",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        73.5028057,
+        3.9730207
+      ],
+      "id": "osm:node:1637492368",
+      "island_id": "island:1436",
+      "name": null,
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        73.5058318,
+        3.9724017
+      ],
+      "id": "osm:node:1641957415",
+      "island_id": "island:1435",
+      "name": null,
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        73.0838522,
+        5.2049016
+      ],
+      "id": "osm:node:1973308036",
+      "island_id": "island:164",
+      "name": "Arrival Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        73.4896588,
+        3.9433609
+      ],
+      "id": "osm:node:208526613",
+      "island_id": "island:1431",
+      "name": null,
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        72.8246701,
+        3.4785167
+      ],
+      "id": "osm:node:2405923241",
+      "island_id": "island:49",
+      "name": null,
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        73.2992789,
+        2.3138325
+      ],
+      "id": "osm:node:3645465870",
+      "island_id": "island:1272",
+      "name": "Staff Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        73.297237,
+        2.3123582
+      ],
+      "id": "osm:node:3645470305",
+      "island_id": "island:1272",
+      "name": "Guest Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        73.1133261,
+        5.2362277
+      ],
+      "id": "osm:node:4016515266",
+      "island_id": "island:165",
+      "name": "Main Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        73.1129234,
+        5.2847401
+      ],
+      "id": "osm:node:4016518346",
+      "island_id": "island:140",
+      "name": null,
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        73.0727055,
+        5.1168134
+      ],
+      "id": "osm:node:4017107871",
+      "island_id": "island:192",
+      "name": null,
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        73.0804024,
+        5.1131986
+      ],
+      "id": "osm:node:4017107872",
+      "island_id": "island:192",
+      "name": null,
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        73.0884091,
+        5.205924
+      ],
+      "id": "osm:node:4017684127",
+      "island_id": "island:164",
+      "name": "Watersports Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        72.8303126,
+        3.4760197
+      ],
+      "id": "osm:node:4444066405",
+      "island_id": "island:1552",
+      "name": null,
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        72.801614,
+        3.4876535
+      ],
+      "id": "osm:node:4444066412",
+      "island_id": "island:115",
+      "name": null,
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        72.716186,
+        3.6170393
+      ],
+      "id": "osm:node:4455262886",
+      "island_id": "island:55",
+      "name": null,
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        72.7226634,
+        3.6168698
+      ],
+      "id": "osm:node:7007704582",
+      "island_id": "island:57",
+      "name": null,
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "ferry_terminal",
+      "coordinates": [
+        73.4893609,
+        3.9428039
+      ],
+      "id": "osm:node:8050459118",
+      "island_id": "island:1431",
+      "name": null,
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.08016358571429,
+        5.1133469428571425
+      ],
+      "id": "osm:way:1018795025",
+      "island_id": "island:192",
+      "name": "Soneva Fushi Jetty A",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.41351145,
+        4.2001712
+      ],
+      "id": "osm:way:1070677953",
+      "island_id": "island:1466",
+      "name": "Arrival Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.55552555384615,
+        4.296870446153846
+      ],
+      "id": "osm:way:1090811121",
+      "island_id": "island:1381",
+      "name": "Coral Nursery",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.0383391,
+        5.512586852631578
+      ],
+      "id": "osm:way:1121922605",
+      "island_id": "island:1072",
+      "name": "Over Water Villa Jetties",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.03769606666667,
+        5.512740533333333
+      ],
+      "id": "osm:way:1121922608",
+      "island_id": "island:1102",
+      "name": "Over Water Villa Jetties",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.03834798,
+        5.51241076
+      ],
+      "id": "osm:way:1121922609",
+      "island_id": "island:1072",
+      "name": "Over Water Villa Jetties",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.58890056666667,
+        5.273143849999999
+      ],
+      "id": "osm:way:1153881573",
+      "island_id": "island:807",
+      "name": "Sunrise Deck",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.58951682,
+        5.27526706
+      ],
+      "id": "osm:way:1153881582",
+      "island_id": "island:849",
+      "name": "Seaplane Pier",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.57813116,
+        4.31822782
+      ],
+      "id": "osm:way:1428789248",
+      "island_id": "island:1379",
+      "name": "Pier",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        72.96573341666667,
+        5.3885991
+      ],
+      "id": "osm:way:1487315038",
+      "island_id": "island:1105",
+      "name": "The Standard International Airport",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.50592021538462,
+        3.9722988846153844
+      ],
+      "id": "osm:way:151369771",
+      "island_id": "island:1435",
+      "name": "Naladhu Pier",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.16788736,
+        6.74871072
+      ],
+      "id": "osm:way:153103775",
+      "island_id": "island:684",
+      "name": "Hanimaadhoo Airport Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        72.93146847222222,
+        2.6811379333333334
+      ],
+      "id": "osm:way:1535134456",
+      "island_id": "island:278",
+      "name": "Main Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.5591652375,
+        4.292791620833333
+      ],
+      "id": "osm:way:170652389",
+      "island_id": "island:1381",
+      "name": "Jetty 2",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.55791914285714,
+        4.297129382857143
+      ],
+      "id": "osm:way:170652392",
+      "island_id": "island:1381",
+      "name": "Arrival / Depature Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.560917925,
+        4.296369116666667
+      ],
+      "id": "osm:way:170652411",
+      "island_id": "island:1381",
+      "name": "Jetty 1",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.55490447297298,
+        4.293840091891892
+      ],
+      "id": "osm:way:170652461",
+      "island_id": "island:1381",
+      "name": "Jetty 3",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.56000073333333,
+        4.291784533333334
+      ],
+      "id": "osm:way:170652489",
+      "island_id": "island:1381",
+      "name": "Jetty 2",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.0363289,
+        3.21197305
+      ],
+      "id": "osm:way:190323827",
+      "island_id": "island:325",
+      "name": "Main Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.5266944,
+        4.19042035
+      ],
+      "id": "osm:way:204916160",
+      "island_id": "island:1483",
+      "name": "Jetty № 10",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.5267121,
+        4.1902547
+      ],
+      "id": "osm:way:204916167",
+      "island_id": "island:1483",
+      "name": "Jetty № 9",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.52671655,
+        4.18992225
+      ],
+      "id": "osm:way:204916168",
+      "island_id": "island:1483",
+      "name": "Jetty № 7",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.52671575,
+        4.1900902
+      ],
+      "id": "osm:way:204916170",
+      "island_id": "island:1483",
+      "name": "Jetty № 8",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.0870052,
+        5.125246
+      ],
+      "id": "osm:way:204996993",
+      "island_id": "island:191",
+      "name": "Sonevafushi seaplane terminal",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.37943700000001,
+        5.884867657142857
+      ],
+      "id": "osm:way:206030413",
+      "island_id": "island:974",
+      "name": "Boat Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.37894218,
+        5.88677282
+      ],
+      "id": "osm:way:206030418",
+      "island_id": "island:974",
+      "name": "Jetty Platform",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.37918793333334,
+        5.88458055
+      ],
+      "id": "osm:way:206030424",
+      "island_id": "island:974",
+      "name": "Seaplane Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.5081519,
+        3.9904762333333337
+      ],
+      "id": "osm:way:380915302",
+      "island_id": "island:1464",
+      "name": "MTCC ferry jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.1539528891892,
+        6.849816775
+      ],
+      "id": "osm:way:446011657",
+      "island_id": "island:642",
+      "name": "Water Villas",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        72.82478155806452,
+        3.477727061290323
+      ],
+      "id": "osm:way:449744993",
+      "island_id": "island:49",
+      "name": "Holiday Island Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.51326055,
+        4.08432855
+      ],
+      "id": "osm:way:54106350",
+      "island_id": "island:1440",
+      "name": "Embudu main jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.22230412,
+        -0.5848270400000001
+      ],
+      "id": "osm:way:744596182",
+      "island_id": "island:1124",
+      "name": "Meedhoo Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.47212955,
+        3.9049175375
+      ],
+      "id": "osm:way:748347784",
+      "island_id": "island:1491",
+      "name": "Recreation Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.379059008,
+        5.8846426880000005
+      ],
+      "id": "osm:way:751442493",
+      "island_id": "island:974",
+      "name": "Arrival Pier",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.55974653333332,
+        4.2918086
+      ],
+      "id": "osm:way:753169615",
+      "island_id": "island:1381",
+      "name": "Jetty 2",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.5307887,
+        3.496384061538462
+      ],
+      "id": "osm:way:885702427",
+      "island_id": "island:1308",
+      "name": "arrival pier",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.4378634909091,
+        0.6731430636363637
+      ],
+      "id": "osm:way:970570047",
+      "island_id": "island:391",
+      "name": "Falhumaafushi DiveCenter Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.15285833333333,
+        6.850986311111111
+      ],
+      "id": "osm:way:99204999",
+      "island_id": "island:642",
+      "name": "Service Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.15217005384615,
+        6.846903592307692
+      ],
+      "id": "osm:way:99205003",
+      "island_id": "island:642",
+      "name": "Main Jetty",
+      "source": "OpenStreetMap"
+    },
+    {
+      "category": "pier",
+      "coordinates": [
+        73.5911062888889,
+        4.319911922222222
+      ],
+      "id": "osm:way:997082890",
+      "island_id": "island:1376",
+      "name": "Anlegesteg Cinnamon Hotel Resort",
+      "source": "OpenStreetMap"
+    }
+  ],
+  "route_relation_count": 7,
+  "routing_policy": "candidate_edges_are_disabled_until passenger service is verified",
+  "version": "routing-v1"
+}

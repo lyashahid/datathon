@@ -1,0 +1,894 @@
+{
+  "version": "facility-osm-query-v1",
+  "queried_at": "2026-10-13T10:09:47.196386Z",
+  "record_count": 40,
+  "island_query_count": 10,
+  "results": [
+    {
+      "island_key": "island:10",
+      "facility_ids": [
+        "facility:health:238"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](4.0719155,72.8865612,4.0753533,72.8885577);nwr[\"healthcare\"](4.0719155,72.8865612,4.0753533,72.8885577);nwr[\"office\"=\"educational_institution\"](4.0719155,72.8865612,4.0753533,72.8885577);nwr[\"building\"~\"^(hospital|clinic|school)$\"](4.0719155,72.8865612,4.0753533,72.8885577););out center tags;",
+      "overpass": {
+        "query_hash": "c9bfcab89750d675e82ed8afabcf61436d402e069bc939d18731c907eeeffc83",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "c9bfcab89750d675e82ed8afabcf61436d402e069bc939d18731c907eeeffc83",
+          "retrieved_at": "2026-10-13T09:47:17.486055Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "5e19a05a5c77cfa5357e27920c28bee9104e0bf079ce19a169032a2796222f44",
+          "expires_at": "2026-10-14T09:47:17.486085+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T09:45:09Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "node",
+              "id": 3683405365,
+              "lat": 4.0741588,
+              "lon": 72.8877951,
+              "tags": {
+                "amenity": "doctors",
+                "healthcare": "doctor"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:health:238": {
+          "query_hash": "909e003da35fa16d4145faa17ab6b7655a8b95c567d67d1c490559e2667a5065",
+          "cached": false,
+          "query": {
+            "q": "Maayafushi Clinic, Maayafushi, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.8865612,4.0753533,72.8885577,4.0719155",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "909e003da35fa16d4145faa17ab6b7655a8b95c567d67d1c490559e2667a5065",
+            "retrieved_at": "2026-10-13T09:47:17.488302Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Maayafushi+Clinic%2C+Maayafushi%2C+Maldives&viewbox=72.8865612%2C4.0753533%2C72.8885577%2C4.0719155",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1171",
+      "facility_ids": [
+        "facility:health:29"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](6.1387219,73.2857660,6.1693801,73.2942967);nwr[\"healthcare\"](6.1387219,73.2857660,6.1693801,73.2942967);nwr[\"office\"=\"educational_institution\"](6.1387219,73.2857660,6.1693801,73.2942967);nwr[\"building\"~\"^(hospital|clinic|school)$\"](6.1387219,73.2857660,6.1693801,73.2942967););out center tags;",
+      "overpass": {
+        "query_hash": "dc5ffcc522e3bf79dc304c7eb7bd0b2a6bc9c71dd61c5e517dfe0df908137a39",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "dc5ffcc522e3bf79dc304c7eb7bd0b2a6bc9c71dd61c5e517dfe0df908137a39",
+          "retrieved_at": "2026-10-13T09:49:01.119025Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "64afb3d54c7545b25cb786c051596b0cf6db928e1877bae59c0fd3a03a01792e",
+          "expires_at": "2026-10-14T09:49:01.119051+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T09:47:16Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:29": {
+          "query_hash": "da42dcefab6c10021d2e10c6a3842be437e0b39c2a742d7f0b88f7cecdf64463",
+          "cached": false,
+          "query": {
+            "q": "Pine Tree Medic Care Sh. Funadhoo, Funadhoo, Shaviyani, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.2857660,6.1693801,73.2942967,6.1387219",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "da42dcefab6c10021d2e10c6a3842be437e0b39c2a742d7f0b88f7cecdf64463",
+            "retrieved_at": "2026-10-13T09:49:01.123728Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Pine+Tree+Medic+Care+Sh.+Funadhoo%2C+Funadhoo%2C+Shaviyani%2C+Maldives&viewbox=73.2857660%2C6.1693801%2C73.2942967%2C6.1387219",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1294",
+      "facility_ids": [
+        "facility:health:252"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.5919643,73.4965205,3.5954822,73.4995458);nwr[\"healthcare\"](3.5919643,73.4965205,3.5954822,73.4995458);nwr[\"office\"=\"educational_institution\"](3.5919643,73.4965205,3.5954822,73.4995458);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.5919643,73.4965205,3.5954822,73.4995458););out center tags;",
+      "overpass": {
+        "query_hash": "2fa06cf27cc64e3151fa4e22a614b268dc90d0ac2f1a42c00baa230b15887978",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "2fa06cf27cc64e3151fa4e22a614b268dc90d0ac2f1a42c00baa230b15887978",
+          "retrieved_at": "2026-10-13T09:49:46.308805Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "7f54668443ccfb1715d09ec5358457a1e3533ed0369e13315a2f09f4aafd4fc2",
+          "expires_at": "2026-10-14T09:49:46.308842+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T09:48:21Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:252": {
+          "query_hash": "f394c079fbe6a646d05a0a6fa0f1b30afcdf7ac5b01929c981dd4a0e888c4707",
+          "cached": false,
+          "query": {
+            "q": "Alimatha Clinic, Alimathaa, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.4965205,3.5954822,73.4995458,3.5919643",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "f394c079fbe6a646d05a0a6fa0f1b30afcdf7ac5b01929c981dd4a0e888c4707",
+            "retrieved_at": "2026-10-13T09:49:46.310320Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Alimatha+Clinic%2C+Alimathaa%2C+Maldives&viewbox=73.4965205%2C3.5954822%2C73.4995458%2C3.5919643",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1342",
+      "facility_ids": [
+        "facility:health:247"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](4.6757452,73.5004928,4.6777339,73.5021225);nwr[\"healthcare\"](4.6757452,73.5004928,4.6777339,73.5021225);nwr[\"office\"=\"educational_institution\"](4.6757452,73.5004928,4.6777339,73.5021225);nwr[\"building\"~\"^(hospital|clinic|school)$\"](4.6757452,73.5004928,4.6777339,73.5021225););out center tags;",
+      "overpass": {
+        "query_hash": "8d5213b45862e051ebcb36bd05d7fa4f373a9edfd33fb28c65a8762a69188daf",
+        "cached": false,
+        "metadata": {
+          "error": "The read operation timed out"
+        },
+        "data": {
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:247": {
+          "query_hash": "fc9f50698939957402375e002c8dce45ac279b3881565fa5f3bac39e6bcd8dd9",
+          "cached": false,
+          "query": {
+            "q": "Kagi Clinic, Kagi, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.5004928,4.6777339,73.5021225,4.6757452",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "fc9f50698939957402375e002c8dce45ac279b3881565fa5f3bac39e6bcd8dd9",
+            "retrieved_at": "2026-10-13T09:55:36.000933Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Kagi+Clinic%2C+Kagi%2C+Maldives&viewbox=73.5004928%2C4.6777339%2C73.5021225%2C4.6757452",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1405",
+      "facility_ids": [
+        "facility:health:276"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](4.0948568,73.3970181,4.0995541,73.4026668);nwr[\"healthcare\"](4.0948568,73.3970181,4.0995541,73.4026668);nwr[\"office\"=\"educational_institution\"](4.0948568,73.3970181,4.0995541,73.4026668);nwr[\"building\"~\"^(hospital|clinic|school)$\"](4.0948568,73.3970181,4.0995541,73.4026668););out center tags;",
+      "overpass": {
+        "query_hash": "cf4f5e1fef1359943e3e7de32a2b1263dd484c641e633c0b83721a63b61bc0bc",
+        "cached": false,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "cf4f5e1fef1359943e3e7de32a2b1263dd484c641e633c0b83721a63b61bc0bc",
+          "retrieved_at": "2026-10-13T09:57:45.536230Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "6cd5d030471585b5a250148f332ae617d9025f08a1f887d1e518adbd566049c5",
+          "expires_at": "2026-10-14T09:57:45.536254+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T09:55:29Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:276": {
+          "query_hash": "36061f836311ee5eb9684b7667fca0702effa9f2bd90f17e952eac324dc99d5f",
+          "cached": false,
+          "query": {
+            "q": "Bolifushi Clinic, Bolifushi, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.3970181,4.0995541,73.4026668,4.0948568",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "36061f836311ee5eb9684b7667fca0702effa9f2bd90f17e952eac324dc99d5f",
+            "retrieved_at": "2026-10-13T09:57:45.537693Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Bolifushi+Clinic%2C+Bolifushi%2C+Maldives&viewbox=73.3970181%2C4.0995541%2C73.4026668%2C4.0948568",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:1552",
+      "facility_ids": [
+        "facility:health:230"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](3.4688091,72.8167023,3.4825836,72.8457307);nwr[\"healthcare\"](3.4688091,72.8167023,3.4825836,72.8457307);nwr[\"office\"=\"educational_institution\"](3.4688091,72.8167023,3.4825836,72.8457307);nwr[\"building\"~\"^(hospital|clinic|school)$\"](3.4688091,72.8167023,3.4825836,72.8457307););out center tags;",
+      "overpass": {
+        "query_hash": "58d3810a089db1a1e1305f21eb8f820b547dadad613baca63e10fdd93eb54806",
+        "cached": true,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "58d3810a089db1a1e1305f21eb8f820b547dadad613baca63e10fdd93eb54806",
+          "retrieved_at": "2026-10-13T06:43:28.858144Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "daf30f676f01a751bfbf9485c51165db5039fd93976b5a2edd1f83e18b7afc93",
+          "expires_at": "2026-10-14T06:43:28.858164+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T06:42:06Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "node",
+              "id": 12925283001,
+              "lat": 3.4763473,
+              "lon": 72.8381995,
+              "tags": {
+                "amenity": "pharmacy"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:health:230": {
+          "query_hash": "229007ef486f7b035ab129c6aa108a21bf239a0681bdcdcff3458764a629cb53",
+          "cached": false,
+          "query": {
+            "q": "Maamigili Clinic, Maamigili, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.8167023,3.4825836,72.8457307,3.4688091",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "229007ef486f7b035ab129c6aa108a21bf239a0681bdcdcff3458764a629cb53",
+            "retrieved_at": "2026-10-13T09:57:47.406380Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Maamigili+Clinic%2C+Maamigili%2C+Maldives&viewbox=72.8167023%2C3.4825836%2C72.8457307%2C3.4688091",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:188",
+      "facility_ids": [
+        "facility:health:244"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](5.1531040,73.1239785,5.1604492,73.1368074);nwr[\"healthcare\"](5.1531040,73.1239785,5.1604492,73.1368074);nwr[\"office\"=\"educational_institution\"](5.1531040,73.1239785,5.1604492,73.1368074);nwr[\"building\"~\"^(hospital|clinic|school)$\"](5.1531040,73.1239785,5.1604492,73.1368074););out center tags;",
+      "overpass": {
+        "query_hash": "9f01e593589ce2ba39630c058e44bdc50e12ada1c575976843bdac273018b77d",
+        "cached": false,
+        "metadata": {
+          "provider": "https://lz4.overpass-api.de/api/interpreter",
+          "query_sha256": "9f01e593589ce2ba39630c058e44bdc50e12ada1c575976843bdac273018b77d",
+          "retrieved_at": "2026-10-13T10:00:41.723769Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "1665cd7e090dfd11ec2a55db19971ebb9ead2d173a72e09228391622728c11b7",
+          "expires_at": "2026-10-14T10:00:41.723811+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T09:58:36Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "node",
+              "id": 8439398536,
+              "lat": 5.1578716,
+              "lon": 73.1349001,
+              "tags": {
+                "addr:city": "Dharavandhoo",
+                "addr:postcode": "06060",
+                "check_date": "2026-10-09",
+                "check_date:opening_hours": "2026-10-09",
+                "healthcare": "hospital",
+                "name": "Dharavandhoo Health Centre",
+                "opening_hours": "24/7",
+                "operator": "Ministry of Health",
+                "phone": "+9606600040"
+              }
+            },
+            {
+              "type": "node",
+              "id": 14260705902,
+              "lat": 5.1577748,
+              "lon": 73.1346493,
+              "tags": {
+                "amenity": "pharmacy",
+                "check_date": "2026-10-07",
+                "healthcare": "pharmacy",
+                "name": "Mazi Chemist-18"
+              }
+            },
+            {
+              "type": "node",
+              "id": 14267725202,
+              "lat": 5.1564975,
+              "lon": 73.1334513,
+              "tags": {
+                "amenity": "hospital",
+                "check_date": "2026-10-09",
+                "check_date:opening_hours": "2026-10-09",
+                "healthcare": "hospital",
+                "name": "Dharavandhoo Medical Centre",
+                "opening_hours": "Sa-Th 08:00-16:00"
+              }
+            },
+            {
+              "type": "way",
+              "id": 908907992,
+              "center": {
+                "lat": 5.1583648,
+                "lon": 73.1306926
+              },
+              "tags": {
+                "addr:city": "Dharavandhoo",
+                "addr:postcode": "06060",
+                "amenity": "school",
+                "grades": "1-12",
+                "image": "https://mapio.net/images-p/95793209.jpg",
+                "name": "Baa Atoll School",
+                "operator": "Ministry of Education",
+                "operator:type": "government",
+                "phone": "+9606600034",
+                "religion": "muslim"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:health:244": {
+          "query_hash": "c6964d9ccbf155f34f2748be53b8a2928bfd0cee6d13b6569d44df51db31158c",
+          "cached": false,
+          "query": {
+            "q": "My Lab Dharavandhoo Closed, Dharavandhoo, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.1239785,5.1604492,73.1368074,5.1531040",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "c6964d9ccbf155f34f2748be53b8a2928bfd0cee6d13b6569d44df51db31158c",
+            "retrieved_at": "2026-10-13T10:00:41.726249Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=My+Lab+Dharavandhoo+Closed%2C+Dharavandhoo%2C+Maldives&viewbox=73.1239785%2C5.1604492%2C73.1368074%2C5.1531040",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:243",
+      "facility_ids": [
+        "facility:health:293"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](2.9098174,72.8641931,2.9128857,72.8678704);nwr[\"healthcare\"](2.9098174,72.8641931,2.9128857,72.8678704);nwr[\"office\"=\"educational_institution\"](2.9098174,72.8641931,2.9128857,72.8678704);nwr[\"building\"~\"^(hospital|clinic|school)$\"](2.9098174,72.8641931,2.9128857,72.8678704););out center tags;",
+      "overpass": {
+        "query_hash": "460682fd4c057835fe2ea2ae090031b0e5a8bb08f1e0485c6fab92fd94c54959",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "460682fd4c057835fe2ea2ae090031b0e5a8bb08f1e0485c6fab92fd94c54959",
+          "retrieved_at": "2026-10-13T10:02:17.889062Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "33b435972368d386d78764fbdeca74c28d8701864c9269efd9382f8e61757640",
+          "expires_at": "2026-10-14T10:02:17.889082+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T10:00:35Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:293": {
+          "query_hash": "6d59301ed42e78bc711b3c22de4ef348913ab1a51a61243f1cfff71210b4ae26",
+          "cached": false,
+          "query": {
+            "q": "Vommuli Clinic, Vommuli, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "72.8641931,2.9128857,72.8678704,2.9098174",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "6d59301ed42e78bc711b3c22de4ef348913ab1a51a61243f1cfff71210b4ae26",
+            "retrieved_at": "2026-10-13T10:02:17.890442Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Vommuli+Clinic%2C+Vommuli%2C+Maldives&viewbox=72.8641931%2C2.9128857%2C72.8678704%2C2.9098174",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:391",
+      "facility_ids": [
+        "facility:health:257"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](0.6679952,73.4375559,0.6757424,73.4393248);nwr[\"healthcare\"](0.6679952,73.4375559,0.6757424,73.4393248);nwr[\"office\"=\"educational_institution\"](0.6679952,73.4375559,0.6757424,73.4393248);nwr[\"building\"~\"^(hospital|clinic|school)$\"](0.6679952,73.4375559,0.6757424,73.4393248););out center tags;",
+      "overpass": {
+        "query_hash": "8e33076c28c3f69675e5406b4e3b24a3d021eaab5b6bda20d72f3f29fdd2944b",
+        "cached": false,
+        "metadata": {
+          "error": "The read operation timed out"
+        },
+        "data": {
+          "elements": []
+        }
+      },
+      "nominatim": {
+        "facility:health:257": {
+          "query_hash": "f565fc2295047ebb339eb6f545262856a82bf2b9cf7c6e99c40a7be76b63f6f0",
+          "cached": false,
+          "query": {
+            "q": "The Residence Maldives at Falhumaafushi Clinic, Falhumaafushi, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.4375559,0.6757424,73.4393248,0.6679952",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "f565fc2295047ebb339eb6f545262856a82bf2b9cf7c6e99c40a7be76b63f6f0",
+            "retrieved_at": "2026-10-13T10:08:10.121193Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=The+Residence+Maldives+at+Falhumaafushi+Clinic%2C+Falhumaafushi%2C+Maldives&viewbox=73.4375559%2C0.6757424%2C73.4393248%2C0.6679952",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    },
+    {
+      "island_key": "island:680",
+      "facility_ids": [
+        "facility:health:275"
+      ],
+      "query": "[out:json][timeout:30];(nwr[\"amenity\"~\"^(hospital|clinic|doctors|school|pharmacy)$\"](6.6121754,73.0614917,6.6342107,73.0758299);nwr[\"healthcare\"](6.6121754,73.0614917,6.6342107,73.0758299);nwr[\"office\"=\"educational_institution\"](6.6121754,73.0614917,6.6342107,73.0758299);nwr[\"building\"~\"^(hospital|clinic|school)$\"](6.6121754,73.0614917,6.6342107,73.0758299););out center tags;",
+      "overpass": {
+        "query_hash": "89ceee151df65ebc0ee00ae8f8e4ed3daddced5fac9f955eee1e60af4e394b2d",
+        "cached": false,
+        "metadata": {
+          "provider": "https://overpass-api.de/api/interpreter",
+          "query_sha256": "89ceee151df65ebc0ee00ae8f8e4ed3daddced5fac9f955eee1e60af4e394b2d",
+          "retrieved_at": "2026-10-13T10:09:46.223718Z",
+          "http_status": 200,
+          "content_encoding": null,
+          "response_sha256": "0c0e4eab750158f1ba0bad077f3a64a3f9fdeab197988109366d5fba4eb30a4a",
+          "expires_at": "2026-10-14T10:09:46.223761+00:00"
+        },
+        "data": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62.11 87bfad18",
+          "osm3s": {
+            "timestamp_osm_base": "2026-10-13T10:08:46Z",
+            "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+          },
+          "elements": [
+            {
+              "type": "node",
+              "id": 4735485322,
+              "lat": 6.6268663,
+              "lon": 73.0702023,
+              "tags": {
+                "addr:street": "Ameeneemagu",
+                "amenity": "school",
+                "check_date": "2024-12-01",
+                "name": "Jalaluddin School",
+                "name:en": "Jalaluddin School",
+                "phone": "+9606528815",
+                "wikidata": "Q6125812",
+                "wikipedia": "en:Jalaluddin School"
+              }
+            },
+            {
+              "type": "node",
+              "id": 4735490021,
+              "lat": 6.6259477,
+              "lon": 73.0702311,
+              "tags": {
+                "addr:postcode": "02110",
+                "addr:street": "Ameenee Magu",
+                "amenity": "school",
+                "name": "HDh.Atoll Education Centre",
+                "name:dv": "ހދ. އަތޮޅު ތައުލީމީ މަރުކަޒު",
+                "name:en": "HDh.Atoll Education Centre",
+                "operator": "Government of Maldives",
+                "operator:type": "government",
+                "religion": "muslim",
+                "website": "http://hdhaec.edu.mv/",
+                "wikidata": "Q19458793",
+                "wikipedia": "en:Haa Dhaalu Atoll Education Centre"
+              }
+            },
+            {
+              "type": "node",
+              "id": 4823302223,
+              "lat": 6.6176788,
+              "lon": 73.0690075,
+              "tags": {
+                "addr:postcode": "02110",
+                "amenity": "hospital",
+                "check_date": "2024-11-30",
+                "healthcare": "hospital",
+                "healthcare:speciality": "general;blood_check",
+                "name": "Kulhudhuffushi Regional Hospital",
+                "opening_hours": "24/7",
+                "phone": "+960 6528864"
+              }
+            },
+            {
+              "type": "node",
+              "id": 4823463622,
+              "lat": 6.6174865,
+              "lon": 73.0691417,
+              "tags": {
+                "addr:postcode": "02110",
+                "amenity": "pharmacy",
+                "dispensing": "yes",
+                "drive_through": "no",
+                "healthcare": "pharmacy",
+                "name": "Asrafee chemist",
+                "opening_hours": "Mo-Su 09:00-00:00"
+              }
+            },
+            {
+              "type": "node",
+              "id": 4824126825,
+              "lat": 6.6152056,
+              "lon": 73.0703274,
+              "tags": {
+                "addr:postcode": "02110",
+                "addr:street": "Ameenee Magu",
+                "amenity": "school",
+                "check_date": "2024-11-30",
+                "name": "Afeefuddin School",
+                "opening_hours": "Su-Th 06:45-18:00"
+              }
+            },
+            {
+              "type": "node",
+              "id": 12388769917,
+              "lat": 6.6176974,
+              "lon": 73.0694102,
+              "tags": {
+                "amenity": "pharmacy",
+                "dispensing": "yes",
+                "healthcare": "pharmacy",
+                "name": "Mazi Chemist Pharmacy",
+                "opening_hours": "Mo-Su,PH 08:00-23:00"
+              }
+            },
+            {
+              "type": "node",
+              "id": 12388769921,
+              "lat": 6.6181484,
+              "lon": 73.0689269,
+              "tags": {
+                "amenity": "pharmacy",
+                "dispensing": "yes",
+                "healthcare": "pharmacy",
+                "name": "STO Pharmacy"
+              }
+            },
+            {
+              "type": "node",
+              "id": 12388814780,
+              "lat": 6.6184337,
+              "lon": 73.0689836,
+              "tags": {
+                "amenity": "pharmacy",
+                "healthcare": "pharmacy",
+                "name": "Akarakara Pharmacy"
+              }
+            },
+            {
+              "type": "way",
+              "id": 784654961,
+              "center": {
+                "lat": 6.6261381,
+                "lon": 73.0703697
+              },
+              "tags": {
+                "building": "school"
+              }
+            },
+            {
+              "type": "way",
+              "id": 784655397,
+              "center": {
+                "lat": 6.6148313,
+                "lon": 73.0698654
+              },
+              "tags": {
+                "building": "school",
+                "name": "Afeefudheen School hall",
+                "nohousenumber": "yes"
+              }
+            },
+            {
+              "type": "way",
+              "id": 784655398,
+              "center": {
+                "lat": 6.6152042,
+                "lon": 73.0704031
+              },
+              "tags": {
+                "building": "school",
+                "nohousenumber": "yes"
+              }
+            },
+            {
+              "type": "way",
+              "id": 784655399,
+              "center": {
+                "lat": 6.6152289,
+                "lon": 73.0700021
+              },
+              "tags": {
+                "building": "school",
+                "nohousenumber": "yes"
+              }
+            },
+            {
+              "type": "way",
+              "id": 784655703,
+              "center": {
+                "lat": 6.6172008,
+                "lon": 73.0685405
+              },
+              "tags": {
+                "building": "hospital"
+              }
+            },
+            {
+              "type": "way",
+              "id": 784655704,
+              "center": {
+                "lat": 6.6172155,
+                "lon": 73.0683058
+              },
+              "tags": {
+                "building": "hospital"
+              }
+            },
+            {
+              "type": "way",
+              "id": 784655705,
+              "center": {
+                "lat": 6.6171967,
+                "lon": 73.0684345
+              },
+              "tags": {
+                "building": "hospital"
+              }
+            },
+            {
+              "type": "way",
+              "id": 784655706,
+              "center": {
+                "lat": 6.617196,
+                "lon": 73.0687087
+              },
+              "tags": {
+                "building": "hospital"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1160038794,
+              "center": {
+                "lat": 6.6219375,
+                "lon": 73.0751336
+              },
+              "tags": {
+                "building": "school"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1160038797,
+              "center": {
+                "lat": 6.6178251,
+                "lon": 73.0679023
+              },
+              "tags": {
+                "building": "hospital",
+                "name": "Ufanveni"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1160038798,
+              "center": {
+                "lat": 6.6178818,
+                "lon": 73.0685333
+              },
+              "tags": {
+                "building": "hospital",
+                "name": "Kulhudhuffushi Regional Hospital"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1160038799,
+              "center": {
+                "lat": 6.6180125,
+                "lon": 73.0681105
+              },
+              "tags": {
+                "building": "hospital"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1339309388,
+              "center": {
+                "lat": 6.617695,
+                "lon": 73.0694066
+              },
+              "tags": {
+                "amenity": "pharmacy",
+                "building": "yes",
+                "healthcare": "pharmacy",
+                "name": "Mazi Chemist Pharmacy",
+                "opening_hours": "Mo-Su,PH 08:00-23:00"
+              }
+            },
+            {
+              "type": "way",
+              "id": 1548369800,
+              "center": {
+                "lat": 6.6149498,
+                "lon": 73.0701869
+              },
+              "tags": {
+                "amenity": "school",
+                "education": "school"
+              }
+            },
+            {
+              "type": "relation",
+              "id": 7781248,
+              "center": {
+                "lat": 6.6266941,
+                "lon": 73.0704593
+              },
+              "tags": {
+                "building": "school",
+                "type": "multipolygon"
+              }
+            }
+          ]
+        }
+      },
+      "nominatim": {
+        "facility:health:275": {
+          "query_hash": "8f1eb47a5393b824004390205070aec12c836da8113ac5283d1e5279616cb972",
+          "cached": false,
+          "query": {
+            "q": "Vital Care Kulhudhuffushi Anex, Kulhudhuffushi, Maldives",
+            "format": "jsonv2",
+            "addressdetails": "1",
+            "namedetails": "1",
+            "limit": "10",
+            "viewbox": "73.0614917,6.6342107,73.0758299,6.6121754",
+            "bounded": "1"
+          },
+          "metadata": {
+            "provider": "https://nominatim.openstreetmap.org/search",
+            "query_sha256": "8f1eb47a5393b824004390205070aec12c836da8113ac5283d1e5279616cb972",
+            "retrieved_at": "2026-10-13T10:09:46.226313Z",
+            "url": "https://nominatim.openstreetmap.org/search?addressdetails=1&bounded=1&format=jsonv2&limit=10&namedetails=1&q=Vital+Care+Kulhudhuffushi+Anex%2C+Kulhudhuffushi%2C+Maldives&viewbox=73.0614917%2C6.6342107%2C73.0758299%2C6.6121754",
+            "http_status": 200,
+            "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "data": []
+        }
+      }
+    }
+  ]
+}

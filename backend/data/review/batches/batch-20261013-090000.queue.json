@@ -1,0 +1,616 @@
+{
+  "version": "facility-review-queue-v1",
+  "created_at": "2026-10-13T08:34:11.332254Z",
+  "batch_id": "batch-20261013-090000",
+  "batch_size": 10,
+  "known_review_count": 332,
+  "available_unresolved_count": 370,
+  "jobs": [
+    {
+      "job_id": "batch-20261013-090000-01",
+      "facility_ids": [
+        "facility:school:587",
+        "facility:school:588",
+        "facility:school:589",
+        "facility:school:590",
+        "facility:school:593",
+        "facility:school:594",
+        "facility:school:595",
+        "facility:school:596",
+        "facility:school:597",
+        "facility:school:598"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:school:587",
+          "official_name": "Gaadhiffushi School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/587",
+          "official_island": "Gaadhiffushi",
+          "official_atoll": "Thaa",
+          "official_island_id": "island:1254",
+          "official_attributes": {
+            "address": "Gaadhiffushi School, Ghaazee Magu, Th. Gaadhiffushi, 14090"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:588",
+          "official_name": "L. Atoll Education Centre",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/588",
+          "official_island": "Fonadhoo",
+          "official_atoll": "Laamu",
+          "official_island_id": "island:704",
+          "official_attributes": {
+            "address": "L. Atoll Education Centre , Siraajudheen Magu, L. Fonadhoo, 15080"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:589",
+          "official_name": "L. Atoll School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/589",
+          "official_island": "Maabaidhoo",
+          "official_atoll": "Laamu",
+          "official_island_id": "island:720",
+          "official_attributes": {
+            "address": "L. Atoll School, Thauleemee Higun, L. Maabaidhoo, 15030"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:590",
+          "official_name": "Maavashu School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/590",
+          "official_island": "Maavah",
+          "official_atoll": "Laamu",
+          "official_island_id": "island:717",
+          "official_attributes": {
+            "address": "Maavashu School, Roashanee Magu, L. Maavah"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:593",
+          "official_name": "Kunahandhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/593",
+          "official_island": "Kunahandhoo",
+          "official_atoll": "Laamu",
+          "official_island_id": "island:699",
+          "official_attributes": {
+            "address": "Kunahandhoo School, Javaahiru Higun, L. Kunahandhoo, 15120"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:594",
+          "official_name": "Isdhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/594",
+          "official_island": "Isdhoo",
+          "official_atoll": "Laamu",
+          "official_island_id": "island:723",
+          "official_attributes": {
+            "address": "Isdhoo School, Ahmadheemagu , L. Isdhoo, 15011"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:595",
+          "official_name": "kalaidhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/595",
+          "official_island": "Kalaidhoo",
+          "official_atoll": "Laamu",
+          "official_island_id": "island:746",
+          "official_attributes": {
+            "address": "Kalaidhoo School, Boduthakurufaanu Magu, L. Kalaidhoo, 15012"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:596",
+          "official_name": "Mundoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/596",
+          "official_island": "Mundoo",
+          "official_atoll": "Laamu",
+          "official_island_id": "island:691",
+          "official_attributes": {
+            "address": "Mundoo School, Bodu Magu, L. Mundoo, 15042"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:597",
+          "official_name": "L. Maamendhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/597",
+          "official_island": "Maamendhoo",
+          "official_atoll": "Laamu",
+          "official_island_id": "island:702",
+          "official_attributes": {
+            "address": "L. Maamendhoo School, Faalan Magu, L. Maamendhoo, 15100"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:598",
+          "official_name": "Dhanbidhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/598",
+          "official_island": "Dhanbidhoo",
+          "official_atoll": "Laamu",
+          "official_island_id": "island:753",
+          "official_attributes": {
+            "address": "Dhanbidhoo School, Warudhiyya Hingun, L. Dhanbidhoo, 15020"
+          },
+          "current_status": "island_context_only"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-090000-01.prompt.md"
+    },
+    {
+      "job_id": "batch-20261013-090000-02",
+      "facility_ids": [
+        "facility:school:599",
+        "facility:school:600",
+        "facility:school:602",
+        "facility:school:603",
+        "facility:school:604",
+        "facility:school:605",
+        "facility:school:608",
+        "facility:school:609",
+        "facility:school:610",
+        "facility:school:611"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:school:599",
+          "official_name": "Mukurimagu School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/599",
+          "official_island": "Gan",
+          "official_atoll": "Laamu",
+          "official_island_id": "island:692",
+          "official_attributes": {
+            "address": "Mukurimagu School, Mukurimagu School, L. Gan, 15061"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:school:600",
+          "official_name": "Ihadhdhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/600",
+          "official_island": "Gan",
+          "official_atoll": "Laamu",
+          "official_island_id": "island:692",
+          "official_attributes": {
+            "address": "Ihaddhoo School, Ijuthimaaee Hin'Gun, Mathi-Dhekunu, L. Gan 15061"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:school:602",
+          "official_name": "GA. Atoll School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/602",
+          "official_island": "Kolamaafushi",
+          "official_atoll": "Gaafu Alifu",
+          "official_island_id": "island:385",
+          "official_attributes": {
+            "address": "GA. Atoll School, Rahdhebaimagu, GA. Kolamaafushi, 16010"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:603",
+          "official_name": "GA. Nilandhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/603",
+          "official_island": "Nilandhoo",
+          "official_atoll": "Gaafu Alifu",
+          "official_island_id": "island:413",
+          "official_attributes": {
+            "address": "GA. Nilandhoo School, GA. Nilandhoo, 16040"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:604",
+          "official_name": "Kondey School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/604",
+          "official_island": "Kondey",
+          "official_atoll": "Gaafu Alifu",
+          "official_island_id": "island:369",
+          "official_attributes": {
+            "address": "Kondey School, Mohamed Ameen Magu, GA. Kondey, 16070"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:605",
+          "official_name": "Kanduhulhudhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/605",
+          "official_island": "Kanduhulhudhoo",
+          "official_atoll": "Gaafu Alifu",
+          "official_island_id": "island:399",
+          "official_attributes": {
+            "address": "Kanduhulhudhoo School, GA.Kanduhulhudhoo, 16100"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:608",
+          "official_name": "Sulthan Mohamed School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/608",
+          "official_island": "Dhevvadhoo",
+          "official_atoll": "Gaafu Alifu",
+          "official_island_id": "island:368",
+          "official_attributes": {
+            "address": "Sulthan Mohamed School, Rasgefaanu Magu, Ga. Dhevvadhoo, 16060"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:609",
+          "official_name": "Gemanafushi School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/609",
+          "official_island": "Gemanafushi",
+          "official_atoll": "Gaafu Alifu",
+          "official_island_id": "island:415",
+          "official_attributes": {
+            "address": "Gemanafushi School, Ameenee Magu, Ga. Gemanafushi, 16090"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:610",
+          "official_name": "GDh. Atoll Education Centre",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/610",
+          "official_island": "Thinadhoo",
+          "official_atoll": "Gaafu Dhaalu",
+          "official_island_id": "island:470",
+          "official_attributes": {
+            "address": "GDh. Atoll Education Centre, Rannabandeyri Magu, GDh. Thinadhoo, 17100"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:611",
+          "official_name": "GDh. Atoll School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/611",
+          "official_island": "Gadhdhoo",
+          "official_atoll": "Gaafu Dhaalu",
+          "official_island_id": "island:458",
+          "official_attributes": {
+            "address": "GDh. Atoll School, GDh. Gadhdhoo, 17040"
+          },
+          "current_status": "island_context_only"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-090000-02.prompt.md"
+    },
+    {
+      "job_id": "batch-20261013-090000-03",
+      "facility_ids": [
+        "facility:school:612",
+        "facility:school:613",
+        "facility:school:614",
+        "facility:school:615",
+        "facility:school:618",
+        "facility:school:620",
+        "facility:school:631",
+        "facility:school:634",
+        "facility:school:636",
+        "facility:school:639"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:school:612",
+          "official_name": "Aboobakuru School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/612",
+          "official_island": "Thinadhoo",
+          "official_atoll": "Gaafu Dhaalu",
+          "official_island_id": "island:470",
+          "official_attributes": {
+            "address": "Aboobakuru School, Ghaazee Magu, GDh. Thinadhoo, 17100"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:613",
+          "official_name": "Hoadedhdhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/613",
+          "official_island": "Hoan'dehdhoo",
+          "official_atoll": "Gaafu Dhaalu",
+          "official_island_id": "island:483",
+          "official_attributes": {
+            "address": "Hoadedhdhoo School, Dhiraagu Magu, GDh. Hoadedhdhoo, 17020"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:614",
+          "official_name": "Nadella School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/614",
+          "official_island": "Nadellaa",
+          "official_atoll": "Gaafu Dhaalu",
+          "official_island_id": "island:545",
+          "official_attributes": {
+            "address": "Nadella School, Dhumburimaagoalhi, GDh. Nadella, 17030"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:615",
+          "official_name": "Rathafandhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/615",
+          "official_island": "Rathafandhoo",
+          "official_atoll": "Gaafu Dhaalu",
+          "official_island_id": "island:584",
+          "official_attributes": {
+            "address": "Rathafandhoo School, Ameenee Magu, GDh. Rathafandhoo, 17050"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:618",
+          "official_name": "Huvadhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/618",
+          "official_island": "Faresmaathodaa",
+          "official_atoll": "Gaafu Dhaalu",
+          "official_island_id": "island:595",
+          "official_attributes": {
+            "address": "Huvadhoo School, Daisy Hingun, GDh. Faresmathoda, 17090"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:620",
+          "official_name": "Thinadhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/620",
+          "official_island": "Thinadhoo",
+          "official_atoll": "Gaafu Dhaalu",
+          "official_island_id": "island:470",
+          "official_attributes": {
+            "address": "Thinadhoo School, Miskith Magu, GDh. Thinadhoo, 17100"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:631",
+          "official_name": "Feydhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/631",
+          "official_island": "Feydhoo",
+          "official_atoll": "Seenu",
+          "official_island_id": "island:1129",
+          "official_attributes": {
+            "address": "Feydhoo School, Orchid Magu, S. Feydhoo, 19040"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:634",
+          "official_name": "Jamaluddin School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/634",
+          "official_island": "Male'",
+          "official_atoll": "Kaafu",
+          "official_island_id": "island:1443",
+          "official_attributes": {
+            "address": "Jamaluddin School, Rahdhebai Magu, K. Male', 21067"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:school:636",
+          "official_name": "Thaajuddeen school",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/636",
+          "official_island": "Male'",
+          "official_atoll": "Kaafu",
+          "official_island_id": "island:1443",
+          "official_attributes": {
+            "address": "Thaajuddeen School, Thaajuddeen Hingun, K. Male', 20398"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:school:639",
+          "official_name": "Majeediyya School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/639",
+          "official_island": "Male'",
+          "official_atoll": "Kaafu",
+          "official_island_id": "island:1443",
+          "official_attributes": {
+            "address": "Majeediyya School, Ameeru Ahmed Magu, K. Male', 20078"
+          },
+          "current_status": "osm_match_review_required"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-090000-03.prompt.md"
+    },
+    {
+      "job_id": "batch-20261013-090000-04",
+      "facility_ids": [
+        "facility:school:641",
+        "facility:school:647",
+        "facility:school:648",
+        "facility:school:649",
+        "facility:school:651",
+        "facility:school:654",
+        "facility:health:592",
+        "facility:health:753",
+        "facility:health:1",
+        "facility:health:1001"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:school:641",
+          "official_name": "Hiriya School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/641",
+          "official_island": "Male'",
+          "official_atoll": "Kaafu",
+          "official_island_id": "island:1443",
+          "official_attributes": {
+            "address": "Hiriya School, Kan'Baa Aisaarani Hingun, K. Male', 20339"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:school:647",
+          "official_name": "Huravee School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/647",
+          "official_island": "Hulhumale'",
+          "official_atoll": "Kaafu",
+          "official_island_id": "island:1442",
+          "official_attributes": {
+            "address": "Huravee School, HM LOT 11402 (N1 School), Reethigas Magu, K. Hulhumale', 23500"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:school:648",
+          "official_name": "I'zzudhdheen School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/648",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "address": ""
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:school:649",
+          "official_name": "Mohamed Qasim Preschool",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/649",
+          "official_island": "Hulhumale'",
+          "official_atoll": "Kaafu",
+          "official_island_id": "island:1442",
+          "official_attributes": {
+            "address": "Mohamed Qasim Preschool, Chanbeylee Magu, K. Hulhumale', 23000"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:school:651",
+          "official_name": "S'alaah'udhdheen School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/651",
+          "official_island": "Hulhumale'",
+          "official_atoll": "Kaafu",
+          "official_island_id": "island:1442",
+          "official_attributes": {
+            "address": "S'alaah'udhdheen School, Feyrugas Magu, K. Hulhumale', Phase 2, 24000"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:654",
+          "official_name": "Male' Vocational High School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/654",
+          "official_island": "Malé",
+          "official_atoll": null,
+          "official_island_id": "island:1443",
+          "official_attributes": {
+            "address": ""
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:592",
+          "official_name": "Gaafu Alifu Atoll Hospital",
+          "category": "hospital",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": "Gaafu Alifu",
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Hospital Grade 2"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:753",
+          "official_name": "Haa Alifu Atoll Hospital",
+          "category": "hospital",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": "Haa Alifu",
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Hospital Grade 2"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:1",
+          "official_name": "Blu Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Huruelhi Investment Pvt Ltd",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:health:1001",
+          "official_name": "Centara Clinic",
+          "category": "clinic",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "R. M. L. Leisure Pvt Ltd",
+            "status": "open",
+            "facility_level": "General Clinic"
+          },
+          "current_status": "osm_match_review_required"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-090000-04.prompt.md"
+    }
+  ],
+  "status": "completed",
+  "completed_at": "2026-10-13T09:18:40.048750Z"
+}

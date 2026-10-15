@@ -1,0 +1,362 @@
+{
+  "version": "facility-review-validated-v1",
+  "validated_at": "2026-10-13T11:00:00Z",
+  "job_id": "deleg_7b886747",
+  "errors": [],
+  "records": [
+    {
+      "facility_id": "facility:health:704",
+      "official_name": "L.Hithadhoo Health Center",
+      "category": "health_center",
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "official_source_url": "https://hems.health.gov.mv/establishments?page=22",
+      "discovery_urls": [
+        "https://hems.health.gov.mv/establishments?page=22",
+        "http://165.22.219.18/category/9-news/article/424-l-hithadhoo-health-center-celebrates-50th-anniversary",
+        "https://www.openstreetmap.org/way/1126434800"
+      ],
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:1126434800",
+          "osm_url": "https://www.openstreetmap.org/way/1126434800",
+          "name": "Laamu Hithadhoo Health Centre",
+          "island": "Hithadhoo",
+          "coordinates": [
+            73.38890465,
+            1.7999891
+          ],
+          "tags": {
+            "addr:city": "Hithadhoo",
+            "addr:postcode": "15110",
+            "healthcare": "hospital",
+            "healthcare:speciality": "gynaecology;general;paediatrics;vaccination;radiology;community",
+            "name": "Laamu Hithadhoo Health Centre",
+            "operator": "Ministry of Health, Rep. of Maldives"
+          },
+          "status": "live"
+        }
+      ],
+      "evidence_note": "Official HEMS identity and Laamu Hithadhoo operator/news evidence agree with the live OSM named health-centre object, address, operator and compatible hospital healthcare tag.",
+      "validation": {
+        "approved": true,
+        "checks": {
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        }
+      },
+      "selected_candidate": {
+        "osm_object_id": "osm:way:1126434800",
+        "osm_url": "https://www.openstreetmap.org/way/1126434800",
+        "name": "Laamu Hithadhoo Health Centre",
+        "island": "Hithadhoo",
+        "coordinates": [
+          73.38890465,
+          1.7999891
+        ],
+        "tags": {
+          "addr:city": "Hithadhoo",
+          "addr:postcode": "15110",
+          "healthcare": "hospital",
+          "healthcare:speciality": "gynaecology;general;paediatrics;vaccination;radiology;community",
+          "name": "Laamu Hithadhoo Health Centre",
+          "operator": "Ministry of Health, Rep. of Maldives"
+        }
+      },
+      "live_verification": {
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/way/1126434800/full.json"
+      },
+      "derived_tags": {
+        "addr:city": "Hithadhoo",
+        "addr:postcode": "15110",
+        "healthcare": "hospital",
+        "healthcare:speciality": "gynaecology;general;paediatrics;vaccination;radiology;community",
+        "name": "Laamu Hithadhoo Health Centre",
+        "operator": "Ministry of Health, Rep. of Maldives"
+      },
+      "derived_coordinates": [
+        73.38890465,
+        1.7999891
+      ]
+    },
+    {
+      "facility_id": "facility:school:494",
+      "official_name": "Fainu School",
+      "category": "school",
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/494",
+      "discovery_urls": [
+        "https://explore.mv/schools/fainu-school",
+        "https://jobcenter.mv/en/employers/fainu-school",
+        "https://www.openstreetmap.org/node/13586575555",
+        "https://www.openstreetmap.org/node/13586575556"
+      ],
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:13586575555",
+          "osm_url": "https://www.openstreetmap.org/node/13586575555",
+          "name": "Fainu School",
+          "island": "Fainu",
+          "coordinates": [
+            73.036115,
+            5.4640163
+          ],
+          "tags": {
+            "name": "Fainu School",
+            "office": "educational_institution"
+          },
+          "status": "live"
+        }
+      ],
+      "evidence_note": "The official Ministry page places Fainu School at Saharaa Magu, R. Fainu. The live primary node is on the same island and carries the exact school name and alternate facility-level education category. Node 13586575556 is retained as a supporting campus component.",
+      "validation": {
+        "approved": true,
+        "checks": {
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        }
+      },
+      "selected_candidate": {
+        "osm_object_id": "osm:node:13586575555",
+        "osm_url": "https://www.openstreetmap.org/node/13586575555",
+        "name": "Fainu School",
+        "island": "Fainu",
+        "coordinates": [
+          73.036115,
+          5.4640163
+        ],
+        "tags": {
+          "name": "Fainu School",
+          "office": "educational_institution"
+        }
+      },
+      "live_verification": {
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/node/13586575555.json"
+      },
+      "derived_tags": {
+        "name": "Fainu School",
+        "office": "educational_institution"
+      },
+      "derived_coordinates": [
+        73.036115,
+        5.4640163
+      ]
+    },
+    {
+      "facility_id": "facility:school:505",
+      "official_name": "Maduvvaree School",
+      "category": "school",
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/505",
+      "discovery_urls": [
+        "https://hoteliermaldives.com/niva-dhigali-hosts-latest-mati-discover-tourism-sessions-for-raa-atoll-students",
+        "https://www.openstreetmap.org/way/849713608"
+      ],
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:849713608",
+          "osm_url": "https://www.openstreetmap.org/way/849713608",
+          "name": "Maduvvari School",
+          "island": "Maduvvari",
+          "coordinates": [
+            72.8964839,
+            5.48522705
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Maduvvari School"
+          },
+          "status": "live"
+        }
+      ],
+      "evidence_note": "The Ministry page identifies Maduvvaree School on R. Maduvvari. The live OSM way is on that island, is tagged building=school and carries the documented Maduvvari spelling variant.",
+      "validation": {
+        "approved": true,
+        "checks": {
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        }
+      },
+      "selected_candidate": {
+        "osm_object_id": "osm:way:849713608",
+        "osm_url": "https://www.openstreetmap.org/way/849713608",
+        "name": "Maduvvari School",
+        "island": "Maduvvari",
+        "coordinates": [
+          72.8964839,
+          5.48522705
+        ],
+        "tags": {
+          "building": "school",
+          "name": "Maduvvari School"
+        }
+      },
+      "live_verification": {
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/way/849713608/full.json"
+      },
+      "derived_tags": {
+        "building": "school",
+        "name": "Maduvvari School"
+      },
+      "derived_coordinates": [
+        72.8964839,
+        5.48522705
+      ]
+    },
+    {
+      "facility_id": "facility:school:506",
+      "official_name": "Duvaafaru Primary School",
+      "category": "school",
+      "decision": "reviewed_osm_match",
+      "confidence": "high",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/506",
+      "discovery_urls": [
+        "https://www.statisticsmaldives.gov.mv/yearbook/2021/wp-content/uploads/sites/8/2021/07/7.14.pdf",
+        "https://www.openstreetmap.org/way/1038348911"
+      ],
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:1038348911",
+          "osm_url": "https://www.openstreetmap.org/way/1038348911",
+          "name": "Dhuvaafaru Primary School",
+          "island": "Dhuvaafaru",
+          "coordinates": [
+            73.04196731,
+            5.62576592
+          ],
+          "tags": {
+            "building": "yes",
+            "name": "Dhuvaafaru Primary School"
+          },
+          "status": "live"
+        }
+      ],
+      "evidence_note": "The Ministry page identifies Duvaafaru Primary School at Dhandehelu Magu, R. Dhuvaafaru. The live OSM way is on the same island and carries the exact name with the documented Duvaafaru/Dhuvaafaru spelling variant.",
+      "validation": {
+        "approved": true,
+        "checks": {
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        }
+      },
+      "selected_candidate": {
+        "osm_object_id": "osm:way:1038348911",
+        "osm_url": "https://www.openstreetmap.org/way/1038348911",
+        "name": "Dhuvaafaru Primary School",
+        "island": "Dhuvaafaru",
+        "coordinates": [
+          73.04196731,
+          5.62576592
+        ],
+        "tags": {
+          "building": "yes",
+          "name": "Dhuvaafaru Primary School"
+        }
+      },
+      "live_verification": {
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/way/1038348911/full.json"
+      },
+      "derived_tags": {
+        "building": "yes",
+        "name": "Dhuvaafaru Primary School"
+      },
+      "derived_coordinates": [
+        73.04196731,
+        5.62576592
+      ]
+    },
+    {
+      "facility_id": "facility:health:775",
+      "official_name": "Image center",
+      "category": "clinic",
+      "decision": "osm_provisional_review_required",
+      "confidence": "medium",
+      "official_source_url": "https://hems.health.gov.mv/feedback/775",
+      "discovery_urls": [
+        "https://www.aasandha.mv/empanelled-facilities-local?page=12",
+        "https://www.maldivesyp.com/company/1910/Image_Center",
+        "https://api.openstreetmap.org/api/0.6/node/11185404564.json"
+      ],
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:11185404564",
+          "osm_url": "https://www.openstreetmap.org/node/11185404564",
+          "name": "Image Center",
+          "island": "Male",
+          "coordinates": [
+            73.5133759,
+            4.1768734
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "Image Center"
+          },
+          "status": "live"
+        }
+      ],
+      "evidence_note": "Exact name and compatible alternate doctors category match the official Image Center in Male, but HEMS does not publish coordinates and the available directory address differs; retain provisional until operator or official coordinate confirmation.",
+      "validation": {
+        "approved": false,
+        "checks": {
+          "live_object": true,
+          "maldives_bounds": true,
+          "category_compatible": true,
+          "island_agreement": true,
+          "unique_selected_object": true
+        }
+      },
+      "selected_candidate": {
+        "osm_object_id": "osm:node:11185404564",
+        "osm_url": "https://www.openstreetmap.org/node/11185404564",
+        "name": "Image Center",
+        "island": "Male",
+        "coordinates": [
+          73.5133759,
+          4.1768734
+        ],
+        "tags": {
+          "amenity": "doctors",
+          "healthcare": "doctor",
+          "name:en": "Image Center"
+        }
+      },
+      "live_verification": {
+        "status": "ok",
+        "http_status": 200,
+        "url": "https://api.openstreetmap.org/api/0.6/node/11185404564.json"
+      },
+      "derived_tags": {
+        "amenity": "doctors",
+        "healthcare": "doctor",
+        "name:en": "Image Center"
+      },
+      "derived_coordinates": [
+        73.5133759,
+        4.1768734
+      ]
+    }
+  ]
+}

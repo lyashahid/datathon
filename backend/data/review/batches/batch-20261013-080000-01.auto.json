@@ -1,0 +1,162 @@
+{
+  "job_id": "batch-20261013-080000-01",
+  "records": [
+    {
+      "facility_id": "facility:school:532",
+      "official_name": "Gulhee School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/532",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:380915306",
+          "osm_url": "https://www.openstreetmap.org/way/380915306",
+          "name": "",
+          "island": "Gulhi",
+          "coordinates": [
+            73.5091649,
+            3.9893395
+          ],
+          "tags": {
+            "amenity": "school"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:535",
+      "official_name": "Ukulhahu School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/535",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:778055729",
+          "osm_url": "https://www.openstreetmap.org/way/778055729",
+          "name": "",
+          "island": "Ukulhas",
+          "coordinates": [
+            72.8618491,
+            4.2173092
+          ],
+          "tags": {
+            "amenity": "school",
+            "building": "yes"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1066856193",
+          "osm_url": "https://www.openstreetmap.org/way/1066856193",
+          "name": "",
+          "island": "Ukulhas",
+          "coordinates": [
+            72.8616539,
+            4.2175696
+          ],
+          "tags": {
+            "building": "school",
+            "nohousenumber": "yes"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:538",
+      "official_name": "Bodufolhudhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/538",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:539",
+      "official_name": "Maalhohu School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/539",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:540",
+      "official_name": "Himandhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/540",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:541",
+      "official_name": "ADh. Atoll Education Centre",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/541",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:542",
+      "official_name": "ADh. Atoll School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/542",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:543",
+      "official_name": "Hangnaameedhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/543",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:544",
+      "official_name": "ADh. Omadhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/544",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:545",
+      "official_name": "Kunburudhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/545",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    }
+  ],
+  "summary": "deterministic local review"
+}

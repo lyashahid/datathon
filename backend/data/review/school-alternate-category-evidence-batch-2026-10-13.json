@@ -1,0 +1,395 @@
+{
+  "version": "school-alternate-category-evidence-v1",
+  "reviewed_at": "2026-10-13T03:04:17Z",
+  "scope": "Ten unresolved Ministry of Education school records: facility:school:460, 461, 462, 463, 464, 466, 467, 468, 470, 471",
+  "canonical_files_modified": false,
+  "method": {
+    "official": "Live Ministry of Education school pages were fetched over HTTPS and checked for HTTP 200, title, atoll, and contact address.",
+    "google_maps": "Google Maps public search/place discovery was used for exact names and official-address variants. A place card is discovery evidence only; it was not treated as an OSM identity.",
+    "nominatim": "Nominatim island searches were used for Makunudhoo, Nellaidhoo, and Neykurendhoo; later requests were rate-limited with HTTP 429, so no absence claim is based on those failed requests.",
+    "osm_api": "Live OSM API map bboxes were scanned around each official OneMap island geometry for amenity=school, building=school, education=*, office=educational_institution, named school/education objects, and alternate name/operator/government tags. Generic building=yes polygons were not accepted as school geometry.",
+    "overpass": "A narrow combined query timed out with HTTP 504 on overpass-api.de and overpass.kumi.systems. Per-island retries returned some zero-result responses but also 504/429 failures. No Overpass-only candidate was accepted.",
+    "decision_rule": "Official island agreement is required. A candidate without facility-level identity, compatible category, and island agreement remains provisional or unresolved; wrong-island candidates are rejected."
+  },
+  "global_sources": {
+    "official_pages": [
+      "https://www.moe.gov.mv/en/schools/460",
+      "https://www.moe.gov.mv/en/schools/461",
+      "https://www.moe.gov.mv/en/schools/462",
+      "https://www.moe.gov.mv/en/schools/463",
+      "https://www.moe.gov.mv/en/schools/464",
+      "https://www.moe.gov.mv/en/schools/466",
+      "https://www.moe.gov.mv/en/schools/467",
+      "https://www.moe.gov.mv/en/schools/468",
+      "https://www.moe.gov.mv/en/schools/470",
+      "https://www.moe.gov.mv/en/schools/471"
+    ],
+    "osm_api": "https://api.openstreetmap.org/api/0.6/map?bbox=...",
+    "nominatim": "https://nominatim.openstreetmap.org/search",
+    "google_maps": "https://www.google.com/maps/search/?api=1&query=..."
+  },
+  "records": [
+    {
+      "facility_id": "facility:school:460",
+      "official_name": "Makunudhoo School",
+      "official_atoll": "Haa Dhaalu",
+      "official_island": "Makunudhoo",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/460",
+        "http_status": 200,
+        "evidence_quote": "Makunudhoo School, Ziyaariah Magu, HDh. Makunudhoo, 02160"
+      },
+      "google_maps_discovery": {
+        "query": "Makunudhoo School Maldives",
+        "url": "https://www.google.com/maps/search/?api=1&query=Makunudhoo+School+Maldives",
+        "observed": "No usable place card or address was exposed in the limited Google Maps result view."
+      },
+      "island_context": {
+        "island_id": "island:676",
+        "normalized_source": "OneMap",
+        "osm_island_way": "https://www.openstreetmap.org/way/19879365",
+        "osm_map_bbox": "https://api.openstreetmap.org/api/0.6/map?bbox=72.6989072,6.4024520,72.7112562,6.4159202"
+      },
+      "osm_scan": {
+        "amenity_school": 0,
+        "building_school": 0,
+        "education_tagged": 0,
+        "office_educational_institution": 0,
+        "generic_building_yes": 113,
+        "facility_level_candidates": [],
+        "note": "Only generic building polygons and unrelated ferry/worship objects were found; no school, educational-institution, operator, or government-tagged facility object."
+      },
+      "decision": "source_not_in_osm_current_island_scan",
+      "safe_action": "Do not attach a generic building or the island polygon; retain unresolved/island-context-only."
+    },
+    {
+      "facility_id": "facility:school:461",
+      "official_name": "Nellaidhoo School",
+      "official_atoll": "Haa Dhaalu",
+      "official_island": "Nellaidhoo",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/461",
+        "http_status": 200,
+        "evidence_quote": "Nellaidhoo School, Bon'Bithalhaa Magu, HDh. Nellaidhoo, 02070"
+      },
+      "google_maps_discovery": {
+        "query": "Nellaidhoo School Maldives",
+        "url": "https://www.google.com/maps/search/?api=1&query=Nellaidhoo+School+Maldives",
+        "observed": "Exact place discovery returned Nellaidhoo School, General education school, PW8W+F85 Kilegemagu Rd, plus a second Nellaidhoo School result on Nellaidhoo."
+      },
+      "nominatim": {
+        "query_url": "https://nominatim.openstreetmap.org/search?q=Nellaidhoo%2C+Maldives&format=jsonv2&limit=5",
+        "result": "OSM way 19879749, Nellaidhoo islet; same island context."
+      },
+      "island_context": {
+        "island_id": "island:661",
+        "normalized_source": "OneMap",
+        "osm_island_way": "https://www.openstreetmap.org/way/19879749",
+        "osm_map_bbox": "https://api.openstreetmap.org/api/0.6/map?bbox=72.9444965,6.7113688,72.9496134,6.7183226"
+      },
+      "osm_scan": {
+        "amenity_school": 0,
+        "building_school": 0,
+        "education_tagged": 0,
+        "office_educational_institution": 0,
+        "generic_building_yes": 12,
+        "facility_level_candidates": [],
+        "note": "Google confirms a likely school place on the official island, but the live OSM bbox has no school/education/operator/government object; generic buildings cannot be safely selected."
+      },
+      "decision": "source_not_in_osm_current_island_scan",
+      "safe_action": "Keep the Google place as discovery evidence only; do not map it to an OSM object."
+    },
+    {
+      "facility_id": "facility:school:462",
+      "official_name": "Neykurendhoo School",
+      "official_atoll": "Haa Dhaalu",
+      "official_island": "Neykurendhoo",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/462",
+        "http_status": 200,
+        "evidence_quote": "Neykurendhoo School, Edhuru Hingun, HDh. Neykurendhoo, 02130"
+      },
+      "google_maps_discovery": {
+        "query": "Neykurendhoo School Maldives",
+        "url": "https://www.google.com/maps/search/?api=1&query=Neykurendhoo+School+Maldives",
+        "observed": "Exact place discovery returned Neykurendhoo School, School center, GXWG+MJH, phone 652-0528."
+      },
+      "nominatim": {
+        "query_url": "https://nominatim.openstreetmap.org/search?q=Neykurendhoo%2C+Maldives&format=jsonv2&limit=5",
+        "result": "OSM way 19879344, Neykurendhoo island; same island context."
+      },
+      "island_context": {
+        "island_id": "island:672",
+        "normalized_source": "OneMap",
+        "osm_island_way": "https://www.openstreetmap.org/way/19879344",
+        "osm_map_bbox": "https://api.openstreetmap.org/api/0.6/map?bbox=72.9721226,6.5369505,72.9875667,6.5492808"
+      },
+      "osm_scan": {
+        "amenity_school": 0,
+        "building_school": 0,
+        "education_tagged": 0,
+        "office_educational_institution": 1,
+        "generic_building_yes": 2,
+        "candidate": {
+          "osm_object_id": "osm:way:1035327405",
+          "api_url": "https://api.openstreetmap.org/api/0.6/way/1035327405/full.json",
+          "browse_url": "https://www.openstreetmap.org/way/1035327405",
+          "tags": {
+            "building": "yes",
+            "office": "educational_institution"
+          },
+          "center": [72.97612094, 6.54671104],
+          "identity_gaps": ["no name", "no name:en", "no operator", "no government tag", "no official address tag"]
+        },
+        "note": "This is the only alternate-category OSM candidate found in the ten live island scans. It is on the correct island and semantically educational, but lacks facility identity and operator/address evidence."
+      },
+      "decision": "osm_provisional_review_required",
+      "safe_action": "Retain as a provisional candidate only; do not add as a reviewed mapping or deterministic geometry without official coordinates, a matching address, or additional facility-level evidence."
+    },
+    {
+      "facility_id": "facility:school:463",
+      "official_name": "Nolhivaranfaru School",
+      "official_atoll": "Haa Dhaalu",
+      "official_island": "Nolhivaranfaru",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/463",
+        "http_status": 200,
+        "evidence_quote": "Nolhivaranfaru School, Haveeree Hingun, HDh. Nolhivaranfaru, 02060"
+      },
+      "google_maps_discovery": {
+        "query": "Nolhivaranfaru School Maldives",
+        "url": "https://www.google.com/maps/search/?api=1&query=Nolhivaranfaru+School+Maldives",
+        "observed": "No usable school place card was exposed in the limited result view."
+      },
+      "island_context": {
+        "island_id": "island:682",
+        "normalized_source": "OneMap",
+        "osm_island_way": "https://www.openstreetmap.org/way/19879642",
+        "osm_map_bbox": "https://api.openstreetmap.org/api/0.6/map?bbox=73.1094649,6.6774506,73.1245644,6.7090511"
+      },
+      "osm_scan": {
+        "amenity_school": 0,
+        "building_school": 0,
+        "education_tagged": 0,
+        "office_educational_institution": 0,
+        "generic_building_yes": 162,
+        "facility_level_candidates": [],
+        "note": "The island has named police and health objects, but no school or alternate educational facility object. Generic buildings are not safe substitutes."
+      },
+      "decision": "source_not_in_osm_current_island_scan",
+      "safe_action": "Do not map the school to a generic building or nearby health/police object."
+    },
+    {
+      "facility_id": "facility:school:464",
+      "official_name": "Munavvara School",
+      "official_atoll": "Shaviyani",
+      "official_island": "Maroshi",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/464",
+        "http_status": 200,
+        "evidence_quote": "Munavvara School, Raiveri Magu, Sh. Maaroshi, 03100"
+      },
+      "google_maps_discovery": {
+        "query": "Munavvara School Maroshi Maldives",
+        "url": "https://www.google.com/maps/search/?api=1&query=Munavvara+School+Maroshi+Maldives",
+        "observed": "Discovery returned Al-Madhrasathul Munavvara, Educational institution, 6367+M6Q. This is a likely renamed/alternate-name place, but the limited result did not expose an OSM identity."
+      },
+      "island_context": {
+        "island_id": "island:1178",
+        "normalized_source": "OneMap",
+        "osm_island_way": "https://www.openstreetmap.org/way/19879449",
+        "osm_map_bbox": "https://api.openstreetmap.org/api/0.6/map?bbox=73.0576223,6.2063678,73.0654242,6.2131417"
+      },
+      "osm_scan": {
+        "amenity_school": 0,
+        "building_school": 0,
+        "education_tagged": 0,
+        "office_educational_institution": 0,
+        "generic_building_yes": 1,
+        "facility_level_candidates": [],
+        "note": "The official island context is supported, but the live OSM scan has no named or educational school object."
+      },
+      "decision": "source_not_in_osm_current_island_scan",
+      "safe_action": "Keep the Google alternate-name discovery as unresolved evidence; do not attach the lone generic building."
+    },
+    {
+      "facility_id": "facility:school:466",
+      "official_name": "Sh. Atoll School",
+      "official_atoll": "Shaviyani",
+      "official_island": "Kanditheemu",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/466",
+        "http_status": 200,
+        "evidence_quote": "Sh. Atoll School, Ameenee Magu, Sh. Kanditheemu, 03010"
+      },
+      "google_maps_discovery": {
+        "query": "Sh Atoll School Kanditheemu Maldives",
+        "url": "https://www.google.com/maps/search/?api=1&query=Sh+Atoll+School+Kanditheemu+Maldives",
+        "observed": "No usable school place card was exposed in the limited result view."
+      },
+      "island_context": {
+        "island_id": "island:1176",
+        "normalized_source": "OneMap",
+        "osm_island_way": "https://www.openstreetmap.org/way/19879536",
+        "osm_map_bbox": "https://api.openstreetmap.org/api/0.6/map?bbox=72.9083435,6.4367895,72.9230548,6.4446631"
+      },
+      "osm_scan": {
+        "amenity_school": 0,
+        "building_school": 0,
+        "education_tagged": 0,
+        "office_educational_institution": 0,
+        "generic_building_yes": 1,
+        "facility_level_candidates": [],
+        "note": "Only a cafe, mosque, harbor, and one generic building were found; none supplies school identity."
+      },
+      "decision": "source_not_in_osm_current_island_scan",
+      "safe_action": "Do not map to the generic building, mosque, cafe, harbor, or island polygon."
+    },
+    {
+      "facility_id": "facility:school:467",
+      "official_name": "Feevaku School",
+      "official_atoll": "Shaviyani",
+      "official_island": "Feevah",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/467",
+        "http_status": 200,
+        "evidence_quote": "Feevaku School, Dhon Ali Katheeb Magu, Sh. Feevah, 03050"
+      },
+      "google_maps_discovery": {
+        "query": "Feevaku School Feevah Maldives",
+        "url": "https://www.google.com/maps/search/?api=1&query=Feevaku+School+Feevah+Maldives",
+        "observed": "Exact place discovery returned Feevaku School, Public educational institution, 86X5+686 Feevah, phone 654-0543."
+      },
+      "island_context": {
+        "island_id": "island:1189",
+        "normalized_source": "OneMap",
+        "osm_island_way": "https://www.openstreetmap.org/way/19879633",
+        "osm_map_bbox": "https://api.openstreetmap.org/api/0.6/map?bbox=73.2042594,6.3441485,73.2146920,6.3535915"
+      },
+      "osm_scan": {
+        "amenity_school": 0,
+        "building_school": 0,
+        "education_tagged": 0,
+        "office_educational_institution": 0,
+        "generic_building_yes": 0,
+        "facility_level_candidates": [],
+        "note": "Google confirms a likely public educational place on the official island, but the live OSM scan has no candidate object."
+      },
+      "decision": "source_not_in_osm_current_island_scan",
+      "safe_action": "Do not create geometry from the Google plus code or island polygon; retain source-not-in-current-OSM-coverage."
+    },
+    {
+      "facility_id": "facility:school:468",
+      "official_name": "Foakaidhoo School",
+      "official_atoll": "Shaviyani",
+      "official_island": "Foakaidhoo",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/468",
+        "http_status": 200,
+        "evidence_quote": "Foakaidhoo School, Hukurumagu, Sh. Foakaidhoo, 03070"
+      },
+      "google_maps_discovery": {
+        "query": "Foakaidhoo School Maldives",
+        "url": "https://www.google.com/maps/search/?api=1&query=Foakaidhoo+School+Maldives",
+        "observed": "No usable school place card was exposed in the limited result view."
+      },
+      "island_context": {
+        "island_id": "island:1166",
+        "normalized_source": "OneMap",
+        "osm_island_way": "https://www.openstreetmap.org/way/19879434",
+        "osm_map_bbox": "https://api.openstreetmap.org/api/0.6/map?bbox=73.1453464,6.3220224,73.1533522,6.3314787"
+      },
+      "osm_scan": {
+        "amenity_school": 0,
+        "building_school": 0,
+        "education_tagged": 0,
+        "office_educational_institution": 0,
+        "generic_building_yes": 13,
+        "facility_level_candidates": [],
+        "note": "Only generic buildings and the island polygon were found; no school or educational-institution tags."
+      },
+      "decision": "source_not_in_osm_current_island_scan",
+      "safe_action": "Do not attach one of the generic building polygons without facility identity evidence."
+    },
+    {
+      "facility_id": "facility:school:470",
+      "official_name": "Bileffahee School",
+      "official_atoll": "Shaviyani",
+      "official_island": "Bilehfahi/Bileffahi",
+      "google_name_variant": "Bileyfahee School",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/470",
+        "http_status": 200,
+        "evidence_quote": "Bileffahee School, Sosung Magu, Sh. Bilehfahi, 03060"
+      },
+      "google_maps_discovery": {
+        "query": "Bileffahee School Bilehfahi Maldives",
+        "url": "https://www.google.com/maps/search/?api=1&query=Bileffahee+School+Bilehfahi+Maldives",
+        "observed": "Discovery returned Bileyfahee School, Educational institution, 8XQG+6FP, rating 5.0. The spelling is a plausible transliteration variant, and the island agrees."
+      },
+      "island_context": {
+        "island_id": "island:1175",
+        "normalized_source": "OneMap",
+        "osm_island_way": "https://www.openstreetmap.org/way/19879561",
+        "osm_map_bbox": "https://api.openstreetmap.org/api/0.6/map?bbox=72.9669871,6.3320207,72.9791732,6.3437325"
+      },
+      "osm_scan": {
+        "amenity_school": 0,
+        "building_school": 0,
+        "education_tagged": 0,
+        "office_educational_institution": 0,
+        "generic_building_yes": 0,
+        "facility_level_candidates": [],
+        "note": "No live OSM facility object was found despite official/Google island agreement."
+      },
+      "decision": "source_not_in_osm_current_island_scan",
+      "safe_action": "Treat Bileyfahee as a Google/official name variant only; do not synthesize an OSM mapping from the plus code."
+    },
+    {
+      "facility_id": "facility:school:471",
+      "official_name": "Sh. Feydhoo School",
+      "official_atoll": "Shaviyani",
+      "official_island": "Feydhoo",
+      "official_source": {
+        "url": "https://www.moe.gov.mv/en/schools/471",
+        "http_status": 200,
+        "evidence_quote": "Sh. Feydhoo School, Marukazee Hingun, Sh. Feydhoo, 03040"
+      },
+      "google_maps_discovery": {
+        "query": "Sh Feydhoo School Maldives",
+        "url": "https://www.google.com/maps/search/?api=1&query=Sh+Feydhoo+School+Maldives",
+        "observed": "Exact place discovery returned Sh. Feydhoo School, School center, Unnamed Road, Feydhoo, 925X+34, phone 654-0579, rating 3.8."
+      },
+      "island_context": {
+        "island_id": "island:1177",
+        "normalized_source": "OneMap",
+        "osm_island_way": "https://www.openstreetmap.org/way/19879705",
+        "osm_map_bbox": "https://api.openstreetmap.org/api/0.6/map?bbox=73.0438913,6.3554158,73.0539079,6.3654895"
+      },
+      "osm_scan": {
+        "amenity_school": 0,
+        "building_school": 0,
+        "education_tagged": 0,
+        "office_educational_institution": 0,
+        "generic_building_yes": 0,
+        "facility_level_candidates": [],
+        "note": "Google confirms a school place on the correct island, but the live OSM bbox contains no school/education facility object."
+      },
+      "decision": "source_not_in_osm_current_island_scan",
+      "safe_action": "Do not map from the Google plus code or island polygon; retain unresolved/source-not-in-current-OSM-coverage."
+    }
+  ],
+  "summary": {
+    "records": 10,
+    "official_pages_http_200": 10,
+    "official_island_agreement": 10,
+    "google_exact_or_variant_place_discoveries": 6,
+    "live_osm_facility_level_candidates": 1,
+    "safe_osm_mappings_accepted": 0,
+    "osm_provisional_review_required": 1,
+    "source_not_in_osm_current_island_scan": 9,
+    "wrong_island_candidates_accepted": 0,
+    "canonical_files_modified": false,
+    "bottom_line": "No school was safely promoted to a reviewed OSM mapping. Neykurendhoo has one same-island office=educational_institution building (way 1035327405), but missing name/operator/address identity keeps it provisional. Six schools have Google place discovery on the official island, while nine have no facility-level OSM object in the live island scan."
+  }
+}

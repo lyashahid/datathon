@@ -1,0 +1,658 @@
+{
+  "version": "facility-review-queue-v1",
+  "created_at": "2026-10-13T07:32:24.628154Z",
+  "batch_id": "batch-20261013-073000",
+  "batch_size": 10,
+  "known_review_count": 252,
+  "available_unresolved_count": 450,
+  "jobs": [
+    {
+      "job_id": "batch-20261013-073000-01",
+      "facility_ids": [
+        "facility:health:722",
+        "facility:health:725",
+        "facility:health:726",
+        "facility:health:727",
+        "facility:health:730",
+        "facility:health:731",
+        "facility:health:732",
+        "facility:health:733",
+        "facility:health:735",
+        "facility:health:737"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:health:722",
+          "official_name": "Raa Innamaadhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Innamaadhoo",
+          "official_atoll": "Raa",
+          "official_island_id": "island:1047",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:725",
+          "official_name": "B. Hithaadhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Hithaadhoo",
+          "official_atoll": "Baa",
+          "official_island_id": "island:200",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 3"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:726",
+          "official_name": "Baa Kudarikilu Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Kudarikilu",
+          "official_atoll": "Baa",
+          "official_island_id": "island:133",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:727",
+          "official_name": "Baa Kihaadhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Kihaadhoo",
+          "official_atoll": "Baa",
+          "official_island_id": "island:174",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:730",
+          "official_name": "Raa In'guraidhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "In'guraidhoo",
+          "official_atoll": "Raa",
+          "official_island_id": "island:1120",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 3"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:731",
+          "official_name": "Raa Maakurathu Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Maakurathu",
+          "official_atoll": "Raa",
+          "official_island_id": "island:1046",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 2"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:732",
+          "official_name": "Raa Kinolhas Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Kinolhas",
+          "official_atoll": "Raa",
+          "official_island_id": "island:1048",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:733",
+          "official_name": "Raa Maduvvari Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Maduvvari",
+          "official_atoll": "Raa",
+          "official_island_id": "island:1012",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 3"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:735",
+          "official_name": "Raa Fainu Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Fainu",
+          "official_atoll": "Raa",
+          "official_island_id": "island:1070",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:737",
+          "official_name": "Noonu Velidhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Velidhoo",
+          "official_atoll": "Noonu",
+          "official_island_id": "island:948",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 4"
+          },
+          "current_status": "island_context_only"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-073000-01.prompt.md"
+    },
+    {
+      "job_id": "batch-20261013-073000-02",
+      "facility_ids": [
+        "facility:health:738",
+        "facility:health:739",
+        "facility:health:740",
+        "facility:health:741",
+        "facility:health:745",
+        "facility:health:749",
+        "facility:health:750",
+        "facility:health:754",
+        "facility:school:460",
+        "facility:school:461"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:health:738",
+          "official_name": "Shaviyani Komandoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Komandoo",
+          "official_atoll": "Shaviyani",
+          "official_island_id": "island:1192",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 3"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:739",
+          "official_name": "Shaviyani Kan'ditheemu Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Kan'ditheemu",
+          "official_atoll": "Shaviyani",
+          "official_island_id": "island:1176",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 2"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:740",
+          "official_name": "Shaviyani Narudhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Narudhoo",
+          "official_atoll": "Shaviyani",
+          "official_island_id": "island:1163",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:741",
+          "official_name": "Shaviyani Feydhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Feydhoo",
+          "official_atoll": "Shaviyani",
+          "official_island_id": "island:1177",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 2"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:745",
+          "official_name": "Haa Alifu Filladhoo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Filladhoo",
+          "official_atoll": "Haa Alifu",
+          "official_island_id": "island:641",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:749",
+          "official_name": "Amina Dhiyo Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "osm_match_review_required"
+        },
+        {
+          "facility_id": "facility:health:750",
+          "official_name": "M. Veyvah Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": "Veyvah",
+          "official_atoll": "Meemu",
+          "official_island_id": "island:896",
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health",
+            "status": "open",
+            "facility_level": "Health Centre Grade 1"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:health:754",
+          "official_name": "Amina Rehendhi Health Centre",
+          "category": "health_center",
+          "official_source_url": "https://hems.health.gov.mv/establishments",
+          "official_island": null,
+          "official_atoll": null,
+          "official_island_id": null,
+          "official_attributes": {
+            "island_text": "",
+            "owner": "Ministry of Health, Family and Welfare",
+            "status": "open",
+            "facility_level": "Health Centre Grade 3"
+          },
+          "current_status": "source_not_in_osm"
+        },
+        {
+          "facility_id": "facility:school:460",
+          "official_name": "Makunudhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/460",
+          "official_island": "Makunudhoo",
+          "official_atoll": "Haa Dhaalu",
+          "official_island_id": "island:676",
+          "official_attributes": {
+            "address": "Makunudhoo School, Ziyaariah Magu, HDh. Makunudhoo, 02160"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:461",
+          "official_name": "Nellaidhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/461",
+          "official_island": "Nellaidhoo",
+          "official_atoll": "Haa Dhaalu",
+          "official_island_id": "island:661",
+          "official_attributes": {
+            "address": "Nellaidhoo School, Bon'Bithalhaa Magu, HDh. Nellaidhoo, 02070"
+          },
+          "current_status": "island_context_only"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-073000-02.prompt.md"
+    },
+    {
+      "job_id": "batch-20261013-073000-03",
+      "facility_ids": [
+        "facility:school:462",
+        "facility:school:463",
+        "facility:school:464",
+        "facility:school:466",
+        "facility:school:467",
+        "facility:school:468",
+        "facility:school:470",
+        "facility:school:471",
+        "facility:school:509",
+        "facility:school:511"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:school:462",
+          "official_name": "Neykurendhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/462",
+          "official_island": "Neykurendhoo",
+          "official_atoll": "Haa Dhaalu",
+          "official_island_id": "island:672",
+          "official_attributes": {
+            "address": "Neykurendhoo School, Edhuru Hingun, HDh. Neykurendhoo, 02130"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:463",
+          "official_name": "Nolhivaranfaru School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/463",
+          "official_island": "Nolhivaranfaru",
+          "official_atoll": "Haa Dhaalu",
+          "official_island_id": "island:682",
+          "official_attributes": {
+            "address": "Nolhivaranfaru School, Haveeree Hingun, HDh. Nolhivaranfaru, 02060"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:464",
+          "official_name": "Munavvara School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/464",
+          "official_island": "Maroshi",
+          "official_atoll": "Shaviyani",
+          "official_island_id": "island:1178",
+          "official_attributes": {
+            "address": "Munavvara School, Raiveri Magu, Sh. Maaroshi, 03100"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:466",
+          "official_name": "Sh. Atoll School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/466",
+          "official_island": "Kan'ditheemu",
+          "official_atoll": "Shaviyani",
+          "official_island_id": "island:1176",
+          "official_attributes": {
+            "address": "Sh. Atoll School, Ameenee Magu, Sh. Kanditheemu, 03010"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:467",
+          "official_name": "Feevaku School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/467",
+          "official_island": "Feevah",
+          "official_atoll": "Shaviyani",
+          "official_island_id": "island:1189",
+          "official_attributes": {
+            "address": "Feevaku School, Dhon Ali Katheeb Magu, Sh. Feevah, 03050"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:468",
+          "official_name": "Foakaidhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/468",
+          "official_island": "Foakaidhoo",
+          "official_atoll": "Shaviyani",
+          "official_island_id": "island:1166",
+          "official_attributes": {
+            "address": "Foakaidhoo School, Hukurumagu, Sh. Foakaidhoo, 03070"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:470",
+          "official_name": "Bileffahee School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/470",
+          "official_island": "Bileiyfahi",
+          "official_atoll": "Shaviyani",
+          "official_island_id": "island:1175",
+          "official_attributes": {
+            "address": "Bileffahee School, Sosung Magu, Sh. Bilehfahi, 03060"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:471",
+          "official_name": "Sh. Feydhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/471",
+          "official_island": "Feydhoo",
+          "official_atoll": "Shaviyani",
+          "official_island_id": "island:1177",
+          "official_attributes": {
+            "address": "Sh. Feydhoo School, Marukazee Hingun, Sh. Feydhoo, 03040"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:509",
+          "official_name": "Dhonfanu School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/509",
+          "official_island": "Dhonfan",
+          "official_atoll": "Baa",
+          "official_island_id": "island:185",
+          "official_attributes": {
+            "address": "Dhonfanu School, B. Dhonfanu, 06050"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:511",
+          "official_name": "B. Goidhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/511",
+          "official_island": "Goidhoo",
+          "official_atoll": "Baa",
+          "official_island_id": "island:219",
+          "official_attributes": {
+            "address": "B. Goidhoo School, Bodumagu, B. Goidhoo, 06130"
+          },
+          "current_status": "island_context_only"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-073000-03.prompt.md"
+    },
+    {
+      "job_id": "batch-20261013-073000-04",
+      "facility_ids": [
+        "facility:school:513",
+        "facility:school:514",
+        "facility:school:516",
+        "facility:school:517",
+        "facility:school:518",
+        "facility:school:519",
+        "facility:school:520",
+        "facility:school:521",
+        "facility:school:522",
+        "facility:school:530"
+      ],
+      "records": [
+        {
+          "facility_id": "facility:school:513",
+          "official_name": "Kamadhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/513",
+          "official_island": "Kamadhoo",
+          "official_atoll": "Baa",
+          "official_island_id": "island:168",
+          "official_attributes": {
+            "address": "Kamadhoo School, Orchid Magu, B. Kamadhoo, 06020"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:514",
+          "official_name": "Kendhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/514",
+          "official_island": "Kendhoo",
+          "official_atoll": "Baa",
+          "official_island_id": "island:146",
+          "official_attributes": {
+            "address": "Kendhoo School , Madharusaa Magu, B. Kendhoo, 06030"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:516",
+          "official_name": "Kudarikilu School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/516",
+          "official_island": "Kudarikilu",
+          "official_atoll": "Baa",
+          "official_island_id": "island:133",
+          "official_attributes": {
+            "address": "Kudarikilu School, B. Kudarikilu, 06010"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:517",
+          "official_name": "Maalhohu School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/517",
+          "official_island": "Maalhos",
+          "official_atoll": "Baa",
+          "official_island_id": "island:190",
+          "official_attributes": {
+            "address": "Maalhohu School, Orchid Magu, B. Maalhos, 06070"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:518",
+          "official_name": "Fehendhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/518",
+          "official_island": "Fehendhoo",
+          "official_atoll": "Baa",
+          "official_island_id": "island:221",
+          "official_attributes": {
+            "address": "Fehendhoo School, B. Fehendhoo, 06120"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:519",
+          "official_name": "Thulhaadhoo School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/519",
+          "official_island": "Thulhaadhoo",
+          "official_atoll": "Baa",
+          "official_island_id": "island:205",
+          "official_attributes": {
+            "address": "Thulhaadhoo School, Roashanee Magu, B. Thulhaadhoo, 06090"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:520",
+          "official_name": "Lh. Atoll Education Centre",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/520",
+          "official_island": "Hinnavaru",
+          "official_atoll": "Lhaviyani",
+          "official_island_id": "island:791",
+          "official_attributes": {
+            "address": "Lh. Atoll Education Centre, , Lh. Hinnavaru, 07010"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:521",
+          "official_name": "Lh. Atoll school",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/521",
+          "official_island": "Kurendhoo",
+          "official_atoll": "Lhaviyani",
+          "official_island_id": "island:798",
+          "official_attributes": {
+            "address": "Lh. Atoll School, Kalaminjaa Magu, Lh. Kurendhoo, 07030"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:522",
+          "official_name": "Olhuvelifushi School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/522",
+          "official_island": "Olhuvelifushi",
+          "official_atoll": "Lhaviyani",
+          "official_island_id": "island:799",
+          "official_attributes": {
+            "address": "Olhuvelifushi School, Samiyakileyge Hingun, Lh.Olhuvelifushi, 07040"
+          },
+          "current_status": "island_context_only"
+        },
+        {
+          "facility_id": "facility:school:530",
+          "official_name": "Gaafaru School",
+          "category": "school",
+          "official_source_url": "https://www.moe.gov.mv/en/schools/530",
+          "official_island": "Gaafaru",
+          "official_atoll": "Kaafu",
+          "official_island_id": "island:1339",
+          "official_attributes": {
+            "address": "Gaafaru School, Sosun Magu, K. Gaafaru, 08020"
+          },
+          "current_status": "island_context_only"
+        }
+      ],
+      "prompt": "D:\\datathon\\backend\\data\\review\\batches\\batch-20261013-073000-04.prompt.md"
+    }
+  ],
+  "status": "completed",
+  "completed_at": "2026-10-13T07:59:04.782276Z"
+}

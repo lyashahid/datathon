@@ -1,0 +1,277 @@
+{
+  "version": "facility-osm-reviewed-overrides-v1",
+  "review_scope": "full-dataset evidence review batches",
+  "records": [
+    {
+      "facility_id": "facility:health:496",
+      "osm_object_id": "osm:node:4174150465",
+      "review_note": "Mathiveree/Mathiveri transliteration; same island and official government health-centre record."
+    },
+    {
+      "facility_id": "facility:health:746",
+      "osm_object_id": "osm:way:485054780",
+      "review_note": "Kelaa Health Centre name and island agree; official government health-centre record."
+    },
+    {
+      "facility_id": "facility:health:651",
+      "osm_object_id": "osm:node:10196643638",
+      "review_note": "OSM alternate name is Thakandhoo Health Center; same island and official government record."
+    },
+    {
+      "facility_id": "facility:health:621",
+      "osm_object_id": "osm:node:4823483321",
+      "review_note": "Nolhivaranfaru Health post name and island agree; official government health-centre record."
+    },
+    {
+      "facility_id": "facility:health:618",
+      "osm_object_id": "osm:way:814112443",
+      "review_note": "Vaikaradhoo Health Center name and island agree; official government health-centre record."
+    },
+    {
+      "facility_id": "facility:health:719",
+      "osm_object_id": "osm:way:659921836",
+      "review_note": "Guraidhoo spelling/punctuation variant; same island and official government health-centre record."
+    },
+    {
+      "facility_id": "facility:health:736",
+      "osm_object_id": "osm:way:1323805892",
+      "review_note": "Holhudhoo Health Center name and island agree; official government health-centre record."
+    },
+    {
+      "facility_id": "facility:health:602",
+      "osm_object_id": "osm:way:1118550871",
+      "review_note": "Maaungoodhoo spelling variant; same island and official health-centre record."
+    },
+    {
+      "facility_id": "facility:health:724",
+      "osm_object_id": "osm:way:783239341",
+      "review_note": "Baa Goidhoo/Goidhoo spelling variant; same island and official government health-centre record."
+    },
+    {
+      "facility_id": "facility:school:504",
+      "osm_object_id": "osm:way:1478463933",
+      "review_note": "Vaadhoo School and Vaadhoo School Ground are same-island school identity."
+    },
+    {
+      "facility_id": "facility:school:592",
+      "osm_object_id": "osm:way:1126419152",
+      "review_note": "Laamu Hithadhoo School and official Hithadhoo School name agree."
+    },
+    {
+      "facility_id": "facility:school:644",
+      "osm_object_id": "osm:way:1547305510",
+      "review_note": "CHSE Hulhumale is the OSM abbreviation of Centre for Higher Secondary Education Hulhumale."
+    },
+    {
+      "facility_id": "facility:health:1223",
+      "osm_object_id": "osm:node:9951457715",
+      "review_note": "Advance Hospital and Advance Medical Clinic share the Advance Medical provider identity; retained as reviewed cross-category match."
+    },
+    {
+      "facility_id": "facility:health:633",
+      "osm_object_id": "osm:node:9951500245",
+      "review_note": "Central Medical Center and Central Clinic share the official provider identity and OSM facility point."
+    },
+    {
+      "facility_id": "facility:school:642",
+      "osm_object_id": "osm:way:1317950376",
+      "review_note": "Muhyiddin/Muhiyyidin spelling variant; OSM point is on the official Villimale island context."
+    },
+    {
+      "facility_id": "facility:school:437",
+      "osm_object_id": "osm:node:10196475671",
+      "review_note": "Shaheed Ali Thakurufaanu and Madharusathul Shaheedh Ali Thakurufaan are same-island spelling/name variants."
+    },
+    {
+      "facility_id": "facility:school:508",
+      "osm_object_id": "osm:way:908907992",
+      "review_note": "B. Atoll School and Baa Atoll School agree by expanded atoll name and island."
+    },
+    {
+      "facility_id": "facility:school:525",
+      "osm_object_id": "osm:way:529663160",
+      "review_note": "K. Atoll School and Kaafu Atoll School agree by expanded atoll name and island."
+    },
+    {
+      "facility_id": "facility:school:552",
+      "osm_object_id": "osm:node:2990393947",
+      "review_note": "V. Atoll School and Vaavu Atoll School agree by expanded atoll name and island."
+    },
+    {
+      "facility_id": "facility:school:616",
+      "osm_object_id": "osm:node:8526293513",
+      "review_note": "Vaadhoo Jamaluddeen School and Jamaaluddin School are same-island spelling/name variants."
+    },
+    {
+      "facility_id": "facility:school:623",
+      "osm_object_id": "osm:node:8392088123",
+      "review_note": "Mohamed Jamaluddin and Mohamed Jamaaludheen School (MJS) are same-island transliteration variants."
+    },
+    {
+      "facility_id": "facility:school:627",
+      "osm_object_id": "osm:node:5157162191",
+      "review_note": "Nooraanee and Noorani School are same-island transliteration variants."
+    },
+    {
+      "facility_id": "facility:health:397",
+      "osm_object_id": "osm:node:9951457715",
+      "review_note": "Advance Eye Clinic has the same official Advance Medical Pvt Ltd provider as the reviewed Advance Hospital point; OSM name is Advance Medical Clinic."
+    },
+    {
+      "facility_id": "facility:school:482",
+      "osm_object_id": "osm:way:1322873196",
+      "review_note": "Meyna School official Ministry of Education record is on Holhudhoo; OSM name:en and website identify the same public school. The selected way is the tagged main building; a second nearby OSM way is the same school's new building and is recorded as an alternate in online evidence."
+    },
+    {
+      "facility_id": "facility:school:621",
+      "osm_object_id": "osm:way:651281003",
+      "review_note": "Gn. Atoll Education Centre official Ministry of Education record is on Fuvahmulah; OSM name:en, operator, school website, and same-island geometry agree."
+    },
+    {
+      "facility_id": "facility:school:628",
+      "osm_object_id": "osm:node:5200094223",
+      "review_note": "Addu High School official Ministry of Education record is on Hithadhoo; OSM name:en, Ministry of Education operator, school website, address, and same-island geometry agree."
+    },
+    {
+      "facility_id": "facility:school:640",
+      "osm_object_id": "osm:way:1320069203",
+      "review_note": "Dharumavantha School official Ministry of Education record is on Male'; OSM name:en and school website identify the same school on Male'."
+    },
+    {
+      "facility_id": "facility:school:646",
+      "osm_object_id": "osm:way:1210924794",
+      "review_note": "Rehendhi School official Ministry of Education record is on Hulhumale'; OSM name:en, Ministry of Education operator, school email, and same-island geometry agree."
+    },
+    {
+      "facility_id": "facility:health:632",
+      "osm_object_id": "osm:way:383751026",
+      "review_note": "Hulhumale' Hospital official HEMS record and island context agree with OSM name:en, hospital category, website, and Hulhumale geometry."
+    },
+    {
+      "facility_id": "facility:health:228",
+      "osm_object_id": "osm:node:11190861038",
+      "review_note": "MACL Medical Clinic official HEMS record names Maldives Airports Company Limited as owner; OSM name:en and clinic category agree on Hulhule airport island."
+    },
+    {
+      "facility_id": "facility:health:508",
+      "osm_object_id": "osm:node:7208742187",
+      "review_note": "Vaavu Atoll Hospital official HEMS record and Vaavu context agree with OSM name:en and hospital category on Felidhoo, the hospital island."
+    },
+    {
+      "facility_id": "facility:health:394",
+      "osm_object_id": "osm:node:11186258448",
+      "review_note": "European Clinic Maldives Closed official HEMS/HPA record and Google evidence identify the same closed clinic; live OSM node has exact clinic name and amenity/healthcare clinic tags in Male."
+    },
+    {
+      "facility_id": "facility:health:782",
+      "osm_object_id": "osm:node:6723361843",
+      "review_note": "I.M.D.C Multi Speciality Hospital official HEMS/HPA record on Hithadhoo agrees with live OSM IMDC hospital node; the adjacent named hospital building way is recorded as a duplicate companion, not a second facility claim."
+    },
+    {
+      "facility_id": "facility:health:499",
+      "osm_object_id": "osm:node:4800490223",
+      "review_note": "Alifu Alifu Atoll Hospital on Rasdhoo; official HEMS/Maaharaa island and government hospital context agree with live OSM Rasdhoo hospital name variant and hospital tags."
+    },
+    {
+      "facility_id": "facility:health:714",
+      "osm_object_id": "osm:way:465261224",
+      "review_note": "Alifu Dhaalu Atoll Hospital on Mahibadhoo; official Ministry island and hospital context agree with live OSM South Ari District Medical Center name variant and hospital tags."
+    },
+    {
+      "facility_id": "facility:health:617",
+      "osm_object_id": "osm:way:1554432119",
+      "review_note": "Haa Dhaalu Kumundhoo Health Centre; official HEMS/Maaharaa island and identity agree with live OSM Kumundhoo health Center name:en and healthcare=yes object."
+    },
+    {
+      "facility_id": "facility:school:477",
+      "osm_object_id": "osm:way:1118550872",
+      "review_note": "Maaungoodhoo School; official Ministry island and exact school name agree with live OSM building object. Retained as reviewed medium-confidence mapping because OSM lacks amenity/operator tags."
+    },
+    {
+      "facility_id": "facility:health:547",
+      "osm_object_id": "osm:way:1167904137",
+      "review_note": "L. Isdhoo Health Centre; official HEMS/Maaharaa island and identity agree with live OSM named hospital object, operator, address, and facility website. OSM node 10861839404 is documented as a duplicate same-facility representation."
+    },
+    {
+      "facility_id": "facility:health:175",
+      "osm_object_id": "osm:way:622011138",
+      "review_note": "Current HEMS identity is Sun Siyam Olhuveli Maldives Clinic; live OSM Olhuveli Clinic facility-level object matches the resort context and clinic/doctor tags. Historical Island Doctor Clinic alias remains unresolved."
+    },
+    {
+      "facility_id": "facility:health:704",
+      "osm_object_id": "osm:way:1126434800",
+      "review_note": "Official HEMS identity and Laamu Hithadhoo operator/news evidence agree with the live OSM named health-centre object, address, operator and compatible hospital healthcare tag."
+    },
+    {
+      "facility_id": "facility:school:494",
+      "osm_object_id": "osm:node:13586575555",
+      "review_note": "The official Ministry page places Fainu School at Saharaa Magu, R. Fainu. The live primary node is on the same island and carries the exact school name and alternate facility-level education category. Node 13586575556 is retained as a supporting campus component."
+    },
+    {
+      "facility_id": "facility:school:505",
+      "osm_object_id": "osm:way:849713608",
+      "review_note": "The Ministry page identifies Maduvvaree School on R. Maduvvari. The live OSM way is on that island, is tagged building=school and carries the documented Maduvvari spelling variant."
+    },
+    {
+      "facility_id": "facility:school:506",
+      "osm_object_id": "osm:way:1038348911",
+      "review_note": "The Ministry page identifies Duvaafaru Primary School at Dhandehelu Magu, R. Dhuvaafaru. The live OSM way is on the same island and carries the exact name with the documented Duvaafaru/Dhuvaafaru spelling variant."
+    },
+    {
+      "facility_id": "facility:health:502",
+      "osm_object_id": "osm:node:12163204712",
+      "review_note": "Official HEMS/Maaharaa identity for Dh. Rinbudhoo Health Centre and the Rinbudhoo island agree with the live OSM node's exact name variant and compatible doctors/doctor tags."
+    },
+    {
+      "facility_id": "facility:health:608",
+      "osm_object_id": "osm:way:744245617",
+      "review_note": "Official HEMS identity and island context agree with the live OSM facility object HMHC; category-compatible tags and island-level geometry were independently verified through the OSM object API."
+    },
+    {
+      "facility_id": "facility:health:609",
+      "osm_object_id": "osm:way:555723531",
+      "review_note": "Official HEMS identity and island context agree with the live OSM facility object Feydhoo Health Centre; category-compatible tags and island-level geometry were independently verified through the OSM object API."
+    },
+    {
+      "facility_id": "facility:health:643",
+      "osm_object_id": "osm:way:1201906805",
+      "review_note": "Official HEMS identity and island context agree with the live OSM facility object Maafaru Health Center; category-compatible tags and island-level geometry were independently verified through the OSM object API."
+    },
+    {
+      "facility_id": "facility:health:732",
+      "osm_object_id": "osm:way:1122700184",
+      "review_note": "Official HEMS identity and island context agree with live OSM facility-level object Kinolhas Health Center; category-compatible healthcare tagging and live geometry were independently verified."
+    },
+    {
+      "facility_id": "facility:health:735",
+      "osm_object_id": "osm:node:13586575558",
+      "review_note": "Official HEMS identity and island context agree with live OSM facility-level object Fainu Health Centre; category-compatible healthcare tagging and live geometry were independently verified."
+    },
+    {
+      "facility_id": "facility:school:600",
+      "osm_object_id": "osm:way:364839738",
+      "review_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge."
+    },
+    {
+      "facility_id": "facility:school:612",
+      "osm_object_id": "osm:way:962507715",
+      "review_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge."
+    },
+    {
+      "facility_id": "facility:school:620",
+      "osm_object_id": "osm:way:1000764503",
+      "review_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge."
+    },
+    {
+      "facility_id": "facility:school:631",
+      "osm_object_id": "osm:relation:9994380",
+      "review_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge."
+    },
+    {
+      "facility_id": "facility:school:591",
+      "osm_object_id": "osm:way:364882220",
+      "review_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge."
+    }
+  ],
+  "reviewed_at": "2026-10-13T10:54:36.139227Z"
+}

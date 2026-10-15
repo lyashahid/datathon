@@ -1,0 +1,90 @@
+{
+  "version": "online-facility-review-batch-4",
+  "reviewed_at": "2026-10-13T04:47:59.162851+00:00",
+  "batches": [
+    {
+      "batch": "health_centres_617_512",
+      "facility_ids": [
+        "facility:health:617",
+        "facility:health:614",
+        "facility:health:622",
+        "facility:health:615",
+        "facility:health:616",
+        "facility:health:619",
+        "facility:health:620",
+        "facility:health:718",
+        "facility:health:511",
+        "facility:health:512"
+      ],
+      "confirmed": 1,
+      "provisional": 0,
+      "unresolved": 9,
+      "transcript": "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_82dc197e/task-0.log"
+    },
+    {
+      "batch": "schools_454_477",
+      "facility_ids": [
+        "facility:school:454",
+        "facility:school:456",
+        "facility:school:457",
+        "facility:school:459",
+        "facility:school:472",
+        "facility:school:473",
+        "facility:school:474",
+        "facility:school:475",
+        "facility:school:476",
+        "facility:school:477"
+      ],
+      "confirmed": 1,
+      "provisional": 0,
+      "unresolved": 9,
+      "transcript": "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_82dc197e/task-1.log"
+    },
+    {
+      "batch": "clinics_94_115",
+      "facility_ids": [
+        "facility:health:94",
+        "facility:health:143",
+        "facility:health:439",
+        "facility:health:1463",
+        "facility:health:242",
+        "facility:health:411",
+        "facility:health:884",
+        "facility:health:90",
+        "facility:health:466",
+        "facility:health:115"
+      ],
+      "confirmed": 0,
+      "provisional": 1,
+      "unresolved": 9,
+      "transcript": "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_82dc197e/task-2.log"
+    },
+    {
+      "batch": "clinics_65_1226",
+      "facility_ids": [
+        "facility:health:65",
+        "facility:health:170",
+        "facility:health:1361",
+        "facility:health:1353",
+        "facility:health:1518",
+        "facility:health:85",
+        "facility:health:278",
+        "facility:health:918",
+        "facility:health:201",
+        "facility:health:1226"
+      ],
+      "confirmed": 0,
+      "provisional": 1,
+      "unresolved": 9,
+      "transcript": "C:/Users/mafaa/AppData/Local/hermes/cache/delegation/live/deleg_82dc197e/task-3.log"
+    }
+  ],
+  "confirmed_promotions": [
+    "facility:health:617",
+    "facility:school:477"
+  ],
+  "provisional_candidates": [
+    "facility:health:411",
+    "facility:health:201"
+  ]
+}

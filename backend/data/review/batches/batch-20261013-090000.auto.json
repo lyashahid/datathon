@@ -1,0 +1,1644 @@
+{
+  "version": "facility-review-worker-v1",
+  "job_id": "batch-20261013-090000",
+  "records": [
+    {
+      "facility_id": "facility:school:587",
+      "official_name": "Gaadhiffushi School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/587",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:588",
+      "official_name": "L. Atoll Education Centre",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/588",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:364852691",
+          "osm_url": "https://www.openstreetmap.org/way/364852691",
+          "name": "Laamu Atoll Education Centre",
+          "island": "Fonadhoo",
+          "coordinates": [
+            73.500969,
+            1.8332669
+          ],
+          "tags": {
+            "addr:city": "Medhu Avah",
+            "addr:street": "Siraajudhdheen Magu",
+            "building": "school",
+            "name": "Laamu Atoll Education Centre"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:589",
+      "official_name": "L. Atoll School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/589",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:590",
+      "official_name": "Maavashu School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/590",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:593",
+      "official_name": "Kunahandhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/593",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:594",
+      "official_name": "Isdhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/594",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:595",
+      "official_name": "kalaidhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/595",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:596",
+      "official_name": "Mundoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/596",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:597",
+      "official_name": "L. Maamendhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/597",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:598",
+      "official_name": "Dhanbidhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/598",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:599",
+      "official_name": "Mukurimagu School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/599",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:364839738",
+          "osm_url": "https://www.openstreetmap.org/way/364839738",
+          "name": "Ihadhdhoo School",
+          "island": "Gan",
+          "coordinates": [
+            73.542556,
+            1.9316287
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Ihadhdhoo School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:364882221",
+          "osm_url": "https://www.openstreetmap.org/way/364882221",
+          "name": "Hamadh School Ground",
+          "island": "Gan",
+          "coordinates": [
+            73.5466406,
+            1.9198217
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "Hamadh School Ground"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:364882222",
+          "osm_url": "https://www.openstreetmap.org/way/364882222",
+          "name": "Dhanaal (Hamadh School)",
+          "island": "Gan",
+          "coordinates": [
+            73.5453281,
+            1.9198497
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Dhanaal (Hamadh School)"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:364882220",
+          "osm_url": "https://www.openstreetmap.org/way/364882220",
+          "name": "Hamad Bin Khaleefa Al-Thani School",
+          "island": "Gan",
+          "coordinates": [
+            73.5469874,
+            1.9202709
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Hamad Bin Khaleefa Al-Thani School"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:600",
+      "official_name": "Ihadhdhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/600",
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:364839738",
+          "osm_url": "https://www.openstreetmap.org/way/364839738",
+          "name": "Ihadhdhoo School",
+          "island": "Gan",
+          "coordinates": [
+            73.542556,
+            1.9316287
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Ihadhdhoo School"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge.",
+      "follow_up": "Live-validate and merge if all checks pass."
+    },
+    {
+      "facility_id": "facility:school:602",
+      "official_name": "GA. Atoll School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/602",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:603",
+      "official_name": "GA. Nilandhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/603",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:604",
+      "official_name": "Kondey School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/604",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:605",
+      "official_name": "Kanduhulhudhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/605",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:608",
+      "official_name": "Sulthan Mohamed School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/608",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:609",
+      "official_name": "Gemanafushi School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/609",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:610",
+      "official_name": "GDh. Atoll Education Centre",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/610",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:962507713",
+          "osm_url": "https://www.openstreetmap.org/way/962507713",
+          "name": "Gaaf Dhaal Atoll Education Centre",
+          "island": "Thinadhoo",
+          "coordinates": [
+            72.998637,
+            0.5306652
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Gaaf Dhaal Atoll Education Centre"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1000764503",
+          "osm_url": "https://www.openstreetmap.org/way/1000764503",
+          "name": "Thinadhoo School",
+          "island": "Thinadhoo",
+          "coordinates": [
+            72.9977109,
+            0.5339866
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Thinadhoo School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:962507715",
+          "osm_url": "https://www.openstreetmap.org/way/962507715",
+          "name": "Aboobakuru School",
+          "island": "Thinadhoo",
+          "coordinates": [
+            72.9956232,
+            0.5253296
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Aboobakuru School"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:611",
+      "official_name": "GDh. Atoll School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/611",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:612",
+      "official_name": "Aboobakuru School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/612",
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:962507715",
+          "osm_url": "https://www.openstreetmap.org/way/962507715",
+          "name": "Aboobakuru School",
+          "island": "Thinadhoo",
+          "coordinates": [
+            72.9956232,
+            0.5253296
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Aboobakuru School"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge.",
+      "follow_up": "Live-validate and merge if all checks pass."
+    },
+    {
+      "facility_id": "facility:school:613",
+      "official_name": "Hoadedhdhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/613",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:614",
+      "official_name": "Nadella School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/614",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:615",
+      "official_name": "Rathafandhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/615",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:618",
+      "official_name": "Huvadhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/618",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:620",
+      "official_name": "Thinadhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/620",
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:1000764503",
+          "osm_url": "https://www.openstreetmap.org/way/1000764503",
+          "name": "Thinadhoo School",
+          "island": "Thinadhoo",
+          "coordinates": [
+            72.9977109,
+            0.5339866
+          ],
+          "tags": {
+            "building": "school",
+            "name": "Thinadhoo School"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge.",
+      "follow_up": "Live-validate and merge if all checks pass."
+    },
+    {
+      "facility_id": "facility:school:631",
+      "official_name": "Feydhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/631",
+      "confidence": "high",
+      "decision": "reviewed_osm_match",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:relation:9994380",
+          "osm_url": "https://www.openstreetmap.org/relation/9994380",
+          "name": "Feydhoo School",
+          "island": "Feydhoo",
+          "coordinates": [
+            73.1354185,
+            -0.6823775
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "Feydhoo School",
+            "type": "site"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass: candidate matched official name, compatible category, and the official island bbox. Live OSM API validation is required before merge.",
+      "follow_up": "Live-validate and merge if all checks pass."
+    },
+    {
+      "facility_id": "facility:school:634",
+      "official_name": "Jamaluddin School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/634",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:636",
+      "official_name": "Thaajuddeen school",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/636",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:639",
+      "official_name": "Majeediyya School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/639",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:641",
+      "official_name": "Hiriya School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/641",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:647",
+      "official_name": "Huravee School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/647",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:697262511",
+          "osm_url": "https://www.openstreetmap.org/way/697262511",
+          "name": "Ghaazee School",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5414833,
+            4.2133576
+          ],
+          "tags": {
+            "addr:city": "Hulhumalé",
+            "addr:street": "ބޯގަންވިލާ މަގު",
+            "amenity": "school",
+            "grades": "1-10",
+            "name": "Ghaazee School",
+            "operator": "Government of Maldives",
+            "operator:type": "government",
+            "religion": "muslim",
+            "website": "https://ghaazee.edu.mv/",
+            "wikidata": "Q16905629",
+            "wikipedia": "en:Ghaazee School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477467764",
+          "osm_url": "https://www.openstreetmap.org/way/477467764",
+          "name": "Preschool",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.542775,
+            4.213919
+          ],
+          "tags": {
+            "amenity": "kindergarten",
+            "building": "school",
+            "name": "Preschool"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:14268489201",
+          "osm_url": "https://www.openstreetmap.org/node/14268489201",
+          "name": "Shaheed Ali School",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5481447,
+            4.2340514
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "Shaheed Ali School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:436189997",
+          "osm_url": "https://www.openstreetmap.org/way/436189997",
+          "name": "Brightway International School",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5439335,
+            4.2185259
+          ],
+          "tags": {
+            "amenity": "school",
+            "check_date": "2026-08-16",
+            "name": "Brightway International School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1330634428",
+          "osm_url": "https://www.openstreetmap.org/way/1330634428",
+          "name": "Ajiyal International School",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5397441,
+            4.2198829
+          ],
+          "tags": {
+            "addr:street": "Moonima Magu",
+            "amenity": "school",
+            "name:en": "Ajiyal International School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1210925123",
+          "osm_url": "https://www.openstreetmap.org/way/1210925123",
+          "name": "CHSE Hulhumale",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5416929,
+            4.2207088
+          ],
+          "tags": {
+            "addr:street": "Kurikeela Magu",
+            "building": "school",
+            "building:levels": "4",
+            "name": "CHSE Hulhumale",
+            "name:dv": "ސެންޓަރ ފޯރ ހަޔަރ ސެކަންޑަރީ އެޑިއުކޭޝަން ހުޅުމާލެ",
+            "name:en": "Centre for Higher Secondary Education Hulhumale'",
+            "official_name": "Centre for Higher Secondary Education"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1547305510",
+          "osm_url": "https://www.openstreetmap.org/way/1547305510",
+          "name": "CHSE Hulhumale",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5416893,
+            4.2205972
+          ],
+          "tags": {
+            "amenity": "school",
+            "education": "school",
+            "name": "CHSE Hulhumale"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11183603546",
+          "osm_url": "https://www.openstreetmap.org/node/11183603546",
+          "name": "learnium training centre",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5441222,
+            4.2160513
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "learnium training centre"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1210925026",
+          "osm_url": "https://www.openstreetmap.org/way/1210925026",
+          "name": "Fiyavathi",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.544048,
+            4.2189644
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "Fiyavathi"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11183603641",
+          "osm_url": "https://www.openstreetmap.org/node/11183603641",
+          "name": "Stem Center",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5425013,
+            4.2175848
+          ],
+          "tags": {
+            "amenity": "school",
+            "name:en": "Stem Center"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:13006103401",
+          "osm_url": "https://www.openstreetmap.org/node/13006103401",
+          "name": "ކާމިލް ދީދީ ޕްރީސްކޫލް",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5483008,
+            4.2300161
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "ކާމިލް ދީދީ ޕްރީސްކޫލް",
+            "name:en": "Kaamil Didi Pre School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:13006103601",
+          "osm_url": "https://www.openstreetmap.org/node/13006103601",
+          "name": "ހުރަވީ ސްކޫލް",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5442303,
+            4.2196377
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "ހުރަވީ ސްކޫލް",
+            "name:en": "Huravee School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1210924794",
+          "osm_url": "https://www.openstreetmap.org/way/1210924794",
+          "name": "ރެހެންދި ސްކޫލް",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5413693,
+            4.2094742
+          ],
+          "tags": {
+            "amenity": "school",
+            "check_date": "2024-10-12",
+            "email": "admin@rehendi.edu.mv",
+            "name": "ރެހެންދި ސްކޫލް",
+            "name:dv": "ރެހެންދި ސްކޫލް",
+            "name:en": "Rehendhi School",
+            "operator": "Ministry of Education",
+            "operator:type": "public",
+            "source": "local knowledge"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477460243",
+          "osm_url": "https://www.openstreetmap.org/way/477460243",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5436394,
+            4.2186684
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477466315",
+          "osm_url": "https://www.openstreetmap.org/way/477466315",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5443375,
+            4.2188918
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477466316",
+          "osm_url": "https://www.openstreetmap.org/way/477466316",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5439798,
+            4.2184312
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477823126",
+          "osm_url": "https://www.openstreetmap.org/way/477823126",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5413663,
+            4.2094839
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1210925203",
+          "osm_url": "https://www.openstreetmap.org/way/1210925203",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5397275,
+            4.2198391
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1330634426",
+          "osm_url": "https://www.openstreetmap.org/way/1330634426",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.539773,
+            4.2201568
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1330634427",
+          "osm_url": "https://www.openstreetmap.org/way/1330634427",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5399443,
+            4.2197399
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:relation:9690664",
+          "osm_url": "https://www.openstreetmap.org/relation/9690664",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5416723,
+            4.2132968
+          ],
+          "tags": {
+            "building": "school",
+            "type": "multipolygon"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:648",
+      "official_name": "I'zzudhdheen School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/648",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:649",
+      "official_name": "Mohamed Qasim Preschool",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/649",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:14268489201",
+          "osm_url": "https://www.openstreetmap.org/node/14268489201",
+          "name": "Shaheed Ali School",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5481447,
+            4.2340514
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "Shaheed Ali School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477467764",
+          "osm_url": "https://www.openstreetmap.org/way/477467764",
+          "name": "Preschool",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.542775,
+            4.213919
+          ],
+          "tags": {
+            "amenity": "kindergarten",
+            "building": "school",
+            "name": "Preschool"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:697262511",
+          "osm_url": "https://www.openstreetmap.org/way/697262511",
+          "name": "Ghaazee School",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5414833,
+            4.2133576
+          ],
+          "tags": {
+            "addr:city": "Hulhumalé",
+            "addr:street": "ބޯގަންވިލާ މަގު",
+            "amenity": "school",
+            "grades": "1-10",
+            "name": "Ghaazee School",
+            "operator": "Government of Maldives",
+            "operator:type": "government",
+            "religion": "muslim",
+            "website": "https://ghaazee.edu.mv/",
+            "wikidata": "Q16905629",
+            "wikipedia": "en:Ghaazee School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1330634428",
+          "osm_url": "https://www.openstreetmap.org/way/1330634428",
+          "name": "Ajiyal International School",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5397441,
+            4.2198829
+          ],
+          "tags": {
+            "addr:street": "Moonima Magu",
+            "amenity": "school",
+            "name:en": "Ajiyal International School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:436189997",
+          "osm_url": "https://www.openstreetmap.org/way/436189997",
+          "name": "Brightway International School",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5439335,
+            4.2185259
+          ],
+          "tags": {
+            "amenity": "school",
+            "check_date": "2026-08-16",
+            "name": "Brightway International School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11183603546",
+          "osm_url": "https://www.openstreetmap.org/node/11183603546",
+          "name": "learnium training centre",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5441222,
+            4.2160513
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "learnium training centre"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11183603641",
+          "osm_url": "https://www.openstreetmap.org/node/11183603641",
+          "name": "Stem Center",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5425013,
+            4.2175848
+          ],
+          "tags": {
+            "amenity": "school",
+            "name:en": "Stem Center"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1210925123",
+          "osm_url": "https://www.openstreetmap.org/way/1210925123",
+          "name": "CHSE Hulhumale",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5416929,
+            4.2207088
+          ],
+          "tags": {
+            "addr:street": "Kurikeela Magu",
+            "building": "school",
+            "building:levels": "4",
+            "name": "CHSE Hulhumale",
+            "name:dv": "ސެންޓަރ ފޯރ ހަޔަރ ސެކަންޑަރީ އެޑިއުކޭޝަން ހުޅުމާލެ",
+            "name:en": "Centre for Higher Secondary Education Hulhumale'",
+            "official_name": "Centre for Higher Secondary Education"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1547305510",
+          "osm_url": "https://www.openstreetmap.org/way/1547305510",
+          "name": "CHSE Hulhumale",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5416893,
+            4.2205972
+          ],
+          "tags": {
+            "amenity": "school",
+            "education": "school",
+            "name": "CHSE Hulhumale"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1210925026",
+          "osm_url": "https://www.openstreetmap.org/way/1210925026",
+          "name": "Fiyavathi",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.544048,
+            4.2189644
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "Fiyavathi"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:13006103401",
+          "osm_url": "https://www.openstreetmap.org/node/13006103401",
+          "name": "ކާމިލް ދީދީ ޕްރީސްކޫލް",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5483008,
+            4.2300161
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "ކާމިލް ދީދީ ޕްރީސްކޫލް",
+            "name:en": "Kaamil Didi Pre School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:13006103601",
+          "osm_url": "https://www.openstreetmap.org/node/13006103601",
+          "name": "ހުރަވީ ސްކޫލް",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5442303,
+            4.2196377
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "ހުރަވީ ސްކޫލް",
+            "name:en": "Huravee School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1210924794",
+          "osm_url": "https://www.openstreetmap.org/way/1210924794",
+          "name": "ރެހެންދި ސްކޫލް",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5413693,
+            4.2094742
+          ],
+          "tags": {
+            "amenity": "school",
+            "check_date": "2024-10-12",
+            "email": "admin@rehendi.edu.mv",
+            "name": "ރެހެންދި ސްކޫލް",
+            "name:dv": "ރެހެންދި ސްކޫލް",
+            "name:en": "Rehendhi School",
+            "operator": "Ministry of Education",
+            "operator:type": "public",
+            "source": "local knowledge"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477460243",
+          "osm_url": "https://www.openstreetmap.org/way/477460243",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5436394,
+            4.2186684
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477466315",
+          "osm_url": "https://www.openstreetmap.org/way/477466315",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5443375,
+            4.2188918
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477466316",
+          "osm_url": "https://www.openstreetmap.org/way/477466316",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5439798,
+            4.2184312
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477823126",
+          "osm_url": "https://www.openstreetmap.org/way/477823126",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5413663,
+            4.2094839
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1210925203",
+          "osm_url": "https://www.openstreetmap.org/way/1210925203",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5397275,
+            4.2198391
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1330634426",
+          "osm_url": "https://www.openstreetmap.org/way/1330634426",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.539773,
+            4.2201568
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1330634427",
+          "osm_url": "https://www.openstreetmap.org/way/1330634427",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5399443,
+            4.2197399
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:relation:9690664",
+          "osm_url": "https://www.openstreetmap.org/relation/9690664",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5416723,
+            4.2132968
+          ],
+          "tags": {
+            "building": "school",
+            "type": "multipolygon"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:651",
+      "official_name": "S'alaah'udhdheen School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/651",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:697262511",
+          "osm_url": "https://www.openstreetmap.org/way/697262511",
+          "name": "Ghaazee School",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5414833,
+            4.2133576
+          ],
+          "tags": {
+            "addr:city": "Hulhumalé",
+            "addr:street": "ބޯގަންވިލާ މަގު",
+            "amenity": "school",
+            "grades": "1-10",
+            "name": "Ghaazee School",
+            "operator": "Government of Maldives",
+            "operator:type": "government",
+            "religion": "muslim",
+            "website": "https://ghaazee.edu.mv/",
+            "wikidata": "Q16905629",
+            "wikipedia": "en:Ghaazee School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:14268489201",
+          "osm_url": "https://www.openstreetmap.org/node/14268489201",
+          "name": "Shaheed Ali School",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5481447,
+            4.2340514
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "Shaheed Ali School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1330634428",
+          "osm_url": "https://www.openstreetmap.org/way/1330634428",
+          "name": "Ajiyal International School",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5397441,
+            4.2198829
+          ],
+          "tags": {
+            "addr:street": "Moonima Magu",
+            "amenity": "school",
+            "name:en": "Ajiyal International School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477467764",
+          "osm_url": "https://www.openstreetmap.org/way/477467764",
+          "name": "Preschool",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.542775,
+            4.213919
+          ],
+          "tags": {
+            "amenity": "kindergarten",
+            "building": "school",
+            "name": "Preschool"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:436189997",
+          "osm_url": "https://www.openstreetmap.org/way/436189997",
+          "name": "Brightway International School",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5439335,
+            4.2185259
+          ],
+          "tags": {
+            "amenity": "school",
+            "check_date": "2026-08-16",
+            "name": "Brightway International School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1210925123",
+          "osm_url": "https://www.openstreetmap.org/way/1210925123",
+          "name": "CHSE Hulhumale",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5416929,
+            4.2207088
+          ],
+          "tags": {
+            "addr:street": "Kurikeela Magu",
+            "building": "school",
+            "building:levels": "4",
+            "name": "CHSE Hulhumale",
+            "name:dv": "ސެންޓަރ ފޯރ ހަޔަރ ސެކަންޑަރީ އެޑިއުކޭޝަން ހުޅުމާލެ",
+            "name:en": "Centre for Higher Secondary Education Hulhumale'",
+            "official_name": "Centre for Higher Secondary Education"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1547305510",
+          "osm_url": "https://www.openstreetmap.org/way/1547305510",
+          "name": "CHSE Hulhumale",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5416893,
+            4.2205972
+          ],
+          "tags": {
+            "amenity": "school",
+            "education": "school",
+            "name": "CHSE Hulhumale"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11183603641",
+          "osm_url": "https://www.openstreetmap.org/node/11183603641",
+          "name": "Stem Center",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5425013,
+            4.2175848
+          ],
+          "tags": {
+            "amenity": "school",
+            "name:en": "Stem Center"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11183603546",
+          "osm_url": "https://www.openstreetmap.org/node/11183603546",
+          "name": "learnium training centre",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5441222,
+            4.2160513
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "learnium training centre"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1210925026",
+          "osm_url": "https://www.openstreetmap.org/way/1210925026",
+          "name": "Fiyavathi",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.544048,
+            4.2189644
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "Fiyavathi"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:13006103401",
+          "osm_url": "https://www.openstreetmap.org/node/13006103401",
+          "name": "ކާމިލް ދީދީ ޕްރީސްކޫލް",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5483008,
+            4.2300161
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "ކާމިލް ދީދީ ޕްރީސްކޫލް",
+            "name:en": "Kaamil Didi Pre School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:13006103601",
+          "osm_url": "https://www.openstreetmap.org/node/13006103601",
+          "name": "ހުރަވީ ސްކޫލް",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5442303,
+            4.2196377
+          ],
+          "tags": {
+            "amenity": "school",
+            "name": "ހުރަވީ ސްކޫލް",
+            "name:en": "Huravee School"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1210924794",
+          "osm_url": "https://www.openstreetmap.org/way/1210924794",
+          "name": "ރެހެންދި ސްކޫލް",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5413693,
+            4.2094742
+          ],
+          "tags": {
+            "amenity": "school",
+            "check_date": "2024-10-12",
+            "email": "admin@rehendi.edu.mv",
+            "name": "ރެހެންދި ސްކޫލް",
+            "name:dv": "ރެހެންދި ސްކޫލް",
+            "name:en": "Rehendhi School",
+            "operator": "Ministry of Education",
+            "operator:type": "public",
+            "source": "local knowledge"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477460243",
+          "osm_url": "https://www.openstreetmap.org/way/477460243",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5436394,
+            4.2186684
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477466315",
+          "osm_url": "https://www.openstreetmap.org/way/477466315",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5443375,
+            4.2188918
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477466316",
+          "osm_url": "https://www.openstreetmap.org/way/477466316",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5439798,
+            4.2184312
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477823126",
+          "osm_url": "https://www.openstreetmap.org/way/477823126",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5413663,
+            4.2094839
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1210925203",
+          "osm_url": "https://www.openstreetmap.org/way/1210925203",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5397275,
+            4.2198391
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1330634426",
+          "osm_url": "https://www.openstreetmap.org/way/1330634426",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.539773,
+            4.2201568
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1330634427",
+          "osm_url": "https://www.openstreetmap.org/way/1330634427",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5399443,
+            4.2197399
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:relation:9690664",
+          "osm_url": "https://www.openstreetmap.org/relation/9690664",
+          "name": "",
+          "island": "Hulhumale'",
+          "coordinates": [
+            73.5416723,
+            4.2132968
+          ],
+          "tags": {
+            "building": "school",
+            "type": "multipolygon"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:654",
+      "official_name": "Male' Vocational High School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/654",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:592",
+      "official_name": "Gaafu Alifu Atoll Hospital",
+      "category": "hospital",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:753",
+      "official_name": "Haa Alifu Atoll Hospital",
+      "category": "hospital",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:1",
+      "official_name": "Blu Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:health:1001",
+      "official_name": "Centara Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "job_id": "batch-20261013-080000-02",
+  "records": [
+    {
+      "facility_id": "facility:school:546",
+      "official_name": "Mandhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/546",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:547",
+      "official_name": "Dhangethee School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/547",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:548",
+      "official_name": "ADh. Dhidhdhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/548",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:550",
+      "official_name": "Fenfushee School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/550",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:551",
+      "official_name": "V. Atoll Education Centre",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/551",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:553",
+      "official_name": "Keyodhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/553",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:554",
+      "official_name": "Thinadhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/554",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:555",
+      "official_name": "Rakeedhoo School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/555",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:way:951547163",
+          "osm_url": "https://www.openstreetmap.org/way/951547163",
+          "name": "",
+          "island": "Rakeedhoo",
+          "coordinates": [
+            73.4699533,
+            3.3146125
+          ],
+          "tags": {
+            "building": "school"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:557",
+      "official_name": "M. Atoll School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/557",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    },
+    {
+      "facility_id": "facility:school:558",
+      "official_name": "Mulaku School",
+      "category": "school",
+      "official_source_url": "https://www.moe.gov.mv/en/schools/558",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved."
+    }
+  ],
+  "summary": "deterministic local review"
+}

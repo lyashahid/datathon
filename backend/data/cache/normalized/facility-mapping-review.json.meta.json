@@ -1,0 +1,12 @@
+{
+  "content_type": "application/json",
+  "endpoint": "local review artifact",
+  "http_status": 200,
+  "parser_version": "normalization-v1",
+  "retrieved_at": "2026-10-13T12:17:19.966956+00:00",
+  "schema_version": 1,
+  "sha256": "541ae6403e6c8c17ee924a1147d4304c2139b1033a323571916ab8d227836381",
+  "source": "Mobility Sandbox facility mapping review audit",
+  "source_record_id": null,
+  "status": "fresh"
+}

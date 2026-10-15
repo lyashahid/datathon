@@ -1,0 +1,46 @@
+{
+  "generated_at": "2026-10-14T18:43:14.030056+00:00",
+  "method": "Same installed repository, same GeoJSON bytes, local TestClient, one warm-up plus repeated complete response reads. Baseline reproduces the previous dict return; optimized uses the current national router. HTTPX decompresses gzip before its content hash is checked.",
+  "repetitions": 3,
+  "measurements": {
+    "previous_dict_response": {
+      "seconds": [
+        1.8714982000019518,
+        1.2562438000022667,
+        1.373823399997491
+      ],
+      "median_seconds": 1.373823399997491,
+      "json_bytes": 14973659,
+      "wire_bytes": 14973659,
+      "sha256": "7b99f870d48ee996e37b3d5e0d4b113f20adb591126758423df93ef76f74863d",
+      "feature_count": 2223
+    },
+    "explicit_json_response": {
+      "seconds": [
+        0.6064447000026121,
+        0.641571300002397,
+        0.6818048000059207
+      ],
+      "median_seconds": 0.641571300002397,
+      "json_bytes": 14973659,
+      "wire_bytes": 14973659,
+      "sha256": "7b99f870d48ee996e37b3d5e0d4b113f20adb591126758423df93ef76f74863d",
+      "feature_count": 2223
+    },
+    "explicit_json_response_gzip": {
+      "seconds": [
+        0.5870534999994561,
+        0.6949727000028361,
+        0.6121079000004102
+      ],
+      "median_seconds": 0.6121079000004102,
+      "json_bytes": 14973659,
+      "wire_bytes": 5424658,
+      "sha256": "7b99f870d48ee996e37b3d5e0d4b113f20adb591126758423df93ef76f74863d",
+      "feature_count": 2223
+    }
+  },
+  "encoding_speedup": 2.141341733946575,
+  "wire_reduction_percent": 63.77199454054616,
+  "qualification": "CPU/content comparisons on this machine, not external-provider or browser latency. The frontend proxy currently decompresses the backend response, so compression saves transfer on the backend hop or direct API calls."
+}

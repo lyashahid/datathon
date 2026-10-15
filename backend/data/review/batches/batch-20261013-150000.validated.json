@@ -1,0 +1,2038 @@
+{
+  "version": "facility-review-validated-v1",
+  "validated_at": "2026-10-13T10:44:23.758977Z",
+  "job_id": "batch-20261013-150000",
+  "errors": [],
+  "records": [
+    {
+      "facility_id": "facility:health:383",
+      "official_name": "Uro Medical Care Closed",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:385",
+      "official_name": "Medhope Medical Centre",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:39",
+      "official_name": "NazaHealth",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:398",
+      "official_name": "Resort Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:4",
+      "official_name": "Grand Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:400",
+      "official_name": "JP Memorial Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:401",
+      "official_name": "Kani Medical Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:402",
+      "official_name": "Crystal Medicals",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:404",
+      "official_name": "Thundufushi Medical Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:41",
+      "official_name": "Emerald Maldives Resort Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:416",
+      "official_name": "Mipstar Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:419",
+      "official_name": "Noosandha",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:42",
+      "official_name": "Dharavandhoo Medical Center",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:14267725202",
+          "osm_url": "https://www.openstreetmap.org/node/14267725202",
+          "name": "Dharavandhoo Medical Centre",
+          "island": "Dharavandhoo",
+          "coordinates": [
+            73.1334513,
+            5.1564975
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "check_date": "2026-10-09",
+            "check_date:opening_hours": "2026-10-09",
+            "healthcare": "hospital",
+            "name": "Dharavandhoo Medical Centre",
+            "opening_hours": "Sa-Th 08:00-16:00"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:8439398536",
+          "osm_url": "https://www.openstreetmap.org/node/8439398536",
+          "name": "Dharavandhoo Health Centre",
+          "island": "Dharavandhoo",
+          "coordinates": [
+            73.1349001,
+            5.1578716
+          ],
+          "tags": {
+            "addr:city": "Dharavandhoo",
+            "addr:postcode": "06060",
+            "check_date": "2026-10-09",
+            "check_date:opening_hours": "2026-10-09",
+            "healthcare": "hospital",
+            "name": "Dharavandhoo Health Centre",
+            "opening_hours": "24/7",
+            "operator": "Ministry of Health",
+            "phone": "+9606600040"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:422",
+      "official_name": "Maalifushi By COMO",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:425",
+      "official_name": "Athuruga Medical Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:427",
+      "official_name": "Unique Dental",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:429",
+      "official_name": "Velaa Private Island Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:43",
+      "official_name": "Sha Therapy Dhivehibeys Centre",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:432",
+      "official_name": "AIMS Diagnostic Care",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:434",
+      "official_name": "Pro Care Clinic & Dental Centre",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:44",
+      "official_name": "Physio & Autism Clinic - Hulhumale'",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:11186258448",
+          "osm_url": "https://www.openstreetmap.org/node/11186258448",
+          "name": "European Clinic",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5461254,
+            4.2194254
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name:en": "European Clinic"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1448574099",
+          "osm_url": "https://www.openstreetmap.org/way/1448574099",
+          "name": "Tree Top Hospital",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5390602,
+            4.2124525
+          ],
+          "tags": {
+            "addr:city": "Hulhumalé",
+            "addr:housenumber": "Lot 10608",
+            "addr:postcode": "23000",
+            "addr:street": "Asurumaa Hingun",
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "name": "Tree Top Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:relation:11963822",
+          "osm_url": "https://www.openstreetmap.org/relation/11963822",
+          "name": "Tree Top Hospital",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5390109,
+            4.2121069
+          ],
+          "tags": {
+            "addr:street": "Asurumaa Hingun",
+            "building": "hospital",
+            "building:levels": "6",
+            "name": "Tree Top Hospital",
+            "type": "multipolygon"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11183604237",
+          "osm_url": "https://www.openstreetmap.org/node/11183604237",
+          "name": "Care Trust",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5430155,
+            4.2163645
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "Care Trust"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:383751026",
+          "osm_url": "https://www.openstreetmap.org/way/383751026",
+          "name": "ހުޅުމާލެ ހޮސްޕިޓަލް",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5431478,
+            4.2157382
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "check_date": "2024-10-13",
+            "healthcare": "hospital",
+            "name": "ހުޅުމާލެ ހޮސްޕިޓަލް",
+            "name:dv": "ހުޅުމާލެ ހޮސްޕިޓަލް",
+            "name:en": "Hulhumalé Hospital",
+            "website": "https://hmh.gov.mv"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477471181",
+          "osm_url": "https://www.openstreetmap.org/way/477471181",
+          "name": "",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5433358,
+            4.2156691
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:relation:9080106",
+          "osm_url": "https://www.openstreetmap.org/relation/9080106",
+          "name": "",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5431128,
+            4.2157286
+          ],
+          "tags": {
+            "building": "hospital",
+            "type": "multipolygon"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:443",
+      "official_name": "Ali Rasheed Dhivehi Beys Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:445",
+      "official_name": "Center for Traditional Medicine",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:446",
+      "official_name": "Dhivehi Beys Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:45",
+      "official_name": "Smiles Dental Care Hulhumale'",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:11183604237",
+          "osm_url": "https://www.openstreetmap.org/node/11183604237",
+          "name": "Care Trust",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5430155,
+            4.2163645
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "Care Trust"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11186258448",
+          "osm_url": "https://www.openstreetmap.org/node/11186258448",
+          "name": "European Clinic",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5461254,
+            4.2194254
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name:en": "European Clinic"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1448574099",
+          "osm_url": "https://www.openstreetmap.org/way/1448574099",
+          "name": "Tree Top Hospital",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5390602,
+            4.2124525
+          ],
+          "tags": {
+            "addr:city": "Hulhumalé",
+            "addr:housenumber": "Lot 10608",
+            "addr:postcode": "23000",
+            "addr:street": "Asurumaa Hingun",
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "name": "Tree Top Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:relation:11963822",
+          "osm_url": "https://www.openstreetmap.org/relation/11963822",
+          "name": "Tree Top Hospital",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5390109,
+            4.2121069
+          ],
+          "tags": {
+            "addr:street": "Asurumaa Hingun",
+            "building": "hospital",
+            "building:levels": "6",
+            "name": "Tree Top Hospital",
+            "type": "multipolygon"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:383751026",
+          "osm_url": "https://www.openstreetmap.org/way/383751026",
+          "name": "ހުޅުމާލެ ހޮސްޕިޓަލް",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5431478,
+            4.2157382
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "check_date": "2024-10-13",
+            "healthcare": "hospital",
+            "name": "ހުޅުމާލެ ހޮސްޕިޓަލް",
+            "name:dv": "ހުޅުމާލެ ހޮސްޕިޓަލް",
+            "name:en": "Hulhumalé Hospital",
+            "website": "https://hmh.gov.mv"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:477471181",
+          "osm_url": "https://www.openstreetmap.org/way/477471181",
+          "name": "",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5433358,
+            4.2156691
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:relation:9080106",
+          "osm_url": "https://www.openstreetmap.org/relation/9080106",
+          "name": "",
+          "island": "Hulhumalé",
+          "coordinates": [
+            73.5431128,
+            4.2157286
+          ],
+          "tags": {
+            "building": "hospital",
+            "type": "multipolygon"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:451",
+      "official_name": "Vision Clinic-01",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:452",
+      "official_name": "Raffles Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:455",
+      "official_name": "Ouch Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:457",
+      "official_name": "F & C Medicare and Scan Center",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:46",
+      "official_name": "Eye to Eye Opticals & Clinic 2",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:460",
+      "official_name": "Medical & Hyperbaric Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:47",
+      "official_name": "Moving Cure",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:472",
+      "official_name": "Ayada Maldives Resort Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:473",
+      "official_name": "Kurumba Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:48",
+      "official_name": "CareOne Dental & Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:482",
+      "official_name": "Male' Eye Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:11185404756",
+          "osm_url": "https://www.openstreetmap.org/node/11185404756",
+          "name": "The Clinic",
+          "island": "Malé",
+          "coordinates": [
+            73.5133692,
+            4.1768088
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "The Clinic"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:9951500245",
+          "osm_url": "https://www.openstreetmap.org/node/9951500245",
+          "name": "Central Clinic",
+          "island": "Malé",
+          "coordinates": [
+            73.5059555,
+            4.1750642
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name": "Central Clinic",
+            "phone": "+9603312221"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:9951457715",
+          "osm_url": "https://www.openstreetmap.org/node/9951457715",
+          "name": "Advance Medical Clinic",
+          "island": "Malé",
+          "coordinates": [
+            73.5099234,
+            4.1726376
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name": "Advance Medical Clinic",
+            "phone": "+9603007788"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:4584491564",
+          "osm_url": "https://www.openstreetmap.org/node/4584491564",
+          "name": "Poli Clinic & Medicals",
+          "island": "Malé",
+          "coordinates": [
+            73.5086607,
+            4.1739241
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name": "Poli Clinic & Medicals"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11185404564",
+          "osm_url": "https://www.openstreetmap.org/node/11185404564",
+          "name": "Image Center",
+          "island": "Malé",
+          "coordinates": [
+            73.5133759,
+            4.1768734
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "Image Center"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:6294957686",
+          "osm_url": "https://www.openstreetmap.org/node/6294957686",
+          "name": "Family Care",
+          "island": "Malé",
+          "coordinates": [
+            73.5159113,
+            4.1708825
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name": "Family Care"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:762119227",
+          "osm_url": "https://www.openstreetmap.org/way/762119227",
+          "name": "Medica",
+          "island": "Malé",
+          "coordinates": [
+            73.509502,
+            4.1786712
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "building": "yes",
+            "healthcare": "clinic",
+            "name": "Medica"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11183604042",
+          "osm_url": "https://www.openstreetmap.org/node/11183604042",
+          "name": "Pine Tree Health Care",
+          "island": "Malé",
+          "coordinates": [
+            73.5128807,
+            4.1774472
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "Pine Tree Health Care"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:151403710",
+          "osm_url": "https://www.openstreetmap.org/way/151403710",
+          "name": "Indira Gandhi Memorial Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5016077,
+            4.1733513
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "building": "yes",
+            "check_date": "2025-12-28",
+            "emergency": "yes",
+            "healthcare": "hospital",
+            "name": "Indira Gandhi Memorial Hospital",
+            "wikidata": "Q6024972",
+            "wikipedia": "en:Indira Gandhi Memorial Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1144346103",
+          "osm_url": "https://www.openstreetmap.org/way/1144346103",
+          "name": "Dharumavantha Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5012018,
+            4.1728204
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "25",
+            "name": "Dharumavantha Hospital",
+            "nohousenumber": "yes"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1548839614",
+          "osm_url": "https://www.openstreetmap.org/way/1548839614",
+          "name": "Dharumavantha Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5016116,
+            4.1732159
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "name": "Dharumavantha Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1001579095",
+          "osm_url": "https://www.openstreetmap.org/way/1001579095",
+          "name": "National Drug Agency of the Maldives",
+          "island": "Malé",
+          "coordinates": [
+            73.5119849,
+            4.174518
+          ],
+          "tags": {
+            "addr:city": "Male'",
+            "addr:street": "Alikilegefaanu Magu",
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "healthcare:speciality": "addiction",
+            "name": "National Drug Agency of the Maldives",
+            "wheelchair": "limited"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929099",
+          "osm_url": "https://www.openstreetmap.org/way/1317929099",
+          "name": "ADK Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5152839,
+            4.1749374
+          ],
+          "tags": {
+            "addr:city": "Male",
+            "addr:street": "Sosun Magu",
+            "amenity": "hospital",
+            "emergency": "yes",
+            "healthcare": "hospital",
+            "name": "ADK Hospital",
+            "wikidata": "Q4651138",
+            "wikipedia": "en:ADK Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:9951513836",
+          "osm_url": "https://www.openstreetmap.org/node/9951513836",
+          "name": "Senahiya Military Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.516507,
+            4.1716899
+          ],
+          "tags": {
+            "addr:street": "Moonlight Hingun, Malé, Maldives",
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "name": "Senahiya Military Hospital",
+            "opening_hours": "Mo-Su 06:00-06:00",
+            "phone": "+9603019899",
+            "website": "https://senahiya.business.site/"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:13999662501",
+          "osm_url": "https://www.openstreetmap.org/node/13999662501",
+          "name": "Lobby A",
+          "island": "Malé",
+          "coordinates": [
+            73.5148796,
+            4.1751159
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "name": "Lobby A"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929094",
+          "osm_url": "https://www.openstreetmap.org/way/1317929094",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5148801,
+            4.1751268
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "9",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929095",
+          "osm_url": "https://www.openstreetmap.org/way/1317929095",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5150742,
+            4.1751537
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "8",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929096",
+          "osm_url": "https://www.openstreetmap.org/way/1317929096",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5152662,
+            4.1751388
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "8",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929097",
+          "osm_url": "https://www.openstreetmap.org/way/1317929097",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5154649,
+            4.1751211
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "8",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929098",
+          "osm_url": "https://www.openstreetmap.org/way/1317929098",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5153868,
+            4.1749283
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1550173481",
+          "osm_url": "https://www.openstreetmap.org/way/1550173481",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5021703,
+            4.1733067
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:49",
+      "official_name": "VitalCare Dental",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:5",
+      "official_name": "SC Dental Care",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:50",
+      "official_name": "My Family Dentist Male'",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "osm_provisional_review_required",
+      "osm_candidates": [
+        {
+          "osm_object_id": "osm:node:6294957686",
+          "osm_url": "https://www.openstreetmap.org/node/6294957686",
+          "name": "Family Care",
+          "island": "Malé",
+          "coordinates": [
+            73.5159113,
+            4.1708825
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name": "Family Care"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:9951513836",
+          "osm_url": "https://www.openstreetmap.org/node/9951513836",
+          "name": "Senahiya Military Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.516507,
+            4.1716899
+          ],
+          "tags": {
+            "addr:street": "Moonlight Hingun, Malé, Maldives",
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "name": "Senahiya Military Hospital",
+            "opening_hours": "Mo-Su 06:00-06:00",
+            "phone": "+9603019899",
+            "website": "https://senahiya.business.site/"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:4584491564",
+          "osm_url": "https://www.openstreetmap.org/node/4584491564",
+          "name": "Poli Clinic & Medicals",
+          "island": "Malé",
+          "coordinates": [
+            73.5086607,
+            4.1739241
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name": "Poli Clinic & Medicals"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1144346103",
+          "osm_url": "https://www.openstreetmap.org/way/1144346103",
+          "name": "Dharumavantha Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5012018,
+            4.1728204
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "25",
+            "name": "Dharumavantha Hospital",
+            "nohousenumber": "yes"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1548839614",
+          "osm_url": "https://www.openstreetmap.org/way/1548839614",
+          "name": "Dharumavantha Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5016116,
+            4.1732159
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "name": "Dharumavantha Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11185404564",
+          "osm_url": "https://www.openstreetmap.org/node/11185404564",
+          "name": "Image Center",
+          "island": "Malé",
+          "coordinates": [
+            73.5133759,
+            4.1768734
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "Image Center"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1001579095",
+          "osm_url": "https://www.openstreetmap.org/way/1001579095",
+          "name": "National Drug Agency of the Maldives",
+          "island": "Malé",
+          "coordinates": [
+            73.5119849,
+            4.174518
+          ],
+          "tags": {
+            "addr:city": "Male'",
+            "addr:street": "Alikilegefaanu Magu",
+            "amenity": "hospital",
+            "healthcare": "hospital",
+            "healthcare:speciality": "addiction",
+            "name": "National Drug Agency of the Maldives",
+            "wheelchair": "limited"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:9951457715",
+          "osm_url": "https://www.openstreetmap.org/node/9951457715",
+          "name": "Advance Medical Clinic",
+          "island": "Malé",
+          "coordinates": [
+            73.5099234,
+            4.1726376
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name": "Advance Medical Clinic",
+            "phone": "+9603007788"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929099",
+          "osm_url": "https://www.openstreetmap.org/way/1317929099",
+          "name": "ADK Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5152839,
+            4.1749374
+          ],
+          "tags": {
+            "addr:city": "Male",
+            "addr:street": "Sosun Magu",
+            "amenity": "hospital",
+            "emergency": "yes",
+            "healthcare": "hospital",
+            "name": "ADK Hospital",
+            "wikidata": "Q4651138",
+            "wikipedia": "en:ADK Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11183604042",
+          "osm_url": "https://www.openstreetmap.org/node/11183604042",
+          "name": "Pine Tree Health Care",
+          "island": "Malé",
+          "coordinates": [
+            73.5128807,
+            4.1774472
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "Pine Tree Health Care"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:9951500245",
+          "osm_url": "https://www.openstreetmap.org/node/9951500245",
+          "name": "Central Clinic",
+          "island": "Malé",
+          "coordinates": [
+            73.5059555,
+            4.1750642
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "healthcare": "clinic",
+            "name": "Central Clinic",
+            "phone": "+9603312221"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:151403710",
+          "osm_url": "https://www.openstreetmap.org/way/151403710",
+          "name": "Indira Gandhi Memorial Hospital",
+          "island": "Malé",
+          "coordinates": [
+            73.5016077,
+            4.1733513
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "building": "yes",
+            "check_date": "2025-12-28",
+            "emergency": "yes",
+            "healthcare": "hospital",
+            "name": "Indira Gandhi Memorial Hospital",
+            "wikidata": "Q6024972",
+            "wikipedia": "en:Indira Gandhi Memorial Hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:11185404756",
+          "osm_url": "https://www.openstreetmap.org/node/11185404756",
+          "name": "The Clinic",
+          "island": "Malé",
+          "coordinates": [
+            73.5133692,
+            4.1768088
+          ],
+          "tags": {
+            "amenity": "doctors",
+            "healthcare": "doctor",
+            "name:en": "The Clinic"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:node:13999662501",
+          "osm_url": "https://www.openstreetmap.org/node/13999662501",
+          "name": "Lobby A",
+          "island": "Malé",
+          "coordinates": [
+            73.5148796,
+            4.1751159
+          ],
+          "tags": {
+            "amenity": "hospital",
+            "name": "Lobby A"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:762119227",
+          "osm_url": "https://www.openstreetmap.org/way/762119227",
+          "name": "Medica",
+          "island": "Malé",
+          "coordinates": [
+            73.509502,
+            4.1786712
+          ],
+          "tags": {
+            "amenity": "clinic",
+            "building": "yes",
+            "healthcare": "clinic",
+            "name": "Medica"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929094",
+          "osm_url": "https://www.openstreetmap.org/way/1317929094",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5148801,
+            4.1751268
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "9",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929095",
+          "osm_url": "https://www.openstreetmap.org/way/1317929095",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5150742,
+            4.1751537
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "8",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929096",
+          "osm_url": "https://www.openstreetmap.org/way/1317929096",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5152662,
+            4.1751388
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "8",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929097",
+          "osm_url": "https://www.openstreetmap.org/way/1317929097",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5154649,
+            4.1751211
+          ],
+          "tags": {
+            "building": "hospital",
+            "building:levels": "8",
+            "roof:levels": "0"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1317929098",
+          "osm_url": "https://www.openstreetmap.org/way/1317929098",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5153868,
+            4.1749283
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        },
+        {
+          "osm_object_id": "osm:way:1550173481",
+          "osm_url": "https://www.openstreetmap.org/way/1550173481",
+          "name": "",
+          "island": "Malé",
+          "coordinates": [
+            73.5021703,
+            4.1733067
+          ],
+          "tags": {
+            "building": "hospital"
+          },
+          "status": "discovered_overpass"
+        }
+      ],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    },
+    {
+      "facility_id": "facility:health:51",
+      "official_name": "Kanuhura Clinic",
+      "category": "clinic",
+      "official_source_url": "https://hems.health.gov.mv/establishments",
+      "confidence": "low",
+      "decision": "island_context_only",
+      "osm_candidates": [],
+      "evidence_note": "Deterministic bounded-OSM pass found no uniquely promotable candidate; AI/manual review remains optional.",
+      "follow_up": "Review candidates or retain unresolved.",
+      "selected_candidate": null,
+      "live_verification": null,
+      "derived_tags": {},
+      "derived_coordinates": null,
+      "validation": {
+        "checks": {
+          "single_candidate": false,
+          "live_object": false,
+          "maldives_bounds": false,
+          "category_compatible": false,
+          "island_agreement": false,
+          "unique_selected_object": true
+        },
+        "approved": false
+      }
+    }
+  ]
+}

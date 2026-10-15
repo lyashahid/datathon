@@ -1,0 +1,73 @@
+{
+  "version": "online-facility-review-batch-v2",
+  "reviewed_at": "2026-10-13T07:31:59.674786Z",
+  "batch_id": "deleg_0ce88116",
+  "source_jobs": [
+    "batch-20261013-064500-01",
+    "batch-20261013-064500-02",
+    "batch-20261013-064500-03",
+    "batch-20261013-064500-04"
+  ],
+  "facility_ids": [
+    "facility:health:574",
+    "facility:health:576",
+    "facility:health:577",
+    "facility:health:579",
+    "facility:health:580",
+    "facility:health:582",
+    "facility:health:584",
+    "facility:health:585",
+    "facility:health:586",
+    "facility:health:588",
+    "facility:health:589",
+    "facility:health:591",
+    "facility:health:594",
+    "facility:health:595",
+    "facility:health:596",
+    "facility:health:597",
+    "facility:health:598",
+    "facility:health:599",
+    "facility:health:601",
+    "facility:health:607",
+    "facility:health:608",
+    "facility:health:609",
+    "facility:health:635",
+    "facility:health:636",
+    "facility:health:639",
+    "facility:health:640",
+    "facility:health:641",
+    "facility:health:643",
+    "facility:health:645",
+    "facility:health:653",
+    "facility:health:696",
+    "facility:health:697",
+    "facility:health:702",
+    "facility:health:703",
+    "facility:health:707",
+    "facility:health:708",
+    "facility:health:710",
+    "facility:health:711",
+    "facility:health:712",
+    "facility:health:716"
+  ],
+  "decision_counts": {
+    "island_context_only": 9,
+    "reviewed_osm_match": 3,
+    "source_not_in_osm": 27,
+    "unresolved": 1
+  },
+  "confirmed_promotions": [
+    "facility:health:608",
+    "facility:health:609",
+    "facility:health:643"
+  ],
+  "rejected_or_not_promoted": [
+    "facility:health:577",
+    "facility:health:579",
+    "facility:health:580",
+    "facility:health:697",
+    "facility:health:708"
+  ],
+  "canonical_files_modified_by_workers": false,
+  "notes": "All 40 records were returned exactly once by four delegated workers. Three live, identity-supported OSM matches were promoted; all other candidates remain unresolved, source-not-in-OSM, island-context-only, or explicitly rejected."
+}
