@@ -9,6 +9,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from app.api.routes.data_updates import get_service as get_data_updates
+from app.planning.bus_connection import BusConnectionPlanner, BusConnectionRequest
 from app.planning.calibration import (
     FACTOR_UNITS,
     CalibrationImport,
@@ -116,6 +117,22 @@ def ferry_service(
 ) -> dict[str, Any]:
     try:
         return service.ferry_service(payload)
+    except (ValueError, KeyError, TypeError, IndexError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@router.post("/bus-connection")
+def bus_connection(
+    payload: BusConnectionRequest,
+    request: Request,
+    planning: PlanningService = Depends(get_planning),
+) -> dict[str, Any]:
+    service = getattr(request.app.state, "bus_connection_planning", None)
+    if service is None or service.planning is not planning:
+        service = BusConnectionPlanner(planning)
+        request.app.state.bus_connection_planning = service
+    try:
+        return service.preview(payload)
     except (ValueError, KeyError, TypeError, IndexError) as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
 

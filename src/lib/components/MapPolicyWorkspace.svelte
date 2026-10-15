@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, tick, untrack } from 'svelte';
+	import type { BusConnectionDraft } from '#lib/bus-planning.js';
 	import {
 		ArrowRight,
 		BusFront,
@@ -40,6 +41,7 @@
 		type MapBaseline,
 		type MapEvaluation,
 		type MapPolicyState,
+		type MapServiceEditor,
 		type PendingPlacementDecision,
 		type PlacementKind
 	} from '#lib/map-policy.js';
@@ -59,7 +61,6 @@
 	import type { Coordinates, MapFeatures } from '#lib/types.js';
 	import {
 		canConfirmFerry,
-		ferryConnectionLabel,
 		ferryFeatureBounds,
 		ferryPlanningDate,
 		ferryServiceInput,
@@ -96,7 +97,14 @@
 	type Command = {
 		id: number;
 		kind:
-			'inspect' | 'gaps' | 'compose' | 'close' | 'confirm' | 'cancel-placement' | 'adjust-budget';
+			| 'inspect'
+			| 'gaps'
+			| 'compose'
+			| 'close'
+			| 'confirm'
+			| 'cancel-placement'
+			| 'cancel-service'
+			| 'adjust-budget';
 	} | null;
 	type BudgetQuote = {
 		economics: PlanningEconomics;
@@ -118,6 +126,9 @@
 		lens = 'overall',
 		command = null,
 		placement = null,
+		servicePlacement = null,
+		serviceLanding = null,
+		serviceCandidate = null,
 		incomingOperation = null,
 		moved = null,
 		edited = null,
@@ -145,6 +156,14 @@
 		lens?: PolicyLens;
 		command?: Command;
 		placement?: { id: number; longitude: number; latitude: number; kind?: PlacementKind } | null;
+		servicePlacement?: { id: number; kind: 'bus' | 'ferry'; coordinates: Coordinates } | null;
+		serviceLanding?: {
+			id: number;
+			terminalId: string;
+			islandId?: string;
+			coordinates: Coordinates;
+		} | null;
+		serviceCandidate?: { id: number; stopId: string } | null;
 		incomingOperation?: Record<string, unknown> | null;
 		moved?: { id: number; index: number; coordinates: Coordinates } | null;
 		edited?: { id: number; index: number; action: 'move' | 'duplicate' | 'remove' } | null;
@@ -189,6 +208,25 @@
 	let previewCalculating = $state(false);
 	let previewController: AbortController | undefined;
 	let busOpen = $state(false);
+	let serviceAnchor = $state<Coordinates | null>(null);
+	let serviceEditorCompact = $state(false);
+	let ferryOriginTerminal = $state('');
+	let ferryDestinationTerminal = $state('');
+	let ferryDropPoint = $state<Coordinates | null>(null);
+	let consumedServicePlacement = 0,
+		consumedServiceLanding = 0,
+		consumedServiceCandidate = 0;
+	let busStopOnly = $state(false);
+	let busConnectionTarget = $state('');
+	let busConnectionHeadway = $state<number | string>(20);
+	let busConnectionStart = $state('06:00');
+	let busConnectionEnd = $state('20:00');
+	let busConnectionFleet = $state('diesel');
+	let busConnectionDraft = $state.raw<{ key: string; value: BusConnectionDraft } | null>(null);
+	let busConnectionChecking = $state(false);
+	let busConnectionRetry = $state(0);
+	let busConnectionError = $state('');
+	let busConnectionController: AbortController | undefined;
 	let busPatternId = $state('');
 	let busHeadway = $state<number | string>(15);
 	let busQuote = $state.raw<{ key: string; value: BudgetQuote } | null>(null);
@@ -209,7 +247,7 @@
 	let ferryLoading = $state(false);
 	let ferryPreviewing = $state(false);
 	let ferryError = $state('');
-	let ferryComposer = $state<HTMLElement | null>(null);
+
 	let capitalBudget = $state<number | string>(150_000_000);
 	let annualBudget = $state<number | string>(25_000_000);
 	let goal = $state<'healthcare' | 'education' | 'transport'>('healthcare');
@@ -315,6 +353,8 @@
 			islandId,
 			{
 				destinationId: ferryDestination,
+				originTerminalId: ferryOriginTerminal,
+				destinationTerminalId: ferryDestinationTerminal,
 				headway: ferryHeadway,
 				start: ferryStart,
 				end: ferryEnd,
@@ -366,8 +406,10 @@
 	const draftItems = $derived(
 		operations.flatMap((operation, index) =>
 			typeof operation.metadata?.ui_package === 'string' &&
-			operation.metadata.ui_package.startsWith('ferry-service:') &&
-			!operation.metadata.ui_ferry_summary
+			(operation.metadata.ui_package.startsWith('ferry-service:') ||
+				operation.metadata.ui_package.startsWith('bus-route:')) &&
+			!operation.metadata.ui_ferry_summary &&
+			!operation.metadata.ui_bus_summary
 				? []
 				: [{ operation, index }]
 		)
@@ -399,7 +441,7 @@
 				}
 			: null
 	);
-	const placementOperations = $derived(
+	const plainPlacementOperations = $derived(
 		pendingOperation
 			? editingIndex === null
 				? [...operations, pendingOperation]
@@ -408,6 +450,80 @@
 					)
 			: operations
 	);
+	const busConnectionMode = $derived(
+		!!pending &&
+			pending.kind === 'add_stop' &&
+			editingIndex === null &&
+			!pendingBase &&
+			!busStopOnly
+	);
+	const busConnectionInput = $derived(
+		busConnectionMode && pending && islandId
+			? {
+					island_id: islandId,
+					coordinates: pending.coordinates,
+					stop_name: pendingOperation?.name ?? 'Proposed bus stop',
+					...(busConnectionTarget ? { target_stop_id: busConnectionTarget } : {}),
+					headway_minutes: Number(busConnectionHeadway),
+					start_minutes: clockMinutes(busConnectionStart),
+					end_minutes: clockMinutes(busConnectionEnd),
+					speed_kph: 15,
+					fleet: busConnectionFleet,
+					assumptions: request.assumptions,
+					operations
+				}
+			: null
+	);
+	const busConnectionKey = $derived(JSON.stringify(busConnectionInput));
+	const busConnection = $derived(
+		busConnectionDraft?.key === busConnectionKey ? busConnectionDraft.value : null
+	);
+	const connectionOperations = $derived(
+		(busConnection?.operations ?? []).map((operation, index) => ({
+			...operation,
+			metadata: {
+				...operation.metadata,
+				ui_map_features: undefined,
+				ui_package: `bus-route:${pendingId}`,
+				ui_capital:
+					index === 0 &&
+					costs.capital !== null &&
+					busConnection?.quote?.economics.delta.capital_mvr != null
+						? busConnection.quote.economics.delta.capital_mvr - costs.capital
+						: index === 0
+							? undefined
+							: 0,
+				ui_annual:
+					index === 0 &&
+					costs.annual !== null &&
+					busConnection?.quote?.economics.delta.annual_operating_mvr != null
+						? busConnection.quote.economics.delta.annual_operating_mvr - costs.annual
+						: index === 0
+							? undefined
+							: 0,
+				...(index === 0
+					? {
+							ui_map_features: busConnection
+								? {
+										...busConnection.map_features,
+										features: busConnection.map_features.features.filter(
+											(feature) =>
+												feature.geometry.type !== 'Point' ||
+												feature.properties?.role !== 'candidate'
+										)
+									}
+								: undefined,
+							ui_bus_summary: busConnection?.summary
+						}
+					: {})
+			}
+		}))
+	);
+	const placementOperations = $derived(
+		busConnectionMode && busConnection?.status === 'ready'
+			? [...operations, ...connectionOperations]
+			: plainPlacementOperations
+	);
 	const placementEvaluationKey = $derived(
 		JSON.stringify({ ...request, operations: placementOperations })
 	);
@@ -415,7 +531,11 @@
 		placementEvaluation?.key === placementEvaluationKey ? placementEvaluation.value : null
 	);
 	const quotedPlacement = $derived(
-		placementQuote?.key === placementKey ? placementQuote.value : null
+		busConnectionMode
+			? (busConnection?.quote ?? null)
+			: placementQuote?.key === placementKey
+				? placementQuote.value
+				: null
 	);
 	const pendingCosts = $derived(
 		pending
@@ -464,6 +584,9 @@
 						pendingWithin === true &&
 						budgetLimits.allowed &&
 						!!quotedPlacement?.budget.allowed &&
+						(!busConnectionMode ||
+							(busConnection?.status === 'ready' &&
+								operations.length + connectionOperations.length <= 100)) &&
 						!placementError &&
 						!checkingBudget,
 					reason:
@@ -570,15 +693,51 @@
 			restoredScope !== scopedKey
 				? []
 				: [
-						...operations.flatMap(
-							(operation) =>
+						...operations.flatMap((operation) =>
+							(
 								(operation.metadata?.ui_map_features as FeatureCollection | undefined)?.features ??
 								[]
+							).map((feature) => {
+								const summary = (operation.metadata?.ui_ferry_summary ??
+									operation.metadata?.ui_bus_summary) as Record<string, unknown> | undefined;
+								return {
+									...feature,
+									properties: {
+										...feature.properties,
+										accepted: true,
+										route_name: summary?.name ?? operation.name,
+										headway_minutes: summary?.headway_minutes ?? operation.headway_minutes,
+										service_date: summary?.service_date ?? request.assumptions.date,
+										travel_minutes: summary?.travel_minutes ?? summary?.crossing_minutes,
+										origin_name: (summary?.origin_terminal as { name?: string } | undefined)?.name,
+										destination_name:
+											(summary?.destination_terminal as { name?: string } | undefined)?.name ??
+											(summary?.target_stop as { name?: string } | undefined)?.name
+									}
+								};
+							})
 						),
 						...(suggested?.selected.flatMap((item) => item.map_features?.features ?? []) ?? []),
 						...(busOpen ? busMapFeatures().features : []),
+						...(busConnectionMode
+							? (busConnection?.map_features.features ?? []).map((feature) => ({
+									...feature,
+									properties: {
+										...feature.properties,
+										...(feature.geometry.type === 'Point' && feature.properties?.role !== 'origin'
+											? {
+													kind: 'bus_connection_candidate',
+													stop_id: feature.properties?.stop_id ?? feature.properties?.id
+												}
+											: {})
+									}
+								}))
+							: []),
 						...(ferryOpen
-							? ((ferryPreview?.map_features ?? connection?.map_features)?.features ?? [])
+							? [
+									...(ferryPreview?.map_features?.features ?? []),
+									...ferryLandingFeatures().features
+								]
 							: [])
 					]
 	});
@@ -621,11 +780,13 @@
 	const busSignature = $derived(JSON.stringify({ request, busPatternId, busHeadway }));
 	const busPreview = $derived(busQuote?.key === busSignature ? busQuote.value : null);
 	const previewEconomics = $derived(
-		quotedPlacement?.economics ??
+		(busConnectionMode ? busConnection?.quote?.economics : quotedPlacement?.economics) ??
 			(ferryOpen ? ferryPreview?.quote?.economics : null) ??
 			(busOpen ? busPreview?.economics : null)
 	);
-	const hasDraftContext = $derived(!!(draftItems.length || pending || armedKind || actionMessage));
+	const hasDraftContext = $derived(
+		!!(draftItems.length || pending || armedKind || actionMessage || ferryOpen || busOpen)
+	);
 	const draftEconomics = $derived<PlanningEconomics>({
 		currency: 'MVR',
 		basis: 'Illustrative backend cost factors. Operating service cost requires a service plan.',
@@ -639,6 +800,188 @@
 	const visibleEconomics = $derived(
 		previewEconomics ?? (evaluation && !stale ? evaluation.economics : draftEconomics)
 	);
+
+	const serviceEditor = $derived<MapServiceEditor | null>(
+		active && restoredScope === scopedKey
+			? busConnectionMode && pending
+				? {
+						id: pendingId,
+						coordinates: pending.coordinates,
+						mode: 'bus-connection',
+						title: 'Connect a new bus stop'
+					}
+				: ferryOpen && serviceAnchor
+					? {
+							id: 'ferry-service',
+							coordinates: serviceAnchor,
+							mode: 'ferry',
+							title: 'Plan a ferry service'
+						}
+					: busOpen && serviceAnchor
+						? {
+								id: 'bus-service',
+								coordinates: serviceAnchor,
+								mode: 'bus',
+								title: 'Improve a bus service'
+							}
+						: null
+			: null
+	);
+	function clockMinutes(value: string) {
+		const [hours, minutes] = value.split(':').map(Number);
+		return hours * 60 + minutes;
+	}
+	function ferryLandingFeatures(): FeatureCollection {
+		return {
+			type: 'FeatureCollection',
+			features: [
+				...(connection?.terminals.origin ?? []),
+				...(connection?.terminals.destination ?? [])
+			].map((terminal) => ({
+				type: 'Feature',
+				geometry: { type: 'Point', coordinates: terminal.coordinates },
+				properties: {
+					kind: 'ferry_landing',
+					mode: 'ferry',
+					terminal_id: terminal.id,
+					island_id: terminal.island_id,
+					name: terminal.name,
+					role:
+						terminal.id === ferryOriginTerminal
+							? 'origin'
+							: terminal.id === ferryDestinationTerminal
+								? 'destination'
+								: 'candidate'
+				}
+			}))
+		};
+	}
+	function routeAnchor(): Coordinates | null {
+		const stop = baseline?.stops?.find((item) => busPattern?.stopIds.includes(item.id));
+		return stop ? [stop.lon, stop.lat] : (current?.coordinates ?? null);
+	}
+	function serviceDrag(event: DragEvent, kind: 'bus' | 'ferry') {
+		if (!event.dataTransfer) return;
+		event.dataTransfer.setData('application/x-policy-service', kind);
+		event.dataTransfer.effectAllowed = 'copy';
+		const icon =
+			event.currentTarget instanceof HTMLElement
+				? event.currentTarget.querySelector('[data-service-icon]')
+				: null;
+		if (icon) event.dataTransfer.setDragImage(icon, 22, 22);
+	}
+	$effect(() => {
+		if (!active || !servicePlacement || servicePlacement.id === consumedServicePlacement) return;
+		untrack(() => {
+			consumedServicePlacement = servicePlacement!.id;
+			if (servicePlacement!.kind === 'ferry') beginFerry(servicePlacement!.coordinates);
+			else beginBusService(servicePlacement!.coordinates);
+		});
+	});
+	$effect(() => {
+		if (!active || !serviceLanding || serviceLanding.id === consumedServiceLanding || !ferryOpen)
+			return;
+		untrack(() => {
+			const landing = serviceLanding!;
+			consumedServiceLanding = landing.id;
+			if (landing.islandId === islandId) {
+				ferryOriginTerminal = landing.terminalId;
+				serviceAnchor = landing.coordinates;
+				onFocus(landing.coordinates);
+			} else if (landing.islandId === ferryDestination)
+				ferryDestinationTerminal = landing.terminalId;
+		});
+	});
+	$effect(() => {
+		if (
+			!active ||
+			!serviceCandidate ||
+			serviceCandidate.id === consumedServiceCandidate ||
+			!busConnectionMode
+		)
+			return;
+		untrack(() => {
+			consumedServiceCandidate = serviceCandidate!.id;
+			busConnectionTarget = serviceCandidate!.stopId;
+		});
+	});
+	$effect(() => {
+		const payload = busConnectionInput,
+			key = busConnectionKey;
+		void busConnectionRetry;
+		if (payload && payload.operations.length > 97) {
+			untrack(() => {
+				busConnectionChecking = false;
+				busConnectionError =
+					'A connected stop needs room for three changes. Remove another change, or choose Add only a stop.';
+			});
+			return;
+		}
+		if (
+			!mounted ||
+			!active ||
+			!payload ||
+			!supported ||
+			loading ||
+			pendingWithin !== true ||
+			!budgetLimits.allowed
+		)
+			return;
+		const controller = new AbortController();
+		busConnectionController = controller;
+		untrack(() => {
+			busConnectionChecking = true;
+			busConnectionError = '';
+		});
+		const timer = setTimeout(async () => {
+			try {
+				const value = await api<BusConnectionDraft>(
+					'planning/bus-connection',
+					payload,
+					controller.signal
+				);
+				if (!controller.signal.aborted && key === busConnectionKey)
+					busConnectionDraft = { key, value };
+			} catch (cause) {
+				if (!controller.signal.aborted)
+					busConnectionError =
+						cause instanceof Error ? cause.message : 'The bus connection could not be checked.';
+			} finally {
+				if (busConnectionController === controller) busConnectionChecking = false;
+			}
+		}, 220);
+		return () => {
+			clearTimeout(timer);
+			controller.abort();
+			untrack(() => {
+				busConnectionChecking = false;
+			});
+		};
+	});
+	$effect(() => {
+		const key = busSignature;
+		if (!active || !busOpen || !busPatternActive || !budgetLimits.allowed) return;
+		const timer = setTimeout(() => {
+			if (key === busSignature) untrack(() => void previewBusService());
+		}, 300);
+		return () => clearTimeout(timer);
+	});
+	$effect(() => {
+		const key = ferrySignature;
+		if (
+			!active ||
+			!ferryOpen ||
+			!ferryInput.payload ||
+			ferryLoading ||
+			!connection ||
+			!budgetLimits.allowed
+		)
+			return;
+		const timer = setTimeout(() => {
+			if (key === ferrySignature) untrack(() => void previewFerry());
+		}, 350);
+		return () => clearTimeout(timer);
+	});
 
 	onMount(() => {
 		mounted = true;
@@ -872,6 +1215,12 @@
 				confirm();
 				return;
 			}
+			if (command!.kind === 'cancel-service') {
+				closeFerry();
+				closeBusService();
+				cancelPending();
+				return;
+			}
 			if (command!.kind === 'cancel-placement') {
 				cancelPending();
 				return;
@@ -899,6 +1248,10 @@
 			}
 			closeFerry();
 			closeBusService();
+			serviceEditorCompact = false;
+			busStopOnly = false;
+			busConnectionTarget = '';
+			busConnectionDraft = null;
 			quoteController?.abort();
 			checkingBudget = false;
 			pending = {
@@ -973,7 +1326,7 @@
 		const origin = islandId;
 		const destination = ferryDestination;
 		const serviceDate = date;
-		if (!mounted || !active || !ferryOpen || !origin || !destination) return;
+		if (!mounted || !active || !ferryOpen || !origin) return;
 		const controller = new AbortController();
 		ferryConnectionController = controller;
 		untrack(() => {
@@ -981,14 +1334,42 @@
 			ferryError = '';
 		});
 		void api<FerryConnectivity>(
-			`planning/connectivity?${new URLSearchParams({ origin_island_id: origin, destination_island_id: destination, date: serviceDate })}`,
+			`planning/connectivity?${new URLSearchParams({ origin_island_id: origin, ...(destination ? { destination_island_id: destination } : {}), date: serviceDate })}`,
 			undefined,
 			controller.signal
 		)
 			.then((value) => {
 				if (!controller.signal.aborted && ferryConnectionKey === key) {
 					ferryConnection = { key, value };
-					focusFerryFeatures(value.map_features);
+					const terminals = value.terminals.origin;
+					if (!terminals.some((item) => item.id === ferryOriginTerminal)) {
+						const near = ferryDropPoint ?? current?.coordinates;
+						const selected = near
+							? [...terminals].sort(
+									(a, b) =>
+										Math.hypot(a.coordinates[0] - near[0], a.coordinates[1] - near[1]) -
+										Math.hypot(b.coordinates[0] - near[0], b.coordinates[1] - near[1])
+								)[0]
+							: terminals[0];
+						ferryOriginTerminal = selected?.id ?? '';
+						if (selected) {
+							serviceAnchor = selected.coordinates;
+							onFocus(selected.coordinates);
+						}
+					}
+					if (!value.terminals.destination.some((item) => item.id === ferryDestinationTerminal))
+						ferryDestinationTerminal = value.terminals.destination[0]?.id ?? '';
+					if (destination)
+						focusFerryFeatures({
+							type: 'FeatureCollection',
+							features: [...value.terminals.origin, ...value.terminals.destination].map(
+								(terminal) => ({
+									type: 'Feature',
+									geometry: { type: 'Point', coordinates: terminal.coordinates },
+									properties: {}
+								})
+							)
+						});
 				}
 			})
 			.catch((cause) => {
@@ -1104,6 +1485,8 @@
 			gapFeatures: mapGaps,
 			impactFeatures: impact,
 			serviceFeatures,
+			serviceEditor,
+			serviceEditorContent,
 			calculating,
 			stale,
 			panelOpen: opened,
@@ -1117,6 +1500,7 @@
 		if (
 			!active ||
 			!site ||
+			busConnectionMode ||
 			!baseline ||
 			!supported ||
 			loading ||
@@ -1427,28 +1811,50 @@
 		onPickKind(kind);
 		onCloseOthers();
 	}
-	function beginFerry() {
+	function beginFerry(point?: Coordinates) {
+		serviceEditorCompact = false;
 		cancelPending();
 		cancelSuggestions();
-		open('proposal');
+		opened = false;
+		section = 'proposal';
+		onCloseOthers();
+		ferryDropPoint = point ?? null;
+		ferryOriginTerminal = '';
+		serviceAnchor = point ?? current?.coordinates ?? null;
 		ferryOpen = true;
 		closeBusService();
 		ferryError = '';
 		ferryChoosingDestination = !ferryDestination;
 		onLensChange('transport');
 		setGoal('transport');
-		void tick().then(() => ferryComposer?.scrollIntoView({ block: 'nearest' }));
 	}
-	function beginBusService() {
+	function beginBusService(point?: Coordinates) {
+		serviceEditorCompact = false;
 		cancelPending();
 		cancelSuggestions();
 		closeFerry();
 		closeBusService();
-		open('proposal');
+		opened = false;
+		section = 'proposal';
+		onCloseOthers();
+		serviceAnchor = point ?? current?.coordinates ?? null;
 		busOpen = true;
 		busError = '';
 		if (!busPatterns.some((pattern) => pattern.id === busPatternId))
 			busPatternId = busPatterns[0]?.id ?? '';
+		if (point && baseline?.stops) {
+			const nearest = [...baseline.stops]
+				.filter((stop) => busPatterns.some((pattern) => pattern.stopIds.includes(stop.id)))
+				.sort(
+					(a, b) =>
+						Math.hypot(a.lon - point[0], a.lat - point[1]) -
+						Math.hypot(b.lon - point[0], b.lat - point[1])
+				)[0];
+			const route = busPatterns.find((pattern) => nearest && pattern.stopIds.includes(nearest.id));
+			if (route) busPatternId = route.id;
+		}
+		serviceAnchor = routeAnchor();
+		focusFerryFeatures(busMapFeatures());
 		onLensChange('transport');
 	}
 	function closeBusService() {
@@ -1480,11 +1886,20 @@
 			(busPattern?.geometry?.length ? [busPattern.geometry] : []);
 		return {
 			type: 'FeatureCollection',
-			features: lines.map((coordinates) => ({
-				type: 'Feature',
-				properties: { name: busPattern?.name, mode: 'bus' },
-				geometry: { type: 'LineString', coordinates }
-			}))
+			features: [
+				...lines.map((coordinates) => ({
+					type: 'Feature' as const,
+					properties: { name: busPattern?.name, mode: 'bus' },
+					geometry: { type: 'LineString' as const, coordinates }
+				})),
+				...(baseline?.stops ?? [])
+					.filter((stop) => busPattern?.stopIds.includes(stop.id))
+					.map((stop) => ({
+						type: 'Feature' as const,
+						properties: { id: stop.id, name: stop.name, mode: 'bus', role: 'stop' },
+						geometry: { type: 'Point' as const, coordinates: [stop.lon, stop.lat] }
+					}))
+			]
 		};
 	}
 	async function previewBusService() {
@@ -1503,6 +1918,11 @@
 				'No published departures start on the selected service date. Choose a recorded service date before changing this route.';
 			return;
 		}
+		if (busOperations().length > 100) {
+			busError =
+				'This proposal has reached the 100-change limit. Remove a change before adding a bus service adjustment.';
+			return;
+		}
 		busController?.abort();
 		const controller = new AbortController();
 		busController = controller;
@@ -1518,18 +1938,6 @@
 			);
 			if (!controller.signal.aborted && busOpen && key === busSignature) {
 				busQuote = { key, value };
-				const stops = (baseline?.stops ?? []).filter((stop) =>
-					busPattern?.stopIds.includes(stop.id)
-				);
-				const bounds = ferryFeatureBounds({
-					type: 'FeatureCollection',
-					features: stops.map((stop) => ({
-						type: 'Feature',
-						properties: {},
-						geometry: { type: 'Point', coordinates: [stop.lon, stop.lat] }
-					}))
-				});
-				if (bounds) onFocusBounds?.(bounds);
 			}
 		} catch (cause) {
 			if (!controller.signal.aborted)
@@ -1579,7 +1987,7 @@
 		ferrySearch = '';
 		ferryChoosingDestination = false;
 		ferryError = '';
-		opened = true;
+		opened = false;
 		section = 'proposal';
 		onPickFerryDestination(false);
 	}
@@ -1594,6 +2002,11 @@
 	}
 	async function previewFerry() {
 		const input = ferryInput;
+		if (operations.length > 98) {
+			ferryError =
+				'A return ferry service needs two changes. Remove a change to stay within the 100-change proposal limit.';
+			return;
+		}
 		if (!input.payload) {
 			ferryError = input.error;
 			return;
@@ -1617,7 +2030,6 @@
 			);
 			if (!controller.signal.aborted && key === ferrySignature) {
 				ferryDraft = { key, value };
-				focusFerryFeatures(value.map_features);
 			}
 		} catch (cause) {
 			if (!controller.signal.aborted)
@@ -1645,6 +2057,7 @@
 			...(index === 0 && preview.summary ? { name: preview.summary.name } : {}),
 			metadata: {
 				...operation.metadata,
+				ui_map_features: undefined,
 				ui_package: group,
 				ui_capital:
 					index === 0
@@ -1671,7 +2084,8 @@
 		};
 		commitChange(next);
 		closeFerry();
-		showImpact = false;
+		showImpact = true;
+		actionMessage = 'Ferry service added · recalculating journeys and costs';
 	}
 	function confirm() {
 		if (!pending || (editingIndex === null && operations.length >= 100)) return;
@@ -1718,6 +2132,12 @@
 		);
 	}
 	function cancelPending() {
+		busConnectionController?.abort();
+		busConnectionChecking = false;
+		busConnectionDraft = null;
+		busConnectionTarget = '';
+		busConnectionError = '';
+		busStopOnly = false;
 		quoteController?.abort();
 		checkingBudget = false;
 		pending = null;
@@ -1858,7 +2278,7 @@
 	function focusOperation(index: number) {
 		const ferryFeatures = operations[index]?.metadata?.ui_map_features as
 			FeatureCollection | undefined;
-		if (operations[index]?.metadata?.ui_ferry_summary && ferryFeatures) {
+		if (ferryFeatures?.features.some((feature) => feature.geometry.type === 'LineString')) {
 			review = false;
 			focusFerryFeatures(ferryFeatures);
 			return;
@@ -1887,7 +2307,503 @@
 	}
 </script>
 
-{#if active}
+{#snippet serviceMapPreviewAction()}
+	<button
+		class="service-preview-map"
+		disabled={busConnectionMode
+			? !busConnection?.summary
+			: ferryOpen
+				? !ferryPreview?.summary
+				: !busPattern}
+		onclick={() => {
+			serviceEditorCompact = true;
+			focusFerryFeatures(
+				busConnectionMode
+					? busConnection!.map_features
+					: ferryOpen
+						? ferryPreview!.map_features
+						: busMapFeatures()
+			);
+		}}><MapPin size={14} />See the full route on the map</button
+	>
+{/snippet}
+
+{#snippet serviceEditorContent()}
+	<div class="policy-service-popover">
+		{#if serviceEditorCompact}
+			<header>
+				<div>
+					<span class="eyebrow">ROUTE PREVIEW</span>
+					<h3>
+						{ferryOpen ? 'Ferry service' : busConnectionMode ? 'New bus connection' : 'Bus service'}
+					</h3>
+				</div>
+				<Button
+					variant="ghost"
+					size="icon-sm"
+					aria-label="Cancel service preview"
+					onclick={() => {
+						cancelPending();
+						closeFerry();
+						closeBusService();
+					}}><X size={16} /></Button
+				>
+			</header>
+			<p>
+				{busConnectionMode
+					? busConnection?.summary?.name
+					: ferryOpen
+						? ferryPreview?.summary?.name
+						: busPattern?.name}
+			</p>
+			<small
+				>Every {busConnectionMode ? busConnectionHeadway : ferryOpen ? ferryHeadway : busHeadway} minutes
+				on {date}. Review the highlighted path before accepting.</small
+			>
+			<div class="service-costs">
+				<span>Whole proposal</span><strong
+					>MVR {formatAmount(visibleEconomics.delta.capital_mvr, true)} upfront</strong
+				><small>MVR {formatAmount(visibleEconomics.delta.annual_operating_mvr, true)} yearly</small>
+			</div>
+			<footer>
+				<Button
+					disabled={busConnectionMode
+						? !pendingDecision?.allowed || busConnectionChecking
+						: ferryOpen
+							? !ferryAllowed
+							: !busPreview?.budget.allowed || busQuoting || !busPatternActive}
+					onclick={() => {
+						if (busConnectionMode) confirm();
+						else if (ferryOpen) confirmFerry();
+						else confirmBusService();
+					}}
+					><Check size={15} />Accept {busConnectionMode
+						? 'stop & route'
+						: ferryOpen
+							? 'ferry service'
+							: 'service'}</Button
+				><Button variant="outline" onclick={() => (serviceEditorCompact = false)}
+					>Edit settings</Button
+				>
+			</footer>
+		{:else}
+			{#if busConnectionMode}
+				<header>
+					<div>
+						<span class="eyebrow">NEW BUS CONNECTION</span>
+						<h3>Connect this stop</h3>
+					</div>
+					<Button
+						variant="ghost"
+						size="icon-sm"
+						aria-label="Cancel bus connection"
+						onclick={cancelPending}><X size={16} /></Button
+					>
+				</header>
+				{@render serviceMapPreviewAction()}
+				<p>
+					The suggested shuttle follows mapped roads in both directions. Choose another highlighted
+					stop to change its path.
+				</p>
+				{#if busConnectionChecking}<p class="service-progress" role="status">
+						<RefreshCw size={14} class="spin" />Finding a road connection and checking costs…
+					</p>{/if}
+				{#if busConnection?.candidates.length}
+					<Label for="connection-stop">Connect to</Label>
+					<select
+						id="connection-stop"
+						value={busConnectionTarget || busConnection.selected_stop_id || ''}
+						onchange={(event) => (busConnectionTarget = event.currentTarget.value)}
+					>
+						{#each busConnection.candidates as candidate (candidate.stop.id)}<option
+								value={candidate.stop.id}
+								>{candidate.stop.name} · {(candidate.distance_m / 1000).toFixed(2)} km</option
+							>{/each}
+					</select>
+					{#if busConnection.summary?.target_stop.serving_routes.length}<small
+							>Interchange with {busConnection.summary.target_stop.serving_routes.join(', ')}</small
+						>{/if}
+				{/if}
+				<div class="service-field-row">
+					<div>
+						<Label for="connection-frequency">A bus every · min</Label><Input
+							id="connection-frequency"
+							type="number"
+							min="5"
+							max="180"
+							bind:value={busConnectionHeadway}
+						/>
+					</div>
+					<div>
+						<Label for="connection-date">Service date</Label><Input
+							id="connection-date"
+							type="date"
+							bind:value={date}
+						/>
+					</div>
+				</div>
+				<details class="service-options">
+					<summary>Operating hours and bus type</summary>
+					<div class="service-field-row">
+						<div>
+							<Label for="connection-start">First departure</Label><Input
+								id="connection-start"
+								type="time"
+								bind:value={busConnectionStart}
+							/>
+						</div>
+						<div>
+							<Label for="connection-end">Finish by</Label><Input
+								id="connection-end"
+								type="time"
+								bind:value={busConnectionEnd}
+							/>
+						</div>
+					</div>
+					<Label for="connection-fleet">Bus type</Label><select
+						id="connection-fleet"
+						bind:value={busConnectionFleet}
+						><option value="diesel">Diesel bus</option><option value="electric">Electric bus</option
+						></select
+					><small>Uses an assumed 15 km/h road speed. The service runs on this proposal date.</small
+					>
+				</details>
+				{#if busConnection?.summary}{@const summary = busConnection.summary}
+					<div class="service-metrics">
+						<span><b>{Math.round(summary.travel_minutes)} min</b>outbound journey</span><span
+							><b>{summary.departures_each_direction}</b>trips each way</span
+						><span><b>{summary.roundtrip_distance_km.toFixed(2)} km</b>return road path</span>
+					</div>{/if}
+				{#if busConnection?.quote}<div class="service-costs">
+						<span>Proposal total with stop + return service</span><strong
+							>MVR {formatAmount(busConnection.quote.economics.delta.capital_mvr, true)} upfront</strong
+						><small
+							>MVR {formatAmount(busConnection.quote.economics.delta.annual_operating_mvr, true)} per
+							year</small
+						>
+					</div>{/if}
+				{#if previewCalculating}<small role="status"
+						>Checking resident access with this route…</small
+					>{:else if pendingEvaluation}<div class="service-access">
+						<b>+{formatAmount(pendingEvaluation.summary.gained_residents)}</b> residents gain {goalLabel}
+						within {targetMinutes} min · whole proposal
+					</div>{/if}
+				{#if busConnectionError}<p class="policy-error" role="alert">{busConnectionError}</p>
+					<Button
+						variant="outline"
+						size="sm"
+						onclick={() => {
+							busConnectionRetry++;
+							busConnectionTarget = '';
+							busConnectionDraft = null;
+							busConnectionHeadway = 20;
+						}}>Reset route choices</Button
+					>{/if}
+				{#each busConnection?.reasons ?? [] as reason, i (i)}<p class="service-note">
+						{reason}
+					</p>{/each}
+				{#if !budgetLimits.allowed || pendingWithin !== true || (busConnection?.quote && !busConnection.quote.budget.allowed)}<p
+						class="policy-budget-alert"
+						role="alert"
+					>
+						{!budgetLimits.allowed
+							? budgetLimits.reason
+							: pendingWithin !== true
+								? pendingDecision?.reason
+								: busConnection?.quote?.budget.reasons.join(' ')}
+					</p>{/if}
+				<footer>
+					<Button disabled={!pendingDecision?.allowed || busConnectionChecking} onclick={confirm}
+						><Check size={15} />Accept stop & route</Button
+					><Button
+						variant="outline"
+						onclick={() => {
+							busStopOnly = true;
+							busConnectionController?.abort();
+						}}>Add only a stop</Button
+					>
+				</footer>
+				<small
+					>Only confirmed changes enter your proposal. A stop alone creates no scheduled bus
+					service.</small
+				>
+			{:else if busOpen}
+				<header>
+					<div>
+						<span class="eyebrow">EXISTING BUS ROUTE</span>
+						<h3>Improve a bus service</h3>
+					</div>
+					<Button
+						variant="ghost"
+						size="icon-sm"
+						aria-label="Close bus service planner"
+						onclick={closeBusService}><X size={16} /></Button
+					>
+				</header>
+				{@render serviceMapPreviewAction()}
+				<Label for="proposal-bus-route">Bus route and direction</Label><select
+					id="proposal-bus-route"
+					bind:value={busPatternId}
+					onchange={(event) => {
+						busPatternId = event.currentTarget.value;
+						serviceAnchor = routeAnchor();
+						focusFerryFeatures(busMapFeatures());
+					}}
+					>{#each busPatterns as pattern (pattern.id)}<option value={pattern.id}
+							>{pattern.name}</option
+						>{/each}</select
+				>
+				<p>
+					{busPattern?.stopIds.length ?? 0} boarding points · highlighted on the map. The reverse direction
+					is unchanged.
+				</p>
+				<div class="service-field-row">
+					<div>
+						<Label for="proposal-bus-frequency">A bus every · min</Label><Input
+							id="proposal-bus-frequency"
+							type="number"
+							min="1"
+							max="720"
+							bind:value={busHeadway}
+						/>
+					</div>
+					<div>
+						<Label for="proposal-bus-date">Service date</Label><Input
+							id="proposal-bus-date"
+							type="date"
+							bind:value={date}
+						/>
+					</div>
+				</div>
+				{#if busPattern && !busPatternActive}<div class="policy-budget-alert" role="alert">
+						<p>No recorded departures on this date.</p>
+						{#if busRecordedDate}<Button
+								size="sm"
+								variant="outline"
+								aria-label="Use recorded service date"
+								onclick={() => (date = busRecordedDate!)}>Use {busRecordedDate}</Button
+							>{/if}
+					</div>{/if}
+				<details class="service-options">
+					<summary>Stops on this route</summary>
+					<ol>
+						{#each busPattern?.stopIds ?? [] as stopId, i (`${stopId}:${i}`)}<li>
+								{baseline?.stops?.find((stop) => stop.id === stopId)?.name ?? stopId}
+							</li>{/each}
+					</ol>
+				</details>
+				{#if busQuoting}<p class="service-progress" role="status">
+						<RefreshCw size={14} class="spin" />Updating service costs…
+					</p>{/if}
+				{#if busPreview}<div class="service-costs">
+						<span>Proposal total with this frequency</span><strong
+							>MVR {formatAmount(busPreview.economics.delta.capital_mvr, true)} upfront</strong
+						><small
+							>MVR {formatAmount(busPreview.economics.delta.annual_operating_mvr, true)} per year</small
+						>
+					</div>
+					{#each busPreview.budget.reasons as reason, i (i)}<p
+							class="policy-budget-alert"
+							role="alert"
+						>
+							{reason}
+						</p>{/each}{/if}
+				{#if busError}<p class="policy-error" role="alert">{busError}</p>
+					<Button size="sm" variant="outline" onclick={() => void previewBusService()}
+						>Retry cost check</Button
+					>{/if}
+				<p class="service-note">
+					Changes scheduled departures, waiting times, fleet and running costs. Walking distance to
+					a stop stays the same.
+				</p>
+				<footer>
+					<Button
+						disabled={!busPatternActive ||
+							!busPreview?.budget.allowed ||
+							busQuoting ||
+							checkingBudget}
+						onclick={confirmBusService}><Check size={15} />Accept service</Button
+					><Button variant="outline" onclick={closeBusService}>Cancel</Button>
+				</footer>
+			{:else if ferryOpen}
+				<header>
+					<div>
+						<span class="eyebrow">CONNECT ISLANDS</span>
+						<h3>Plan a ferry service</h3>
+					</div>
+					<Button
+						variant="ghost"
+						size="icon-sm"
+						aria-label="Close ferry service planner"
+						onclick={closeFerry}><X size={16} /></Button
+					>
+				</header>
+				{@render serviceMapPreviewAction()}
+				<p>
+					From <strong>{islandName}</strong>. The boat snaps to an existing mapped landing place.
+					Click a highlighted landing to change it.
+				</p>
+				{#if ferryLoading}<p class="service-progress" role="status">
+						<RefreshCw size={14} class="spin" />Finding verified landing places…
+					</p>{/if}
+				{#if connection?.terminals.origin.length}<Label for="ferry-origin-terminal"
+						>Departure landing</Label
+					><select
+						id="ferry-origin-terminal"
+						bind:value={ferryOriginTerminal}
+						onchange={(event) => {
+							ferryOriginTerminal = event.currentTarget.value;
+							const terminal = connection?.terminals.origin.find(
+								(item) => item.id === ferryOriginTerminal
+							);
+							if (terminal) {
+								serviceAnchor = terminal.coordinates;
+								onFocus(terminal.coordinates);
+							}
+						}}
+						>{#each connection.terminals.origin as terminal (terminal.id)}<option
+								value={terminal.id}>{terminal.name}</option
+							>{/each}</select
+					>{:else if connection}<p class="policy-budget-alert">
+						No verified ferry landing is mapped here. Choose another origin island before proposing
+						a service.
+					</p>
+					<Button variant="outline" onclick={() => onPickFerryOrigin(ferryDestination, date)}
+						>Choose origin on map</Button
+					>{/if}
+				<div class="service-label-row">
+					<Label for="ferry-island-search">Destination island</Label><button
+						onclick={pickFerryDestination}><MapPin size={13} />Choose on map</button
+					>
+				</div>
+				{#if ferryDestination && !ferryChoosingDestination}<button
+						class="service-destination"
+						onclick={() => (ferryChoosingDestination = true)}
+						><Ship size={16} /><strong>{ferryDestinationName}</strong><span>Change</span></button
+					>{:else}<Input
+						id="ferry-island-search"
+						placeholder="Find a destination island"
+						bind:value={ferrySearch}
+					/>
+					<div class="service-destinations" aria-label="Destination islands">
+						{#each ferryIslands as island (island.island_id)}<button
+								onclick={() => chooseFerryDestination(island.island_id)}
+								><span>{island.name}<small>{island.atoll}</small></span><ArrowRight
+									size={14}
+								/></button
+							>{/each}
+					</div>{/if}
+				{#if connection?.terminals.destination.length}<Label for="ferry-destination-terminal"
+						>Arrival landing</Label
+					><select id="ferry-destination-terminal" bind:value={ferryDestinationTerminal}
+						>{#each connection.terminals.destination as terminal (terminal.id)}<option
+								value={terminal.id}>{terminal.name}</option
+							>{/each}</select
+					>{/if}
+				{#if ferryDestination}<div class="service-field-row">
+						<div>
+							<Label for="ferry-headway">A ferry every · min</Label><Input
+								id="ferry-headway"
+								type="number"
+								min="15"
+								max="720"
+								step="15"
+								bind:value={ferryHeadway}
+							/>
+						</div>
+						<div>
+							<Label for="ferry-date">Service date</Label><Input
+								id="ferry-date"
+								type="date"
+								bind:value={date}
+							/>
+						</div>
+					</div>
+					<details class="service-options">
+						<summary>Operating hours and sailing speed</summary>
+						<div class="service-field-row">
+							<div>
+								<Label for="ferry-first">First departure</Label><Input
+									id="ferry-first"
+									type="time"
+									bind:value={ferryStart}
+								/>
+							</div>
+							<div>
+								<Label for="ferry-last">Finish service by</Label><Input
+									id="ferry-last"
+									type="time"
+									bind:value={ferryEnd}
+								/>
+							</div>
+						</div>
+						<Label for="ferry-speed">Assumed speed · km/h</Label><Input
+							id="ferry-speed"
+							type="number"
+							min="10"
+							max="60"
+							bind:value={ferrySpeed}
+						/>
+					</details>{/if}
+				{#if ferryPreviewing}<p class="service-progress" role="status">
+						<RefreshCw size={14} class="spin" />Drawing return crossings and checking costs…
+					</p>{/if}
+				{#if ferryDestination && !ferryInput.payload}<p class="policy-budget-alert" role="alert">
+						{ferryInput.error}
+					</p>{/if}
+				{#if ferryError}<p class="policy-error" role="alert">{ferryError}</p>
+					<Button variant="outline" size="sm" onclick={() => void previewFerry()}
+						>Retry preview</Button
+					>{/if}
+				{#if ferryPreview?.summary}{@const summary = ferryPreview.summary}
+					<div class="service-metrics">
+						<span><b>{Math.round(summary.crossing_minutes)} min</b>sailing estimate</span><span
+							><b>{summary.departures_each_direction}</b>trips each way</span
+						><span><b>MVR 0</b>port construction</span>
+					</div>
+					<details class="service-options">
+						<summary>Route evidence and assumptions</summary>
+						<p>{summary.distance_km.toFixed(2)} km each way. {summary.qualification}</p>
+					</details>{/if}
+				{#if ferryPreview?.quote}<div class="service-costs">
+						<span>Proposal total with this ferry service</span><strong
+							>MVR {formatAmount(ferryPreview.quote.economics.delta.capital_mvr, true)} upfront</strong
+						><small
+							>MVR {formatAmount(ferryPreview.quote.economics.delta.annual_operating_mvr, true)} per year</small
+						>
+					</div>
+					{#if !ferryPreview.quote.budget.allowed}<p class="policy-budget-alert" role="alert">
+							{ferryPreview.quote.budget.reasons.join(' ')}
+						</p>{/if}{/if}
+				{#each ferryPreview?.reasons ?? [] as reason, i (i)}<p class="service-note">
+						{reason}
+					</p>{/each}
+				{#if !budgetLimits.allowed}<p class="policy-budget-alert" role="alert">
+						{budgetLimits.reason}
+					</p>{/if}
+				<footer>
+					<Button disabled={!ferryAllowed} onclick={confirmFerry}
+						><Check size={15} />Accept ferry service</Button
+					><Button variant="outline" onclick={closeFerry}>Cancel</Button>
+				</footer>
+				<small
+					>Uses existing landing places, subject to suitability review. No new port is built.
+					Timetable, costs and connectivity enter the proposal together.</small
+				>
+			{/if}
+			<div class="service-budget-line">
+				<span
+					>Budgets: MVR {formatAmount(Number(capitalBudget), true)} upfront / {formatAmount(
+						Number(annualBudget),
+						true
+					)} yearly</span
+				><button onclick={adjustBudget}>Edit budgets</button>
+			</div>
+		{/if}
+	</div>
+{/snippet}
+
+{#if active && !serviceEditor}
 	<div class="policy-map-controls" class:panel-open={opened}>
 		{#if !opened}<Button
 				variant="ghost"
@@ -1941,6 +2857,8 @@
 			>
 		</div>
 	</div>
+{/if}
+{#if active}
 	{#if opened}<section
 			class="policy-map-panel"
 			class:placing={(!!pending || !!armedKind) && !budgetEditing}
@@ -2052,7 +2970,7 @@
 							? 'Edit your proposal'
 							: 'Build a funded proposal'}<ArrowRight size={16} /></Button
 					>
-					<button class="policy-ferry-entry" onclick={beginFerry}>
+					<button class="policy-ferry-entry" onclick={() => beginFerry()}>
 						<Ship size={22} /><span
 							><strong>Island-to-island travel</strong><small
 								>Check a connection and plan a ferry service.</small
@@ -2325,328 +3243,30 @@
 								><span>{item.label}</span><Plus size={12} /></button
 							>{/each}
 					</div>
-					<button
-						class="policy-ferry-entry"
-						class:active={busOpen}
-						onclick={beginBusService}
-						disabled={!supported || !busPatterns.length || loading || checkingBudget}
-					>
-						<BusFront size={24} /><span
-							><strong>Bus service</strong><small
-								>Choose an existing route and improve its frequency.</small
-							></span
-						><Plus size={16} />
-					</button>
-					{#if busOpen}<section class="policy-bus-composer" aria-label="Plan a bus service">
-							<header>
-								<h3>Improve a bus service</h3>
-								<Button
-									variant="ghost"
-									size="icon-sm"
-									aria-label="Close bus service planner"
-									onclick={closeBusService}><X size={16} /></Button
-								>
-							</header>
-							<Label for="proposal-bus-route">Bus route and direction</Label><select
-								id="proposal-bus-route"
-								bind:value={busPatternId}
-								>{#each busPatterns as pattern (pattern.id)}<option value={pattern.id}
-										>{pattern.name}</option
-									>{/each}</select
-							>
-							<p>
-								{busPattern?.stopIds.length ?? 0} existing boarding points · selected published direction
-							</p>
-							<Label for="proposal-bus-date">Service date</Label><Input
-								id="proposal-bus-date"
-								type="date"
-								bind:value={date}
-							/>
-							<small>Costs and impact use this date for the whole proposal.</small>
-							{#if busPattern && !busPatternActive}<div class="policy-budget-alert" role="alert">
-									<p>
-										No published departures start on this date. A captured timetable cannot be
-										assumed to repeat on another day.
-									</p>
-									{#if busRecordedDate}<Button
-											variant="outline"
-											size="sm"
-											aria-label="Use recorded service date"
-											onclick={() => {
-												date = busRecordedDate!;
-												busError = '';
-											}}>Use {busRecordedDate}</Button
-										>{/if}
-								</div>{/if}
-							<Label for="proposal-bus-frequency">A bus every · minutes</Label><Input
-								id="proposal-bus-frequency"
-								type="number"
-								min="1"
-								max="720"
-								bind:value={busHeadway}
-							/>
-							<p>
-								Uses the route’s existing service date, operating window and modeled road path. The
-								reverse direction is unchanged.
-							</p>
-							<Button
-								variant="outline"
-								disabled={busQuoting || !busPattern || !busPatternActive || !budgetLimits.allowed}
-								onclick={() => void previewBusService()}
-								>{busQuoting ? 'Checking route costs…' : 'Preview bus service & costs'}</Button
-							>
-							{#if busError}<p class="policy-error" role="alert">{busError}</p>{/if}
-							{#if busPreview}<div class="bus-service-preview">
-									<strong
-										>MVR {formatAmount(busPreview.economics.delta.capital_mvr, true)} upfront · MVR {formatAmount(
-											busPreview.economics.delta.annual_operating_mvr,
-											true
-										)}/year</strong
-									>{#each busPreview.budget.reasons as reason, i (i)}<p
-											class="policy-budget-alert"
-											role="alert"
-										>
-											{reason}
-										</p>{/each}<Button
-										disabled={!busPatternActive ||
-											!busPreview.budget.allowed ||
-											checkingBudget ||
-											busQuoting}
-										onclick={confirmBusService}>Add bus service to proposal</Button
-									>
-								</div>{/if}
-							<small
-								>A boarding point and an operating bus service are separate investments. Frequency
-								alone does not improve walking access to a stop.</small
-							>
-						</section>{/if}
-					<button
-						class="policy-ferry-entry"
-						class:active={ferryOpen}
-						onclick={beginFerry}
-						disabled={loading || checkingBudget || operations.length >= 97}
-					>
-						<Ship size={24} /><span
-							><strong>New ferry service</strong><small
-								>Connect two islands using existing landing places.</small
-							></span
-						><Plus size={16} />
-					</button>
-					{#if ferryOpen}<section
-							bind:this={ferryComposer}
-							class="policy-ferry-composer"
-							aria-label="Plan a ferry service"
+					<div class="policy-service-palette" aria-label="Transport services">
+						<button
+							class="policy-service-tile"
+							draggable="true"
+							ondragstart={(event) => serviceDrag(event, 'bus')}
+							onclick={() => beginBusService()}
+							disabled={!supported || !busPatterns.length || loading || checkingBudget}
 						>
-							<header>
-								<div>
-									<span class="eyebrow">CONNECT ISLANDS</span>
-									<h3>Plan a ferry service</h3>
-								</div>
-								<Button
-									variant="ghost"
-									size="icon-sm"
-									aria-label="Close ferry service planner"
-									onclick={closeFerry}><X size={16} /></Button
-								>
-							</header>
-							<p class="ferry-origin">
-								<MapPin size={15} /><span>From <strong>{islandName}</strong> · {date}</span>
-							</p>
-							<div class="ferry-map-steps" aria-label="Ferry route endpoints">
-								<button
-									onclick={() => {
-										opened = false;
-										onPickFerryOrigin(ferryDestination, date);
-									}}
-									><span>1</span><strong>From {islandName}</strong><small>Change on map</small
-									></button
-								>
-								<button onclick={pickFerryDestination}
-									><span>2</span><strong
-										>{ferryDestination
-											? `To ${ferryDestinationName}`
-											: 'Choose destination'}</strong
-									><small>Choose on map</small></button
-								>
-							</div>
-							<div class="ferry-destination">
-								<Label for="ferry-island-search">Destination island</Label>
-								{#if ferryDestination && !ferryChoosingDestination}<button
-										class="ferry-selected-destination"
-										onclick={() => (ferryChoosingDestination = true)}
-										><MapPin size={15} /><strong>{ferryDestinationName}</strong><span>Change</span
-										></button
-									>{/if}
-								{#if !ferryDestination || ferryChoosingDestination}
-									<Input
-										id="ferry-island-search"
-										placeholder="Search by island or atoll"
-										bind:value={ferrySearch}
-									/>
-									<div class="ferry-island-results" aria-label="Destination islands">
-										{#each ferryIslands as island (island.island_id)}<button
-												onclick={() => chooseFerryDestination(island.island_id)}
-												><MapPin size={14} /><span>{island.name}<small>{island.atoll}</small></span
-												><ArrowRight size={13} /></button
-											>{:else}<p>
-												No matching named islands. Try another name or choose on the map.
-											</p>{/each}
-									</div>
-									<Button variant="outline" size="sm" onclick={pickFerryDestination}
-										><MapPin size={14} />Choose destination on the map</Button
-									>
-								{/if}
-							</div>
-							{#if ferryLoading}<p class="ferry-progress" role="status">
-									<RefreshCw size={14} class="spin" />Checking existing routes and landing places…
-								</p>{/if}
-							{#if connection}<div
-									class="ferry-connection"
-									class:verified={connection.status === 'dated_service'}
-									data-connection-status={connection.status}
-								>
-									<strong>{ferryConnectionLabel(connection.status)}</strong>
-									{#each connection.reasons as reason, i (i)}<p>{reason}</p>{/each}
-									<div class="ferry-terminal-evidence">
-										<span
-											>{islandName}<b
-												>{connection.terminals.origin.length
-													? `${connection.terminals.origin.length} mapped landing place${connection.terminals.origin.length === 1 ? '' : 's'}`
-													: 'Landing place needs verification'}</b
-											></span
-										><span
-											>{ferryDestinationName}<b
-												>{connection.terminals.destination.length
-													? `${connection.terminals.destination.length} mapped landing place${connection.terminals.destination.length === 1 ? '' : 's'}`
-													: 'Landing place needs verification'}</b
-											></span
-										>
-									</div>
-								</div>{/if}
-							{#if ferryDestination}<div class="ferry-service-fields">
-									<div>
-										<Label for="ferry-headway">A ferry every · minutes</Label><Input
-											id="ferry-headway"
-											type="number"
-											min="15"
-											max="720"
-											step="15"
-											bind:value={ferryHeadway}
-										/>
-									</div>
-									<div class="policy-budget-grid">
-										<div>
-											<Label for="ferry-first">First departure</Label><Input
-												id="ferry-first"
-												type="time"
-												bind:value={ferryStart}
-											/>
-										</div>
-										<div>
-											<Label for="ferry-last">Finish service by</Label><Input
-												id="ferry-last"
-												type="time"
-												bind:value={ferryEnd}
-											/>
-										</div>
-									</div>
-									<details class="policy-evidence-note">
-										<summary>Sailing assumption</summary><Label for="ferry-speed"
-											>Assumed speed · km/h</Label
-										><Input
-											id="ferry-speed"
-											type="number"
-											min="10"
-											max="60"
-											bind:value={ferrySpeed}
-										/>
-										<p>
-											Return crossings and terminal layovers must finish within this window. Sailing
-											time is an estimate; sea conditions and operational approval need review.
-										</p>
-									</details>
-									<Button
-										variant="outline"
-										disabled={ferryPreviewing ||
-											ferryLoading ||
-											checkingBudget ||
-											!ferryInput.payload ||
-											!budgetLimits.allowed}
-										onclick={() => void previewFerry()}
-										><Ship size={15} />{ferryPreviewing
-											? 'Preparing service and costs…'
-											: ferryPreview
-												? 'Update service preview'
-												: 'Preview route & costs'}</Button
-									>
-								</div>{/if}
-							{#if ferryDestination && !ferryInput.payload}<p
-									class="policy-budget-alert"
-									role="status"
-								>
-									{ferryInput.error}
-								</p>{/if}
-							{#if ferryError}<p class="policy-error" role="alert">{ferryError}</p>{/if}
-							{#if ferryPreview}<div
-									class="ferry-service-preview"
-									data-ferry-draft-status={ferryPreview.status}
-								>
-									{#if ferryPreview.summary}{@const summary = ferryPreview.summary}<strong
-											>{summary.name}</strong
-										>
-										<div class="ferry-plan-metrics">
-											<span><b>{Math.round(summary.crossing_minutes)} min</b>estimated sailing</span
-											><span><b>{summary.departures_each_direction}</b>departures each way</span
-											><span><b>MVR 0</b>new port construction</span>
-										</div>
-										<p class="ferry-landing-names">
-											{summary.origin_terminal.name}
-											<ArrowRight size={12} />
-											{summary.destination_terminal.name}
-										</p>
-										<small>{summary.qualification}</small>{/if}
-									{#each ferryPreview.reasons as reason, i (i)}<p>{reason}</p>{/each}
-									{#if ferryPreview.quote}<div class="ferry-cost-preview">
-											<span>Proposal total with this service</span>
-											<p>
-												<strong
-													>MVR {formatAmount(
-														ferryPreview.quote.economics.delta.capital_mvr,
-														true
-													)}</strong
-												> upfront
-											</p>
-											<p>
-												<strong
-													>MVR {formatAmount(
-														ferryPreview.quote.economics.delta.annual_operating_mvr,
-														true
-													)}</strong
-												> per year
-											</p>
-										</div>
-										{#if !ferryPreview.quote.budget.allowed}<p
-												class="policy-budget-alert"
-												role="alert"
-											>
-												{ferryPreview.quote.budget.reasons.join(' ')}
-											</p>{/if}{/if}
-									{#if operations.length + ferryPreview.operations.length > 100}<p
-											class="policy-budget-alert"
-											role="alert"
-										>
-											Remove a change before adding this service; the proposal has a 100-change
-											limit.
-										</p>{/if}
-									<Button disabled={!ferryAllowed} onclick={confirmFerry}
-										><Check size={15} />Add ferry service to proposal</Button
-									>
-								</div>{/if}
-							<p class="ferry-no-construction">
-								This funds a ferry service, using mapped landing places. It does not build a port.
-								Landing suitability and permissions still need confirmation.
-							</p>
-						</section>{/if}
+							<span data-service-icon><BusFront size={24} /></span><span
+								><strong>Bus service</strong><small>Choose a route on the map</small></span
+							><Plus size={15} /></button
+						>
+						<button
+							class="policy-service-tile"
+							draggable="true"
+							ondragstart={(event) => serviceDrag(event, 'ferry')}
+							onclick={() => beginFerry()}
+							disabled={loading || checkingBudget || operations.length >= 97}
+						>
+							<span data-service-icon><Ship size={24} /></span><span
+								><strong>Ferry service</strong><small>Connect existing landing places</small></span
+							><Plus size={15} /></button
+						>
+					</div>
 					{#if pending}<p class="policy-placement-hint" role="status">
 							Your {pendingDecision?.label.toLowerCase()} is on the map. Drag its pin to adjust, then
 							confirm or cancel above it.
@@ -2788,7 +3408,7 @@
 					/>
 				</footer>{/if}
 		</section>{/if}
-	{#if !opened && hasDraftContext && !ferryOpen}<div
+	{#if !opened && hasDraftContext && !serviceEditor && !pending}<div
 			class="proposal-floating-budget"
 			class:placement-preview={!!pending || !!armedKind}
 		>
@@ -2804,8 +3424,10 @@
 				pending={calculating || previewCalculating}
 				{stale}
 				operationCount={draftItems.length}
-				preview={!!pending}
-				previewChecking={!!pending && !quotedPlacement}
+				preview={!!pending || ferryOpen || busOpen}
+				previewChecking={(!!pending && !quotedPlacement) ||
+					(ferryOpen && !ferryPreview?.quote) ||
+					(busOpen && !busPreview)}
 				gainedResidents={pending
 					? pendingEvaluation?.summary.gained_residents
 					: !stale
@@ -2863,6 +3485,268 @@
 {/if}
 
 <style>
+	.policy-service-popover {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding: 18px;
+		color: #23433d;
+		font-size: 12px;
+		line-height: 1.5;
+	}
+	.policy-service-popover > * {
+		flex-shrink: 0;
+		min-width: 0;
+	}
+	.policy-service-popover header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 12px;
+	}
+	.policy-service-popover h3 {
+		margin: 3px 0 0;
+		font-size: 18px;
+		font-weight: 650;
+		letter-spacing: -0.4px;
+	}
+	.policy-service-popover p {
+		margin: 0;
+	}
+	.policy-service-popover small {
+		font-size: 11px;
+		color: #62786f;
+		line-height: 1.5;
+	}
+	.policy-service-popover :global(label) {
+		font-size: 11px;
+		font-weight: 600;
+		line-height: 1.4;
+		color: #526c60;
+	}
+	.policy-service-popover :global(input),
+	.policy-service-popover select {
+		width: 100%;
+		min-height: 36px;
+		border: 1px solid #d6e1da;
+		border-radius: 9px;
+		background: white;
+		padding: 8px 10px;
+		font-size: 12px;
+		box-sizing: border-box;
+	}
+	.service-field-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 12px;
+	}
+	.service-field-row > div {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		min-width: 0;
+	}
+	.service-progress {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		color: #087e77;
+	}
+	.service-options {
+		padding: 10px 12px;
+		background: #f5f8f5;
+		border-radius: 10px;
+	}
+	.service-options summary {
+		cursor: pointer;
+		font-size: 11px;
+		font-weight: 600;
+	}
+	.service-options[open] > :global(:not(summary)) {
+		margin-top: 10px;
+	}
+	.service-options ol {
+		padding-left: 18px;
+		max-height: 160px;
+		overflow: auto;
+	}
+	.service-metrics {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 10px;
+		padding: 12px 0;
+		border-block: 1px solid #e5ece7;
+	}
+	.service-metrics span {
+		font-size: 10px;
+		color: #677e72;
+	}
+	.service-metrics b {
+		display: block;
+		font-size: 17px;
+		color: #234f43;
+		font-variant-numeric: tabular-nums;
+	}
+	.service-costs {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		padding: 12px;
+		background: #eff6f2;
+		border: 1px solid #d4e5d8;
+		border-radius: 10px;
+	}
+	.service-costs > span {
+		font-size: 10px;
+		color: #60786c;
+	}
+	.service-costs strong {
+		font-size: 15px;
+	}
+	.service-access {
+		padding: 10px;
+		background: #eaf8f5;
+		border-radius: 9px;
+		font-size: 11px;
+	}
+	.service-note {
+		font-size: 11px;
+		color: #62786f;
+	}
+	.policy-service-popover footer {
+		position: sticky;
+		bottom: 0;
+		z-index: 1;
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
+		padding: 12px 0;
+		border-top: 1px solid #e4ece6;
+		background: #fffefa;
+	}
+	.service-preview-map {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		min-height: 32px;
+		color: #087e77;
+		font-size: 11px;
+		font-weight: 600;
+	}
+	.service-preview-map:disabled {
+		opacity: 0.45;
+	}
+	.service-budget-line {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		font-size: 10px;
+		color: #62786f;
+	}
+	.service-budget-line button {
+		flex-shrink: 0;
+		color: #087e77;
+		font-weight: 600;
+	}
+	.policy-service-popover footer :global(button:first-child) {
+		flex: 1;
+	}
+	.service-label-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 8px;
+	}
+	.service-label-row button {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 10px;
+		color: #087e77;
+	}
+	.service-destination {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 10px 12px;
+		border: 1px solid #d4e3db;
+		border-radius: 9px;
+	}
+	.service-destination span {
+		margin-left: auto;
+		font-size: 11px;
+		color: #087e77;
+	}
+	.service-destinations {
+		max-height: 170px;
+		overflow: auto;
+		border: 1px solid #e0e8e2;
+		border-radius: 10px;
+	}
+	.service-destinations button {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		width: 100%;
+		gap: 8px;
+		padding: 9px 12px;
+		text-align: left;
+	}
+	.service-destinations button:hover {
+		background: #eff7f3;
+	}
+	.service-destinations small {
+		display: block;
+		font-size: 10px;
+	}
+	.policy-service-palette {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 8px;
+	}
+	.policy-service-tile {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		width: 100%;
+		padding: 12px;
+		border: 1px dashed #bfd2c5;
+		border-radius: 12px;
+		background: #f3f8f5;
+		text-align: left;
+		cursor: grab;
+	}
+	.policy-service-tile:disabled {
+		opacity: 0.45;
+		cursor: default;
+	}
+	.policy-service-tile > span:nth-child(2) {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		gap: 3px;
+	}
+	.policy-service-tile strong {
+		font-size: 12px;
+	}
+	.policy-service-tile small {
+		font-size: 11px;
+		color: #6a8073;
+	}
+	.policy-service-tile [data-service-icon] {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border-radius: 14px;
+		background: #14776b;
+		color: white;
+		border: 2px solid white;
+		box-shadow: 0 2px 7px #174c3320;
+	}
+
 	.proposal-floating-budget {
 		position: absolute;
 		top: calc(148px + var(--map-navigation-offset, 0px));
@@ -2919,78 +3803,7 @@
 		display: flex;
 		gap: 2px;
 	}
-	.policy-bus-composer {
-		display: grid;
-		gap: 10px;
-		padding: 14px;
-		border: 1px solid #d9e3db;
-		border-radius: 12px;
-		background: #f7faf6;
-	}
-	.policy-bus-composer header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-	.policy-bus-composer h3 {
-		font-size: 15px;
-		margin: 0;
-	}
-	.policy-bus-composer p,
-	.policy-bus-composer small {
-		font-size: 11px;
-		line-height: 1.6;
-		color: #5b6f63;
-	}
-	.policy-bus-composer select {
-		width: 100%;
-		padding: 9px;
-		border: 1px solid #d6dfd8;
-		border-radius: 8px;
-		font-size: 12px;
-		background: white;
-	}
-	.bus-service-preview {
-		display: grid;
-		gap: 10px;
-		font-size: 12px;
-	}
-	.ferry-map-steps {
-		display: grid;
-		gap: 7px;
-	}
-	.ferry-map-steps button {
-		display: grid;
-		grid-template-columns: 24px 1fr;
-		column-gap: 7px;
-		text-align: left;
-		padding: 9px;
-		border: 1px solid #d9e3df;
-		border-radius: 9px;
-		background: white;
-	}
-	.ferry-map-steps span {
-		grid-row: 1/3;
-		align-self: center;
-		display: grid;
-		place-items: center;
-		border-radius: 50%;
-		background: #e0eee8;
-		width: 24px;
-		height: 24px;
-		font-size: 11px;
-		color: #1c6b52;
-	}
-	.ferry-map-steps strong {
-		font-size: 12px;
-	}
-	.ferry-map-steps small {
-		color: #577064;
-		font-size: 10px;
-		margin-top: 3px;
-	}
 	.proposal-map-views button:active,
-	.ferry-map-steps button:active,
 	.proposal-open-draft:active {
 		transform: scale(0.98);
 	}
@@ -3317,8 +4130,7 @@
 			background 150ms ease,
 			border-color 150ms ease;
 	}
-	.policy-ferry-entry:hover,
-	.policy-ferry-entry.active {
+	.policy-ferry-entry:hover {
 		background: #e5f2f4;
 		border-color: #7eafb7;
 	}
@@ -3338,230 +4150,6 @@
 		font-size: 10px;
 		line-height: 1.5;
 		color: #5f7c83;
-	}
-	.policy-ferry-composer {
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
-		padding: 15px;
-		border: 1px solid #c7dde0;
-		border-radius: 12px;
-		background: #fbfefe;
-		min-width: 0;
-	}
-	.policy-ferry-composer > header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 8px;
-	}
-	.policy-ferry-composer h3 {
-		font-size: 15px;
-		font-weight: 650;
-		margin: 4px 0 0;
-		color: #254d58;
-	}
-	.policy-ferry-composer .eyebrow {
-		color: #68868b;
-		font-size: 8px;
-	}
-	.ferry-origin {
-		margin: 0;
-		display: flex;
-		align-items: center;
-		gap: 7px;
-		font-size: 12px;
-		color: #5b747b;
-	}
-	.ferry-origin strong {
-		color: #254d58;
-	}
-	.ferry-destination,
-	.ferry-service-fields {
-		display: flex;
-		flex-direction: column;
-		gap: 9px;
-		min-width: 0;
-	}
-	.ferry-selected-destination {
-		display: flex;
-		align-items: center;
-		gap: 7px;
-		background: #fff;
-		padding: 10px;
-		border: 1px solid #c4d9dd;
-		border-radius: 8px;
-		font-size: 12px;
-		text-align: left;
-		color: #295e6c;
-	}
-	.ferry-selected-destination strong {
-		flex: 1;
-		min-width: 0;
-		overflow-wrap: anywhere;
-	}
-	.ferry-selected-destination > span {
-		font-size: 10px;
-		color: #63868e;
-	}
-	.ferry-island-results {
-		border: 1px solid #dce8e9;
-		border-radius: 8px;
-		max-height: 218px;
-		overflow-y: auto;
-		background: #fff;
-	}
-	.ferry-island-results > button {
-		width: 100%;
-		display: flex;
-		gap: 8px;
-		align-items: center;
-		padding: 9px 10px;
-		font-size: 12px;
-		color: #305563;
-		text-align: left;
-		border-bottom: 1px solid #edf2f2;
-	}
-	.ferry-island-results > button:hover {
-		background: #eef7f7;
-	}
-	.ferry-island-results > button > span {
-		display: grid;
-		gap: 3px;
-		flex: 1;
-	}
-	.ferry-island-results small {
-		font-size: 9px;
-		color: #7a8f94;
-	}
-	.ferry-island-results > p {
-		font-size: 11px;
-		color: #6c8186;
-		padding: 10px;
-		margin: 0;
-		line-height: 1.6;
-	}
-	.ferry-progress {
-		display: flex;
-		gap: 7px;
-		align-items: center;
-		color: #567781;
-		font-size: 11px;
-		line-height: 1.6;
-		margin: 0;
-	}
-	.ferry-connection {
-		border-left: 3px solid #c0a76b;
-		background: #faf6ed;
-		padding: 11px;
-		border-radius: 0 8px 8px 0;
-	}
-	.ferry-connection.verified {
-		border-color: #4e9d86;
-		background: #eef7f3;
-	}
-	.ferry-connection > strong {
-		font-size: 11px;
-		font-weight: 650;
-		line-height: 1.6;
-		color: #665d44;
-	}
-	.ferry-connection p,
-	.ferry-service-preview > p {
-		font-size: 10px;
-		line-height: 1.7;
-		color: #73776b;
-		margin: 5px 0 0;
-	}
-	.ferry-terminal-evidence {
-		display: grid;
-		gap: 8px;
-		margin-top: 10px;
-		padding-top: 9px;
-		border-top: 1px solid #e2e4d7;
-	}
-	.ferry-terminal-evidence > span {
-		display: flex;
-		justify-content: space-between;
-		flex-wrap: wrap;
-		gap: 4px 8px;
-		font-size: 10px;
-		color: #6f776d;
-	}
-	.ferry-terminal-evidence b {
-		font-size: 9px;
-		font-weight: 550;
-	}
-	.ferry-service-fields > div:first-child {
-		display: grid;
-		gap: 7px;
-	}
-	.ferry-service-preview {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-		padding-top: 13px;
-		border-top: 1px solid #d7e5e7;
-	}
-	.ferry-service-preview > strong {
-		font-size: 12px;
-		color: #305867;
-	}
-	.ferry-plan-metrics {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 7px;
-	}
-	.ferry-plan-metrics span {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		font-size: 9px;
-		color: #71888d;
-		line-height: 1.5;
-	}
-	.ferry-plan-metrics b {
-		font-size: 17px;
-		font-weight: 650;
-		color: #285e6c;
-		letter-spacing: -0.5px;
-		font-variant-numeric: tabular-nums;
-	}
-	.ferry-service-preview .ferry-landing-names {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 5px;
-		margin: 0;
-		color: #4e717b;
-	}
-	.ferry-service-preview > small,
-	.ferry-no-construction {
-		font-size: 10px;
-		line-height: 1.7;
-		color: #788a8c;
-		margin: 0;
-	}
-	.ferry-cost-preview {
-		display: grid;
-		gap: 5px;
-		padding: 11px;
-		background: #edf5f6;
-		border-radius: 8px;
-	}
-	.ferry-cost-preview > span {
-		font-size: 9px;
-		color: #6e8389;
-	}
-	.ferry-cost-preview p {
-		margin: 0;
-		font-size: 10px;
-		color: #67808a;
-	}
-	.ferry-cost-preview strong {
-		font-size: 13px;
-		font-variant-numeric: tabular-nums;
-		color: #315e6b;
 	}
 	.policy-ferry-outcome {
 		display: flex;

@@ -2,6 +2,7 @@
 	import {
 		ArrowLeft,
 		ArrowUpRight,
+		BusFront,
 		Check,
 		Download,
 		Info,
@@ -20,6 +21,7 @@
 		formatAmount,
 		operationLabel,
 		operationName,
+		proposedBusServiceGroups,
 		proposedFerryServiceGroups,
 		type PlanningEvaluation,
 		type PlanningReviewRequest
@@ -78,14 +80,23 @@
 	const walkingGoal = $derived(request.assumptions.goal === 'transport');
 	const transport = $derived(evaluation?.transport_connectivity);
 	const proposedFerries = $derived(proposedFerryServiceGroups(transport?.after));
+	const proposedBuses = $derived(proposedBusServiceGroups(transport?.after));
+	const proposedServices = $derived([...proposedBuses, ...proposedFerries]);
 	const hasFerryProposal = $derived(
 		request.operations.some((operation) => operation.service?.mode === 'ferry')
 	);
+	const hasBusProposal = $derived(
+		request.operations.some((operation) => operation.service?.mode === 'bus') ||
+			proposedBuses.length > 0
+	);
+	const hasTransportProposal = $derived(hasBusProposal || hasFerryProposal);
 	const proposalItems = $derived(
 		request.operations.flatMap((operation, index) =>
 			typeof operation.metadata?.ui_package === 'string' &&
-			operation.metadata.ui_package.startsWith('ferry-service:') &&
-			!operation.metadata.ui_ferry_summary
+			((operation.metadata.ui_package.startsWith('ferry-service:') &&
+				!operation.metadata.ui_ferry_summary) ||
+				(operation.metadata.ui_package.startsWith('bus-route:') &&
+					!operation.metadata.ui_bus_summary))
 				? []
 				: [{ operation, index }]
 		)
@@ -93,26 +104,47 @@
 	const transportMetrics = $derived(
 		transport
 			? [
-					{
-						label: 'Islands with modeled services',
-						before: transport.before.islands_connected.length,
-						after: transport.after.islands_connected.length
-					},
-					{
-						label: 'Ferry departure schedules',
-						before: transport.before.ferry_lines,
-						after: transport.after.ferry_lines
-					},
-					{
-						label: 'Inter-island departure schedules',
-						before: transport.before.inter_island_lines,
-						after: transport.after.inter_island_lines
-					}
+					...(hasBusProposal
+						? [
+								{
+									label: 'Bus departure schedules',
+									before: transport.before.lines.filter((line) => line.mode === 'bus').length,
+									after: transport.after.lines.filter((line) => line.mode === 'bus').length
+								},
+								{
+									label: 'Bus departures on this date',
+									before: transport.before.lines.reduce(
+										(sum, line) => sum + (line.mode === 'bus' ? line.departure_count : 0),
+										0
+									),
+									after: transport.after.lines.reduce(
+										(sum, line) => sum + (line.mode === 'bus' ? line.departure_count : 0),
+										0
+									)
+								}
+							]
+						: []),
+					...(hasFerryProposal
+						? [
+								{
+									label: 'Islands with modeled services',
+									before: transport.before.islands_connected.length,
+									after: transport.after.islands_connected.length
+								},
+								{
+									label: 'Ferry departure schedules',
+									before: transport.before.ferry_lines,
+									after: transport.after.ferry_lines
+								},
+								{
+									label: 'Inter-island departure schedules',
+									before: transport.before.inter_island_lines,
+									after: transport.after.inter_island_lines
+								}
+							]
+						: [])
 				]
 			: []
-	);
-	const maximumConnections = $derived(
-		Math.max(1, ...transportMetrics.flatMap((metric) => [metric.before, metric.after]))
 	);
 	const maximumBand = $derived(
 		Math.max(
@@ -194,8 +226,8 @@
 					<span class="eyebrow">{islandName} · Decision brief</span>
 					<h1 id="proposal-forecast-title">{title}</h1>
 					<p>
-						{hasFerryProposal
-							? 'Island connections, return sailings, resident access and the full funding commitment.'
+						{hasTransportProposal
+							? 'Transport services, return journeys, resident access and the full funding commitment.'
 							: 'What changes for residents, what it costs, and what the evidence can support.'}
 					</p>
 				</div>
@@ -234,9 +266,14 @@
 			{:else}
 				<div class="headline-metrics" class:outdated={stale || pending}>
 					<article class="metric reach">
-						{#if hasFerryProposal}<small>Ferry services in your proposal</small><strong
-								>{transport ? proposedFerries.length : 'Unavailable'}</strong
-							><span>Return sailings are reviewed separately from walking access.</span
+						{#if hasTransportProposal}<small
+								>{hasBusProposal && hasFerryProposal
+									? 'Transport services in your proposal'
+									: hasBusProposal
+										? 'Bus services in your proposal'
+										: 'Ferry services in your proposal'}</small
+							><strong>{transport ? proposedServices.length : 'Unavailable'}</strong><span
+								>Departure schedules are reviewed separately from resident access.</span
 							>{:else}<small>Residents gaining {goal} access</small><strong
 								>{formatAmount(gained)}</strong
 							><span
@@ -269,7 +306,7 @@
 						><span>Capital + 10 years of added operating cost</span>
 					</article>
 				</div>
-				{#if transport && hasFerryProposal}<section
+				{#if transport && hasTransportProposal}<section
 						class="report-card transport-card"
 						class:outdated={stale || pending}
 						aria-label="Public transport and island connections"
@@ -277,13 +314,20 @@
 						<div class="section-heading">
 							<div>
 								<span class="eyebrow">Public transport & island connections</span>
-								<h2>What the ferry service changes</h2>
+								<h2>
+									{hasBusProposal && hasFerryProposal
+										? 'What your transport services change'
+										: hasBusProposal
+											? 'What the bus service changes'
+											: 'What the ferry service changes'}
+								</h2>
 							</div>
-							<Ship size={23} />
+							{#if hasBusProposal}<BusFront size={23} />{:else}<Ship size={23} />{/if}
 						</div>
 						<p>
 							Compare modeled connections on {transport.after.service_date}. Each direction has its
 							own departure schedule; an outward and return service count as two schedules.
+							Departures are planned trips, not a prediction of passenger demand.
 						</p>
 						<div class="transport-report-layout">
 							<div class="transport-comparison">
@@ -301,44 +345,58 @@
 										<div class="band-track" aria-hidden="true">
 											<span
 												class="baseline"
-												style:width={`${(metric.before / maximumConnections) * 100}%`}
+												style:width={`${(metric.before / Math.max(1, metric.before, metric.after)) * 100}%`}
 											></span>
 										</div>
 										<div class="band-track" aria-hidden="true">
 											<span
 												class="proposed"
-												style:width={`${(metric.after / maximumConnections) * 100}%`}
+												style:width={`${(metric.after / Math.max(1, metric.before, metric.after)) * 100}%`}
 											></span>
 										</div>
 									</div>{/each}
 							</div>
 							<div class="transport-service-list">
-								{#each proposedFerries as ferry (ferry.key)}<article>
-										<div><Ship size={18} /><strong>{ferry.name}</strong></div>
+								{#each proposedServices as service (service.key)}<article
+										data-service-mode={service.mode}
+									>
+										<div>
+											{#if service.mode === 'bus'}<BusFront size={18} />{:else}<Ship
+													size={18}
+												/>{/if}<strong>{service.name}</strong>
+										</div>
 										<p>
-											<b>{formatAmount(ferry.departures)}</b> modeled departures{ferry.returnService
+											<b>{formatAmount(service.departures)}</b> modeled departures{service.returnService
 												? ' across both directions'
 												: ''}
 										</p>
 										<span
-											>{ferry.returnService
-												? 'Outward and return sailings included'
+											>{service.returnService
+												? service.mode === 'bus'
+													? 'Outward and return trips included'
+													: 'Outward and return sailings included'
 												: 'Return service needs review'}</span
 										>
 									</article>{:else}<p>
-										No proposed ferry is active on this service date. Check its opening date and
-										timetable before making a decision.
+										No proposed service is active on this date. Check its opening date and timetable
+										before making a decision.
 									</p>{/each}
 							</div>
 						</div>
-						<div class="transport-cost-note">
-							<span><strong>MVR 0</strong> new port construction for this ferry service</span>
-							<p>
-								Existing landing places are reused. Vessel procurement and yearly operation are
-								included in the proposal costs above; a mapped landing place still needs suitability
-								and permission checks.
-							</p>
-						</div>
+						{#if hasFerryProposal}<div class="transport-cost-note">
+								<span><strong>MVR 0</strong> new port construction for this ferry service</span>
+								<p>
+									Existing landing places are reused. Vessel procurement and yearly operation are
+									included in the proposal costs above; a mapped landing place still needs
+									suitability and permission checks.
+								</p>
+							</div>{/if}
+						{#if hasBusProposal}<p class="method-note">
+								Bus vehicle procurement and service operation are included in the proposal costs.
+								Walking access counts residents near boarding points; changing a route or frequency
+								can improve service without changing that walking distance. Healthcare and education
+								comparisons use the modeled journeys and timetable.
+							</p>{/if}
 						<p class="method-note">{transport.after.qualification}</p>
 					</section>{/if}
 				<div class="report-grid">
@@ -410,13 +468,15 @@
 										<strong>{operationName(operation)}</strong><small
 											>{operation.metadata?.ui_ferry_summary
 												? 'Return ferry service · existing landing places'
-												: operationLabel(operation)}</small
+												: operation.metadata?.ui_bus_summary
+													? 'Bus stop and return bus service'
+													: operationLabel(operation)}</small
 										>{#if operation.coordinates}<span
 												>Placed on the map{#if operation.island_id}
 													· {operation.island_id}{/if}</span
 											>{/if}
 									</div>
-									{#if onFocusOperation && (operation.coordinates || operation.metadata?.ui_ferry_summary)}<Button
+									{#if onFocusOperation && (operation.coordinates || operation.metadata?.ui_map_features)}<Button
 											variant="ghost"
 											size="icon-sm"
 											aria-label={`View ${operationName(operation)} on map`}

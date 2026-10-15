@@ -56,6 +56,8 @@ export type FerryDraft = {
 		terminal_construction_mvr: 0;
 		origin_terminal: FerryTerminal;
 		destination_terminal: FerryTerminal;
+		geometry_source?: 'coastline_avoiding_planning_corridor';
+		geometry_qualification?: string;
 		qualification: string;
 	} | null;
 	quote: {
@@ -66,6 +68,8 @@ export type FerryDraft = {
 };
 export type FerryServiceSettings = {
 	destinationId: string;
+	originTerminalId?: string;
+	destinationTerminalId?: string;
 	headway: number | string;
 	start: string;
 	end: string;
@@ -109,6 +113,8 @@ export function ferryServiceInput(
 			payload: {
 				origin_island_id: string;
 				destination_island_id: string;
+				origin_terminal_id?: string;
+				destination_terminal_id?: string;
 				headway_minutes: number;
 				start_minutes: number;
 				end_minutes: number;
@@ -136,6 +142,10 @@ export function ferryServiceInput(
 		payload: {
 			origin_island_id: originId,
 			destination_island_id: settings.destinationId,
+			...(settings.originTerminalId ? { origin_terminal_id: settings.originTerminalId } : {}),
+			...(settings.destinationTerminalId
+				? { destination_terminal_id: settings.destinationTerminalId }
+				: {}),
 			headway_minutes: headway,
 			start_minutes: start,
 			end_minutes: end,

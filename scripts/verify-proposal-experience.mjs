@@ -50,6 +50,7 @@ const budget = page.getByRole('region', { name: 'Proposal budget', exact: true }
 const confirmation = atlas.getByTestId('map-placement-confirmation');
 const preview = atlas.getByTestId('map-placement-preview');
 const markerActions = atlas.getByTestId('proposal-marker-actions');
+const serviceEditor = atlas.getByTestId('map-service-editor');
 const palette = panel.locator('.policy-palette');
 /** @type {{graph_edges:Road[],origins:Array<{lon:number,lat:number}>}} */
 let baseline;
@@ -123,6 +124,37 @@ async function roadSite(prior = null) {
 			if (await mapIsClear(point)) return { coordinates, point };
 		}
 	throw new Error('No source-backed road location is visible outside the map controls.');
+}
+
+/** Find a real, road-routable candidate rather than assuming every street has a bus connection. */
+async function connectionSite() {
+	const draft = await page.evaluate(() =>
+		JSON.parse(localStorage.getItem('policy-map-v2:island:1442') ?? '{}')
+	);
+	const seen = new Set();
+	let inspected = 0;
+	for (const road of baseline.graph_edges) {
+		for (const coordinates of road.geometry ?? []) {
+			const identity = coordinates.join(',');
+			if (seen.has(identity)) continue;
+			seen.add(identity);
+			const point = await project(coordinates);
+			if (!(await mapIsClear(point))) continue;
+			const response = await page.request.post(`${baseURL}/api/backend/planning/bus-connection`, {
+				data: {
+					island_id: 'island:1442',
+					coordinates,
+					assumptions: draft.assumptions,
+					operations: draft.operations
+				}
+			});
+			assert.equal(response.status(), 200, await response.text());
+			if ((await response.json()).status === 'ready') return { coordinates, point };
+			inspected += 1;
+			if (inspected >= 30) throw new Error('No routable visible bus-stop connection was found.');
+		}
+	}
+	throw new Error('No source-backed bus connection is visible outside the map controls.');
 }
 
 /** @param {Coordinates[]} candidates @returns {Promise<Point|null>} */
@@ -221,6 +253,20 @@ async function fullyOnScreen(item) {
 	return box;
 }
 
+/** @param {import('@playwright/test').Locator} item */
+async function accessibleAction(item) {
+	await expect(item).toBeInViewport({ ratio: 1 });
+	await expect
+		.poll(() =>
+			item.evaluate((element) => {
+				const box = element.getBoundingClientRect();
+				const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+				return !!hit && (hit === element || element.contains(hit));
+			})
+		)
+		.toBe(true);
+}
+
 try {
 	const source = await page.request.get(
 		`${baseURL}/api/backend/planning/baseline?island_id=island%3A1442`
@@ -236,10 +282,10 @@ try {
 		return { visibleBudgetAtStart: true };
 	});
 	await check(
-		'Click-to-place previews an icon and a qualified distance guide before choosing a site',
+		'Click-to-place previews a bus icon and suggests a road path in an anchored editor',
 		async () => {
 			await choosePlacement('Bus stop');
-			const site = await roadSite();
+			const site = await connectionSite();
 			await page.mouse.move(site.point.x, site.point.y);
 			await expect(preview).toBeVisible();
 			await expect(preview).toHaveAttribute('data-placement-kind', 'add_stop');
@@ -247,15 +293,21 @@ try {
 			await expect(atlas).toContainText(/distance guide/i);
 			await acceptedPoints(0);
 			await page.mouse.click(site.point.x, site.point.y);
-			await readyPlacement();
-			await fullyOnScreen(confirmation);
-			await expect(confirmation).toContainText(/cost|investment/i);
+			await expect(serviceEditor).toHaveAttribute('data-service-mode', 'bus-connection');
+			await expect(
+				serviceEditor.getByRole('button', { name: 'Accept stop & route', exact: true })
+			).toBeEnabled();
+			await fullyOnScreen(serviceEditor);
+			await expect(serviceEditor).toContainText(/mapped roads|road path/i);
+			await expect(serviceEditor.locator('.service-costs')).toContainText(/upfront|per year/);
 			await expect(panel.getByRole('button', { name: 'Add to proposal', exact: true })).toHaveCount(
 				0
 			);
 			await page.screenshot({ path: path.join(output, 'click-place-preview.png') });
-			await confirmation.getByRole('button', { name: 'Cancel', exact: true }).click();
-			await expect(confirmation).toHaveCount(0);
+			await serviceEditor
+				.getByRole('button', { name: 'Cancel bus connection', exact: true })
+				.click();
+			await expect(serviceEditor).toHaveCount(0);
 			await acceptedPoints(0);
 			return { sourceRoad: site.coordinates, noChangesBeforeConfirmation: true };
 		}
@@ -278,12 +330,12 @@ try {
 			await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('1');
 			await panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('1');
 			const count = evaluationRequests.length;
-			await choosePlacement('Bus stop');
+			await choosePlacement('School');
 			const site = await roadSite();
 			await page.mouse.click(site.point.x, site.point.y);
 			await readyPlacement(false);
 			await expect(confirmation.getByRole('alert')).toContainText(/budget|short|exceed/i);
-			await expect(budget).toContainText(/preview|adding/i);
+			await expect(budget).toBeHidden();
 			assert.equal(
 				evaluationRequests.length,
 				count,
@@ -492,45 +544,40 @@ try {
 		return { fullReview: true, pdfReady: true };
 	});
 	await check(
-		'Bus stop and bus service are separate actions with a named route preview',
+		'An existing bus route is edited on the map with automatic costs and an active service date',
 		async () => {
 			await showProposal();
 			await expect(palette.getByRole('button', { name: 'Bus stop', exact: true })).toBeEnabled();
 			await panel.getByRole('button', { name: /^Bus service/ }).click();
-			const composer = panel.getByRole('region', { name: 'Plan a bus service', exact: true });
-			await expect(composer).toBeVisible();
+			const composer = serviceEditor;
+			await expect(composer).toHaveAttribute('data-service-mode', 'bus');
+			await fullyOnScreen(composer);
 			await expect(composer.getByLabel('Bus route and direction', { exact: true })).not.toHaveValue(
 				''
 			);
 			const serviceDate = composer.getByLabel('Service date', { exact: true });
-			const previewService = composer.getByRole('button', {
-				name: 'Preview bus service & costs',
+			const acceptService = composer.getByRole('button', {
+				name: 'Accept service',
 				exact: true
 			});
 			await serviceDate.fill('2026-10-11');
 			await expect(composer.getByRole('alert')).toContainText(
-				'No published departures start on this date'
+				'No recorded departures on this date'
 			);
-			await expect(previewService).toBeDisabled();
+			await expect(acceptService).toBeDisabled();
 			await composer
 				.getByRole('button', { name: 'Use recorded service date', exact: true })
 				.click();
 			await expect(serviceDate).toHaveValue('2026-10-10');
-			await expect(previewService).toBeEnabled();
-			await composer.getByLabel('A bus every · minutes', { exact: true }).fill('10');
-			await previewService.click();
-			await expect(
-				composer.getByRole('button', { name: 'Add bus service to proposal', exact: true })
-			).toBeEnabled();
+			await composer.locator('#proposal-bus-frequency').fill('10');
+			await expect(acceptService).toBeEnabled();
 			await expect(composer).toContainText('The reverse direction is unchanged');
 			await expect
 				.poll(async () => Number(await atlas.getAttribute('data-policy-service-features')))
 				.toBeGreaterThan(0);
 			await acceptedPoints(2);
 			await page.screenshot({ path: path.join(output, 'bus-service-preview.png') });
-			await composer
-				.getByRole('button', { name: 'Add bus service to proposal', exact: true })
-				.click();
+			await acceptService.click();
 			await expect(composer).toHaveCount(0);
 			await completedImpact();
 			await expect
@@ -557,7 +604,89 @@ try {
 		}
 	);
 	await check(
-		'Ferry endpoints can both be selected on the map before reviewing a return service',
+		'A suggested bus connection commits its stop and return route together and appears in the impact review',
+		async () => {
+			await choosePlacement('Bus stop');
+			const site = await connectionSite();
+			await page.mouse.click(site.point.x, site.point.y);
+			await expect(serviceEditor).toHaveAttribute('data-service-mode', 'bus-connection');
+			await expect(serviceEditor.locator('#connection-stop')).not.toHaveValue('');
+			const accept = serviceEditor.getByRole('button', {
+				name: 'Accept stop & route',
+				exact: true
+			});
+			await expect(accept).toBeEnabled();
+			await expect(serviceEditor).toContainText('trips each way');
+			await expect
+				.poll(async () => Number(await atlas.getAttribute('data-policy-service-features')))
+				.toBeGreaterThan(0);
+			await acceptedPoints(2);
+			await page.screenshot({ path: path.join(output, 'bus-connection-preview.png') });
+			await accept.click();
+			await expect(serviceEditor).toHaveCount(0);
+			await acceptedPoints(3);
+			await completedImpact();
+			const saved = await page.evaluate(() =>
+				JSON.parse(localStorage.getItem('policy-map-v2:island:1442') ?? '{}')
+			);
+			/** @type {Array<{type:string,metadata?:Record<string,unknown>,service?:{mode:string,routeId:string,stopIds:string[]}}>} */
+			const operations = saved.operations;
+			const stop = operations.find((operation) => operation.metadata?.ui_bus_summary);
+			assert.ok(stop, 'The saved proposal has one named bus connection summary.');
+			const packageId = stop.metadata?.ui_package;
+			assert.equal(typeof packageId, 'string');
+			const members = operations.filter(
+				(operation) => operation.metadata?.ui_package === packageId
+			);
+			assert.equal(
+				members.length,
+				3,
+				'The new stop and both bus directions form one proposal change.'
+			);
+			assert.equal(members.filter((operation) => operation.type === 'add_stop').length, 1);
+			const services = members.filter((operation) => operation.type === 'add_service');
+			assert.equal(services.length, 2);
+			assert.ok(services.every((operation) => operation.service?.mode === 'bus'));
+			assert.equal(services[0].service?.routeId, services[1].service?.routeId);
+			assert.deepEqual(
+				services[0].service?.stopIds,
+				[...(services[1].service?.stopIds ?? [])].reverse()
+			);
+			await page
+				.getByRole('button', { name: 'Review full impact', exact: true })
+				.filter({ visible: true })
+				.first()
+				.click();
+			const review = page.getByRole('dialog');
+			await expect(
+				review.getByRole('heading', { name: 'What the bus service changes' })
+			).toBeVisible();
+			await expect(
+				review.locator('.transport-service-list [data-service-mode="bus"]')
+			).toContainText('Outward and return trips included');
+			await expect(review).toContainText('Departures are planned trips');
+			await expect(review.getByRole('button', { name: 'Save as PDF', exact: true })).toBeEnabled();
+			await page.screenshot({ path: path.join(output, 'bus-connection-review.png') });
+			await review.getByRole('button', { name: 'Close proposal review', exact: true }).click();
+			await page
+				.getByRole('button', { name: 'Undo proposal change', exact: true })
+				.filter({ visible: true })
+				.first()
+				.click();
+			await acceptedPoints(2);
+			await completedImpact();
+			await expect(atlas).toHaveAttribute('data-policy-service-features', '0');
+			return {
+				sourceRoad: site.coordinates,
+				packageOperations: members.length,
+				returnRouteSaved: true,
+				transportReviewAvailable: true,
+				undoRemovesWholePackage: true
+			};
+		}
+	);
+	await check(
+		'A ferry starts at an existing landing and its destination is selected on the map',
 		async () => {
 			const source = await page.request.get(
 				`${baseURL}/api/backend/planning/connectivity?origin_island_id=island:1442&destination_island_id=island:1443&date=2026-10-10`
@@ -571,11 +700,6 @@ try {
 			/** @type {{origins:Array<{lon:number,lat:number}>}} */
 			const destinationBaseline = await destinationSource.json();
 			/** @type {Coordinates[]} */
-			const originLocations = [
-				evidence.origin.coordinates,
-				...baseline.origins.map(({ lon, lat }) => /** @type {Coordinates} */ ([lon, lat]))
-			];
-			/** @type {Coordinates[]} */
 			const destinationLocations = [
 				evidence.destination.coordinates,
 				...destinationBaseline.origins.map(
@@ -583,34 +707,31 @@ try {
 				)
 			];
 			await showProposal();
-			await panel.getByRole('button', { name: /^New ferry service/ }).click();
-			const composer = panel.getByRole('region', { name: 'Plan a ferry service', exact: true });
-			const endpoints = composer.locator('.ferry-map-steps');
-			await endpoints.getByRole('button', { name: /From Hulhumalé/ }).click();
-			await expect(atlas).toHaveAttribute('data-island-picking', 'true');
-			const origin = await visibleIslandPoint(originLocations);
-			assert.ok(origin, 'A source-backed departure location is visible outside the map controls.');
-			await page.mouse.click(origin.x, origin.y);
-			await expect(atlas).toHaveAttribute('data-island-picking', 'false');
+			await panel.getByRole('button', { name: /^Ferry service/ }).click();
+			const composer = serviceEditor;
+			await expect(composer).toHaveAttribute('data-service-mode', 'ferry');
+			await expect(composer.locator('#ferry-origin-terminal')).not.toHaveValue('');
 			await expect(composer).toContainText('From Hulhumalé');
-			await endpoints.getByRole('button', { name: /Choose destination|To Malé/ }).click();
+			await composer.getByRole('button', { name: 'Choose on map', exact: true }).click();
 			await expect(atlas).toHaveAttribute('data-island-picking', 'true');
 			for (let attempt = 0; attempt < 5; attempt += 1) {
 				if (await visibleIslandPoint(destinationLocations)) break;
+				const previousZoom = Number(await atlas.getAttribute('data-zoom'));
 				await page.getByRole('button', { name: 'Zoom out', exact: true }).click();
+				await expect
+					.poll(async () => Number(await atlas.getAttribute('data-zoom')))
+					.toBeLessThan(previousZoom - 0.8);
 			}
 			const destination = await visibleIslandPoint(destinationLocations);
 			assert.ok(destination, 'A source-backed destination location can be picked on the map.');
 			await page.mouse.click(destination.x, destination.y);
 			await expect(atlas).toHaveAttribute('data-island-picking', 'false');
-			await expect(composer.locator('.ferry-selected-destination')).toContainText('Malé');
-			await composer.getByRole('button', { name: /^Preview route & costs$/ }).click();
-			await expect(composer.locator('.ferry-service-preview')).toHaveAttribute(
-				'data-ferry-draft-status',
-				'ready'
-			);
-			await expect(composer).toContainText('departures each way');
-			await expect(composer).toContainText('It does not build a port');
+			await expect(composer.locator('.service-destination')).toContainText('Malé');
+			await expect(
+				composer.getByRole('button', { name: 'Accept ferry service', exact: true })
+			).toBeEnabled();
+			await expect(composer).toContainText('trips each way');
+			await expect(composer).toContainText('No new port is built');
 			await expect
 				.poll(async () => Number(await atlas.getAttribute('data-policy-service-features')))
 				.toBeGreaterThan(0);
@@ -630,7 +751,7 @@ try {
 		}
 	);
 	await check(
-		'Mobile click placement keeps confirmation and budget accessible without overflow',
+		'Mobile stop-only placement shows its budget at the pin with fully accessible confirmation actions',
 		async () => {
 			await page.setViewportSize({ width: 390, height: 844 });
 			await openProposal();
@@ -638,22 +759,35 @@ try {
 			await choosePlacement('Bus stop');
 			const site = await roadSite();
 			await page.mouse.click(site.point.x, site.point.y);
+			await expect(serviceEditor).toHaveAttribute('data-service-mode', 'bus-connection');
+			const busEditor = await fullyOnScreen(serviceEditor);
+			await serviceEditor.getByRole('button', { name: 'Add only a stop', exact: true }).click();
 			await readyPlacement();
 			const card = await fullyOnScreen(confirmation);
-			await expect(
+			await accessibleAction(
 				confirmation.getByRole('button', { name: 'Add to proposal', exact: true })
-			).toBeInViewport();
-			await expect(
-				confirmation.getByRole('button', { name: 'Cancel', exact: true })
-			).toBeInViewport();
-			await expect(budget).toBeVisible();
+			);
+			await accessibleAction(confirmation.getByRole('button', { name: 'Cancel', exact: true }));
+			await expect(confirmation).toContainText('Budget after adding');
+			await expect(confirmation).toContainText('Yearly budget remaining');
+			await expect(budget).toBeHidden();
 			await noOverflow();
 			await page.screenshot({ path: path.join(output, 'mobile-placement.png') });
 			await page.keyboard.press('Escape');
 			await expect(confirmation).toHaveCount(0);
 			await acceptedPoints(2);
+			await expect(budget).toBeVisible();
 			await noOverflow();
-			return { viewport: { width: 390, height: 844 }, card, canceledWithoutChanges: true };
+			return {
+				viewport: { width: 390, height: 844 },
+				busEditor,
+				card,
+				stopOnlyFallback: true,
+				fullConfirmationActionsAccessible: true,
+				budgetInPlacementCard: true,
+				floatingBudgetRestoredAfterCancel: true,
+				canceledWithoutChanges: true
+			};
 		}
 	);
 	await check(

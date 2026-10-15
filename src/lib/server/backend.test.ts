@@ -37,6 +37,41 @@ describe('backend integration boundary', () => {
 		expect(result.status).toBe(503);
 		expect((await result.json()).error.message).toContain('backend is unavailable');
 	});
+	it('forwards a map-placed bus connection package and its authoritative budget quote', async () => {
+		const payload = {
+			island_id: 'island:1442',
+			coordinates: [73.545, 4.22],
+			target_stop_id: 'rtl:stop:111',
+			headway_minutes: 20,
+			operations: []
+		};
+		const draft = {
+			status: 'ready',
+			operations: [{ type: 'add_stop' }, { type: 'add_service' }, { type: 'add_service' }],
+			quote: { budget: { allowed: false, status: 'over_budget' } }
+		};
+		const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json(draft));
+		const response = await forwardBackend(
+			new Request('http://localhost/api/backend/planning/bus-connection', {
+				method: 'POST',
+				body: JSON.stringify(payload)
+			}),
+			'planning/bus-connection',
+			'http://127.0.0.1:8000',
+			fetcher
+		);
+		expect(response.status).toBe(200);
+		expect(fetcher.mock.calls[0][0].toString()).toBe(
+			'http://127.0.0.1:8000/api/v1/planning/bus-connection'
+		);
+		expect(fetcher.mock.calls[0][1]).toMatchObject({
+			method: 'POST',
+			body: JSON.stringify(payload),
+			headers: { 'content-type': 'application/json' }
+		});
+		expect(await response.json()).toEqual(draft);
+		expect(response.headers.get('cache-control')).toBe('no-store');
+	});
 	it.each([
 		'map/context',
 		'routing/stops',
@@ -50,6 +85,7 @@ describe('backend integration boundary', () => {
 		'planning/quote',
 		'planning/connectivity',
 		'planning/ferry-service',
+		'planning/bus-connection',
 		'forecasts/analysis',
 		'forecasts/sources',
 		'forecasts/sources/template',
@@ -82,6 +118,7 @@ describe('backend integration boundary', () => {
 		'planning/quote/extra',
 		'planning/connectivity/extra',
 		'planning/ferry-service/extra',
+		'planning/bus-connection/extra',
 		'forecasts/sources/stage/extra',
 		'map/context/extra'
 	])('rejects malformed new endpoint paths: %s', async (path) => {

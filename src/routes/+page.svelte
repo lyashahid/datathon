@@ -128,9 +128,28 @@
 	let policyCommand = $state<{
 		id: number;
 		kind:
-			'inspect' | 'gaps' | 'compose' | 'close' | 'confirm' | 'cancel-placement' | 'adjust-budget';
+			| 'inspect'
+			| 'gaps'
+			| 'compose'
+			| 'close'
+			| 'confirm'
+			| 'cancel-placement'
+			| 'adjust-budget'
+			| 'cancel-service';
 	} | null>(null);
 	let policyMove = $state<{ id: number; index: number; coordinates: Coordinates } | null>(null);
+	let servicePlacement = $state<{
+		id: number;
+		kind: 'bus' | 'ferry';
+		coordinates: Coordinates;
+	} | null>(null);
+	let serviceLanding = $state<{
+		id: number;
+		terminalId: string;
+		islandId?: string;
+		coordinates: Coordinates;
+	} | null>(null);
+	let serviceCandidate = $state<{ id: number; stopId: string } | null>(null);
 	let policyEdit = $state<{
 		id: number;
 		index: number;
@@ -193,10 +212,7 @@
 	let focusPoint = $state<{ id: number; coordinates: Coordinates } | null>(null);
 	let inspectedCell = $state<Record<string, unknown> | null>(null);
 	let policySequence = 0;
-	function policyAction(
-		kind:
-			'inspect' | 'gaps' | 'compose' | 'close' | 'confirm' | 'cancel-placement' | 'adjust-budget'
-	) {
+	function policyAction(kind: NonNullable<typeof policyCommand>['kind']) {
 		policyCommand = { id: ++policySequence, kind };
 	}
 	function focusPolicyPoint(coordinates: Coordinates) {
@@ -1540,6 +1556,13 @@
 						policyServiceFeatures={accessExplorerOpen
 							? emptyPolicyMap
 							: policyState.serviceFeatures}
+						serviceEditor={accessExplorerOpen ? null : policyState.serviceEditor}
+						serviceEditorContent={islandPick ? undefined : policyState.serviceEditorContent}
+						onserviceplace={(placement) =>
+							(servicePlacement = { ...placement, id: ++policySequence })}
+						onservicelanding={(landing) => (serviceLanding = { ...landing, id: ++policySequence })}
+						onservicecandidate={(stopId) => (serviceCandidate = { stopId, id: ++policySequence })}
+						oncancelservice={() => policyAction('cancel-service')}
 						gapFeatures={accessExplorerOpen ? emptyPolicyMap : policyState.gapFeatures}
 						impactFeatures={accessExplorerOpen ? emptyPolicyMap : policyState.impactFeatures}
 						gapLens={policyLens}
@@ -1630,6 +1653,9 @@
 					lens={policyLens}
 					command={policyCommand}
 					placement={incomingPlacement}
+					{servicePlacement}
+					{serviceLanding}
+					{serviceCandidate}
 					{incomingOperation}
 					onConsume={() => (incomingOperation = null)}
 					moved={policyMove}

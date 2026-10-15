@@ -1,3 +1,4 @@
+import type { Snippet } from 'svelte';
 import type { FeatureCollection, Geometry, Position } from 'geojson';
 import type { Coordinates } from './types.js';
 import type { PlanningComparison, PlanningOperation, PlanningPlace } from './planning-map.js';
@@ -18,7 +19,15 @@ export type PendingPlacementDecision = {
 	annualRemaining?: number | null;
 	accessPreview?: { residents: number | null; label: string; approximate?: boolean };
 };
+export type MapServiceEditor = {
+	id: string;
+	coordinates: Coordinates;
+	mode: 'bus' | 'ferry' | 'bus-connection';
+	title?: string;
+};
 export type MapPolicyState = {
+	serviceEditor?: MapServiceEditor | null;
+	serviceEditorContent?: Snippet;
 	operations: PlanningOperation[];
 	pending: { coordinates: Coordinates; kind: PlacementKind } | null;
 	pendingDecision: PendingPlacementDecision | null;

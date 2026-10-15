@@ -45,6 +45,17 @@ describe('ferry service plan authorization', () => {
 			assumptions: request.assumptions
 		});
 	});
+	it('preserves the landing places chosen on the map in the quote', () => {
+		const result = ferryServiceInput(
+			'island:1442',
+			{ ...settings, originTerminalId: 'osm:landing-a', destinationTerminalId: 'osm:landing-b' },
+			request
+		);
+		expect(result.payload).toMatchObject({
+			origin_terminal_id: 'osm:landing-a',
+			destination_terminal_id: 'osm:landing-b'
+		});
+	});
 	it.each([
 		{ destinationId: 'island:1442' },
 		{ destinationId: '' },

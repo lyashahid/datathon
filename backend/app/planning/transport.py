@@ -20,7 +20,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from app.planning.models import PlanningAssumptions, PlanningOperation, PlanningRequest
 from app.planning.repository import IDENTITY_BRIDGE
 from app.planning.routing import WalkingNetwork, pattern_trips, service_day_trips
-from app.routing.engine import _distance_m
+from app.planning.water_corridor import WaterCorridorPlanner
 
 
 class FerryServiceRequest(BaseModel):
@@ -124,7 +124,8 @@ def line_feature(link: dict[str, Any], *, proposed: bool = False) -> dict[str, A
             "type": "ferry_service" if proposed else "transport_connection",
             "evidence": link.get("evidence", "proposed_service"),
             "proposed": proposed,
-            "qualification": "Planning corridor; not a charted navigation route."
+            "qualification": link.get("qualification")
+            or "Planning corridor; not a charted navigation route."
             if proposed
             else "Mapped route evidence does not establish a live operating service.",
         },
@@ -152,8 +153,10 @@ def transport_summary(world: dict[str, Any], assumptions: PlanningAssumptions) -
         lines.append(
             {
                 "id": pattern["id"],
+                "route_id": pattern["routeId"],
                 "name": pattern["name"],
                 "mode": pattern["mode"],
+                "stop_ids": pattern["stopIds"],
                 "island_ids": islands,
                 "departure_count": len(trips),
                 "proposed": pattern.get("provenance") == "assumed",
@@ -177,6 +180,7 @@ class TransportPlanningService:
         self.repository, self.routing = repository, routing
         self.planning, self.updates = planning, updates
         self.terminals = terminal_catalogue(repository, routing, planning.repository.public_dir)
+        self.water_corridors = WaterCorridorPlanner(repository.islands_by_id)
         planning.repository.ferry_terminals = self.terminals
 
     @lru_cache(maxsize=256)
@@ -480,7 +484,24 @@ class TransportPlanningService:
                 "quote": None,
                 "reasons": connection["reasons"],
             }
-        distance_m = _distance_m(first["coordinates"], second["coordinates"])
+        if self.water_corridors.features is not self.repository.islands_by_id:
+            self.water_corridors = WaterCorridorPlanner(self.repository.islands_by_id)
+        corridor = self.water_corridors.corridor(first, second)
+        if not corridor:
+            return {
+                "status": "evidence_needed",
+                "operations": [],
+                "map_features": feature_collection([]),
+                "summary": None,
+                "quote": None,
+                "reasons": [
+                    "A water corridor between these mapped terminals could not be validated "
+                    "within the shoreline model. Review the landing locations and a navigable "
+                    "crossing before adding this ferry service; no new landing is assumed."
+                ],
+            }
+        distance_m = corridor["distance_m"]
+        geometry = corridor["geometry"]
         crossing = max(1, math.ceil(distance_m / 1000 / body.speed_kph * 60))
         layover = body.assumptions.layover_minutes
         roundtrip = crossing * 2 + layover * 2
@@ -496,7 +517,8 @@ class TransportPlanningService:
         digest = hashlib.sha256(
             (
                 f"{first['id']}|{second['id']}|{body.assumptions.date}|{body.start_minutes}|"
-                f"{body.end_minutes}|{body.headway_minutes}|{body.speed_kph}"
+                f"{body.end_minutes}|{body.headway_minutes}|{body.speed_kph}|{layover}|"
+                f"{json.dumps(geometry, separators=(',', ':'))}"
             ).encode()
         ).hexdigest()[:12]
         route_id = f"proposal:ferry:{digest}"
@@ -509,7 +531,9 @@ class TransportPlanningService:
         link = {
             "id": route_id,
             "name": name,
-            "geometry": [first["coordinates"], second["coordinates"]],
+            "geometry": geometry,
+            "evidence": corridor["geometry_source"],
+            "qualification": corridor["qualification"],
         }
         map_features = feature_collection(
             [line_feature(link, proposed=True)]
@@ -580,10 +604,15 @@ class TransportPlanningService:
                     ],
                 },
                 "distanceM": distance_m,
+                "segmentGeometry": [
+                    geometry if direction == "outbound" else list(reversed(geometry))
+                ],
                 "transportProposal": {
                     "origin_island_id": body.origin_island_id,
                     "destination_island_id": body.destination_island_id,
                     "terminal_construction_mvr": 0,
+                    "geometry_source": corridor["geometry_source"],
+                    "geometry_qualification": corridor["qualification"],
                 },
             }
             operations.append(
@@ -622,10 +651,11 @@ class TransportPlanningService:
                 "terminal_construction_mvr": 0,
                 "origin_terminal": first,
                 "destination_terminal": second,
+                "geometry_source": corridor["geometry_source"],
+                "geometry_qualification": corridor["qualification"],
                 "qualification": "Illustrative return ferry service using mapped terminals. "
                 "Vessel procurement and annual operation are budgeted; no new port construction. "
-                "Straight-line distance and speed are assumptions, not navigational "
-                "clearance or a timetable approval.",
+                + corridor["qualification"],
             },
             "reasons": [
                 "Return sailings and terminal layovers are included.",

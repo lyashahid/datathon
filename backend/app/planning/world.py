@@ -11,7 +11,7 @@ from typing import Any
 from app.planning.geometry import prepare_service_geometry
 from app.planning.models import PlanningOperation, PlanningRequest
 from app.planning.repository import PlanningRepository
-from app.planning.routing import WalkingNetwork
+from app.planning.routing import WalkingNetwork, service_day_trips
 from app.routing.engine import _distance_m
 
 
@@ -240,6 +240,7 @@ def apply_operations(
     world = baseline_world(repository, share_network=share_unchanged_network and not changes_graph)
     closure_applied = False
     proposed_pattern_ids: set[str] = set()
+    proposed_stop_ids: set[str] = set()
     for index, operation in enumerate(operations):
         validity = operation.metadata
         if validity.get("valid_from") or validity.get("valid_until"):
@@ -322,10 +323,7 @@ def apply_operations(
             if kind == "add_stop":
                 item["mode"] = operation.metadata.get("mode", "bus")
                 world["stops"].append(item)
-                warnings.append(
-                    "A new stop does not create transit service; include it in a "
-                    "service pattern to obtain boarding benefits"
-                )
+                proposed_stop_ids.add(proposal_id)
             else:
                 item.update(
                     {
@@ -514,6 +512,18 @@ def apply_operations(
     if closure_applied:
         reroute_bus_services(repository, world, request, warnings)
     prepare_service_geometry(world, proposed_pattern_ids, request.assumptions, warnings)
+    if proposed_stop_ids:
+        served = {
+            identity
+            for pattern in world["patterns"]
+            if service_day_trips(pattern, request.assumptions.date)
+            for identity in pattern["stopIds"]
+        }
+        if proposed_stop_ids.difference(served):
+            warnings.append(
+                "A new stop does not create transit service; include it in a "
+                "service pattern to obtain boarding benefits"
+            )
     return world, warnings
 
 

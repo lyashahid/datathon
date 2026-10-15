@@ -583,6 +583,11 @@ def build_planning_report(
         for operation in payload.operations
         if operation.type == "add_service" and (operation.service or {}).get("mode") == "ferry"
     ]
+    proposed_buses = [
+        operation
+        for operation in payload.operations
+        if operation.type == "add_service" and (operation.service or {}).get("mode") == "bus"
+    ]
     world_stops = {stop["id"]: stop for stop in evaluation.get("world", {}).get("stops", [])}
     terminal_sites: dict[str, str] = {}
     for index, operation in enumerate(payload.operations, 1):
@@ -780,7 +785,7 @@ def build_planning_report(
                     terminal.get("name", "Existing ferry landing"),
                     "Use the existing landing. New terminal construction: MVR 0.",
                 ]
-            elif operation["type"] == "add_service" and service.get("mode") == "ferry":
+            elif operation["type"] == "add_service" and service.get("mode") in {"ferry", "bus"}:
                 landing_numbers = [
                     terminal_sites.get(identity) for identity in service.get("stopIds", [])
                 ]
@@ -790,7 +795,7 @@ def build_planning_report(
                     else "Service"
                 )
                 direction = (
-                    "Return sailings" if service["id"].endswith(":return") else "Outward sailings"
+                    "Return service" if service["id"].endswith(":return") else "Outward service"
                 )
                 details = [
                     name,
@@ -810,6 +815,48 @@ def build_planning_report(
     else:
         story.append(p("No interventions. This report describes the unchanged baseline."))
     transport = evaluation.get("transport_connectivity", {})
+    if proposed_buses:
+        rows = [["Bus connection", "Stops", "Assumed runtime", "Departures"]]
+        for operation in proposed_buses:
+            service = operation.service or {}
+            timing = service.get("timing", {})
+            trips = timing.get("trips", [])
+            first_trip = trips[0].get("stopTimes", []) if trips else []
+            duration = (
+                first_trip[-1]["arrivalMinutes"] - first_trip[0]["departureMinutes"]
+                if first_trip
+                else sum(timing.get("segmentMinutes", [])) or None
+            )
+            rows.append(
+                [
+                    service.get("name", "Proposed bus"),
+                    " to ".join(
+                        world_stops.get(identity, {}).get("name", identity)
+                        for identity in service.get("stopIds", [])
+                    ),
+                    f"{amount(duration)} min",
+                    str(len(trips)) if trips else "Frequency service",
+                ]
+            )
+        story.extend(
+            [
+                p("Bus routes and return journeys", "Section"),
+                table(
+                    rows, [available * 0.27, available * 0.37, available * 0.19, available * 0.17]
+                ),
+                p(
+                    "New bus connections enter the dated journey network and the fleet, capital, "
+                    "operating-cost and emissions calculations. Suggested paths follow the "
+                    "available "
+                    "driving graph; speed, stop dwell, hours and service frequency are planning "
+                    "assumptions. Journey benefits are calculated separately from stop proximity; "
+                    "neither added stops nor departures establish ridership or guaranteed "
+                    "access gains. Confirm road suitability, operator permission, dispatch "
+                    "and demand before approval.",
+                    "Note",
+                ),
+            ]
+        )
     if proposed_ferries:
         rows = [["Ferry service", "Existing landing points", "Assumed crossing", "Departures"]]
         for operation in proposed_ferries:

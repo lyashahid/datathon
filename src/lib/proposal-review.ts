@@ -79,6 +79,8 @@ export type TransportConnectivitySummary = {
 		id: string;
 		name: string;
 		mode: string;
+		route_id?: string;
+		stop_ids?: string[];
 		island_ids: string[];
 		departure_count: number;
 		proposed: boolean;
@@ -90,41 +92,56 @@ export type TransportConnectivitySummary = {
 	qualification: string;
 };
 
-/** Group directional schedules, without mistaking a one-way service for a return journey. */
-export function proposedFerryServiceGroups(summary: TransportConnectivitySummary | undefined) {
+/** Group directional schedules, without mistaking duplicate departures or loops for a return journey. */
+function proposedServiceGroups(
+	summary: TransportConnectivitySummary | undefined,
+	mode: 'bus' | 'ferry'
+) {
 	const routes = new Map<
 		string,
 		{
 			key: string;
 			name: string;
+			mode: 'bus' | 'ferry';
 			departures: number;
 			returnService: boolean;
 			directions: string[][];
 		}
 	>();
 	for (const line of summary?.lines ?? []) {
-		if (line.mode !== 'ferry' || !line.proposed) continue;
-		const key = `${line.name}:${[...line.island_ids].sort().join(':')}`;
+		if (line.mode !== mode || !line.proposed) continue;
+		const direction = line.stop_ids?.length ? line.stop_ids : line.island_ids;
+		const key = `${mode}:${line.route_id || `${line.name}:${[...direction].sort().join(':')}`}`;
 		const previous = routes.get(key);
 		if (previous) {
 			previous.departures += line.departure_count;
 			previous.returnService ||= previous.directions.some(
-				(direction) =>
+				(existing) =>
 					direction.length > 1 &&
-					direction[0] === line.island_ids.at(-1) &&
-					direction.at(-1) === line.island_ids[0]
+					direction[0] !== direction.at(-1) &&
+					existing.length === direction.length &&
+					existing.every((stop, index) => stop === direction[direction.length - 1 - index])
 			);
-			previous.directions.push(line.island_ids);
+			previous.directions.push(direction);
 		} else
 			routes.set(key, {
 				key,
 				name: line.name,
+				mode,
 				departures: line.departure_count,
 				returnService: false,
-				directions: [line.island_ids]
+				directions: [direction]
 			});
 	}
 	return [...routes.values()];
+}
+
+export function proposedFerryServiceGroups(summary: TransportConnectivitySummary | undefined) {
+	return proposedServiceGroups(summary, 'ferry');
+}
+
+export function proposedBusServiceGroups(summary: TransportConnectivitySummary | undefined) {
+	return proposedServiceGroups(summary, 'bus');
 }
 
 export function finiteValue(value: unknown): number | null {

@@ -44,7 +44,7 @@
 	import { accessColors } from '#lib/display-grid.js';
 	import { pointWithinIsland } from '#lib/map-policy.js';
 	import { nearestPlacementRoad } from '#lib/map-placement-preview.js';
-	import type { PendingPlacementDecision, PlacementKind } from '#lib/map-policy.js';
+	import type { MapPolicyState, PendingPlacementDecision, PlacementKind } from '#lib/map-policy.js';
 	import { api } from '#lib/api.js';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
 	import {
@@ -133,6 +133,16 @@
 		focusPoint?: { id: number; coordinates: Coordinates } | null;
 		conditionRoute?: Coordinates[];
 		policyServiceFeatures?: FeatureCollection;
+		serviceEditor?: MapPolicyState['serviceEditor'];
+		serviceEditorContent?: MapPolicyState['serviceEditorContent'];
+		onserviceplace?: (placement: { kind: 'bus' | 'ferry'; coordinates: Coordinates }) => void;
+		onservicelanding?: (landing: {
+			terminalId: string;
+			islandId?: string;
+			coordinates: Coordinates;
+		}) => void;
+		onservicecandidate?: (stopId: string) => void;
+		oncancelservice?: () => void;
 	}
 
 	let {
@@ -184,7 +194,13 @@
 		policyStale = false,
 		focusPoint = null,
 		conditionRoute = [],
-		policyServiceFeatures = { type: 'FeatureCollection', features: [] }
+		policyServiceFeatures = { type: 'FeatureCollection', features: [] },
+		serviceEditor = null,
+		serviceEditorContent,
+		onserviceplace,
+		onservicelanding,
+		onservicecandidate,
+		oncancelservice
 	}: Props = $props();
 	let container: HTMLDivElement;
 	let map = $state.raw<LibreMap | null>(null);
@@ -215,6 +231,19 @@
 		null
 	);
 	let proposalEditCard = $state.raw<HTMLElement | null>(null);
+	let serviceAnchor = $state<{
+		x: number;
+		y: number;
+		below: boolean;
+		arrow: number;
+		width: number;
+		maxHeight: number;
+		side: 'left' | 'right' | null;
+		arrowY: number;
+	} | null>(null);
+	let serviceCard = $state.raw<HTMLElement | null>(null);
+	let serviceMarker: Marker | null = null;
+	let lastServiceEditorId: string | null = null;
 	const selectedProposal = $derived(
 		selectedProposalIndex === null ? null : policyOperations[selectedProposalIndex]
 	);
@@ -368,6 +397,13 @@
 		type: 'FeatureCollection',
 		features: []
 	};
+	const serviceHitLayers = [
+		'policy-service-line',
+		'policy-service-bus-line',
+		'policy-ferry-landing-zones',
+		'policy-service-terminal-halo',
+		'policy-service-terminal-symbol'
+	];
 	const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	function cameraInsets(instance: LibreMap) {
 		const padding = instance.getPadding();
@@ -1514,7 +1550,11 @@
 
 	function controlsKeydown(event: KeyboardEvent) {
 		if (event.key !== 'Escape') return;
-		if ((pendingProposal || (picking && placementKind)) && oncancelproposal) {
+		if (serviceEditor && oncancelservice) {
+			event.preventDefault();
+			oncancelservice();
+			map?.getCanvas().focus({ preventScroll: true });
+		} else if ((pendingProposal || (picking && placementKind)) && oncancelproposal) {
 			event.preventDefault();
 			oncancelproposal();
 			map?.getCanvas().focus({ preventScroll: true });
@@ -1747,6 +1787,78 @@
 		}
 		return actions;
 	}
+	function inspectProposedService(feature: MapGeoJSONFeature, event: MapMouseEvent) {
+		if (!map || !makePopup) return;
+		closeInspection();
+		const props = feature.properties;
+		const panel = document.createElement('section');
+		panel.className = 'map-record-card';
+		panel.setAttribute('aria-label', 'Proposed transport service');
+		const eyebrow = document.createElement('small');
+		eyebrow.className = 'map-record-kind';
+		eyebrow.textContent = props.mode === 'bus' ? 'Proposed bus service' : 'Proposed ferry service';
+		const title = document.createElement('h3');
+		title.textContent = String(props.route_name ?? props.name ?? 'Your proposed service');
+		const details = document.createElement('dl');
+		function row(label: string, value: unknown) {
+			if (value === undefined || value === null || value === '') return;
+			const term = document.createElement('dt');
+			term.textContent = label;
+			const description = document.createElement('dd');
+			description.textContent = String(value);
+			details.append(term, description);
+		}
+		const direction = [props.origin_name, props.destination_name].filter(Boolean).join(' → ');
+		row('Connection', direction);
+		if (Number.isFinite(Number(props.headway_minutes)) && Number(props.headway_minutes) > 0)
+			row('Departures', `Every ${Number(props.headway_minutes)} minutes`);
+		row('Service date', props.service_date);
+		if (Number.isFinite(Number(props.travel_minutes)) && Number(props.travel_minutes) > 0)
+			row('Journey time', `${Math.round(Number(props.travel_minutes))} minutes`);
+		panel.append(eyebrow, title, details);
+		const note = document.createElement('p');
+		note.textContent =
+			'Part of your draft proposal. Review its costs and access improvements before saving.';
+		panel.append(note);
+		if (onfocusproposal) {
+			const actions = document.createElement('div');
+			actions.className = 'map-point-actions';
+			const button = document.createElement('button');
+			button.type = 'button';
+			button.className = 'point-proposal-action';
+			button.textContent = 'View proposal';
+			button.addEventListener('click', () => {
+				closeInspection();
+				onfocusproposal?.(
+					Number.isInteger(props.operation_index) ? Number(props.operation_index) : 0
+				);
+			});
+			actions.append(button);
+			panel.append(actions);
+		}
+		const coordinates: Coordinates =
+			feature.geometry.type === 'Point' && validCoordinates(feature.geometry.coordinates)
+				? feature.geometry.coordinates
+				: [event.lngLat.lng, event.lngLat.lat];
+		const popup = new makePopup({
+			className: 'map-record-popup map-source-record-popup',
+			maxWidth: '304px',
+			offset: 14,
+			closeOnClick: false,
+			focusAfterOpen: false
+		})
+			.setLngLat(coordinates)
+			.setDOMContent(panel)
+			.addTo(map);
+		inspectionPopup = popup;
+		inspectedSource = 'policy-service';
+		popup.on('close', () => {
+			if (inspectionPopup === popup) {
+				inspectionPopup = null;
+				inspectedSource = null;
+			}
+		});
+	}
 	function inspectLocation(coordinates: Coordinates) {
 		if (!map || !makePopup || (!onplanpoint && !onroutepoint)) return;
 		closeInspection();
@@ -1910,12 +2022,159 @@
 		};
 	}
 	function schedulePlacementAnchor() {
-		if ((!pendingProposal && selectedProposalIndex === null) || placementPositionFrame) return;
+		if (
+			(!pendingProposal && selectedProposalIndex === null && !serviceEditor) ||
+			placementPositionFrame
+		)
+			return;
 		placementPositionFrame = requestAnimationFrame(() => {
 			placementPositionFrame = 0;
 			updatePlacementAnchor();
 			updateProposalEditAnchor();
+			updateServiceAnchor();
 		});
+	}
+	function serviceViewport() {
+		const width = container.clientWidth;
+		const height = container.clientHeight;
+		const mapBounds = container.getBoundingClientRect();
+		let right = width - 12;
+		let top = width < 700 ? Math.min(178, height * 0.24) : Math.min(108, height * 0.16);
+		let bottom = height - 80;
+		for (const panel of container
+			.closest('.map-workspace')
+			?.querySelectorAll('.policy-map-panel, .proposal-floating-budget') ?? []) {
+			if (!(panel instanceof HTMLElement) || !panel.offsetHeight) continue;
+			const bounds = panel.getBoundingClientRect();
+			if (bounds.width < width * 0.65 && bounds.left > mapBounds.left + width / 2)
+				right = Math.min(right, bounds.left - mapBounds.left - 12);
+			else if (bounds.width > width * 0.65 && bounds.top > mapBounds.top) {
+				if (bounds.top - mapBounds.top < height * 0.45)
+					top = Math.max(top, bounds.bottom - mapBounds.top + 12);
+				else bottom = Math.min(bottom, bounds.top - mapBounds.top - 12);
+			}
+		}
+		return { right, top, bottom };
+	}
+	function updateServiceAnchor() {
+		if (!map || !active || !serviceEditor || !validCoordinates(serviceEditor.coordinates)) {
+			serviceAnchor = null;
+			return;
+		}
+		const point = map.project(serviceEditor.coordinates);
+		const viewport = serviceViewport();
+		if (
+			point.x < -40 ||
+			point.x > container.clientWidth + 40 ||
+			point.y < -40 ||
+			point.y > container.clientHeight + 40
+		) {
+			serviceAnchor = null;
+			return;
+		}
+		const width = Math.min(352, Math.max(240, viewport.right - 24));
+		// Use the available map height; long editors scroll inside their own card.
+		const maxHeight = Math.max(160, viewport.bottom - viewport.top);
+		const height = Math.min(serviceCard?.offsetHeight || 360, maxHeight);
+		// On a wide map the route should stay visible beside its editor.
+		const mode = serviceEditor.mode === 'ferry' ? 'ferry' : 'bus';
+		const destination = policyServiceFeatures.features.find(
+			(feature) =>
+				feature.geometry.type === 'Point' &&
+				feature.properties?.role === 'destination' &&
+				feature.properties?.mode === mode &&
+				!feature.properties?.accepted
+		);
+		const destinationX =
+			destination?.geometry.type === 'Point' && validCoordinates(destination.geometry.coordinates)
+				? map.project(destination.geometry.coordinates).x
+				: null;
+		const preferredSide = destinationX !== null && destinationX > point.x + 1 ? 'left' : 'right';
+		const available = {
+			left: point.x - width - 40 >= 12,
+			right: point.x + width + 40 <= viewport.right
+		};
+		const alternativeSide = preferredSide === 'left' ? 'right' : 'left';
+		const side =
+			container.clientWidth >= 900
+				? available[preferredSide]
+					? preferredSide
+					: available[alternativeSide]
+						? alternativeSide
+						: null
+				: null;
+		if (side) {
+			const y = Math.max(viewport.top, Math.min(viewport.bottom - height, point.y - 96));
+			serviceAnchor = {
+				x: point.x + (side === 'right' ? 1 : -1) * (width / 2 + 40),
+				y,
+				below: true,
+				width,
+				maxHeight,
+				side,
+				arrow: width / 2,
+				arrowY: Math.max(20, Math.min(height - 20, point.y - y))
+			};
+			return;
+		}
+		const below = point.y - 62 - height < viewport.top;
+		const x = Math.max(width / 2 + 12, Math.min(viewport.right - width / 2, point.x));
+		serviceAnchor = {
+			x,
+			y: below
+				? Math.max(viewport.top, Math.min(viewport.bottom - height, point.y + 14))
+				: Math.max(viewport.top + height, Math.min(viewport.bottom, point.y - 62)),
+			below,
+			width,
+			maxHeight,
+			side: null,
+			arrowY: 0,
+			arrow: Math.max(20, Math.min(width - 20, width / 2 + point.x - x))
+		};
+	}
+	function syncServiceMarker() {
+		if (
+			!map ||
+			!makeMarker ||
+			!active ||
+			!serviceEditor ||
+			!validCoordinates(serviceEditor.coordinates) ||
+			(serviceEditor.mode === 'bus-connection' && pendingProposal)
+		) {
+			serviceMarker?.remove();
+			serviceMarker = null;
+			return;
+		}
+		const kind = serviceEditor.mode === 'ferry' ? 'ferry' : 'bus';
+		if (!serviceMarker) {
+			const element = document.createElement('button');
+			element.type = 'button';
+			element.className = 'policy-service-marker';
+			element.addEventListener('click', (event) => {
+				event.stopPropagation();
+				updateServiceAnchor();
+				serviceCard
+					?.querySelector<HTMLElement>('button, input, select')
+					?.focus({ preventScroll: true });
+			});
+			serviceMarker = new makeMarker({ element, anchor: 'bottom' })
+				.setLngLat(serviceEditor.coordinates)
+				.addTo(map);
+		}
+		serviceMarker.setLngLat(serviceEditor.coordinates);
+		const element = serviceMarker.getElement();
+		element.dataset.kind = kind;
+		element.dataset.longitude = String(serviceEditor.coordinates[0]);
+		element.dataset.latitude = String(serviceEditor.coordinates[1]);
+		element.setAttribute('aria-label', serviceEditor.title ?? `Edit proposed ${kind} service`);
+		if (element.dataset.symbol !== kind) {
+			const path =
+				kind === 'ferry'
+					? '<path d="M8 2h8v4h3v8l3 1-3 5-7 2-7-2-3-5 3-1V6h3V2Zm2 2v2h4V4h-4ZM7 8v5l5-2 5 2V8H7ZM5 16l2 3 5 1 5-1 2-3-7-3-7 3Z"/>'
+					: '<path d="M6 3h12c2 0 3 2 3 4v11h-2v3h-3v-3H8v3H5v-3H3V7c0-2 1-4 3-4Zm0 3v6h12V6H6Zm1 8a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm10 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/>';
+			element.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
+			element.dataset.symbol = kind;
+		}
 	}
 	function updateProposalEditAnchor() {
 		if (!map || !active || !validCoordinates(selectedProposal?.coordinates) || pendingProposal) {
@@ -2075,7 +2334,8 @@
 		});
 	}
 	function focusPlacementDecision() {
-		placementCard?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus({
+		const card = serviceEditor?.mode === 'bus-connection' ? serviceCard : placementCard;
+		card?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus({
 			preventScroll: true
 		});
 	}
@@ -2195,6 +2455,14 @@
 		schedulePlacementAnchor();
 	}
 	function dropPlacement(event: DragEvent) {
+		const serviceKind = event.dataTransfer?.getData('application/x-policy-service');
+		if (map && (serviceKind === 'bus' || serviceKind === 'ferry')) {
+			event.preventDefault();
+			const bounds = container.getBoundingClientRect();
+			const point = map.unproject([event.clientX - bounds.left, event.clientY - bounds.top]);
+			onserviceplace?.({ kind: serviceKind, coordinates: [point.lng, point.lat] });
+			return;
+		}
 		const kind = event.dataTransfer?.getData('application/x-policy-placement');
 		if (!map || !['add_stop', 'add_school', 'add_hospital'].includes(kind ?? '')) return;
 		event.preventDefault();
@@ -2207,6 +2475,51 @@
 	}
 	function handleClick(event: MapMouseEvent) {
 		if (!map || !ready) return;
+		if (!serviceEditor && !picking && !islandPicking) {
+			const accepted = map
+				.queryRenderedFeatures(event.point, { layers: serviceHitLayers })
+				.find((feature) => feature.properties.accepted === true);
+			if (accepted) {
+				inspectProposedService(accepted, event);
+				return;
+			}
+		}
+		if (serviceEditor && !islandPicking) {
+			const instance = map;
+			const distance = (feature: MapGeoJSONFeature) => {
+				if (feature.geometry.type !== 'Point' || !validCoordinates(feature.geometry.coordinates))
+					return Infinity;
+				const point = instance.project(feature.geometry.coordinates);
+				return Math.hypot(point.x - event.point.x, point.y - event.point.y);
+			};
+			// Landing-zone halos can overlap; choose the actual pin nearest the click.
+			const hits = instance
+				.queryRenderedFeatures(event.point, { layers: serviceHitLayers })
+				.sort((first, second) => distance(first) - distance(second));
+			const landing = hits.find(
+				(hit) => hit.properties.kind === 'ferry_landing' && hit.properties.terminal_id
+			);
+			if (landing?.geometry.type === 'Point' && validCoordinates(landing.geometry.coordinates)) {
+				closeInspection();
+				onservicelanding?.({
+					terminalId: String(landing.properties.terminal_id),
+					islandId: landing.properties.island_id ? String(landing.properties.island_id) : undefined,
+					coordinates: landing.geometry.coordinates
+				});
+				return;
+			}
+			const candidate = hits.find(
+				(hit) =>
+					hit.properties.kind === 'bus_connection_candidate' &&
+					['candidate', 'destination'].includes(String(hit.properties.role)) &&
+					hit.properties.stop_id
+			);
+			if (candidate) {
+				closeInspection();
+				onservicecandidate?.(String(candidate.properties.stop_id));
+				return;
+			}
+		}
 		if (islandPicking) {
 			const hits = map.queryRenderedFeatures(event.point, {
 				layers: ['islands-fill', 'island-centroids', 'accessibility-centroids'].filter(
@@ -3054,14 +3367,58 @@
 					])
 						instance.moveLayer(id);
 					instance.addLayer({
+						id: 'policy-service-casing',
+						type: 'line',
+						source: 'policy-service',
+						filter: ['==', ['geometry-type'], 'LineString'],
+						layout: { 'line-cap': 'round', 'line-join': 'round' },
+						paint: { 'line-color': '#fffefa', 'line-width': 10, 'line-opacity': 0.95 }
+					});
+					instance.addLayer({
+						id: 'policy-service-bus-line',
+						type: 'line',
+						source: 'policy-service',
+						filter: [
+							'all',
+							['==', ['geometry-type'], 'LineString'],
+							['==', ['get', 'mode'], 'bus']
+						],
+						layout: { 'line-cap': 'round', 'line-join': 'round' },
+						paint: { 'line-color': '#00695c', 'line-width': 6 }
+					});
+					instance.addLayer({
 						id: 'policy-service-line',
 						type: 'line',
 						source: 'policy-service',
+						filter: [
+							'all',
+							['==', ['geometry-type'], 'LineString'],
+							['!=', ['get', 'mode'], 'bus']
+						],
+						layout: { 'line-cap': 'round', 'line-join': 'round' },
 						paint: {
 							'line-color': '#7765b2',
 							'line-width': 4,
 							'line-dasharray': [2, 1.4],
-							'line-opacity': 0.85
+							'line-opacity': 0.95
+						}
+					});
+					instance.addLayer({
+						id: 'policy-ferry-landing-zones',
+						type: 'circle',
+						source: 'policy-service',
+						filter: [
+							'all',
+							['==', ['geometry-type'], 'Point'],
+							['==', ['get', 'kind'], 'ferry_landing']
+						],
+						paint: {
+							'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 14, 14, 34, 18, 48],
+							'circle-color': '#d4c9ed',
+							'circle-opacity': 0.32,
+							'circle-stroke-color': '#7765b2',
+							'circle-stroke-opacity': 0.65,
+							'circle-stroke-width': 1.5
 						}
 					});
 					for (const source of ['island-connections', 'policy-service']) {
@@ -3086,7 +3443,10 @@
 							paint: {
 								'circle-radius': 14,
 								'circle-color': '#fff',
-								'circle-stroke-color': source === 'island-connections' ? '#397eb0' : '#7765b2',
+								'circle-stroke-color':
+									source === 'island-connections'
+										? '#397eb0'
+										: ['match', ['get', 'mode'], 'bus', '#247b75', '#7765b2'],
 								'circle-stroke-width': 2
 							}
 						});
@@ -3095,7 +3455,14 @@
 							type: 'symbol',
 							source,
 							filter: ['==', ['geometry-type'], 'Point'],
-							layout: { 'icon-image': 'atlas-ferry', 'icon-size': 0.7, 'icon-allow-overlap': true }
+							layout: {
+								'icon-image':
+									source === 'island-connections'
+										? 'atlas-ferry'
+										: ['match', ['get', 'mode'], 'bus', 'atlas-bus-stop', 'atlas-ferry'],
+								'icon-size': 0.7,
+								'icon-allow-overlap': true
+							}
 						});
 					}
 					instance.addLayer({
@@ -3145,6 +3512,7 @@
 					}
 					const hits = instance.queryRenderedFeatures(event.point, {
 						layers: [
+							...serviceHitLayers,
 							...interactiveLayers,
 							'scenario-points',
 							'scenario-symbols',
@@ -3227,6 +3595,7 @@
 			for (const marker of Object.values(vesselClusterButtons)) marker.remove();
 			resizeObserver?.disconnect();
 			selectedMarker?.remove();
+			serviceMarker?.remove();
 			for (const marker of Object.values(journeyMarkers)) marker?.remove();
 			for (const marker of policyMarkers.values()) marker.remove();
 			policyMarkers.clear();
@@ -3240,6 +3609,42 @@
 		};
 	});
 
+	$effect(() => {
+		if (!ready || !active || !serviceEditor) {
+			serviceAnchor = null;
+			lastServiceEditorId = null;
+			untrack(syncServiceMarker);
+			return;
+		}
+		void serviceEditor.coordinates;
+		void serviceEditorContent;
+		void policyServiceFeatures;
+		void pendingProposal;
+		untrack(syncServiceMarker);
+		untrack(schedulePlacementAnchor);
+		if (lastServiceEditorId !== serviceEditor.id) {
+			lastServiceEditorId = serviceEditor.id;
+			const editor = serviceEditor;
+			closeInspection();
+			selectedProposalIndex = null;
+			void tick().then(() => {
+				if (!map || serviceEditor?.id !== editor.id) return;
+				const point = map.project(editor.coordinates);
+				const { right, top, bottom } = serviceViewport();
+				const x = Math.max(70, Math.min(right - 40, point.x));
+				const y = Math.max(top + 70, Math.min(bottom - 35, point.y));
+				if (Math.abs(point.x - x) > 1 || Math.abs(point.y - y) > 1)
+					map.panBy([point.x - x, point.y - y], { duration: reducedMotion() ? 0 : 180 });
+				updateServiceAnchor();
+			});
+		}
+	});
+	$effect(() => {
+		if (!serviceCard) return;
+		const observer = new ResizeObserver(schedulePlacementAnchor);
+		observer.observe(serviceCard);
+		return () => observer.disconnect();
+	});
 	$effect(() => {
 		if (!ready || !active || !pendingProposal) {
 			placementAnchor = null;
@@ -3312,6 +3717,7 @@
 	$effect(() => {
 		if (!ready || !active || !map) return;
 		setData('policy-service', policyServiceFeatures);
+		if (inspectedSource === 'policy-service') closeInspection();
 		setData('island-connections', connectionFeatures);
 	});
 	$effect(() => {
@@ -3748,6 +4154,7 @@
 	data-policy-placement-kind={placementKind ?? ''}
 	data-island-connection-features={connectionFeatures.features.length}
 	data-policy-service-features={policyServiceFeatures.features.length}
+	data-policy-service-editor={serviceEditor?.mode ?? ''}
 	data-island-picking={islandPicking}
 	data-policy-gap-cells={gapFeatures.features.length}
 	data-policy-hex-grid={gapFeatures.features.filter((feature) => feature.properties?.display_grid)
@@ -3768,7 +4175,10 @@
 		bind:this={container}
 		class="map-canvas"
 		ondragover={(event) => {
-			if (event.dataTransfer?.types.includes('application/x-policy-placement'))
+			if (
+				event.dataTransfer?.types.includes('application/x-policy-placement') ||
+				event.dataTransfer?.types.includes('application/x-policy-service')
+			)
 				event.preventDefault();
 		}}
 		ondrop={dropPlacement}
@@ -3863,7 +4273,33 @@
 			</section>
 		</div>
 	{/if}
-	{#if pendingProposal && placementAnchor && active && onconfirmproposal && oncancelproposal}
+	{#if serviceEditor && serviceEditorContent && serviceAnchor && active}
+		<div
+			class="service-editor-anchor"
+			class:below={serviceAnchor.below}
+			class:beside-right={serviceAnchor.side === 'right'}
+			class:beside-left={serviceAnchor.side === 'left'}
+			style:left={`${serviceAnchor.x}px`}
+			style:top={`${serviceAnchor.y}px`}
+			style:width={`${serviceAnchor.width}px`}
+			style:--service-arrow={`${serviceAnchor.arrow}px`}
+			style:--service-arrow-y={`${serviceAnchor.arrowY}px`}
+		>
+			<section
+				bind:this={serviceCard}
+				class="map-service-editor"
+				style:max-height={`${serviceAnchor.maxHeight}px`}
+				aria-label={serviceEditor.title ?? 'Plan transport service'}
+				data-testid="map-service-editor"
+				data-service-mode={serviceEditor.mode}
+				data-anchor-longitude={serviceEditor.coordinates[0]}
+				data-anchor-latitude={serviceEditor.coordinates[1]}
+			>
+				{@render serviceEditorContent()}
+			</section>
+		</div>
+	{/if}
+	{#if pendingProposal && placementAnchor && active && onconfirmproposal && oncancelproposal && serviceEditor?.mode !== 'bus-connection'}
 		<div
 			class="placement-confirmation-anchor"
 			class:below={placementAnchor.below}
@@ -4514,6 +4950,87 @@
 		width: 252px;
 		transform: translate(-50%, -100%);
 	}
+	.service-editor-anchor {
+		position: absolute;
+		z-index: 17;
+		transform: translate(-50%, -100%);
+		isolation: isolate;
+	}
+	.service-editor-anchor.below {
+		transform: translateX(-50%);
+	}
+	.service-editor-anchor::after {
+		position: absolute;
+		left: var(--service-arrow);
+		bottom: -6px;
+		z-index: -1;
+		width: 12px;
+		height: 12px;
+		border-right: 1px solid #cbdcd6;
+		border-bottom: 1px solid #cbdcd6;
+		background: #fffefa;
+		transform: translateX(-50%) rotate(45deg);
+		content: '';
+		pointer-events: none;
+	}
+	.service-editor-anchor.below::after {
+		top: -6px;
+		bottom: auto;
+		transform: translateX(-50%) rotate(225deg);
+	}
+	.service-editor-anchor.beside-right::after,
+	.service-editor-anchor.beside-left::after {
+		top: var(--service-arrow-y);
+		bottom: auto;
+		border: 0;
+		transform: translateY(-50%) rotate(45deg);
+	}
+	.service-editor-anchor.beside-right::after {
+		left: -6px;
+		border-left: 1px solid #cbdcd6;
+		border-bottom: 1px solid #cbdcd6;
+	}
+	.service-editor-anchor.beside-left::after {
+		left: auto;
+		right: -6px;
+		border-top: 1px solid #cbdcd6;
+		border-right: 1px solid #cbdcd6;
+	}
+	.map-service-editor {
+		overflow: auto;
+		overscroll-behavior: contain;
+		border: 1px solid #cbdcd6;
+		border-radius: 16px;
+		background: #fffefa;
+		box-shadow:
+			0 6px 18px #173c4020,
+			0 18px 48px -16px #173c4055;
+		color: #294b4c;
+	}
+	:global(.national-map .policy-service-marker) {
+		display: grid;
+		place-items: center;
+		width: 46px;
+		height: 46px;
+		border: 3px solid #fffefa;
+		border-radius: 15px 15px 15px 4px;
+		background: #247b75;
+		box-shadow: 0 4px 12px #173c403d;
+		color: #fff;
+		cursor: pointer;
+	}
+	:global(.national-map .policy-service-marker[data-kind='ferry']) {
+		background: #7765b2;
+	}
+	:global(.national-map .policy-service-marker svg) {
+		width: 26px;
+		height: 26px;
+		fill: currentColor;
+	}
+	:global(.national-map .policy-service-marker:focus-visible) {
+		outline: 3px solid #164c47;
+		outline-offset: 3px;
+	}
 	.proposal-edit-anchor.below {
 		transform: translateX(-50%);
 	}
@@ -4785,10 +5302,16 @@
 		outline-offset: 2px;
 	}
 	.placement-card-actions {
+		position: sticky;
+		bottom: 0;
+		z-index: 1;
 		display: grid;
 		grid-template-columns: auto 1fr;
 		gap: 7px;
 		margin-top: 13px;
+		padding: 10px 0;
+		border-top: 1px solid #e4ece6;
+		background: #fffefa;
 	}
 	.placement-card-actions :global(button) {
 		height: 38px;

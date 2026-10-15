@@ -6,6 +6,7 @@ import {
 	formatAmount,
 	operationName,
 	planningFinancialKey,
+	proposedBusServiceGroups,
 	proposedFerryServiceGroups,
 	type PlanningReviewRequest,
 	type TransportConnectivitySummary
@@ -133,5 +134,61 @@ describe('ferry connection report', () => {
 		);
 		expect(routes).toHaveLength(1);
 		expect(routes[0]).toMatchObject({ departures: 16, returnService: false });
+	});
+});
+
+describe('bus service report', () => {
+	const line = (stopIds: string[], departures = 20) => ({
+		id: stopIds.join(':'),
+		route_id: 'proposed:local-bus',
+		name: 'Neighbourhood bus',
+		mode: 'bus',
+		stop_ids: stopIds,
+		island_ids: ['island:1442'],
+		departure_count: departures,
+		proposed: true,
+		inter_island: false
+	});
+	const summary = (lines: TransportConnectivitySummary['lines']): TransportConnectivitySummary => ({
+		service_date: '2026-10-10',
+		lines,
+		inter_island_lines: 0,
+		ferry_lines: 0,
+		islands_connected: ['island:1442'],
+		qualification: 'Modeled service, not measured passenger demand.'
+	});
+	it('groups local outward and return schedules using stop order, even on the same island', () => {
+		const routes = proposedBusServiceGroups(
+			summary([
+				line(['stop:proposal', 'stop:nearby']),
+				{ ...line(['stop:nearby', 'stop:proposal'], 19), name: 'Neighbourhood bus return' }
+			])
+		);
+		expect(routes).toHaveLength(1);
+		expect(routes[0]).toMatchObject({ mode: 'bus', departures: 39, returnService: true });
+	});
+	it('does not turn duplicate outward schedules, loop trips or island identity into a return journey', () => {
+		for (const lines of [
+			[line(['stop:a', 'stop:b']), line(['stop:a', 'stop:b'])],
+			[line(['stop:a', 'stop:b', 'stop:a']), line(['stop:a', 'stop:b', 'stop:a'])],
+			[
+				{ ...line(['stop:a', 'stop:b']), stop_ids: undefined },
+				{ ...line(['stop:b', 'stop:a']), stop_ids: undefined }
+			]
+		])
+			expect(proposedBusServiceGroups(summary(lines))[0].returnService).toBe(false);
+	});
+	it('keeps different routes separate and excludes existing services and ferries', () => {
+		const routes = proposedBusServiceGroups(
+			summary([
+				line(['stop:a', 'stop:b']),
+				{ ...line(['stop:b', 'stop:a']), route_id: 'another-route' },
+				{ ...line(['stop:b', 'stop:a']), proposed: false },
+				{ ...line(['stop:b', 'stop:a']), mode: 'ferry' }
+			])
+		);
+		expect(routes).toHaveLength(2);
+		expect(routes.every((route) => !route.returnService && route.departures === 20)).toBe(true);
+		expect(proposedBusServiceGroups(undefined)).toEqual([]);
 	});
 });

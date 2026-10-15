@@ -3,6 +3,7 @@
 import copy
 import io
 import json
+import math
 from datetime import date
 from types import SimpleNamespace
 
@@ -19,6 +20,7 @@ from app.planning.repository import PlanningRepository
 from app.planning.service import PlanningService
 from app.planning.transport import FerryServiceRequest, TransportPlanningService, terminal_catalogue
 from app.planning.world import apply_operations
+from app.routing.engine import _distance_m
 
 
 @pytest.fixture
@@ -51,7 +53,21 @@ def transport(tmp_path):
     }
     (tmp_path / "planning-baseline.json").write_text(json.dumps(baseline), encoding="utf8")
     islands = {
-        identity: {"properties": {"id": identity, "name": name, "centroid": point}}
+        identity: {
+            "properties": {"id": identity, "name": name, "centroid": point},
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [point[0] - 0.001, point[1] - 0.001],
+                        [point[0] + 0.001, point[1] - 0.001],
+                        [point[0] + 0.001, point[1] + 0.001],
+                        [point[0] - 0.001, point[1] + 0.001],
+                        [point[0] - 0.001, point[1] - 0.001],
+                    ]
+                ],
+            },
+        }
         for identity, name, point in [
             ("island:1442", "Hulhumalé", [73.54, 4.22]),
             ("island:500", "Test Island", [73.6, 4.3]),
@@ -210,6 +226,71 @@ def test_existing_proposal_costs_and_budget_gate_are_authoritative(transport):
         combined["quote"]["economics"]["delta"]["capital_mvr"]
         == standalone["quote"]["economics"]["delta"]["capital_mvr"] + 100_000
     )
+
+
+def test_ferry_water_corridor_geometry_timing_and_costs_agree(transport):
+    from shapely.geometry import LineString, box, mapping
+
+    obstacle = box(73.565, 4.25, 73.575, 4.27)
+    transport.repository.islands_by_id["island:700"] = {
+        "properties": {"id": "island:700", "name": "Intervening island"},
+        "geometry": mapping(obstacle),
+    }
+    result = draft(transport)
+    assert result["status"] == "ready"
+    line = next(
+        f for f in result["map_features"]["features"] if f["geometry"]["type"] == "LineString"
+    )
+    geometry = line["geometry"]["coordinates"]
+    assert not LineString(geometry).intersects(obstacle)
+    assert geometry[0] == transport.terminals["osm:way:1"]["coordinates"]
+    assert geometry[-1] == transport.terminals["osm:way:2"]["coordinates"]
+    assert line["properties"]["evidence"] == "coastline_avoiding_planning_corridor"
+    assert result["summary"]["geometry_source"] == line["properties"]["evidence"]
+    assert "not navigation clearance" in result["summary"]["qualification"]
+    distance = sum(_distance_m(a, b) for a, b in zip(geometry, geometry[1:]))
+    assert distance > _distance_m(geometry[0], geometry[-1])
+    assert result["summary"]["distance_km"] == round(distance / 1000, 2)
+    crossing = math.ceil(distance / 1000 / 25 * 60)
+    assert result["summary"]["crossing_minutes"] == crossing
+    services = [
+        operation["service"]
+        for operation in result["operations"]
+        if operation["type"] == "add_service"
+    ]
+    assert services[0]["segmentGeometry"] == [geometry]
+    assert services[1]["segmentGeometry"] == [list(reversed(geometry))]
+    assert all(service["distanceM"] == pytest.approx(distance) for service in services)
+    world, _ = apply_operations(
+        transport.planning.repository,
+        PlanningRequest.model_validate({"operations": result["operations"]}),
+    )
+    assert world["patterns"][0]["segmentGeometry"] == [geometry]
+    for service in services:
+        for trip in service["timing"]["trips"]:
+            assert (
+                trip["stopTimes"][1]["arrivalMinutes"] - trip["stopTimes"][0]["departureMinutes"]
+                == crossing
+            )
+    economics = result["quote"]["economics"]
+    activity = economics["fleets"]["after"]
+    daily_km = distance / 1000 * sum(len(service["timing"]["trips"]) for service in services)
+    assert activity["routes"][0]["service_day_vehicle_km"] == pytest.approx(daily_km, abs=0.001)
+    annual_km = daily_km * activity["annual_operating_days_assumption"]
+    assert economics["delta"]["annual_operating_mvr"] == pytest.approx(round(annual_km * 250, 2))
+    assert economics["delta"]["annual_fleet_operating_kg_co2e"] == pytest.approx(
+        round(annual_km * 25, 2)
+    )
+
+
+def test_ferry_unavailable_shoreline_never_invents_landing_or_line(transport):
+    transport.repository.islands_by_id["island:500"].pop("geometry")
+    result = draft(transport)
+    assert result["status"] == "evidence_needed"
+    assert result["operations"] == []
+    assert result["map_features"]["features"] == []
+    assert result["quote"] is None
+    assert "no new landing is assumed" in result["reasons"][0]
 
 
 def test_terminal_identity_and_duplicate_service_are_validated(transport):
