@@ -33,11 +33,17 @@
 		Plane,
 		Ship,
 		Anchor,
-		Info
+		Info,
+		Move,
+		Copy,
+		Trash2
 	} from '@lucide/svelte';
 	import { atlasSymbols, atlasClusterSymbol, atlasVesselClusterSymbol } from './map/symbols.js';
 	import { validPoint as validCoordinates } from '#lib/planning-map.js';
-	import type { PlanningOperation } from '#lib/planning-map.js';
+	import { impactColors, type PlanningOperation } from '#lib/planning-map.js';
+	import { accessColors } from '#lib/display-grid.js';
+	import { pointWithinIsland } from '#lib/map-policy.js';
+	import { nearestPlacementRoad } from '#lib/map-placement-preview.js';
 	import type { PendingPlacementDecision, PlacementKind } from '#lib/map-policy.js';
 	import { api } from '#lib/api.js';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
@@ -112,10 +118,14 @@
 		policyOperations?: PlanningOperation[];
 		pendingProposal?: { coordinates: Coordinates; kind: PlacementKind } | null;
 		pendingPlacementDecision?: PendingPlacementDecision | null;
+		placementKind?: PlacementKind | null;
+		placementRoads?: { geometry?: number[][] }[];
 		onconfirmproposal?: () => void;
 		oncancelproposal?: () => void;
+		onadjustbudget?: () => void;
 		onmoveproposal?: (index: number, coordinates: Coordinates) => void;
 		onfocusproposal?: (index: number) => void;
+		oneditproposal?: (index: number, action: 'move' | 'duplicate' | 'remove') => void;
 		ondropplacement?: (coordinates: Coordinates, kind: PlacementKind) => void;
 		oninspectgap?: (properties: Record<string, unknown>) => void;
 		policyCalculating?: boolean;
@@ -160,10 +170,14 @@
 		policyOperations = [],
 		pendingProposal = null,
 		pendingPlacementDecision = null,
+		placementKind = null,
+		placementRoads = [],
 		onconfirmproposal,
 		oncancelproposal,
+		onadjustbudget,
 		onmoveproposal,
 		onfocusproposal,
+		oneditproposal,
 		ondropplacement,
 		oninspectgap,
 		policyCalculating = false,
@@ -181,11 +195,34 @@
 		below: boolean;
 		arrow: number;
 		width: number;
+		maxHeight: number;
 	} | null>(null);
 	let placementDragging = $state(false);
 	let placementCard = $state.raw<HTMLElement | null>(null);
 	let placementPositionFrame = 0;
+	let placementPreviewFrame = 0;
+	let previewPointer: { x: number; y: number } | null = null;
+	let placementPreview = $state<{
+		x: number;
+		y: number;
+		radius: number;
+		coordinates: Coordinates;
+		snapped: boolean;
+		suitable: boolean | null;
+	} | null>(null);
+	let selectedProposalIndex = $state<number | null>(null);
+	let proposalEditAnchor = $state<{ x: number; y: number; below: boolean; arrow: number } | null>(
+		null
+	);
+	let proposalEditCard = $state.raw<HTMLElement | null>(null);
+	const selectedProposal = $derived(
+		selectedProposalIndex === null ? null : policyOperations[selectedProposalIndex]
+	);
+	const selectedProposalLocked = $derived(
+		!!selectedProposal?.metadata?.ui_preview || !!selectedProposal?.metadata?.ui_package
+	);
 	let pendingPlacementFocused = false;
+	let acceptedPositions: { index: number; coordinates: Coordinates }[] | null = null;
 	const placementTitle = $derived(
 		pendingPlacementDecision?.label ??
 			(pendingProposal?.kind === 'add_hospital'
@@ -218,6 +255,24 @@
 	const gapOpacity = $derived(impactFeatures.features.length ? 0 : overlayOpacity / 100);
 	const impactOpacity = $derived(
 		impactFeatures.features.length ? (overlayOpacity / 100) * (policyStale ? 0.4 : 1) : 0
+	);
+	const policyOverlayView = $derived(impactFeatures.features[0]?.properties?.view ?? 'improvement');
+	const policyOverlayLegend = $derived(
+		policyOverlayView === 'before' || policyOverlayView === 'after'
+			? [
+					{ label: 'Within target', color: accessColors.within_target },
+					{ label: 'Beyond target', color: accessColors.beyond_target },
+					{ label: 'Mixed', color: accessColors.mixed },
+					{ label: 'No route', color: accessColors.unavailable },
+					{ label: 'Unknown', color: accessColors.unknown }
+				]
+			: [
+					{ label: 'Gained / faster', color: impactColors.gained },
+					{ label: 'Lost / slower', color: impactColors.lost },
+					{ label: 'Unchanged', color: impactColors.unchanged },
+					{ label: 'No route', color: impactColors.unavailable },
+					{ label: 'Unknown', color: impactColors.uncomputed }
+				]
 	);
 	const hasPolicyOverlay = $derived(
 		gapFeatures.features.length > 0 || impactFeatures.features.length > 0
@@ -1459,10 +1514,14 @@
 
 	function controlsKeydown(event: KeyboardEvent) {
 		if (event.key !== 'Escape') return;
-		if (pendingProposal && oncancelproposal) {
+		if ((pendingProposal || (picking && placementKind)) && oncancelproposal) {
 			event.preventDefault();
 			oncancelproposal();
 			map?.getCanvas().focus({ preventScroll: true });
+		} else if (selectedProposalIndex !== null) {
+			event.preventDefault();
+			policyMarkers.get(selectedProposalIndex)?.getElement().focus({ preventScroll: true });
+			selectedProposalIndex = null;
 		} else if (controlsPanel) closeControls(true);
 	}
 
@@ -1819,8 +1878,11 @@
 		}
 		let right = width - 12;
 		let bottom = height - 12;
-		const panel = container.closest('.map-workspace')?.querySelector('.policy-map-panel');
-		if (panel instanceof HTMLElement && panel.offsetHeight) {
+		const panels = container
+			.closest('.map-workspace')
+			?.querySelectorAll('.policy-map-panel, .proposal-floating-budget');
+		for (const panel of panels ?? []) {
+			if (!(panel instanceof HTMLElement) || !panel.offsetHeight) continue;
 			const mapBounds = container.getBoundingClientRect();
 			const panelBounds = panel.getBoundingClientRect();
 			if (panelBounds.width < width * 0.65 && panelBounds.left > mapBounds.left + width / 2) {
@@ -1830,24 +1892,179 @@
 			}
 		}
 		const cardWidth = Math.min(288, right - 12);
-		const cardHeight = placementCard?.offsetHeight || 235;
+		const top = width < 700 ? Math.min(178, height * 0.24) : Math.min(112, height * 0.16);
+		// Keep the pin visible; the decision can scroll on a short screen.
+		const maxHeight = Math.max(180, bottom - top - (width < 700 ? 68 : 0));
+		const cardHeight = Math.min(placementCard?.offsetHeight || 300, maxHeight);
 		const x = Math.max(cardWidth / 2 + 12, Math.min(right - cardWidth / 2, point.x));
-		const below = point.y - 60 - cardHeight < 12;
+		const below = point.y - 60 - cardHeight < top;
 		placementAnchor = {
 			x,
 			y: below
-				? Math.max(12, Math.min(bottom - cardHeight, point.y + 16))
-				: Math.max(cardHeight + 12, Math.min(bottom, point.y - 60)),
+				? Math.max(top, Math.min(bottom - cardHeight, point.y + 16))
+				: Math.max(cardHeight + top, Math.min(bottom, point.y - 60)),
 			below,
 			arrow: Math.max(18, Math.min(cardWidth - 18, cardWidth / 2 + point.x - x)),
-			width: cardWidth
+			width: cardWidth,
+			maxHeight
 		};
 	}
 	function schedulePlacementAnchor() {
-		if (!pendingProposal || placementPositionFrame) return;
+		if ((!pendingProposal && selectedProposalIndex === null) || placementPositionFrame) return;
 		placementPositionFrame = requestAnimationFrame(() => {
 			placementPositionFrame = 0;
 			updatePlacementAnchor();
+			updateProposalEditAnchor();
+		});
+	}
+	function updateProposalEditAnchor() {
+		if (!map || !active || !validCoordinates(selectedProposal?.coordinates) || pendingProposal) {
+			proposalEditAnchor = null;
+			return;
+		}
+		const point = map.project(selectedProposal.coordinates);
+		const width = container.clientWidth;
+		const height = container.clientHeight;
+		if (point.x < 0 || point.x > width || point.y < 0 || point.y > height) {
+			proposalEditAnchor = null;
+			return;
+		}
+		const cardHeight = proposalEditCard?.offsetHeight || 135;
+		const mapBounds = container.getBoundingClientRect();
+		let right = width - 12;
+		let top = width < 700 ? Math.min(178, height * 0.24) : Math.min(112, height * 0.16);
+		let bottom = height - 82;
+		const panels = container
+			.closest('.map-workspace')
+			?.querySelectorAll('.policy-map-panel, .proposal-floating-budget');
+		for (const panel of panels ?? []) {
+			if (!(panel instanceof HTMLElement) || !panel.offsetHeight) continue;
+			const bounds = panel.getBoundingClientRect();
+			if (bounds.width < width * 0.65 && bounds.left > mapBounds.left + width / 2)
+				right = Math.min(right, bounds.left - mapBounds.left - 12);
+			else if (bounds.width > width * 0.65 && bounds.top > mapBounds.top) {
+				if (
+					panel.matches('.proposal-floating-budget') &&
+					bounds.top - mapBounds.top < height * 0.45
+				)
+					top = Math.max(top, bounds.bottom - mapBounds.top + 12);
+				else bottom = Math.min(bottom, bounds.top - mapBounds.top - 12);
+			}
+		}
+		const below = point.y - 56 - cardHeight < top;
+		const x = Math.max(138, Math.min(right - 126, point.x));
+		proposalEditAnchor = {
+			x,
+			y: below
+				? Math.max(top, Math.min(bottom - cardHeight, point.y + 12))
+				: Math.max(top + cardHeight, Math.min(bottom, point.y - 56)),
+			below,
+			arrow: Math.max(18, Math.min(234, 126 + point.x - x))
+		};
+	}
+	function keepPlacementVisible() {
+		if (!map || !pendingProposal) return;
+		const mapBounds = container.getBoundingClientRect();
+		let right = container.clientWidth - 44;
+		let bottom = container.clientHeight - 86;
+		for (const element of container
+			.closest('.map-workspace')
+			?.querySelectorAll('.policy-map-panel, .proposal-floating-budget') ?? []) {
+			if (!(element instanceof HTMLElement) || !element.offsetHeight) continue;
+			const bounds = element.getBoundingClientRect();
+			if (
+				bounds.width < container.clientWidth * 0.65 &&
+				bounds.left > mapBounds.left + container.clientWidth / 2
+			)
+				right = Math.min(right, bounds.left - mapBounds.left - 44);
+			else if (bounds.width > container.clientWidth * 0.65 && bounds.top > mapBounds.top)
+				bottom = Math.min(bottom, bounds.top - mapBounds.top - 44);
+		}
+		const point = map.project(pendingProposal.coordinates);
+		const left = Math.min(150, right / 2);
+		const mobile = container.clientWidth < 700;
+		const cardHeight = placementCard?.offsetHeight || (mobile ? 370 : 300);
+		const top = mobile ? Math.min(224, bottom - 180) : Math.min(185, bottom / 2);
+		const x = Math.max(left, Math.min(right, point.x));
+		const decisionBottom = bottom - 16 - cardHeight;
+		const y = mobile
+			? Math.max(top, Math.min(decisionBottom, point.y))
+			: Math.max(top, Math.min(bottom, point.y));
+		if (Math.abs(point.x - x) > 1 || Math.abs(point.y - y) > 1)
+			map.panBy([point.x - x, point.y - y], { duration: reducedMotion() ? 0 : 180 });
+	}
+	function keepAcceptedPointVisible(coordinates: Coordinates) {
+		if (!map || !active || pendingProposal) return;
+		const mapBounds = container.getBoundingClientRect();
+		const width = container.clientWidth;
+		const height = container.clientHeight;
+		let right = width - 48;
+		let top = width < 700 ? 184 : 130;
+		let bottom = height - (width < 700 ? 180 : 100);
+		for (const element of container
+			.closest('.map-workspace')
+			?.querySelectorAll('.policy-map-panel, .proposal-floating-budget') ?? []) {
+			if (!(element instanceof HTMLElement) || !element.offsetHeight) continue;
+			const bounds = element.getBoundingClientRect();
+			if (bounds.width < width * 0.65 && bounds.left > mapBounds.left + width / 2)
+				right = Math.min(right, bounds.left - mapBounds.left - 40);
+			else if (bounds.width > width * 0.65) {
+				if (bounds.top - mapBounds.top < height * 0.45)
+					top = Math.max(top, bounds.bottom - mapBounds.top + 58);
+				else bottom = Math.min(bottom, bounds.top - mapBounds.top - 28);
+			}
+		}
+		if (bottom < top) return;
+		const point = map.project(coordinates);
+		const x = Math.max(Math.min(72, right / 2), Math.min(right, point.x));
+		const y = Math.max(top, Math.min(bottom, point.y));
+		if (Math.abs(point.x - x) > 1 || Math.abs(point.y - y) > 1)
+			map.panBy([point.x - x, point.y - y], { duration: reducedMotion() ? 0 : 180 });
+	}
+	function editSelectedProposal(action: 'move' | 'duplicate' | 'remove') {
+		if (selectedProposalIndex === null) return;
+		const index = selectedProposalIndex;
+		selectedProposalIndex = null;
+		oneditproposal?.(index, action);
+	}
+	function placementCoordinates(coordinates: Coordinates, kind: PlacementKind): Coordinates {
+		return kind === 'add_stop'
+			? nearestPlacementRoad(coordinates, placementRoads).coordinates
+			: coordinates;
+	}
+	function updatePlacementPreview() {
+		if (!map || !ready || !active || (!pendingProposal && (!picking || !placementKind))) {
+			placementPreview = null;
+			return;
+		}
+		const center = previewPointer ?? {
+			x: container.clientWidth / 2,
+			y: container.clientHeight / 2
+		};
+		const location = map.unproject([center.x, center.y]);
+		const markerPoint = pendingProposal ? policyMarkers.get(-1)?.getLngLat() : null;
+		const raw: Coordinates = markerPoint
+			? [markerPoint.lng, markerPoint.lat]
+			: (pendingProposal?.coordinates ?? [location.lng, location.lat]);
+		const kind = pendingProposal?.kind ?? placementKind!;
+		const snapped = kind === 'add_stop' ? nearestPlacementRoad(raw, placementRoads) : null;
+		const coordinates = snapped?.coordinates ?? raw;
+		const point = map.project(coordinates);
+		const north = map.project([coordinates[0], coordinates[1] + 400 / 111320]);
+		placementPreview = {
+			x: point.x,
+			y: point.y,
+			radius: Math.max(5, Math.min(1600, Math.abs(point.y - north.y))),
+			coordinates,
+			snapped: snapped?.snapped ?? false,
+			suitable: selectedId ? pointWithinIsland(coordinates, features, selectedId) : null
+		};
+	}
+	function schedulePlacementPreview() {
+		if ((!pendingProposal && (!picking || !placementKind)) || placementPreviewFrame) return;
+		placementPreviewFrame = requestAnimationFrame(() => {
+			placementPreviewFrame = 0;
+			updatePlacementPreview();
 		});
 	}
 	function focusPlacementDecision() {
@@ -1865,9 +2082,7 @@
 							coordinates: operation.coordinates,
 							kind: operation.type,
 							name: operation.name ?? 'Proposed change',
-							locked:
-								!!operation.metadata?.ui_preview ||
-								(!!operation.metadata?.ui_package && operation.type === 'add_stop')
+							locked: !!operation.metadata?.ui_preview || !!operation.metadata?.ui_package
 						}
 					]
 				: []
@@ -1896,7 +2111,16 @@
 					event.stopPropagation();
 					if (performance.now() - lastDragged < 200) return;
 					if (entry.index === -1) focusPlacementDecision();
-					else onfocusproposal?.(entry.index);
+					else if (oneditproposal) {
+						selectedProposalIndex = entry.index;
+						closeInspection();
+						void tick().then(() => {
+							updateProposalEditAnchor();
+							proposalEditCard
+								?.querySelector<HTMLButtonElement>('button')
+								?.focus({ preventScroll: true });
+						});
+					} else onfocusproposal?.(entry.index);
 				});
 				marker = new makeMarker({ element, draggable: !entry.locked, anchor: 'bottom' })
 					.setLngLat(entry.coordinates)
@@ -1904,17 +2128,29 @@
 				const current = marker;
 				marker.on('dragstart', () => {
 					closeInspection();
+					selectedProposalIndex = null;
 					element.classList.add('is-dragging');
 					if (entry.index === -1) placementDragging = true;
 				});
 				marker.on('drag', () => {
-					if (entry.index === -1) schedulePlacementAnchor();
+					if (entry.index === -1) {
+						schedulePlacementAnchor();
+						schedulePlacementPreview();
+					}
 				});
 				marker.on('dragend', () => {
 					lastDragged = performance.now();
 					element.classList.remove('is-dragging');
 					if (entry.index === -1) placementDragging = false;
-					onmoveproposal?.(entry.index, [current.getLngLat().lng, current.getLngLat().lat]);
+					const point: Coordinates = [current.getLngLat().lng, current.getLngLat().lat];
+					const kind =
+						entry.index === -1 ? pendingProposal?.kind : policyOperations[entry.index]?.type;
+					onmoveproposal?.(
+						entry.index,
+						kind && ['add_stop', 'add_school', 'add_hospital'].includes(kind)
+							? placementCoordinates(point, kind as PlacementKind)
+							: point
+					);
 					schedulePlacementAnchor();
 				});
 				policyMarkers.set(entry.index, marker);
@@ -1929,9 +2165,12 @@
 			element.classList.toggle('pending', entry.index === -1);
 			element.classList.toggle('confirmed', entry.index !== -1);
 			element.dataset.kind = entry.kind;
+			element.dataset.longitude = String(entry.coordinates[0]);
+			element.dataset.latitude = String(entry.coordinates[1]);
+			element.dataset.operationIndex = String(entry.index);
 			element.setAttribute(
 				'aria-label',
-				`${entry.index === -1 ? placementTitle : entry.name}${entry.locked ? '. Routed service package. Remove and regenerate to change its site.' : '. Drag to move.'}${entry.index === -1 ? ' Confirm or cancel above this pin.' : ''}`
+				`${entry.index === -1 ? placementTitle : entry.name}${entry.locked ? '. Part of a routed service package. Select to remove the service; regenerate it to change its route.' : '. Drag to move, or select for move, duplicate and remove actions.'}${entry.index === -1 ? ' Confirm or cancel above this pin.' : ''}`
 			);
 			element.title = element.getAttribute('aria-label')!;
 			const symbol =
@@ -1954,7 +2193,10 @@
 		event.preventDefault();
 		const bounds = container.getBoundingClientRect();
 		const point = map.unproject([event.clientX - bounds.left, event.clientY - bounds.top]);
-		ondropplacement?.([point.lng, point.lat], kind as PlacementKind);
+		ondropplacement?.(
+			placementCoordinates([point.lng, point.lat], kind as PlacementKind),
+			kind as PlacementKind
+		);
 	}
 	function handleClick(event: MapMouseEvent) {
 		if (!map || !ready) return;
@@ -1974,9 +2216,15 @@
 		if (picking) {
 			controlsPanel = null;
 			closeInspection();
-			onpick([event.lngLat.lng, event.lngLat.lat]);
+			if (placementKind && ondropplacement)
+				ondropplacement(
+					placementCoordinates([event.lngLat.lng, event.lngLat.lat], placementKind),
+					placementKind
+				);
+			else onpick([event.lngLat.lng, event.lngLat.lat]);
 			return;
 		}
+		selectedProposalIndex = null;
 		const rendered = map.queryRenderedFeatures(event.point, {
 			layers: [
 				...interactiveLayers,
@@ -2045,6 +2293,7 @@
 			['policy-gaps', 'policy-impact'].includes(feature.source)
 		);
 		if (gap) {
+			closeInspection();
 			const id = String(gap.properties.island_id ?? selectedId ?? '');
 			if (id && id !== selectedId) onselect(id);
 			oninspectgap?.(gap.properties);
@@ -2862,7 +3111,9 @@
 						drillIntoVisibleIsland(instance, gesture.point);
 				});
 				instance.on('move', schedulePlacementAnchor);
+				instance.on('move', schedulePlacementPreview);
 				instance.on('resize', schedulePlacementAnchor);
+				instance.on('resize', schedulePlacementPreview);
 				instance.on('moveend', () => syncCameraView(instance));
 				instance.on('idle', () => {
 					if (!ready || !active) return;
@@ -2878,6 +3129,13 @@
 				});
 				instance.on('mousemove', (event) => {
 					if (!ready || !active) return;
+					if (picking && placementKind) {
+						previewPointer = { x: event.point.x, y: event.point.y };
+						schedulePlacementPreview();
+						instance.getCanvas().style.cursor = 'crosshair';
+						hoverDescription = '';
+						return;
+					}
 					const hits = instance.queryRenderedFeatures(event.point, {
 						layers: [
 							...interactiveLayers,
@@ -2911,6 +3169,8 @@
 				});
 				instance.on('mouseout', () => {
 					hoverDescription = '';
+					previewPointer = null;
+					schedulePlacementPreview();
 				});
 				instance.getCanvas().addEventListener('keydown', (event) => {
 					if (!picking || (event.key !== 'Enter' && event.key !== ' ')) return;
@@ -2919,7 +3179,12 @@
 						container.clientWidth / 2,
 						container.clientHeight / 2
 					]);
-					onpick([center.lng, center.lat]);
+					if (placementKind && ondropplacement)
+						ondropplacement(
+							placementCoordinates([center.lng, center.lat], placementKind),
+							placementKind
+						);
+					else onpick([center.lng, center.lat]);
 				});
 				resizeObserver = new ResizeObserver(() => {
 					if (!active) return;
@@ -2945,6 +3210,7 @@
 			cancelAnimationFrame(activationFrame);
 			cancelAnimationFrame(scopeFocusFrame);
 			cancelAnimationFrame(placementPositionFrame);
+			cancelAnimationFrame(placementPreviewFrame);
 			sourceData.clear();
 			clearTimeout(contextTimer);
 			contextGeneration++;
@@ -2983,11 +3249,43 @@
 			closeInspection();
 			void tick()
 				.then(() => {
+					keepPlacementVisible();
 					updatePlacementAnchor();
 					return tick();
 				})
-				.then(focusPlacementDecision);
+				.then(() => {
+					keepPlacementVisible();
+					updatePlacementAnchor();
+					focusPlacementDecision();
+				});
 		}
+	});
+	$effect(() => {
+		void placementKind;
+		void picking;
+		void pendingProposal;
+		void placementRoads;
+		void selectedId;
+		void features;
+		if (!ready || !active) return;
+		if (!pendingProposal && (!picking || !placementKind)) {
+			placementPreview = null;
+			previewPointer = null;
+		} else untrack(schedulePlacementPreview);
+	});
+	$effect(() => {
+		void selectedProposal;
+		if (!selectedProposal || pendingProposal || picking || !active) {
+			selectedProposalIndex = null;
+			proposalEditAnchor = null;
+		} else untrack(schedulePlacementAnchor);
+	});
+	$effect(() => {
+		const selected = selectedProposalIndex;
+		untrack(() => {
+			for (const [index, marker] of policyMarkers)
+				marker.getElement().classList.toggle('selected', index === selected);
+		});
 	});
 	$effect(() => {
 		if (!placementCard) return;
@@ -3038,6 +3336,31 @@
 		void pendingProposal;
 		void placementTitle;
 		untrack(syncPolicyMarkers);
+	});
+	$effect(() => {
+		if (!ready || !active || !map) return;
+		const entries = policyOperations.flatMap((operation, index) =>
+			validCoordinates(operation.coordinates) &&
+			!operation.metadata?.ui_package &&
+			!operation.metadata?.ui_preview
+				? [{ index, coordinates: operation.coordinates as Coordinates }]
+				: []
+		);
+		const previous = acceptedPositions;
+		acceptedPositions = entries;
+		if (!previous || entries.length < previous.length || pendingProposal) return;
+		const changed = entries.findLast((entry) => {
+			const prior = previous.find((item) => item.index === entry.index);
+			return (
+				!prior ||
+				prior.coordinates[0] !== entry.coordinates[0] ||
+				prior.coordinates[1] !== entry.coordinates[1]
+			);
+		});
+		if (changed)
+			void tick().then(() => {
+				requestAnimationFrame(() => keepAcceptedPointVisible(changed.coordinates));
+			});
 	});
 	$effect(() => {
 		if (!ready || !active || !map) return;
@@ -3415,6 +3738,7 @@
 		validCoordinates(operation.coordinates)
 	).length}
 	data-policy-pending-points={pendingProposal ? 1 : 0}
+	data-policy-placement-kind={placementKind ?? ''}
 	data-island-connection-features={connectionFeatures.features.length}
 	data-policy-service-features={policyServiceFeatures.features.length}
 	data-island-picking={islandPicking}
@@ -3422,6 +3746,7 @@
 	data-policy-hex-grid={gapFeatures.features.filter((feature) => feature.properties?.display_grid)
 		.length}
 	data-policy-impact-cells={impactFeatures.features.length}
+	data-policy-impact-view={policyOverlayView}
 	data-policy-overlay-opacity={overlayOpacity}
 	data-policy-gap-opacity={gapOpacity}
 	data-policy-impact-opacity={impactOpacity}
@@ -3443,6 +3768,94 @@
 		role="region"
 		aria-label="Interactive Maldives map. Select an island or a source record. Use arrow keys to pan and plus or minus to zoom. When placing a point, press Enter to use the map center."
 	></div>
+	{#if placementPreview && active}
+		<div
+			class="placement-distance-guide"
+			class:unsuitable={placementPreview.suitable === false}
+			style:left={`${placementPreview.x}px`}
+			style:top={`${placementPreview.y}px`}
+			style:width={`${placementPreview.radius * 2}px`}
+			style:height={`${placementPreview.radius * 2}px`}
+			data-testid="placement-distance-guide"
+			aria-hidden="true"
+		></div>
+		{#if picking && placementKind && !pendingProposal}
+			<div
+				class="placement-preview"
+				class:unsuitable={placementPreview.suitable === false}
+				style:left={`${placementPreview.x}px`}
+				style:top={`${placementPreview.y}px`}
+				data-testid="map-placement-preview"
+				data-placement-kind={placementKind}
+				data-placement-snapped={placementPreview.snapped}
+				data-placement-suitable={placementPreview.suitable ?? 'unknown'}
+				data-preview-longitude={placementPreview.coordinates[0]}
+				data-preview-latitude={placementPreview.coordinates[1]}
+				aria-hidden="true"
+			>
+				<span class="placement-preview-icon">
+					{#if placementKind === 'add_hospital'}<Hospital size={22} />
+					{:else if placementKind === 'add_school'}<GraduationCap size={22} />
+					{:else}<BusFront size={22} />{/if}
+				</span>
+				<span class="placement-preview-label">
+					<strong
+						>{placementPreview.suitable === false
+							? 'Choose land on this island'
+							: placementPreview.snapped
+								? 'Aligned to mapped road'
+								: 'Click or tap to choose this location'}</strong
+					>
+					<span>400 m distance guide · access calculated after placement</span>
+				</span>
+			</div>
+		{/if}
+	{/if}
+	{#if selectedProposal && proposalEditAnchor && active && oneditproposal && !pendingProposal}
+		<div
+			class="proposal-edit-anchor"
+			class:below={proposalEditAnchor.below}
+			style:left={`${proposalEditAnchor.x}px`}
+			style:top={`${proposalEditAnchor.y}px`}
+			style:--edit-arrow={`${proposalEditAnchor.arrow}px`}
+		>
+			<section
+				bind:this={proposalEditCard}
+				class="proposal-marker-actions"
+				aria-label="Edit proposed change"
+				data-testid="proposal-marker-actions"
+			>
+				<header>
+					<strong>{selectedProposal.name ?? 'Proposed change'}</strong>
+					<button
+						type="button"
+						class="proposal-action-close"
+						aria-label="Close change actions"
+						onclick={() => {
+							selectedProposalIndex = null;
+						}}><X size={15} /></button
+					>
+				</header>
+				{#if selectedProposalLocked}<p>
+						This point belongs to a service package. Remove the service and regenerate it to change
+						its route.
+					</p>{/if}
+				<div class="proposal-edit-buttons">
+					{#if !selectedProposalLocked}
+						<button type="button" onclick={() => editSelectedProposal('move')}
+							><Move size={16} />Move</button
+						>
+						<button type="button" onclick={() => editSelectedProposal('duplicate')}
+							><Copy size={16} />Duplicate</button
+						>
+					{/if}
+					<button type="button" class="remove" onclick={() => editSelectedProposal('remove')}
+						><Trash2 size={16} />Remove</button
+					>
+				</div>
+			</section>
+		</div>
+	{/if}
 	{#if pendingProposal && placementAnchor && active && onconfirmproposal && oncancelproposal}
 		<div
 			class="placement-confirmation-anchor"
@@ -3456,6 +3869,7 @@
 			<section
 				bind:this={placementCard}
 				class="placement-confirmation"
+				style:max-height={`${placementAnchor.maxHeight}px`}
 				aria-label="Confirm map placement"
 				aria-busy={!!pendingPlacementDecision?.checking}
 				data-testid="map-placement-confirmation"
@@ -3488,6 +3902,28 @@
 						>
 					</p>
 				{/if}
+				{#if pendingPlacementDecision?.annualRemaining !== null && pendingPlacementDecision?.annualRemaining !== undefined && pendingPlacementDecision.annualRemaining >= 0}
+					<p class="placement-budget-remaining">
+						Yearly budget remaining <strong
+							>{placementMoney(pendingPlacementDecision.annualRemaining)}</strong
+						>
+					</p>
+				{/if}
+				{#if pendingPlacementDecision?.accessPreview}
+					<p class="placement-access-preview" role="status">
+						{#if pendingPlacementDecision.accessPreview.residents !== null}<strong
+								>{new Intl.NumberFormat('en').format(
+									pendingPlacementDecision.accessPreview.residents
+								)}</strong
+							>{/if}
+						<span
+							>{pendingPlacementDecision.accessPreview.label}{pendingPlacementDecision.accessPreview
+								.approximate
+								? ' · estimate'
+								: ''}</span
+						>
+					</p>
+				{/if}
 				{#if pendingPlacementDecision?.checking}
 					<p class="placement-card-message" role="status">
 						<span class="loading-spinner" aria-hidden="true"></span>Checking this location…
@@ -3500,6 +3936,11 @@
 					>
 						{pendingPlacementDecision.reason}
 					</p>
+				{/if}
+				{#if !placementAllowed && !pendingPlacementDecision?.checking && onadjustbudget && /budget|over your|shortfall/i.test(pendingPlacementDecision?.reason ?? '')}
+					<button type="button" class="placement-adjust-budget" onclick={onadjustbudget}
+						>Adjust budget</button
+					>
 				{/if}
 				{#if pendingPlacementDecision?.note}<p class="placement-card-note">
 						{pendingPlacementDecision.note}
@@ -3516,10 +3957,14 @@
 						disabled={!placementAllowed || placementDragging}
 						onclick={() => {
 							if (placementAllowed && !placementDragging) onconfirmproposal?.();
-						}}><Check size={15} />Confirm placement</Button
+						}}
+						><Check size={15} />{pendingPlacementDecision?.actionLabel ?? 'Add to proposal'}</Button
 					>
 				</div>
-				<small class="placement-card-hint">Drag the pin to adjust · Esc to cancel</small>
+				<small class="placement-card-hint"
+					>Drag the pin to adjust · Esc to cancel<br />Circle: 400 m distance guide, not calculated
+					access</small
+				>
 			</section>
 		</div>
 	{/if}
@@ -3786,7 +4231,9 @@
 				No island geometry available from the backend.
 			</div>
 		{/if}
-		{#if picking}<div class="placement-target" aria-hidden="true"><span></span></div>{/if}
+		{#if picking && !placementKind}<div class="placement-target" aria-hidden="true">
+				<span></span>
+			</div>{/if}
 		<div class="map-footer" class:has-legend={legendVisible}>
 			<div class="map-information-card" class:mobile-expanded={mobileLegendOpen} id={mapKeyId}>
 				{#if accessibilityOverview}
@@ -3816,10 +4263,19 @@
 							class="policy-colour-key"
 							aria-label="Proposal impact colours"
 						>
-							<strong>Proposed access change</strong><span
-								><i class="policy-impact-gained"></i>Gained / faster
-								<i class="policy-impact-lost"></i>Lost / slower</span
-							><small>Grey: unchanged or unavailable · select a cell</small>
+							<strong
+								>{policyOverlayView === 'before'
+									? 'Current access'
+									: policyOverlayView === 'after'
+										? 'With proposal'
+										: 'Proposed access change'}</strong
+							>
+							<div class="policy-overlay-swatches">
+								{#each policyOverlayLegend as item (item.label)}<span
+										><i style:background={item.color}></i>{item.label}</span
+									>{/each}
+							</div>
+							<small>Select a cell to see what changes here</small>
 						</div>{/if}
 					{#if scenarioPreview.unlocated}<div class="street-context-status" role="status">
 							<X size={12} />{scenarioPreview.unlocated}
@@ -3979,6 +4435,176 @@
 		position: absolute;
 		inset: 0;
 	}
+	.placement-distance-guide {
+		position: absolute;
+		z-index: 2;
+		transform: translate(-50%, -50%);
+		border: 2px dashed #286d638c;
+		border-radius: 50%;
+		background: #286d630b;
+		pointer-events: none;
+	}
+	.placement-distance-guide.unsuitable {
+		border-color: #bb634caa;
+		background: #bb634c0b;
+	}
+	.placement-preview {
+		position: absolute;
+		z-index: 12;
+		width: 42px;
+		height: 46px;
+		transform: translate(-50%, -100%);
+		pointer-events: none;
+	}
+	.placement-preview-icon {
+		display: grid;
+		place-items: center;
+		width: 42px;
+		height: 46px;
+		border: 2px solid #fffefa;
+		border-radius: 13px;
+		background: #286d63;
+		color: white;
+		box-shadow:
+			0 0 0 4px #286d6324,
+			0 7px 16px #173d4233;
+	}
+	.unsuitable .placement-preview-icon {
+		background: #ad593f;
+		box-shadow:
+			0 0 0 4px #ad593f20,
+			0 7px 16px #173d4233;
+	}
+	.placement-preview-label {
+		position: absolute;
+		left: 50%;
+		top: calc(100% + 12px);
+		display: grid;
+		gap: 3px;
+		width: max-content;
+		max-width: 280px;
+		padding: 9px 12px;
+		border: 1px solid #d8e4de;
+		border-radius: 10px;
+		background: #fffefaed;
+		box-shadow: 0 3px 10px #173d4214;
+		transform: translateX(-50%);
+		text-align: center;
+	}
+	.placement-preview-label strong {
+		font-size: 11px;
+		font-weight: 650;
+	}
+	.placement-preview-label > span {
+		max-width: 245px;
+		color: #71847b;
+		font-size: 10px;
+		line-height: 1.5;
+	}
+	.proposal-edit-anchor {
+		position: absolute;
+		z-index: 15;
+		width: 252px;
+		transform: translate(-50%, -100%);
+	}
+	.proposal-edit-anchor.below {
+		transform: translateX(-50%);
+	}
+	.proposal-edit-anchor::after {
+		position: absolute;
+		left: var(--edit-arrow);
+		bottom: -6px;
+		width: 11px;
+		height: 11px;
+		border-right: 1px solid #d1dfd9;
+		border-bottom: 1px solid #d1dfd9;
+		background: #fffefa;
+		transform: translateX(-50%) rotate(45deg);
+		content: '';
+		pointer-events: none;
+	}
+	.proposal-edit-anchor.below::after {
+		top: -6px;
+		bottom: auto;
+		transform: translateX(-50%) rotate(225deg);
+	}
+	.proposal-marker-actions {
+		padding: 11px;
+		border: 1px solid #d1dfd9;
+		border-radius: 14px;
+		background: #fffefa;
+		box-shadow:
+			0 6px 18px #173c4020,
+			0 18px 48px -16px #173c4055;
+		color: #294b4c;
+	}
+	.proposal-marker-actions header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		margin-bottom: 9px;
+	}
+	.proposal-marker-actions header strong {
+		font-size: 12px;
+		line-height: 1.4;
+	}
+	.proposal-marker-actions p {
+		margin: 0 0 10px;
+		color: #72857c;
+		font-size: 10px;
+		line-height: 1.5;
+	}
+	.proposal-action-close {
+		display: grid;
+		place-items: center;
+		width: 28px;
+		height: 28px;
+		flex-shrink: 0;
+		border: 0;
+		border-radius: 7px;
+		background: transparent;
+		color: #73877d;
+	}
+	.proposal-edit-buttons {
+		display: flex;
+		gap: 5px;
+	}
+	.proposal-edit-buttons button {
+		display: grid;
+		place-items: center;
+		flex: 1;
+		gap: 4px;
+		min-height: 48px;
+		border: 1px solid #dce7df;
+		border-radius: 9px;
+		background: #f7faf5;
+		color: #397065;
+		font-size: 10px;
+		transition:
+			transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
+			background-color 130ms ease;
+	}
+	.proposal-edit-buttons button.remove {
+		color: #a45a46;
+		background: #fff6ef;
+		border-color: #eddfd4;
+	}
+	.proposal-edit-buttons button:hover {
+		background: #eaf2e8;
+	}
+	.proposal-edit-buttons button.remove:hover {
+		background: #f9eade;
+	}
+	.proposal-edit-buttons button:active,
+	.proposal-action-close:active {
+		transform: scale(0.97);
+	}
+	.proposal-edit-buttons button:focus-visible,
+	.proposal-action-close:focus-visible {
+		outline: 3px solid #087f7c;
+		outline-offset: 2px;
+	}
 	.placement-confirmation-anchor {
 		position: absolute;
 		z-index: 15;
@@ -3991,6 +4617,8 @@
 	}
 	.placement-confirmation {
 		position: relative;
+		overflow-y: auto;
+		scrollbar-width: thin;
 		padding: 15px;
 		border: 1px solid #d1dfd9;
 		border-radius: 17px;
@@ -4003,7 +4631,7 @@
 		transform-origin: var(--placement-arrow) bottom;
 		transition: opacity 140ms ease;
 	}
-	.placement-confirmation::after {
+	.placement-confirmation-anchor::after {
 		position: absolute;
 		left: var(--placement-arrow);
 		bottom: -7px;
@@ -4018,7 +4646,7 @@
 	.below .placement-confirmation {
 		transform-origin: var(--placement-arrow) top;
 	}
-	.below .placement-confirmation::after {
+	.placement-confirmation-anchor.below::after {
 		top: -7px;
 		bottom: auto;
 		transform: translateX(-50%) rotate(225deg);
@@ -4112,6 +4740,43 @@
 		font-size: 10px;
 		line-height: 1.5;
 	}
+	.placement-access-preview {
+		display: flex;
+		align-items: baseline;
+		gap: 7px;
+		margin: 11px 0 0;
+		padding: 9px 10px;
+		border-radius: 9px;
+		background: #edf4eb;
+		color: #3c6c5b;
+	}
+	.placement-access-preview strong {
+		font-size: 19px;
+		line-height: 1.2;
+		font-weight: 650;
+		font-variant-numeric: tabular-nums;
+	}
+	.placement-access-preview span {
+		font-size: 10px;
+		line-height: 1.5;
+	}
+	.placement-adjust-budget {
+		margin-top: 8px;
+		border: 0;
+		border-radius: 6px;
+		padding: 5px 7px;
+		background: #f7e7d9;
+		color: #8b5636;
+		font-size: 11px;
+		font-weight: 600;
+	}
+	.placement-adjust-budget:hover {
+		background: #f0d9c6;
+	}
+	.placement-adjust-budget:focus-visible {
+		outline: 3px solid #087f7c;
+		outline-offset: 2px;
+	}
 	.placement-card-actions {
 		display: grid;
 		grid-template-columns: auto 1fr;
@@ -4178,6 +4843,12 @@
 			0 0 0 6px #286d6320,
 			0 12px 20px #173d4255;
 	}
+	:global(.national-map .policy-proposal-marker.selected) {
+		box-shadow:
+			0 0 0 4px #fffefa,
+			0 0 0 6px #286d63,
+			0 8px 18px #173d4233;
+	}
 	@media (max-width: 700px) {
 		.placement-card-actions :global(button) {
 			height: 44px;
@@ -4185,6 +4856,7 @@
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.placement-confirmation,
+		.proposal-edit-buttons button,
 		.placement-card-actions :global(button),
 		:global(.national-map .policy-proposal-marker) {
 			transition: none;
@@ -4633,16 +5305,17 @@
 		font-size: 10px;
 		line-height: 1.5;
 	}
-	.policy-impact-gained,
-	.policy-impact-lost {
+	.policy-overlay-swatches {
+		display: flex;
+		flex-wrap: wrap;
+		column-gap: 10px;
+		row-gap: 5px;
+	}
+	.policy-overlay-swatches i {
 		width: 9px;
 		height: 9px;
 		border-radius: 3px;
-		background: #16866e;
-	}
-	.policy-impact-lost {
-		background: #c44e55;
-		margin-left: 5px;
+		flex-shrink: 0;
 	}
 	.map-information-card .map-movement-status,
 	.map-information-card .street-context-status,

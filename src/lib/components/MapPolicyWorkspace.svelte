@@ -9,6 +9,7 @@
 		Hospital,
 		Layers,
 		MapPin,
+		MousePointer2,
 		Plus,
 		RefreshCw,
 		Ship,
@@ -22,7 +23,14 @@
 	import { Label } from '#lib/components/ui/label/index.js';
 	import { api } from '#lib/api.js';
 	import { impactColors, type PlanningOperation } from '#lib/planning-map.js';
-	import { displayGapHexes, displayImpactHexes } from '#lib/display-grid.js';
+	import {
+		displayGapHexes,
+		displayImpactHexes,
+		displayAccessHexes,
+		accessColors
+	} from '#lib/display-grid.js';
+	import { explainImpactCell, serviceCalendarRuns } from '#lib/proposal-experience.js';
+	import { nearestPlacementRoad } from '#lib/map-placement-preview.js';
 	import { GAP_PALETTE } from '#lib/map-overlay.js';
 	import {
 		assessDraftBudget,
@@ -87,7 +95,8 @@
 	};
 	type Command = {
 		id: number;
-		kind: 'inspect' | 'gaps' | 'compose' | 'close' | 'confirm' | 'cancel-placement';
+		kind:
+			'inspect' | 'gaps' | 'compose' | 'close' | 'confirm' | 'cancel-placement' | 'adjust-budget';
 	} | null;
 	type BudgetQuote = {
 		economics: PlanningEconomics;
@@ -95,6 +104,7 @@
 			allowed: boolean;
 			reasons: string[];
 			capital: { remaining_mvr: number | null };
+			annual_operating?: { remaining_mvr: number | null };
 		};
 	};
 	let {
@@ -110,6 +120,7 @@
 		placement = null,
 		incomingOperation = null,
 		moved = null,
+		edited = null,
 		cell = null,
 		onLensChange,
 		onState,
@@ -119,6 +130,7 @@
 		onFocusBounds,
 		ferryDestinationId = null,
 		onPickFerryDestination = () => {},
+		onPickFerryOrigin = () => {},
 		onDetails,
 		onConsume = () => {}
 	}: {
@@ -134,6 +146,7 @@
 		placement?: { id: number; longitude: number; latitude: number; kind?: PlacementKind } | null;
 		incomingOperation?: Record<string, unknown> | null;
 		moved?: { id: number; index: number; coordinates: Coordinates } | null;
+		edited?: { id: number; index: number; action: 'move' | 'duplicate' | 'remove' } | null;
 		cell?: Record<string, unknown> | null;
 		onLensChange: (value: PolicyLens) => void;
 		onState: (value: MapPolicyState) => void;
@@ -143,6 +156,7 @@
 		onFocusBounds?: (bounds: [Coordinates, Coordinates]) => void;
 		ferryDestinationId?: string | null;
 		onPickFerryDestination?: (enabled: boolean) => void;
+		onPickFerryOrigin?: (destination: string, date: string) => void;
 		onDetails: () => void;
 		onConsume?: () => void;
 	} = $props();
@@ -161,6 +175,23 @@
 	let operations = $state.raw<PlanningOperation[]>([]);
 	let history = $state.raw<PlanningOperation[][]>([]);
 	let pending = $state<{ coordinates: Coordinates; kind: PlacementKind } | null>(null);
+	let armedKind = $state<PlacementKind | null>(null);
+	let editingIndex = $state<number | null>(null);
+	let pendingBase = $state.raw<PlanningOperation | null>(null);
+	let pendingId = $state('');
+	let budgetEditing = $state(false);
+	let actionMessage = $state('');
+	let consumedEdit = 0;
+	let placementEvaluation = $state.raw<{ key: string; value: MapEvaluation } | null>(null);
+	let previewCalculating = $state(false);
+	let previewController: AbortController | undefined;
+	let busOpen = $state(false);
+	let busPatternId = $state('');
+	let busHeadway = $state<number | string>(15);
+	let busQuote = $state.raw<{ key: string; value: BudgetQuote } | null>(null);
+	let busQuoting = $state(false);
+	let busError = $state('');
+	let busController: AbortController | undefined;
 	let ferryOpen = $state(false);
 	let ferryDestination = $state('');
 	let ferrySearch = $state('');
@@ -207,6 +238,7 @@
 	let evaluatedSignature = $state('');
 	let review = $state(false);
 	let showImpact = $state(true);
+	let impactView = $state<'current' | 'proposal' | 'improvement'>('improvement');
 	let restoredScope = $state('');
 	let savedMessage = $state('');
 	let consumedPlacement = 0,
@@ -343,7 +375,38 @@
 	const pendingWithin = $derived(
 		pending && islandId ? pointWithinIsland(pending.coordinates, boundaryFeatures, islandId) : null
 	);
-	const placementKey = $derived(`${costModelKey}:${JSON.stringify(pending)}`);
+	const placementKey = $derived(
+		`${costModelKey}:${editingIndex}:${pendingId}:${JSON.stringify(pending)}`
+	);
+	const pendingOperation = $derived<PlanningOperation | null>(
+		pending
+			? {
+					...pendingBase,
+					type: pending.kind,
+					island_id: islandId ?? undefined,
+					coordinates: pending.coordinates,
+					name:
+						pendingBase?.name ??
+						`${islandName} proposed ${placementLabel(pending.kind).toLowerCase()}`,
+					metadata: { ...pendingBase?.metadata, proposal_id: pendingId }
+				}
+			: null
+	);
+	const placementOperations = $derived(
+		pendingOperation
+			? editingIndex === null
+				? [...operations, pendingOperation]
+				: operations.map((operation, index) =>
+						index === editingIndex ? pendingOperation : operation
+					)
+			: operations
+	);
+	const placementEvaluationKey = $derived(
+		JSON.stringify({ ...request, operations: placementOperations })
+	);
+	const pendingEvaluation = $derived(
+		placementEvaluation?.key === placementEvaluationKey ? placementEvaluation.value : null
+	);
 	const quotedPlacement = $derived(
 		placementQuote?.key === placementKey ? placementQuote.value : null
 	);
@@ -373,13 +436,25 @@
 								: 'Hospital',
 					capital: pendingCosts?.capital ?? null,
 					annual: pendingCosts?.annual ?? null,
+					actionLabel: editingIndex === null ? 'Add to proposal' : 'Confirm move',
+					annualRemaining: quotedPlacement?.economics.budget.annual_remaining_mvr as
+						number | null | undefined,
+					accessPreview: {
+						residents: pendingEvaluation?.summary.gained_residents ?? null,
+						label: previewCalculating
+							? 'Checking who gains access…'
+							: pendingEvaluation
+								? 'Residents gaining access · whole proposal'
+								: 'Access estimate follows the cost check',
+						approximate: true
+					},
 					allowed:
 						!!baseline &&
 						supported &&
 						!!boundaryFeatures &&
 						!loading &&
-						operations.length < 100 &&
-						pendingWithin !== false &&
+						(editingIndex !== null || operations.length < 100) &&
+						pendingWithin === true &&
 						budgetLimits.allowed &&
 						!!quotedPlacement?.budget.allowed &&
 						!placementError &&
@@ -395,13 +470,19 @@
 										? 'This proposal has reached the 100-change limit.'
 										: pendingWithin === false
 											? `Move this pin onto ${islandName}. Water and other islands cannot be used.`
-											: !budgetLimits.allowed
-												? budgetLimits.reason
-												: placementError || quotedPlacement?.budget.reasons.join(' '),
+											: pendingWithin === null
+												? 'The island boundary could not verify this site. Reload map details before confirming.'
+												: !budgetLimits.allowed
+													? budgetLimits.reason
+													: placementError || quotedPlacement?.budget.reasons.join(' '),
 					remaining: quotedPlacement?.budget.capital.remaining_mvr,
 					note:
 						roadDistance !== null
-							? `${Math.round(roadDistance)} m from mapped roads.${roadDistance > 100 ? ' Outside the 100 m modeled connection limit.' : ' Within the modeled connection limit.'}`
+							? roadDistance <= 35
+								? 'Beside a mapped street. Review the access estimate before confirming.'
+								: roadDistance <= 100
+									? `${Math.round(roadDistance)} m from a mapped street; within the model’s connection range.`
+									: 'More than 100 m from a mapped street. This site may have no modeled access.'
 							: pendingWithin === null
 								? 'Land boundary unavailable; verify this site before proceeding.'
 								: undefined,
@@ -488,6 +569,7 @@
 								[]
 						),
 						...(suggested?.selected.flatMap((item) => item.map_features?.features ?? []) ?? []),
+						...(busOpen ? busMapFeatures().features : []),
 						...(ferryOpen
 							? ((ferryPreview?.map_features ?? connection?.map_features)?.features ?? [])
 							: [])
@@ -495,9 +577,48 @@
 	});
 	const impact = $derived(
 		restoredScope === scopedKey && evaluation && !stale && showImpact && displayGrid.features.length
-			? displayImpactHexes(baseline?.origins ?? [], evaluation.origins ?? [], displayGrid)
+			? impactView === 'improvement'
+				? displayImpactHexes(baseline?.origins ?? [], evaluation.origins ?? [], displayGrid)
+				: displayAccessHexes(
+						baseline?.origins ?? [],
+						evaluation.origins ?? [],
+						displayGrid,
+						impactView === 'current' ? 'before' : 'after',
+						Number(targetMinutes)
+					)
 			: emptyFeatures()
 	);
+	const selectedImpactCell = $derived(
+		impact.features.find((feature) => String(feature.properties?.id) === String(cell?.id))
+			?.properties
+	);
+	const selectedExplanation = $derived(
+		selectedImpactCell
+			? explainImpactCell(selectedImpactCell, {
+					goalLabel,
+					targetMinutes: Number(targetMinutes),
+					operations
+				})
+			: null
+	);
+	const busPatterns = $derived(
+		(baseline?.patterns ?? []).filter((pattern) => pattern.mode === 'bus')
+	);
+	const busPattern = $derived(busPatterns.find((pattern) => pattern.id === busPatternId));
+	const busPatternActive = $derived(serviceCalendarRuns(busPattern?.calendar, date));
+	const busRecordedDate = $derived(
+		busPattern?.calendar?.includedDates
+			?.filter((recorded) => serviceCalendarRuns(busPattern?.calendar, recorded))
+			.sort()[0] ?? null
+	);
+	const busSignature = $derived(JSON.stringify({ request, busPatternId, busHeadway }));
+	const busPreview = $derived(busQuote?.key === busSignature ? busQuote.value : null);
+	const previewEconomics = $derived(
+		quotedPlacement?.economics ??
+			(ferryOpen ? ferryPreview?.quote?.economics : null) ??
+			(busOpen ? busPreview?.economics : null)
+	);
+	const hasDraftContext = $derived(!!(draftItems.length || pending || armedKind || actionMessage));
 	const draftEconomics = $derived<PlanningEconomics>({
 		currency: 'MVR',
 		basis: 'Illustrative backend cost factors. Operating service cost requires a service plan.',
@@ -508,6 +629,9 @@
 		assumptions: baseline?.cost_defaults ?? {},
 		warnings: []
 	});
+	const visibleEconomics = $derived(
+		previewEconomics ?? (evaluation && !stale ? evaluation.economics : draftEconomics)
+	);
 
 	onMount(() => {
 		mounted = true;
@@ -519,6 +643,8 @@
 			suggestionController?.abort();
 			quoteController?.abort();
 			placementQuoteController?.abort();
+			previewController?.abort();
+			busController?.abort();
 			ferryConnectionController?.abort();
 			ferryDraftController?.abort();
 		};
@@ -562,6 +688,14 @@
 		scopeError = false;
 		baseline = null;
 		pending = null;
+		armedKind = null;
+		editingIndex = null;
+		pendingBase = null;
+		budgetEditing = false;
+		actionMessage = '';
+		placementEvaluation = null;
+		previewController?.abort();
+		closeBusService();
 		evaluation = null;
 		evaluatedSignature = '';
 		error = '';
@@ -705,6 +839,10 @@
 				cancelPending();
 				return;
 			}
+			if (command!.kind === 'adjust-budget') {
+				adjustBudget();
+				return;
+			}
 			opened = command!.kind !== 'close';
 			if (opened) {
 				section = command!.kind === 'compose' ? 'proposal' : 'needs';
@@ -726,14 +864,27 @@
 			quoteController?.abort();
 			checkingBudget = false;
 			pending = {
-				coordinates: [placement!.longitude, placement!.latitude],
+				coordinates: placementCoordinates(
+					[placement!.longitude, placement!.latitude],
+					placement!.kind ?? armedKind ?? 'add_school'
+				),
 				kind: placement!.kind ?? 'add_school'
 			};
+			if (!pendingId) pendingId = `proposal:${pending.kind}:${crypto.randomUUID()}`;
+			armedKind = null;
+			budgetEditing = false;
 			suggested = null;
-			opened = true;
+			opened = false;
 			section = 'proposal';
 			onPickKind(null);
 			onCloseOthers();
+		});
+	});
+	$effect(() => {
+		if (!edited || edited.id === consumedEdit || !active) return;
+		untrack(() => {
+			consumedEdit = edited!.id;
+			editOperation(edited!.index, edited!.action);
 		});
 	});
 	$effect(() => {
@@ -835,13 +986,28 @@
 			if (moved!.index === -1 && pending) {
 				quoteController?.abort();
 				checkingBudget = false;
-				pending = { ...pending, coordinates: moved!.coordinates };
-			} else if (operations[moved!.index])
-				change(
-					operations.map((operation, i) =>
-						i === moved!.index ? { ...operation, coordinates: moved!.coordinates } : operation
-					)
-				);
+				pending = {
+					...pending,
+					coordinates: placementCoordinates(moved!.coordinates, pending.kind)
+				};
+			} else {
+				const operation = operations[moved!.index];
+				if (!operation) return;
+				if (
+					!['add_stop', 'add_school', 'add_hospital'].includes(operation.type) ||
+					operation.metadata?.ui_package
+				) {
+					operations = [...operations];
+					return;
+				}
+				editOperation(moved!.index, 'move');
+				pending = {
+					coordinates: placementCoordinates(moved!.coordinates, operation.type as PlacementKind),
+					kind: operation.type as PlacementKind
+				};
+				armedKind = null;
+				onPickKind(null);
+			}
 		});
 	});
 	$effect(() => {
@@ -891,7 +1057,8 @@
 			serviceFeatures,
 			calculating,
 			stale,
-			panelOpen: opened
+			panelOpen: opened,
+			placementRoads: baseline?.graph_edges ?? []
 		};
 		untrack(() => onState(value));
 	});
@@ -912,10 +1079,7 @@
 		placementQuoteController = controller;
 		const payload: PlanningReviewRequest = {
 			...request,
-			operations: [
-				...operations,
-				{ type: site.kind, island_id: islandId ?? undefined, coordinates: site.coordinates }
-			]
+			operations: placementOperations
 		};
 		const timer = setTimeout(async () => {
 			try {
@@ -938,6 +1102,41 @@
 		return () => {
 			clearTimeout(timer);
 			controller.abort();
+		};
+	});
+	$effect(() => {
+		const key = placementEvaluationKey;
+		const payload = { ...request, operations: placementOperations };
+		if (
+			!active ||
+			!pending ||
+			!quotedPlacement?.budget.allowed ||
+			pendingWithin !== true ||
+			!supported
+		)
+			return;
+		const controller = new AbortController();
+		previewController = controller;
+		untrack(() => {
+			previewCalculating = true;
+		});
+		const timer = setTimeout(async () => {
+			try {
+				const value = await api<MapEvaluation>('planning/evaluate', payload, controller.signal);
+				if (!controller.signal.aborted && key === placementEvaluationKey)
+					placementEvaluation = { key, value };
+			} catch {
+				// Placement remains usable when the optional impact preview is unavailable.
+			} finally {
+				if (previewController === controller) previewCalculating = false;
+			}
+		}, 280);
+		return () => {
+			clearTimeout(timer);
+			controller.abort();
+			untrack(() => {
+				previewCalculating = false;
+			});
 		};
 	});
 	async function evaluate(expected = signature) {
@@ -966,7 +1165,6 @@
 					annual: value.economics.delta.annual_operating_mvr ?? null
 				};
 				evaluatedSignature = expected;
-				showImpact = section === 'proposal';
 			}
 		} catch (cause) {
 			if (!controller.signal.aborted)
@@ -1013,9 +1211,11 @@
 	function commitChange(next: PlanningOperation[], undoing = false) {
 		history = undoing ? history.slice(0, -1) : [...history.slice(-29), operations];
 		operations = next;
-		inferGoal(next);
 		suggested = null;
 		error = '';
+		showImpact = true;
+		impactView = 'improvement';
+		actionMessage = undoing ? 'Last change undone' : 'Proposal updated';
 	}
 	function change(next: PlanningOperation[], undoing = false) {
 		quoteController?.abort();
@@ -1101,7 +1301,58 @@
 	}
 	function undo() {
 		if (!history.length) return;
+		cancelPending();
 		if (change(history.at(-1)!, true)) pending = null;
+	}
+	function placementLabel(kind: PlacementKind) {
+		return kind === 'add_stop' ? 'Bus stop' : kind === 'add_school' ? 'School' : 'Hospital';
+	}
+	function placementCoordinates(point: Coordinates, kind: PlacementKind) {
+		if (kind !== 'add_stop' || !baseline) return point;
+		const nearest = nearestPlacementRoad(point, baseline.graph_edges);
+		return nearest.snapped &&
+			islandId &&
+			pointWithinIsland(nearest.coordinates, boundaryFeatures, islandId) === true
+			? nearest.coordinates
+			: point;
+	}
+	function editOperation(index: number, action: 'move' | 'duplicate' | 'remove') {
+		const operation = operations[index];
+		if (!operation) return;
+		if (action === 'remove') {
+			removeOperation(index);
+			return;
+		}
+		if (
+			!['add_stop', 'add_school', 'add_hospital'].includes(operation.type) ||
+			operation.metadata?.ui_package
+		)
+			return;
+		cancelPending();
+		closeFerry();
+		closeBusService();
+		const kind = operation.type as PlacementKind;
+		setGoal(kind === 'add_stop' ? 'transport' : kind === 'add_school' ? 'education' : 'healthcare');
+		editingIndex = action === 'move' ? index : null;
+		pendingBase =
+			action === 'move'
+				? operation
+				: { ...operation, name: `${operation.name ?? placementLabel(kind)} · copy` };
+		pendingId =
+			action === 'move'
+				? String(operation.metadata?.proposal_id ?? `proposal:${kind}:${crypto.randomUUID()}`)
+				: `proposal:${kind}:${crypto.randomUUID()}`;
+		armedKind = kind;
+		opened = false;
+		section = 'proposal';
+		actionMessage = `${action === 'move' ? 'Choose a new location for' : 'Place a copy of'} this ${placementLabel(kind).toLowerCase()}`;
+		onPickKind(kind);
+		onCloseOthers();
+	}
+	function adjustBudget() {
+		budgetEditing = true;
+		open('proposal');
+		void tick().then(() => document.getElementById('map-capital-budget')?.focus());
 	}
 	function open(mode: 'needs' | 'proposal') {
 		opened = true;
@@ -1112,9 +1363,10 @@
 		quoteController?.abort();
 		checkingBudget = false;
 		opened = false;
-		pending = null;
+		cancelPending();
 		review = false;
 		closeFerry();
+		closeBusService();
 		cancelSuggestions();
 		onPickKind(null);
 	}
@@ -1125,22 +1377,146 @@
 		}
 		quoteController?.abort();
 		checkingBudget = false;
-		open('proposal');
-		pending = null;
+		cancelPending();
+		opened = false;
+		section = 'proposal';
+		armedKind = kind;
+		pendingId = `proposal:${kind}:${crypto.randomUUID()}`;
+		actionMessage = `Click the map to place a ${placementLabel(kind).toLowerCase()}`;
+		setGoal(kind === 'add_stop' ? 'transport' : kind === 'add_school' ? 'education' : 'healthcare');
 		suggested = null;
 		closeFerry();
+		closeBusService();
 		onPickKind(kind);
+		onCloseOthers();
 	}
 	function beginFerry() {
 		cancelPending();
 		cancelSuggestions();
 		open('proposal');
 		ferryOpen = true;
+		closeBusService();
 		ferryError = '';
 		ferryChoosingDestination = !ferryDestination;
 		onLensChange('transport');
 		setGoal('transport');
 		void tick().then(() => ferryComposer?.scrollIntoView({ block: 'nearest' }));
+	}
+	function beginBusService() {
+		cancelPending();
+		closeFerry();
+		closeBusService();
+		open('proposal');
+		busOpen = true;
+		busError = '';
+		if (!busPatterns.some((pattern) => pattern.id === busPatternId))
+			busPatternId = busPatterns[0]?.id ?? '';
+		onLensChange('transport');
+	}
+	function closeBusService() {
+		busOpen = false;
+		busController?.abort();
+		busQuoting = false;
+		busError = '';
+	}
+	function busOperations(): PlanningOperation[] {
+		if (!busPattern) return [];
+		return [
+			...operations.filter(
+				(operation) => !(operation.type === 'set_frequency' && operation.target_id === busPatternId)
+			),
+			{
+				type: 'set_frequency',
+				target_id: busPatternId,
+				island_id: islandId ?? undefined,
+				headway_minutes: Number(busHeadway),
+				name: `${busPattern.name} · every ${busHeadway} min`,
+				metadata: { ui_map_features: busMapFeatures() }
+			}
+		];
+	}
+	function busMapFeatures(): FeatureCollection {
+		const lines =
+			busPattern?.segmentGeometries?.filter((line) => line.length > 1) ??
+			(busPattern?.geometry?.length ? [busPattern.geometry] : []);
+		return {
+			type: 'FeatureCollection',
+			features: lines.map((coordinates) => ({
+				type: 'Feature',
+				properties: { name: busPattern?.name, mode: 'bus' },
+				geometry: { type: 'LineString', coordinates }
+			}))
+		};
+	}
+	async function previewBusService() {
+		if (!busOpen) return;
+		if (
+			!busPattern ||
+			!Number.isFinite(Number(busHeadway)) ||
+			Number(busHeadway) < 1 ||
+			Number(busHeadway) > 720
+		) {
+			busError = 'Choose a route and a departure interval between 1 and 720 minutes.';
+			return;
+		}
+		if (!busPatternActive) {
+			busError =
+				'No published departures start on the selected service date. Choose a recorded service date before changing this route.';
+			return;
+		}
+		busController?.abort();
+		const controller = new AbortController();
+		busController = controller;
+		const key = busSignature;
+		busQuoting = true;
+		busError = '';
+		try {
+			const value = await api<BudgetQuote>(
+				'planning/quote',
+				{ ...request, operations: busOperations() },
+				controller.signal
+			);
+			if (!controller.signal.aborted && busOpen && key === busSignature) {
+				busQuote = { key, value };
+				const stops = (baseline?.stops ?? []).filter((stop) =>
+					busPattern?.stopIds.includes(stop.id)
+				);
+				const bounds = ferryFeatureBounds({
+					type: 'FeatureCollection',
+					features: stops.map((stop) => ({
+						type: 'Feature',
+						properties: {},
+						geometry: { type: 'Point', coordinates: [stop.lon, stop.lat] }
+					}))
+				});
+				if (bounds) onFocusBounds?.(bounds);
+			}
+		} catch (cause) {
+			if (!controller.signal.aborted)
+				busError =
+					cause instanceof Error ? cause.message : 'The service cost could not be checked.';
+		} finally {
+			if (busController === controller) busQuoting = false;
+		}
+	}
+	function confirmBusService() {
+		if (
+			!busOpen ||
+			!busPatternActive ||
+			!busPreview?.budget.allowed ||
+			busQuoting ||
+			checkingBudget
+		)
+			return;
+		const next = busOperations();
+		financialQuote = {
+			key: financialKey({ ...request, operations: next }),
+			capital: busPreview.economics.delta.capital_mvr ?? null,
+			annual: busPreview.economics.delta.annual_operating_mvr ?? null
+		};
+		commitChange(next);
+		closeBusService();
+		actionMessage = 'Bus service frequency updated';
 	}
 	function closeFerry() {
 		ferryOpen = false;
@@ -1162,7 +1538,14 @@
 		ferrySearch = '';
 		ferryChoosingDestination = false;
 		ferryError = '';
+		opened = true;
+		section = 'proposal';
 		onPickFerryDestination(false);
+	}
+	function pickFerryDestination() {
+		ferryChoosingDestination = false;
+		opened = false;
+		onPickFerryDestination(true);
 	}
 	function focusFerryFeatures(features: FeatureCollection) {
 		const bounds = ferryFeatureBounds(features);
@@ -1245,7 +1628,7 @@
 		showImpact = false;
 	}
 	function confirm() {
-		if (!pending || operations.length >= 100) return;
+		if (!pending || (editingIndex === null && operations.length >= 100)) return;
 		if (!supported) {
 			error = localConstructionReason;
 			return;
@@ -1254,45 +1637,28 @@
 			error = pendingDecision?.reason || 'Verify this site and its budget before adding it.';
 			return;
 		}
-		if (!islandId || pointWithinIsland(pending.coordinates, boundaryFeatures, islandId) === false) {
+		if (!islandId || pointWithinIsland(pending.coordinates, boundaryFeatures, islandId) !== true) {
 			error =
 				'Choose a site inside the selected island. Water and other islands cannot be used for this proposal.';
 			return;
 		}
-		const kind = pending.kind;
-		const next: PlanningOperation[] = [
-			...operations,
-			{
-				type: kind,
-				island_id: islandId ?? undefined,
-				coordinates: pending.coordinates,
-				name: `${islandName} proposed ${kind === 'add_school' ? 'school' : kind === 'add_hospital' ? 'hospital' : 'bus stop'}`,
-				metadata: { proposal_id: `proposal:${kind}:${crypto.randomUUID()}` }
-			}
-		];
+		const next = placementOperations;
 		if (!quotedPlacement) return;
+		const acceptedEvaluation = pendingEvaluation;
+		const acceptedSignature = placementEvaluationKey;
+		const wasMoving = editingIndex !== null;
 		financialQuote = {
 			key: financialKey({ ...request, operations: next }),
 			capital: quotedPlacement.economics.delta.capital_mvr ?? null,
 			annual: quotedPlacement.economics.delta.annual_operating_mvr ?? null
 		};
 		commitChange(next);
-		pending = null;
-	}
-	function inferGoal(next: PlanningOperation[]) {
-		const school = next.some((operation) => operation.type === 'add_school');
-		const hospital = next.some((operation) => operation.type === 'add_hospital');
-		if (school && !hospital && goal !== 'education') setGoal('education');
-		else if (hospital && !school && goal !== 'healthcare') setGoal('healthcare');
-		else if (
-			!school &&
-			!hospital &&
-			next.some((operation) =>
-				['add_stop', 'add_service', 'use_existing_ferry_terminal'].includes(operation.type)
-			) &&
-			goal !== 'transport'
-		)
-			setGoal('transport');
+		if (acceptedEvaluation && JSON.stringify(request) === acceptedSignature) {
+			evaluation = acceptedEvaluation;
+			evaluatedSignature = acceptedSignature;
+		}
+		cancelPending();
+		actionMessage = wasMoving ? 'Location updated' : 'Added to your proposal';
 	}
 	function setGoal(value: 'healthcare' | 'education' | 'transport') {
 		if (goal === value) return;
@@ -1309,6 +1675,15 @@
 		quoteController?.abort();
 		checkingBudget = false;
 		pending = null;
+		armedKind = null;
+		editingIndex = null;
+		pendingBase = null;
+		pendingId = '';
+		budgetEditing = false;
+		placementEvaluation = null;
+		previewController?.abort();
+		previewCalculating = false;
+		actionMessage = '';
 		onPickKind(null);
 	}
 	function togglePriority(domain: PolicyDomain) {
@@ -1483,17 +1858,21 @@
 			>{/if}
 		<div class="policy-lens-bar" aria-label="Service coverage map">
 			{#if operations.length}
-				<select
-					aria-label="Map colours"
-					title="Current service gaps or proposed access changes"
-					value={impact.features.length ? 'impact' : 'gaps'}
-					onchange={(event) => (showImpact = event.currentTarget.value === 'impact')}
-				>
-					<option value="gaps">Gaps</option>
-					<option value="impact" disabled={!evaluation || stale}>Impact</option>
-				</select>
+				<div class="proposal-map-views" role="group" aria-label="Proposal map view">
+					{#each [{ id: 'current', label: 'Current access' }, { id: 'proposal', label: 'With proposal' }, { id: 'improvement', label: 'Improvement' }] as view (view.id)}
+						<button
+							class:active={showImpact && impactView === view.id}
+							aria-pressed={showImpact && impactView === view.id}
+							disabled={!evaluation || stale || calculating}
+							onclick={() => {
+								impactView = view.id as typeof impactView;
+								showImpact = true;
+							}}>{view.label}</button
+						>
+					{/each}
+				</div>
 			{:else}<span><Layers size={15} />Service gaps</span>{/if}
-			{#each coverageLenses as option (option.id)}
+			{#each operations.length ? [] : coverageLenses as option (option.id)}
 				<button
 					class="coverage-lens-option"
 					class:active={lens === option.id && !impact.features.length}
@@ -1501,15 +1880,16 @@
 					onclick={() => selectLens(option.id)}>{option.label}</button
 				>
 			{/each}
-			<select
-				class="compact-coverage-lens"
-				aria-label="Service coverage"
-				value={lens}
-				onchange={(event) => selectLens(event.currentTarget.value as PolicyLens)}
-			>
-				{#each coverageLenses as option (option.id)}<option value={option.id}>{option.label}</option
-					>{/each}
-			</select>
+			{#if !operations.length}<select
+					class="compact-coverage-lens"
+					aria-label="Service coverage"
+					value={lens}
+					onchange={(event) => selectLens(event.currentTarget.value as PolicyLens)}
+				>
+					{#each coverageLenses as option (option.id)}<option value={option.id}
+							>{option.label}</option
+						>{/each}
+				</select>{/if}
 			<button
 				class="lens-info"
 				aria-label={impact.features.length
@@ -1521,7 +1901,7 @@
 	</div>
 	{#if opened}<section
 			class="policy-map-panel"
-			class:placing={!!pending}
+			class:placing={(!!pending || !!armedKind) && !budgetEditing}
 			class:ferry-composing={ferryOpen}
 			aria-label="Island needs and proposal"
 			data-policy-section={section}
@@ -1582,34 +1962,44 @@
 							: needsLabel(current)}
 					</p>
 					<div class="policy-map-key">
-						<span
-							><i
-								class="gap-high"
-								style:background={impact.features.length ? impactColors.lost : GAP_PALETTE.longer}
-							></i>{impact.features.length
-								? 'Lost / slower'
-								: gapCells.features.length
-									? 'At / beyond target'
-									: 'Review need'}</span
-						><span
-							><i
-								class="gap-low"
-								style:background={impact.features.length
-									? impactColors.gained
-									: GAP_PALETTE.shorter}
-							></i>{impact.features.length
-								? 'Gained / faster'
-								: gapCells.features.length
-									? 'Shorter journey'
-									: 'More evidence'}</span
-						><span
-							><i
-								class="gap-unknown"
-								style:background={impact.features.length
-									? impactColors.uncomputed
-									: GAP_PALETTE.unknown}
-							></i>{impact.features.length ? 'Unchanged / unknown' : 'Unknown'}</span
-						>
+						{#if impact.features.length && impactView !== 'improvement'}
+							<span><i style:background={accessColors.within_target}></i>Within target</span>
+							<span><i style:background={accessColors.beyond_target}></i>Beyond target</span>
+							<span><i style:background={accessColors.mixed}></i>Mixed access</span>
+							<span><i style:background={accessColors.unavailable}></i>No routed access</span>
+							<span><i style:background={accessColors.unknown}></i>Unknown</span>
+						{:else}<span
+								><i
+									class="gap-high"
+									style:background={impact.features.length ? impactColors.lost : GAP_PALETTE.longer}
+								></i>{impact.features.length
+									? 'Lost / slower'
+									: gapCells.features.length
+										? 'At / beyond target'
+										: 'Review need'}</span
+							><span
+								><i
+									class="gap-low"
+									style:background={impact.features.length
+										? impactColors.gained
+										: GAP_PALETTE.shorter}
+								></i>{impact.features.length
+									? 'Gained / faster'
+									: gapCells.features.length
+										? 'Shorter journey'
+										: 'More evidence'}</span
+							><span
+								><i
+									class="gap-unknown"
+									style:background={impact.features.length
+										? impactColors.uncomputed
+										: GAP_PALETTE.unknown}
+								></i>Unknown</span
+							>
+							{#if impact.features.length}<span
+									><i style:background={impactColors.unchanged}></i>Unchanged</span
+								>{/if}
+						{/if}
 					</div>
 					<Button
 						class="policy-primary"
@@ -1628,7 +2018,15 @@
 							></span
 						><ArrowRight size={16} />
 					</button>
-					{#if cell?.origin_id && !impact.features.length}<div
+					{#if selectedExplanation && impact.features.length}<div
+							class="policy-selected-cell"
+							aria-label="Selected neighbourhood impact"
+							data-cell-id={String(cell?.id ?? '')}
+						>
+							<strong>{selectedExplanation.title}</strong><span>{selectedExplanation.summary}</span>
+							{#each selectedExplanation.reasons as reason, i (i)}<p>{reason}</p>{/each}
+							<small>{selectedExplanation.qualification}</small>
+						</div>{:else if cell?.origin_id && !impact.features.length}<div
 							class="policy-selected-cell"
 							data-cell-id={String(cell.origin_id)}
 						>
@@ -1834,7 +2232,9 @@
 						</div>{/if}
 					<div class="policy-place-heading">
 						<h3>Add to your proposal</h3>
-						<small>Drag a local service onto the map, or connect two islands.</small>
+						<small
+							>Choose an item, then click its location on the map. You can also drag its icon.</small
+						>
 					</div>
 					<div class="policy-palette">
 						{#each [{ kind: 'add_stop', label: 'Bus stop', icon: BusFront }, { kind: 'add_school', label: 'School', icon: GraduationCap }, { kind: 'add_hospital', label: 'Hospital', icon: Hospital }] as item (item.kind)}<button
@@ -1849,6 +2249,17 @@
 									checkingBudget ||
 									operations.length >= 100}
 								ondragstart={(event) => {
+									cancelPending();
+									armedKind = item.kind as PlacementKind;
+									pendingId = `proposal:${item.kind}:${crypto.randomUUID()}`;
+									setGoal(
+										item.kind === 'add_stop'
+											? 'transport'
+											: item.kind === 'add_school'
+												? 'education'
+												: 'healthcare'
+									);
+									onPickKind(item.kind as PlacementKind);
 									event.dataTransfer?.setData('application/x-policy-placement', item.kind);
 									if (event.dataTransfer) {
 										event.dataTransfer.effectAllowed = 'copy';
@@ -1857,12 +2268,111 @@
 										if (icon) event.dataTransfer.setDragImage(icon, 22, 22);
 									}
 								}}
+								ondragend={() => {
+									armedKind = null;
+									onPickKind(null);
+								}}
 								onclick={() => begin(item.kind as PlacementKind)}
 								><span class="palette-drag-icon" data-placement-icon={item.kind}
 									><item.icon size={24} /></span
 								><span>{item.label}</span><Plus size={12} /></button
 							>{/each}
 					</div>
+					<button
+						class="policy-ferry-entry"
+						class:active={busOpen}
+						onclick={beginBusService}
+						disabled={!supported || !busPatterns.length || loading || checkingBudget}
+					>
+						<BusFront size={24} /><span
+							><strong>Bus service</strong><small
+								>Choose an existing route and improve its frequency.</small
+							></span
+						><Plus size={16} />
+					</button>
+					{#if busOpen}<section class="policy-bus-composer" aria-label="Plan a bus service">
+							<header>
+								<h3>Improve a bus service</h3>
+								<Button
+									variant="ghost"
+									size="icon-sm"
+									aria-label="Close bus service planner"
+									onclick={closeBusService}><X size={16} /></Button
+								>
+							</header>
+							<Label for="proposal-bus-route">Bus route and direction</Label><select
+								id="proposal-bus-route"
+								bind:value={busPatternId}
+								>{#each busPatterns as pattern (pattern.id)}<option value={pattern.id}
+										>{pattern.name}</option
+									>{/each}</select
+							>
+							<p>
+								{busPattern?.stopIds.length ?? 0} existing boarding points · selected published direction
+							</p>
+							<Label for="proposal-bus-date">Service date</Label><Input
+								id="proposal-bus-date"
+								type="date"
+								bind:value={date}
+							/>
+							<small>Costs and impact use this date for the whole proposal.</small>
+							{#if busPattern && !busPatternActive}<div class="policy-budget-alert" role="alert">
+									<p>
+										No published departures start on this date. A captured timetable cannot be
+										assumed to repeat on another day.
+									</p>
+									{#if busRecordedDate}<Button
+											variant="outline"
+											size="sm"
+											aria-label="Use recorded service date"
+											onclick={() => {
+												date = busRecordedDate!;
+												busError = '';
+											}}>Use {busRecordedDate}</Button
+										>{/if}
+								</div>{/if}
+							<Label for="proposal-bus-frequency">A bus every · minutes</Label><Input
+								id="proposal-bus-frequency"
+								type="number"
+								min="1"
+								max="720"
+								bind:value={busHeadway}
+							/>
+							<p>
+								Uses the route’s existing service date, operating window and modeled road path. The
+								reverse direction is unchanged.
+							</p>
+							<Button
+								variant="outline"
+								disabled={busQuoting || !busPattern || !busPatternActive || !budgetLimits.allowed}
+								onclick={() => void previewBusService()}
+								>{busQuoting ? 'Checking route costs…' : 'Preview bus service & costs'}</Button
+							>
+							{#if busError}<p class="policy-error" role="alert">{busError}</p>{/if}
+							{#if busPreview}<div class="bus-service-preview">
+									<strong
+										>MVR {formatAmount(busPreview.economics.delta.capital_mvr, true)} upfront · MVR {formatAmount(
+											busPreview.economics.delta.annual_operating_mvr,
+											true
+										)}/year</strong
+									>{#each busPreview.budget.reasons as reason, i (i)}<p
+											class="policy-budget-alert"
+											role="alert"
+										>
+											{reason}
+										</p>{/each}<Button
+										disabled={!busPatternActive ||
+											!busPreview.budget.allowed ||
+											checkingBudget ||
+											busQuoting}
+										onclick={confirmBusService}>Add bus service to proposal</Button
+									>
+								</div>{/if}
+							<small
+								>A boarding point and an operating bus service are separate investments. Frequency
+								alone does not improve walking access to a stop.</small
+							>
+						</section>{/if}
 					<button
 						class="policy-ferry-entry"
 						class:active={ferryOpen}
@@ -1895,6 +2405,23 @@
 							<p class="ferry-origin">
 								<MapPin size={15} /><span>From <strong>{islandName}</strong> · {date}</span>
 							</p>
+							<div class="ferry-map-steps" aria-label="Ferry route endpoints">
+								<button
+									onclick={() => {
+										opened = false;
+										onPickFerryOrigin(ferryDestination, date);
+									}}
+									><span>1</span><strong>From {islandName}</strong><small>Change on map</small
+									></button
+								>
+								<button onclick={pickFerryDestination}
+									><span>2</span><strong
+										>{ferryDestination
+											? `To ${ferryDestinationName}`
+											: 'Choose destination'}</strong
+									><small>Choose on map</small></button
+								>
+							</div>
 							<div class="ferry-destination">
 								<Label for="ferry-island-search">Destination island</Label>
 								{#if ferryDestination && !ferryChoosingDestination}<button
@@ -1918,13 +2445,8 @@
 												No matching named islands. Try another name or choose on the map.
 											</p>{/each}
 									</div>
-									<Button
-										variant="outline"
-										size="sm"
-										onclick={() => {
-											ferryChoosingDestination = false;
-											onPickFerryDestination(true);
-										}}><MapPin size={14} />Choose destination on the map</Button
+									<Button variant="outline" size="sm" onclick={pickFerryDestination}
+										><MapPin size={14} />Choose destination on the map</Button
 									>
 								{/if}
 							</div>
@@ -2183,41 +2705,31 @@
 					<small class="policy-saved">{savedMessage}</small>
 				{/if}
 			</div>
-			{#if section === 'proposal' && operations.length}<footer>
-					<div class="policy-live-benefit" aria-live="polite">
-						<span
-							>{goal === 'transport'
-								? 'Walk to public transport'
-								: goal === 'healthcare'
-									? 'Healthcare'
-									: 'Education'} within {targetMinutes} min</span
-						><strong
-							>{calculating || stale
-								? 'Updating access…'
-								: evaluation
-									? evaluation.summary.scenario_reachable_residents !== null
-										? `${formatAmount(evaluation.summary.scenario_reachable_residents)} modeled residents reached`
-										: 'Resident reach unavailable'
-									: supported
-										? 'Ready to calculate'
-										: 'Local access data needed'}</strong
-						>{#if evaluation && evaluation.summary.gained_residents !== null && !stale && !calculating}<small
-								>{formatAmount(evaluation.summary.gained_residents)} gain access · {formatAmount(
-									evaluation.summary.lost_residents
-								)} lose access</small
-							>{/if}
-					</div>
+			{#if baseline && (section === 'proposal' || operations.length || pending)}<footer>
 					<ProposalCostStrip
-						economics={evaluation && !stale ? evaluation.economics : draftEconomics}
+						compact
+						economics={visibleEconomics}
 						capitalBudget={Number.isFinite(budgetNumber(capitalBudget))
 							? budgetNumber(capitalBudget)
 							: null}
 						annualBudget={Number.isFinite(budgetNumber(annualBudget))
 							? budgetNumber(annualBudget)
 							: null}
-						pending={calculating}
+						pending={calculating || previewCalculating}
 						{stale}
 						operationCount={draftItems.length}
+						preview={!!pending || ferryOpen || busOpen}
+						previewChecking={(!!pending && !quotedPlacement) ||
+							(ferryOpen && !ferryPreview?.quote) ||
+							(busOpen && !busPreview)}
+						gainedResidents={pending
+							? pendingEvaluation?.summary.gained_residents
+							: !stale
+								? evaluation?.summary.gained_residents
+								: null}
+						onEditBudget={adjustBudget}
+						onUndo={undo}
+						canUndo={!!history.length}
 						onReview={() => {
 							review = true;
 							if (!evaluation || stale) void evaluate();
@@ -2225,7 +2737,61 @@
 					/>
 				</footer>{/if}
 		</section>{/if}
-	{#if calculating}<div class="policy-recalculating" role="status">
+	{#if !opened && hasDraftContext && !ferryOpen}<div
+			class="proposal-floating-budget"
+			class:placement-preview={!!pending || !!armedKind}
+		>
+			<ProposalCostStrip
+				compact
+				economics={visibleEconomics}
+				capitalBudget={Number.isFinite(budgetNumber(capitalBudget))
+					? budgetNumber(capitalBudget)
+					: null}
+				annualBudget={Number.isFinite(budgetNumber(annualBudget))
+					? budgetNumber(annualBudget)
+					: null}
+				pending={calculating || previewCalculating}
+				{stale}
+				operationCount={draftItems.length}
+				preview={!!pending}
+				previewChecking={!!pending && !quotedPlacement}
+				gainedResidents={pending
+					? pendingEvaluation?.summary.gained_residents
+					: !stale
+						? evaluation?.summary.gained_residents
+						: null}
+				onEditBudget={adjustBudget}
+				onUndo={undo}
+				canUndo={!!history.length}
+				onReview={() => {
+					review = true;
+					if (!evaluation || stale) void evaluate();
+				}}
+			/>
+			<button class="proposal-open-draft" onclick={() => open('proposal')}
+				>Edit proposal <ArrowRight size={14} /></button
+			>
+		</div>{/if}
+	{#if armedKind}<div class="proposal-placement-status" role="status">
+			<MousePointer2 size={16} /><span
+				>{armedKind ? actionMessage : 'Adjust the pin, then confirm on the map'}<small
+					>{armedKind
+						? 'Click to place · Escape to cancel'
+						: 'Your saved proposal changes only after confirmation'}</small
+				></span
+			><button aria-label="Cancel placement" onclick={cancelPending}><X size={16} /></button>
+		</div>
+	{:else if actionMessage && !opened && !pending}<div
+			class="proposal-action-feedback"
+			role="status"
+		>
+			<Check size={15} /><span>{actionMessage}</span>{#if history.length}<button onclick={undo}
+					>Undo</button
+				>{/if}<button aria-label="Dismiss proposal update" onclick={() => (actionMessage = '')}
+				><X size={14} /></button
+			>
+		</div>{/if}
+	{#if calculating && !hasDraftContext}<div class="policy-recalculating" role="status">
 			<RefreshCw size={15} class="spin" /><span
 				>Recalculating resident access…<small>Your changes stay on the map.</small></span
 			>
@@ -2246,6 +2812,141 @@
 {/if}
 
 <style>
+	.proposal-floating-budget {
+		position: absolute;
+		top: calc(148px + var(--map-navigation-offset, 0px));
+		right: 18px;
+		width: 340px;
+		z-index: 6;
+		border-radius: 16px;
+		background: #fffffff5;
+		box-shadow: 0 10px 35px #183d3320;
+	}
+	.proposal-open-draft {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		padding: 10px 16px;
+		font-size: 11px;
+		color: #22634f;
+	}
+	.proposal-placement-status,
+	.proposal-action-feedback {
+		position: absolute;
+		top: calc(140px + var(--map-navigation-offset, 0px));
+		left: 20px;
+		z-index: 6;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		max-width: 340px;
+		padding: 12px 14px;
+		border: 1px solid #d7e2dc;
+		border-radius: 12px;
+		background: #fffffff5;
+		box-shadow: 0 5px 22px #183d3312;
+		font-size: 12px;
+	}
+	.proposal-placement-status small {
+		display: block;
+		margin-top: 3px;
+		font-size: 10px;
+		color: #617568;
+	}
+	.proposal-placement-status button,
+	.proposal-action-feedback button {
+		display: inline-flex;
+		padding: 4px;
+		border-radius: 5px;
+	}
+	.proposal-action-feedback button {
+		color: #16735a;
+		font-weight: 600;
+	}
+	.proposal-map-views {
+		display: flex;
+		gap: 2px;
+	}
+	.policy-bus-composer {
+		display: grid;
+		gap: 10px;
+		padding: 14px;
+		border: 1px solid #d9e3db;
+		border-radius: 12px;
+		background: #f7faf6;
+	}
+	.policy-bus-composer header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.policy-bus-composer h3 {
+		font-size: 15px;
+		margin: 0;
+	}
+	.policy-bus-composer p,
+	.policy-bus-composer small {
+		font-size: 11px;
+		line-height: 1.6;
+		color: #5b6f63;
+	}
+	.policy-bus-composer select {
+		width: 100%;
+		padding: 9px;
+		border: 1px solid #d6dfd8;
+		border-radius: 8px;
+		font-size: 12px;
+		background: white;
+	}
+	.bus-service-preview {
+		display: grid;
+		gap: 10px;
+		font-size: 12px;
+	}
+	.ferry-map-steps {
+		display: grid;
+		gap: 7px;
+	}
+	.ferry-map-steps button {
+		display: grid;
+		grid-template-columns: 24px 1fr;
+		column-gap: 7px;
+		text-align: left;
+		padding: 9px;
+		border: 1px solid #d9e3df;
+		border-radius: 9px;
+		background: white;
+	}
+	.ferry-map-steps span {
+		grid-row: 1/3;
+		align-self: center;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		background: #e0eee8;
+		width: 24px;
+		height: 24px;
+		font-size: 11px;
+		color: #1c6b52;
+	}
+	.ferry-map-steps strong {
+		font-size: 12px;
+	}
+	.ferry-map-steps small {
+		color: #577064;
+		font-size: 10px;
+		margin-top: 3px;
+	}
+	.proposal-map-views button:active,
+	.ferry-map-steps button:active,
+	.proposal-open-draft:active {
+		transform: scale(0.98);
+	}
+	.proposal-map-views button:disabled {
+		opacity: 0.55;
+		cursor: wait;
+	}
 	.policy-map-controls {
 		position: absolute;
 		right: calc(var(--map-controls-right, 18px) + 108px);
@@ -3110,23 +3811,6 @@
 		line-height: 1.5;
 		color: #7b8570;
 	}
-	.policy-live-benefit {
-		display: grid;
-		gap: 4px;
-		padding-bottom: 10px;
-		margin-bottom: 10px;
-		border-bottom: 1px solid #dde5d6;
-	}
-	.policy-live-benefit span,
-	.policy-live-benefit small {
-		font-size: 10px;
-		color: #6d7d60;
-	}
-	.policy-live-benefit strong {
-		font-size: 13px;
-		font-variant-numeric: tabular-nums;
-		color: #366144;
-	}
 	:global(.policy-inspect-trigger) {
 		max-width: 100%;
 		justify-content: flex-start;
@@ -3193,6 +3877,41 @@
 		}
 	}
 	@media (max-width: 700px) {
+		.proposal-action-feedback {
+			display: none;
+		}
+		.proposal-floating-budget {
+			top: 180px;
+			bottom: auto;
+			left: 10px;
+			right: 10px;
+			width: auto;
+		}
+		.proposal-floating-budget.placement-preview {
+			top: auto;
+			bottom: 10px;
+		}
+		.proposal-open-draft {
+			padding: 5px 12px;
+			font-size: 10px;
+		}
+		.proposal-placement-status {
+			top: calc(142px + var(--map-navigation-offset, 0px));
+			left: 10px;
+			right: 10px;
+			max-width: none;
+			padding: 9px 11px;
+		}
+		.proposal-action-feedback {
+			top: 142px;
+			bottom: auto;
+			left: 10px;
+			padding: 8px 10px;
+		}
+		.proposal-map-views button {
+			padding-inline: 7px;
+			font-size: 10px;
+		}
 		.policy-map-controls {
 			left: 12px;
 			right: 12px;
@@ -3256,21 +3975,6 @@
 		}
 		.policy-panel-tabs button {
 			padding-block: 8px;
-		}
-		.policy-live-benefit {
-			grid-template-columns: 1fr auto;
-			gap: 3px 6px;
-			padding-bottom: 6px;
-			margin-bottom: 6px;
-		}
-		.policy-live-benefit strong {
-			grid-column: 1/-1;
-			font-size: 11px;
-		}
-		.policy-live-benefit small {
-			grid-column: 2;
-			grid-row: 1;
-			font-size: 9px;
 		}
 		.policy-map-panel :global(input) {
 			font-size: 16px;

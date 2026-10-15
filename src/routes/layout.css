@@ -451,6 +451,14 @@
 .map-workspace.policy-panel-open .map-action-dock {
 	display: none;
 }
+@media (max-width: 700px) {
+	.map-workspace.placing-proposal .map-action-dock,
+	.map-workspace.placing-proposal .map-footer,
+	.map-workspace.placing-proposal .map-controls,
+	.map-workspace.placing-proposal .policy-map-controls {
+		display: none;
+	}
+}
 .map-workspace:has(.map-source-record-popup) .policy-map-controls {
 	visibility: hidden;
 }

@@ -13,6 +13,9 @@ export type PendingPlacementDecision = {
 	remaining?: number | null;
 	note?: string;
 	checking?: boolean;
+	actionLabel?: string;
+	annualRemaining?: number | null;
+	accessPreview?: { residents: number | null; label: string; approximate?: boolean };
 };
 export type MapPolicyState = {
 	operations: PlanningOperation[];
@@ -24,6 +27,7 @@ export type MapPolicyState = {
 	calculating: boolean;
 	stale: boolean;
 	panelOpen: boolean;
+	placementRoads?: { geometry?: number[][] }[];
 };
 export type MapEvaluation = PlanningEvaluation & { origins: PlanningComparison[] };
 export type MapBaseline = {
@@ -31,6 +35,16 @@ export type MapBaseline = {
 	cost_defaults: Record<string, number>;
 	graph_edges: { geometry?: number[][] }[];
 	warnings: string[];
+	stops?: PlanningPlace[];
+	patterns?: {
+		id: string;
+		name: string;
+		mode: string;
+		stopIds: string[];
+		geometry?: number[][];
+		segmentGeometries?: number[][][];
+		calendar?: { includedDates?: string[]; weekdays?: number[] };
+	}[];
 };
 export const emptyFeatures = (): FeatureCollection => ({ type: 'FeatureCollection', features: [] });
 

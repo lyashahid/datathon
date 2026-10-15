@@ -50,6 +50,7 @@ export type PlanningOperation = {
 	opening_date?: string;
 	service?: Record<string, unknown>;
 	metadata?: Record<string, unknown>;
+	headway_minutes?: number;
 };
 export const impactColors: Record<string, string> = {
 	gained: '#16866e',

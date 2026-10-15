@@ -475,7 +475,10 @@ try {
 			await expect(atlas).toHaveAttribute('data-policy-service-features', '0');
 			await expect(
 				planning.getByRole('button', { name: 'Review full impact', exact: true })
-			).not.toBeVisible();
+			).toBeDisabled();
+			await expect(
+				planning.getByRole('region', { name: 'Proposal budget', exact: true })
+			).toBeVisible();
 			return { remainingProposalPackages: 0, remainingServiceFeatures: 0 };
 		}
 	);

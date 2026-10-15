@@ -38,6 +38,32 @@ function contributions(cell: Feature): Contribution[] {
 	);
 }
 
+function journeyProvenance(parts: Contribution[], rows: Map<string, PlanningComparison>) {
+	const observed = parts.flatMap(({ origin_id }) => {
+		const row = rows.get(origin_id);
+		return row ? [row] : [];
+	});
+	return {
+		source_origin_ids: [...new Set(parts.map(({ origin_id }) => origin_id))],
+		before_destination_ids: [
+			...new Set(
+				observed.flatMap((row) => (row.before.destination_id ? [row.before.destination_id] : []))
+			)
+		],
+		after_destination_ids: [
+			...new Set(
+				observed.flatMap((row) => (row.after.destination_id ? [row.after.destination_id] : []))
+			)
+		],
+		before_reasons: [
+			...new Set(observed.flatMap((row) => (row.before.reason ? [row.before.reason] : [])))
+		],
+		after_reasons: [
+			...new Set(observed.flatMap((row) => (row.after.reason ? [row.after.reason] : [])))
+		]
+	};
+}
+
 function population(rows: Evidence[]): number | null {
 	if (!rows.length || rows.some((row) => row.weight === null)) return null;
 	return rows.reduce((total, row) => total + (row.weight ?? 0), 0);
@@ -151,13 +177,99 @@ export function displayImpactHexes(
 				properties: {
 					...cell.properties,
 					id: cell.properties?.id ?? cell.id,
+					view: 'improvement',
 					impact,
 					color: impactColors[impact],
 					population: population(rows),
 					...values,
 					display_grid: true,
+					...journeyProvenance(parts, byComparison),
 					source_origin_count: new Set(parts.map((part) => part.origin_id)).size,
 					partial_evidence: population(rows) === null || Object.values(values).includes(null)
+				}
+			};
+		})
+	};
+}
+
+export const accessColors: Record<string, string> = {
+	within_target: '#16866e',
+	beyond_target: '#dd806b',
+	mixed: '#d9ad54',
+	unavailable: '#a6a5b5',
+	unknown: '#b7c3c4'
+};
+
+/** Current and proposed access reuse the improvement mesh and the evaluated journey evidence. */
+export function displayAccessHexes(
+	origins: PlanningPlace[],
+	comparisons: PlanningComparison[],
+	mesh: FeatureCollection,
+	phase: 'before' | 'after',
+	targetMinutes: number
+): FeatureCollection {
+	if (!Number.isFinite(targetMinutes) || targetMinutes <= 0)
+		throw new RangeError('The journey target must be a positive number of minutes.');
+	const byOrigin = new Map(origins.map((origin) => [origin.id, origin]));
+	const byComparison = new Map(comparisons.map((row) => [row.origin_id, row]));
+	const impact = displayImpactHexes(origins, comparisons, mesh);
+	return {
+		...impact,
+		features: impact.features.map((cell) => {
+			const counts = { within_target: 0, beyond_target: 0, unavailable: 0, unknown: 0 };
+			let missingPopulation = false;
+			let unknownEvidence = false;
+			for (const { origin_id, share } of contributions(cell)) {
+				const row = byComparison.get(origin_id);
+				const count = residents(row?.population ?? byOrigin.get(origin_id)?.population2026);
+				if (count === null) {
+					missingPopulation = true;
+					continue;
+				}
+				if (count === 0) continue;
+				const journey = row?.[phase];
+				const minutes = numeric(journey?.minutes);
+				const key =
+					!journey ||
+					(journey.status !== 'reachable' && journey.status !== 'unavailable') ||
+					(journey.status === 'reachable' && (minutes === null || minutes < 0))
+						? 'unknown'
+						: journey.status === 'unavailable'
+							? 'unavailable'
+							: minutes! <= targetMinutes
+								? 'within_target'
+								: 'beyond_target';
+				if (key === 'unknown') unknownEvidence = true;
+				counts[key] += count * share;
+			}
+			const access =
+				missingPopulation || unknownEvidence || !cell.properties?.population
+					? 'unknown'
+					: counts.unavailable > 0
+						? 'unavailable'
+						: counts.within_target > 0 && counts.beyond_target > 0
+							? 'mixed'
+							: counts.beyond_target > 0
+								? 'beyond_target'
+								: 'within_target';
+			return {
+				...cell,
+				properties: {
+					...cell.properties,
+					view: phase,
+					access,
+					color: accessColors[access],
+					selected_minutes: cell.properties?.[phase] ?? null,
+					target_minutes: targetMinutes,
+					residents_within_target: counts.within_target,
+					residents_beyond_target: counts.beyond_target,
+					residents_unavailable: counts.unavailable,
+					residents_unknown: missingPopulation ? null : counts.unknown,
+					partial_evidence:
+						missingPopulation ||
+						unknownEvidence ||
+						counts.unavailable > 0 ||
+						!cell.properties?.population
 				}
 			};
 		})

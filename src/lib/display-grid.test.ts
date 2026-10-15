@@ -1,6 +1,11 @@
 import type { Feature, FeatureCollection, MultiPolygon } from 'geojson';
 import { describe, expect, it } from 'vitest';
-import { displayGapHexes, displayImpactHexes } from './display-grid.js';
+import {
+	accessColors,
+	displayAccessHexes,
+	displayGapHexes,
+	displayImpactHexes
+} from './display-grid.js';
 import { impactColors } from './planning-map.js';
 import type { PlanningComparison, PlanningJourney, PlanningPlace } from './planning-map.js';
 
@@ -255,6 +260,118 @@ describe('display impact grid', () => {
 			delta: null,
 			partial_evidence: true
 		});
+	});
+});
+
+describe('current and proposed access views', () => {
+	it('reuses identical clipped cell geometry and IDs for every phase with real evaluated times', () => {
+		const rows = comparisons();
+		const grid = mesh();
+		const current = displayAccessHexes(origins, rows, grid, 'before', 30);
+		const proposed = displayAccessHexes(origins, rows, grid, 'after', 30);
+		expect(current.features[0].geometry).toBe(grid.features[0].geometry);
+		expect(proposed.features[0].geometry).toBe(grid.features[0].geometry);
+		expect(current.features[0].properties).toMatchObject({
+			id: 'hex:1',
+			view: 'before',
+			before: 30,
+			after: 20,
+			selected_minutes: 30,
+			access: 'mixed',
+			color: accessColors.mixed,
+			population: 50,
+			residents_within_target: 25,
+			residents_beyond_target: 25
+		});
+		expect(proposed.features[0].properties).toMatchObject({
+			id: 'hex:1',
+			view: 'after',
+			selected_minutes: 20,
+			access: 'within_target',
+			color: accessColors.within_target,
+			residents_within_target: 50,
+			residents_beyond_target: 0
+		});
+		expect(current.features.reduce((sum, cell) => sum + cell.properties!.population, 0)).toBe(150);
+	});
+
+	it('distinguishes an evaluated missing route from missing evidence and unchanged access', () => {
+		const rows = comparisons();
+		rows[1].after = journey(null);
+		expect(
+			displayAccessHexes(origins, rows, mesh(), 'after', 30).features[0].properties
+		).toMatchObject({
+			access: 'unavailable',
+			color: accessColors.unavailable,
+			residents_unavailable: 25,
+			selected_minutes: null
+		});
+		expect(
+			displayAccessHexes(origins, rows.slice(0, 1), mesh(), 'after', 30).features[0].properties
+		).toMatchObject({
+			access: 'unknown',
+			color: accessColors.unknown,
+			residents_unknown: 25
+		});
+		for (const row of rows) {
+			row.before = journey(20);
+			row.after = journey(20);
+			row.delta_minutes = 0;
+		}
+		expect(displayImpactHexes(origins, rows, mesh()).features[0].properties?.impact).toBe(
+			'unchanged'
+		);
+		expect(
+			displayAccessHexes(origins, rows, mesh(), 'after', 30).features[0].properties?.access
+		).toBe('within_target');
+	});
+
+	it('can show known proposed access even when baseline evidence is unavailable', () => {
+		const rows = comparisons();
+		rows[0].before = journey(null);
+		rows[0].delta_minutes = null;
+		const result = displayAccessHexes(origins, rows, mesh(), 'after', 30);
+		expect(result.features[0].properties).toMatchObject({
+			access: 'within_target',
+			selected_minutes: 20,
+			before: null,
+			delta: null,
+			partial_evidence: false
+		});
+		expect(
+			displayAccessHexes(origins, rows, mesh(), 'before', 30).features[0].properties?.access
+		).toBe('unavailable');
+	});
+
+	it('retains real destination provenance for explanations without inventing causal links', () => {
+		const rows = comparisons();
+		rows[0].before.destination_id = 'hospital:old';
+		rows[0].after.destination_id = 'proposal:add_hospital:test';
+		rows[1].after.destination_id = 'hospital:existing';
+		expect(displayImpactHexes(origins, rows, mesh()).features[0].properties).toMatchObject({
+			view: 'improvement',
+			source_origin_ids: ['origin:1', 'origin:2'],
+			before_destination_ids: ['hospital:old'],
+			after_destination_ids: ['proposal:add_hospital:test', 'hospital:existing']
+		});
+	});
+
+	it('keeps invalid time or resident evidence unknown and rejects invalid journey targets', () => {
+		const rows = comparisons();
+		rows[0].after.minutes = -1;
+		expect(
+			displayAccessHexes(origins, rows, mesh(), 'after', 30).features[0].properties?.access
+		).toBe('unknown');
+		rows[0].population = -1;
+		expect(
+			displayAccessHexes(origins, rows, mesh(), 'after', 30).features[0].properties
+		).toMatchObject({
+			access: 'unknown',
+			population: null,
+			residents_unknown: null
+		});
+		for (const target of [0, -1, Number.NaN, Number.POSITIVE_INFINITY])
+			expect(() => displayAccessHexes(origins, rows, mesh(), 'after', target)).toThrow(RangeError);
 	});
 });
 

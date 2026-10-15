@@ -126,9 +126,15 @@
 	let policyLens = $state<PolicyLens>('overall');
 	let policyCommand = $state<{
 		id: number;
-		kind: 'inspect' | 'gaps' | 'compose' | 'close' | 'confirm' | 'cancel-placement';
+		kind:
+			'inspect' | 'gaps' | 'compose' | 'close' | 'confirm' | 'cancel-placement' | 'adjust-budget';
 	} | null>(null);
 	let policyMove = $state<{ id: number; index: number; coordinates: Coordinates } | null>(null);
+	let policyEdit = $state<{
+		id: number;
+		index: number;
+		action: 'move' | 'duplicate' | 'remove';
+	} | null>(null);
 	let policyPickKind = $state<PlacementKind | null>(null);
 	let policyState = $state.raw<MapPolicyState>({
 		operations: [],
@@ -146,7 +152,8 @@
 	let connectionOriginId = $state('island:1442');
 	let connectionDestinationId = $state('');
 	let journeyKind = $state<'local' | 'islands'>('local');
-	let islandPick = $state<'origin' | 'destination' | 'ferry' | null>(null);
+	let islandPick = $state<'origin' | 'destination' | 'ferry' | 'ferry-origin' | null>(null);
+	let ferryOriginContext = $state<{ destination: string; date: string } | null>(null);
 	let ferryDestinationId = $state<string | null>(null);
 	let focusBounds = $state<{ id: number; bounds: [Coordinates, Coordinates] } | null>(null);
 	function focusConnection(bounds: [Coordinates, Coordinates]) {
@@ -186,7 +193,8 @@
 	let inspectedCell = $state<Record<string, unknown> | null>(null);
 	let policySequence = 0;
 	function policyAction(
-		kind: 'inspect' | 'gaps' | 'compose' | 'close' | 'confirm' | 'cancel-placement'
+		kind:
+			'inspect' | 'gaps' | 'compose' | 'close' | 'confirm' | 'cancel-placement' | 'adjust-budget'
 	) {
 		policyCommand = { id: ++policySequence, kind };
 	}
@@ -830,6 +838,13 @@
 	}
 	function inspectIsland(id: string) {
 		if (islandPick) {
+			if (islandPick === 'ferry-origin') {
+				const context = ferryOriginContext;
+				islandPick = null;
+				if (context)
+					proposeFerry(id, context.destination === id ? '' : context.destination, context.date);
+				return;
+			}
 			if (islandPick === 'ferry') ferryDestinationId = id;
 			else {
 				if (islandPick === 'origin') connectionOriginId = id;
@@ -880,10 +895,13 @@
 	}
 	function cancelPick() {
 		if (islandPick) {
-			if (islandPick !== 'ferry') panelOpen = true;
+			if (islandPick === 'ferry' || islandPick === 'ferry-origin') policyAction('compose');
+			else panelOpen = true;
 			islandPick = null;
 			return;
 		}
+		if (pickMode === 'proposal' || policyPickKind || policyState.pending)
+			policyAction('cancel-placement');
 		const wasJourney = pickMode === 'start' || pickMode === 'end';
 		pickMode = null;
 		policyPickKind = null;
@@ -1472,6 +1490,7 @@
 			class:panel-hidden={!panelOpen}
 			class:panel-expanded={panelExpanded && panelOpen}
 			class:policy-panel-open={policyState.panelOpen}
+			class:placing-proposal={!!policyPickKind || !!policyState.pending}
 			class:conditions-panel-open={tab === 'explore' && exploreView === 'conditions'}
 			class:access-exploring={showAccessExplorer}
 			class:country-overview={!selectedId}
@@ -1503,13 +1522,18 @@
 						policyOperations={accessExplorerOpen ? emptyOperations : policyState.operations}
 						pendingProposal={accessExplorerOpen ? null : policyState.pending}
 						pendingPlacementDecision={accessExplorerOpen ? null : policyState.pendingDecision}
+						placementKind={policyPickKind}
+						placementRoads={policyState.placementRoads ?? []}
 						onconfirmproposal={() => policyAction('confirm')}
 						oncancelproposal={() => policyAction('cancel-placement')}
+						onadjustbudget={() => policyAction('adjust-budget')}
 						policyCalculating={policyState.calculating}
 						policyStale={policyState.stale}
 						onmoveproposal={(index, coordinates) =>
 							(policyMove = { id: ++policySequence, index, coordinates })}
 						onfocusproposal={startIslandProposal}
+						oneditproposal={(index, action) =>
+							(policyEdit = { id: ++policySequence, index, action })}
 						ondropplacement={(point, kind) => placeProposal(point, kind)}
 						oninspectgap={(properties) => {
 							accessExplorerOpen = false;
@@ -1585,6 +1609,7 @@
 					{incomingOperation}
 					onConsume={() => (incomingOperation = null)}
 					moved={policyMove}
+					edited={policyEdit}
 					cell={inspectedCell}
 					onLensChange={(lens) => {
 						policyLens = lens;
@@ -1600,6 +1625,11 @@
 					onFocus={focusPolicyPoint}
 					onFocusBounds={focusConnection}
 					{ferryDestinationId}
+					onPickFerryOrigin={(destination, date) => {
+						ferryOriginContext = { destination, date };
+						islandPick = 'ferry-origin';
+						panelOpen = false;
+					}}
 					onPickFerryDestination={(enabled) => {
 						islandPick = enabled ? 'ferry' : null;
 						if (!enabled) ferryDestinationId = null;
@@ -1685,15 +1715,15 @@
 				</div>{/if}
 			{#if islandPick}<div class="pick-banner" role="status">
 					<MapPin size={18} /><span
-						>Choose {islandPick === 'origin'
+						>Choose {islandPick === 'origin' || islandPick === 'ferry-origin'
 							? 'your starting island'
 							: 'a destination island'}<small>Click an island on the map · Escape to cancel</small
 						></span
 					><Button variant="ghost" size="sm" onclick={cancelPick}>Cancel</Button>
 				</div>{/if}
-			{#if pickMode}<div class="pick-banner" role="status">
+			{#if pickMode && pickMode !== 'proposal'}<div class="pick-banner" role="status">
 					<LocateFixed size={18} /><span
-						>{pickMode === 'operation' || pickMode === 'proposal'
+						>{pickMode === 'operation'
 							? 'Choose a location for your proposal'
 							: pickMode === 'start'
 								? 'Where will you start?'
