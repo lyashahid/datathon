@@ -6,7 +6,7 @@ import { chromium, expect as playwrightExpect } from '@playwright/test';
 
 // Production assets and real API responses. The recovery check aborts one asset
 // request to reproduce a transport failure; it never substitutes application data.
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5181';
+const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
 const output = path.resolve('artifacts/qa/code-visual-audit');
 const client = path.resolve('.svelte-kit/output/client');
 const manifest = JSON.parse(await readFile(path.join(client, '.vite/manifest.json'), 'utf8'));

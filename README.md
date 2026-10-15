@@ -103,6 +103,7 @@ npm run test:browser:map-focus
 npm run test:browser:bus-vehicles
 npm run test:browser:unified-policy-journey
 npm run test:browser:policy-drag
+node scripts/verify-analytics-redesign.mjs
 npm run test:browser
 npm run test:policy-api
 npm run test:browser:forecasts
@@ -121,6 +122,6 @@ npm run test:browser:map-first-conditions
 npm run test:browser:map-first-places
 ```
 
-Set `MOBILITY_QA_URL` to test another frontend URL. For production-preview verification, run `npm run build`, start `npm run preview -- --host 127.0.0.1 --port 5180`, keep FastAPI running, and set the harness URL to http://127.0.0.1:5180.
+Browser harnesses default to http://127.0.0.1:5173, matching `npm start`. Set `MOBILITY_QA_URL` only to test another frontend URL. For production-preview verification, run `npm run build`, start `npm run preview -- --host 127.0.0.1 --port 5180`, keep FastAPI running, and set the harness URL to http://127.0.0.1:5180.
 
 The current adapter supports local preview; deploying requires an adapter appropriate to the target host and a reachable FastAPI service. Private source caches and environment files remain ignored.

@@ -3,7 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium, expect } from '@playwright/test';
 
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5181';
+const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
 const output = path.resolve('artifacts/qa/engaged-map');
 await mkdir(output, { recursive: true });
 /** @type {{baseURL:string,startedAt:string,finishedAt?:string,checks:Array<{name:string,status:string,detail?:unknown}>,errors:string[]}} */

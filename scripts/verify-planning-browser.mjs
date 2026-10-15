@@ -15,7 +15,7 @@ import { chromium, expect as playwrightExpect } from '@playwright/test';
 /** @typedef {{id:string,status:string}} Notice */
 /** @typedef {{name:string,status:string,milliseconds:number,detail?:unknown,message?:string}} Check */
 
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5180';
+const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
 const output = path.resolve('artifacts/qa/planning');
 await mkdir(output, { recursive: true });
 const expect = playwrightExpect.configure({ timeout: 45000 });

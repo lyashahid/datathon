@@ -4,7 +4,7 @@ import path from 'node:path';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
 // Read real source geometry and drive real map gestures; no mocked data or injected app state.
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5181';
+const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
 const phase = process.env.MOBILITY_QA_PHASE === 'before' ? 'before' : 'after';
 const output = path.resolve('artifacts/qa/continuous-hex-map', phase);
 await mkdir(output, { recursive: true });

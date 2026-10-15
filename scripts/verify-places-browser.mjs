@@ -6,7 +6,7 @@ import { chromium, expect as playwrightExpect } from '@playwright/test';
 // This verification reads real frontend/backend responses and public source data.
 // It never replaces provider responses or changes the policy baseline. Notice
 // verification creates one clearly labeled QA example and dismisses it afterward.
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5180';
+const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
 const output = path.resolve('artifacts/qa/places-operations');
 const expect = playwrightExpect.configure({ timeout: 30000 });
 await mkdir(output, { recursive: true });

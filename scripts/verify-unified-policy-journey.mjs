@@ -6,7 +6,7 @@ import { chromium, expect as playwrightExpect } from '@playwright/test';
 
 // Verify real endpoint evidence, user gestures and the downloaded decision brief.
 // This journey does not replace responses, inject application state or fabricate access.
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5181';
+const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
 const output = path.resolve('artifacts/qa/unified-policy-journey');
 await mkdir(output, { recursive: true });
 const expect = playwrightExpect.configure({ timeout: 90000 });
@@ -204,7 +204,9 @@ try {
 	await check(
 		'Analytics distinguishes review signals from missing evidence and hands the chosen service to the same map',
 		async () => {
-			await expect(priorities.getByText('Insufficient evidence', { exact: true })).toBeVisible();
+			await expect(
+				priorities.locator('.screening-legend').getByText('Insufficient evidence', { exact: true })
+			).toBeVisible();
 			await selectSector(domain);
 			await priorities.getByRole('button', { name: new RegExp(`^${queue}`) }).click();
 			await priorities

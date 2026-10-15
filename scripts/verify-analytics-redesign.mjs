@@ -4,7 +4,7 @@ import path from 'node:path';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
 // Verify real data and user gestures against the built application; responses are never replaced.
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5181';
+const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
 const output = path.resolve('artifacts/qa/analytics-redesign');
 await mkdir(output, { recursive: true });
 const expect = playwrightExpect.configure({ timeout: 60000 });
