@@ -465,6 +465,9 @@ class ComputedCache:
                     payload = await compute()
                     await run_in_threadpool(self._finish, key, payload, shareable)
                 future.set_result(payload)
+            except asyncio.CancelledError:
+                future.cancel()
+                raise
             except BaseException as error:
                 future.set_exception(error)
             finally:
@@ -494,7 +497,8 @@ class ComputedCache:
                 await asyncio.sleep(0.05)
             if time.monotonic() >= deadline:
                 break
-            self.shared.enqueue(key, encode(payload))
+            stored = await run_in_threadpool(encode, payload)
+            self.shared.enqueue(key, stored)
         while self.shared._queue.unfinished_tasks and time.monotonic() < deadline:
             await asyncio.sleep(0.05)
 
@@ -523,6 +527,17 @@ class ComputedCache:
     def close(self) -> None:
         if self.shared:
             self.shared.close()
+
+    async def aclose(self) -> None:
+        """Stop detached calculations when the application itself shuts down."""
+        workers = tuple(self._async_workers)
+        try:
+            for worker in workers:
+                worker.cancel()
+            if workers:
+                await asyncio.gather(*workers, return_exceptions=True)
+        finally:
+            self.close()
 
 
 class SourceVersion:

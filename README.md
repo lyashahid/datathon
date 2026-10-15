@@ -19,6 +19,8 @@ npm start
 
 Open http://localhost:5173. `npm start` prepares FastAPI on http://127.0.0.1:8000 and serves an optimized Node frontend. The first start builds it; later starts reuse the build until source, dependencies or build settings change. `npm run dev` starts both services with Vite hot reload for editing. Both launchers can reuse a healthy Mobility Sandbox API. Stop services started by the launcher with Ctrl+C.
 
+Analytics and supported island planning calculations warm automatically in the background. The app serves requests without waiting for that work: country snapshots warm first, followed by the heavier analytics and planning views. Saved memory, local-disk and optional PostgreSQL results are reused. Just use `npm start`; no separate precompute command is required. See [automatic background preparation](docs/performance.md#automatic-background-preparation) for coverage and maintenance options.
+
 On a minimal Linux installation, Chromium may also need operating-system libraries. Install them once with `npm run setup -- --with-system-deps` (the package manager may ask for sudo). See [Playwright's system-dependency documentation](https://playwright.dev/python/docs/browsers#install-system-dependencies).
 
 See [the complete setup, configuration and troubleshooting guide](docs/clone-and-run.md) for Windows/macOS/Linux prerequisites, first-start behavior, optional overrides, data coverage, tests and production-preview commands.

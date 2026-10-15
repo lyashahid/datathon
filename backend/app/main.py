@@ -33,7 +33,7 @@ from app.api.routes.recommendations import router as recommendations_router
 from app.api.routes.routing import router as routing_router
 from app.api.routes.simulation import router as simulation_router
 from app.api.snapshot_cache import SnapshotCacheMiddleware
-from app.cli.precompute import warm_application
+from app.cli.precompute import precompute_startup
 from app.conditions.service import ConditionsService
 from app.config.settings import Settings
 from app.data.computed_cache import ComputedCache, SourceVersion
@@ -76,10 +76,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         try:
             async with places_lifespan(_app):
                 warmup = (
-                    asyncio.create_task(warm_application(app))
+                    asyncio.create_task(precompute_startup(app), name="mobility-startup-precompute")
                     if app_settings.computed_cache_prewarm and app_settings.environment != "test"
                     else None
                 )
+                app.state.precompute_task = warmup
                 try:
                     yield
                 finally:
@@ -89,7 +90,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                         await asyncio.gather(warmup, return_exceptions=True)
         finally:
             await app.state.conditions.close()
-            app.state.computed_cache.close()
+            await app.state.computed_cache.aclose()
         logger.info("Stopping %s", app_settings.app_name)
 
     app = FastAPI(

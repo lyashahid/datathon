@@ -98,10 +98,23 @@ contain only public, optional settings.
 
 The API reuses exact calculations in bounded memory and compressed files under
 ignored `backend/data/runtime/computed-json-v1/`. A fresh clone works with those
-local caches automatically. Canonical country geometry, scores and published
-passenger history warm in the background after startup. To prepare the full
-analytics and three supported island planning views before using them, run from
-the repository root:
+local caches automatically. Startup prepares country snapshots first, followed by
+heavier analytics and the three supported island planning views in the background.
+The API serves requests without waiting for this preparation. Jobs run sequentially
+and reuse valid memory, local-disk and optional PostgreSQL results.
+
+The automatic preparation covers 23 views: country geometry, scores, summary and
+passenger history; fitted forecasts, data analysis and the dataset catalogue;
+planning opportunities; profiles, baselines and gap views for each supported
+island; and six default health/education baseline impact calculations. Each failed
+job is retried once without blocking the other jobs. Shutdown cancels remaining
+work. `MOBILITY_COMPUTED_CACHE_PREWARM=false` disables all startup preparation;
+the default is `true`. Restart an already running backend to apply changed
+settings.
+
+No separate command is required: `npm start` includes this workflow. For
+maintenance, the same preparation can still be run explicitly from the repository
+root:
 
 ```powershell
 npm run precompute
@@ -113,11 +126,11 @@ Or from `backend/`:
 uv run python -m app.cli.precompute --include-planning
 ```
 
-The command prepares 23 public views, including country snapshots, forecasts,
-data analysis, planning opportunities, island profiles and six default health/
-education impact calculations. It reports timings and cache status without
-printing credentials. `--skip-analysis` omits fitted forecasts and data analysis.
-Normal startup warms only the four small country/history views.
+The command reports timings and cache status without printing credentials.
+`--skip-analysis` omits fitted forecasts and data analysis. Neither automatic nor
+explicit preparation precomputes arbitrary user scenarios: new proposals still
+calculate their actual operations and assumptions. Requests arriving before a view
+is prepared calculate normally and can share an identical in-flight calculation.
 
 For cross-machine reuse, optionally set `MOBILITY_DATABASE_URL` in ignored
 `backend/.env`. The example file intentionally contains no connection string.
@@ -170,13 +183,13 @@ runtime/browser method is documented in [the performance guide](../docs/performa
 
 The clone runs directly from these checked-in inputs:
 
-| Location | Purpose |
-| --- | --- |
-| `data/public/` | Planning baseline, passenger histories, timetables, calibration and source evidence |
-| `backend/data/cache/normalized/` | National island, facility, population and transport catalogues |
-| `backend/data/cache/graphs/` | Precomputed land, marine and airport routing graphs |
-| `backend/data/cache/derived/` | Accessibility scores, demand anchors, national summary and OSM roads/buildings |
-| `backend/vendor/vela_api/data/` | Pinned Vela calibration and browser collector scripts |
+| Location                         | Purpose                                                                             |
+| -------------------------------- | ----------------------------------------------------------------------------------- |
+| `data/public/`                   | Planning baseline, passenger histories, timetables, calibration and source evidence |
+| `backend/data/cache/normalized/` | National island, facility, population and transport catalogues                      |
+| `backend/data/cache/graphs/`     | Precomputed land, marine and airport routing graphs                                 |
+| `backend/data/cache/derived/`    | Accessibility scores, demand anchors, national summary and OSM roads/buildings      |
+| `backend/vendor/vela_api/data/`  | Pinned Vela calibration and browser collector scripts                               |
 
 The corresponding source manifests and checksum metadata remain with the
 snapshots. Acquisition originals in `data/raw/` and
@@ -220,7 +233,7 @@ every island** in the map catalogue. `POST /api/v1/accessibility/score` calculat
 one island using the default or a supplied scoring policy:
 
 ```json
-{"island_id": "island:1443"}
+{ "island_id": "island:1443" }
 ```
 
 Every result includes an `assessment` with `score`, `out_of`, `label`, `summary`,

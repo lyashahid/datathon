@@ -20,15 +20,25 @@ The backend loads national geography and planning source artifacts as a snapshot
 
 The Node proxy streams fast gzip for JSON responses, forwards source validators and handles 304 responses. Static JavaScript, CSS and other build assets are precompressed by the Node adapter.
 
-## Optional shared PostgreSQL
+## Automatic background preparation
 
-Precompute the country view, historical charts, forecasts, data analysis and supported island planning baselines before a presentation or after a source update:
+`npm start` is the only normal startup command. Once the backend starts, it prepares the common analytics and supported island planning views automatically, while continuing to serve requests. It does not delay application readiness until the heavier work completes. Country geography, scores, summary and passenger history are prepared first; forecasts, data analysis, the dataset catalogue and planning views follow sequentially.
+
+The full preparation covers 23 views: four country/history snapshots, three analytics views, planning opportunities, a profile/baseline/gap view for each of the three supported islands, and six default health/education baseline impact calculations. The same source-versioned cache paths serve real requests, so valid memory, local-disk and optional PostgreSQL results are reused rather than recalculated. Public results can also be mirrored to the shared database.
+
+Each failed job is retried once in the background; a failure does not prevent the remaining jobs from running. Shutdown cancels remaining work. Set `MOBILITY_COMPUTED_CACHE_PREWARM=false` in an ignored backend environment file to disable the entire startup warmup. A reused, already running backend retains its existing settings until restarted.
+
+A first request arriving before its view is prepared calculates normally and shares an identical in-flight calculation where supported. New or changed proposals still evaluate their exact operations and assumptions; startup does not precompute every possible scenario. Preparation reuses the included evidence and does not ingest new source data or change its dates.
+
+For maintenance, the same full preparation can still be run explicitly, for example after restarting with updated source files:
 
 ```sh
 npm run precompute
 ```
 
-This explicit command seeds local results and, when configured, the shared database. It does not ingest new source data. Normal startup also warms the small country snapshots in the background; a fresh clone can simply use `npm start`.
+This optional command reports job timings and cache status and seeds local results and, when configured, the shared database. It is not required for normal use.
+
+## Optional shared PostgreSQL
 
 A fresh clone needs no database configuration: local caching works automatically. To share deterministic results across machines, set `MOBILITY_DATABASE_URL` in ignored `backend/.env`. Keep the connection string server-side. It is excluded from Git and browser assets.
 

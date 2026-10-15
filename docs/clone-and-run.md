@@ -24,6 +24,8 @@ npm start
 
 `npm ci` installs the exact JavaScript versions in `package-lock.json`. `npm start` builds and serves an optimized Node frontend, prepares the backend using `backend/uv.lock`, prepares Chromium for the backend review collector and checks readiness. Subsequent starts reuse the frontend build until its inputs change. You do not need to copy the example environment files.
 
+The backend automatically prepares heavier analytics and supported island planning views in the background, starting with the country map, scores and passenger history. The application serves requests without waiting for that preparation. Jobs run sequentially and reuse valid saved results from memory, local disk and optional PostgreSQL. A failed job is retried once without blocking the other jobs. No separate command is needed; a first request made before its view is prepared calculates normally. Custom proposals still calculate their actual inputs. See [the preparation coverage](performance.md#automatic-background-preparation).
+
 | Service                                | Default address                               |
 | -------------------------------------- | --------------------------------------------- |
 | Application                            | http://127.0.0.1:5173                         |
@@ -32,6 +34,8 @@ npm start
 | Vela API documentation through the app | http://127.0.0.1:5173/api/backend/places/docs |
 
 Startup reports the frontend URL in the terminal. Stop with Ctrl+C; the launcher stops services it created. A compatible backend that was already running is reused and remains running.
+
+When the backend stops, it cancels its remaining background preparation. An already running backend keeps the warmup settings with which it was started; restart it to apply changed settings or model/source files.
 
 Later starts use the same command:
 
@@ -73,13 +77,14 @@ Live weather, marine conditions, traffic, ships, aircraft, buses and Vela provid
 
 The application already defines all required defaults. The committed `.env.example` and `backend/.env.example` are reference templates, not setup requirements.
 
-| Setting                    | Default                        | Change only when                                                                             |
-| -------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------- |
-| `MOBILITY_BACKEND_URL`     | `http://127.0.0.1:8000`        | The frontend should call a separately managed backend.                                       |
-| `VELA_API_KEY`             | Empty; local service anonymous | You deliberately secure the Vela API; the proxy and backend must share the same private key. |
-| `VELA_BROWSER_ENABLED`     | `true` for the local workflow  | You want to turn browser-based review collection off.                                        |
-| `MOBILITY_DATA_DIR`        | This checkout's `backend/data` | You deliberately maintain another compatible backend dataset.                                |
-| `MOBILITY_PUBLIC_DATA_DIR` | This checkout's `data/public`  | You deliberately maintain another compatible planning/public snapshot.                       |
+| Setting                           | Default                        | Change only when                                                                             |
+| --------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------- |
+| `MOBILITY_BACKEND_URL`            | `http://127.0.0.1:8000`        | The frontend should call a separately managed backend.                                       |
+| `VELA_API_KEY`                    | Empty; local service anonymous | You deliberately secure the Vela API; the proxy and backend must share the same private key. |
+| `VELA_BROWSER_ENABLED`            | `true` for the local workflow  | You want to turn browser-based review collection off.                                        |
+| `MOBILITY_DATA_DIR`               | This checkout's `backend/data` | You deliberately maintain another compatible backend dataset.                                |
+| `MOBILITY_PUBLIC_DATA_DIR`        | This checkout's `data/public`  | You deliberately maintain another compatible planning/public snapshot.                       |
+| `MOBILITY_COMPUTED_CACHE_PREWARM` | `true`                         | Set `false` to disable automatic country, analytics and planning preparation.                |
 
 Root `.env` values are loaded by the launcher and frontend tooling. Backend-specific options can live in `backend/.env`; inherited process settings take precedence. See [backend configuration](../backend/README.md) for the complete precedence and path behavior.
 
