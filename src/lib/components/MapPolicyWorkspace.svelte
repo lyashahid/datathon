@@ -1637,7 +1637,7 @@
 <style>
 	.policy-lens-bar {
 		position: absolute;
-		top: 15px;
+		top: calc(15px + var(--map-navigation-offset, 0px));
 		left: 50%;
 		transform: translateX(-50%);
 		z-index: 5;
@@ -1685,7 +1685,7 @@
 	.policy-map-panel {
 		position: absolute;
 		right: 18px;
-		top: 76px;
+		top: calc(76px + var(--map-navigation-offset, 0px));
 		bottom: 20px;
 		width: 370px;
 		z-index: 7;
@@ -2221,7 +2221,7 @@
 	:global(.policy-inspect-trigger) {
 		position: absolute;
 		right: 18px;
-		top: 15px;
+		top: calc(15px + var(--map-navigation-offset, 0px));
 		z-index: 5;
 		font-size: 12px;
 		box-shadow: 0 3px 10px #24402412;
@@ -2249,18 +2249,18 @@
 		.policy-lens-bar {
 			left: 18px;
 			transform: none;
-			top: 65px;
+			top: calc(65px + var(--map-navigation-offset, 0px));
 		}
 		.policy-lens-bar > span {
 			display: none;
 		}
 		.policy-map-panel {
-			top: 116px;
+			top: calc(116px + var(--map-navigation-offset, 0px));
 			bottom: 16px;
 			width: 340px;
 		}
 		:global(.policy-inspect-trigger) {
-			top: 15px;
+			top: calc(15px + var(--map-navigation-offset, 0px));
 		}
 		.policy-recalculating {
 			left: 20px;
@@ -2270,12 +2270,12 @@
 	}
 	@media (max-width: 640px) {
 		:global(.policy-inspect-trigger) {
-			top: 116px;
+			top: calc(116px + var(--map-navigation-offset, 0px));
 			left: 12px;
 			right: auto;
 		}
 		.policy-lens-bar {
-			top: 64px;
+			top: calc(64px + var(--map-navigation-offset, 0px));
 			left: 12px;
 			right: 12px;
 			justify-content: space-between;
@@ -2343,7 +2343,7 @@
 			display: none;
 		}
 		:global(.policy-inspect-trigger) {
-			top: 116px;
+			top: calc(116px + var(--map-navigation-offset, 0px));
 			right: auto;
 			max-width: calc(100% - 72px);
 			font-size: 11px;

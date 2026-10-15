@@ -612,7 +612,6 @@ try {
 			await page.screenshot({ path: path.join(output, 'forecast-review-mobile.png') });
 			await review.getByRole('button', { name: 'Back to map', exact: true }).click();
 			const existingCosts = await budget.locator('.cost-values').innerText();
-			await page.getByLabel('Open workspace menu', { exact: true }).click();
 			await page
 				.getByRole('navigation', { name: 'Workspace', exact: true })
 				.getByRole('button', { name: 'Analytics', exact: true })

@@ -22,9 +22,7 @@
 		Route,
 		X,
 		RefreshCw,
-		Menu,
-		Layers,
-		GitBranch
+		Layers
 	} from '@lucide/svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
@@ -149,7 +147,6 @@
 		focusPoint = { id: ++policySequence, coordinates };
 	}
 	let tab = $state('explore');
-	let workspaceMenuOpen = $state(false);
 	let countryAtoll = $state<string | null>(null);
 	let accessExplorerOpen = $state(true);
 	let accessScores = $state.raw<NationalAccessibility | null>(null);
@@ -1167,20 +1164,13 @@
 >
 <svelte:window
 	onkeydown={(event) => {
-		if (event.key === 'Escape') {
-			cancelPick();
-			workspaceMenuOpen = false;
-		}
-	}}
-	onclick={(event) => {
-		if (event.target instanceof Element && !event.target.closest('.workspace-menu'))
-			workspaceMenuOpen = false;
+		if (event.key === 'Escape') cancelPick();
 	}}
 />
 <div class="app-shell" class:map-first-shell={isMapWorkspace}>
 	<a class="skip-link" href="#workspace-content">Skip to workspace</a>
-	{#if !isMapWorkspace}
-		<header class="app-header">
+	<header class="app-header" class:floating-map-header={isMapWorkspace}>
+		{#if !isMapWorkspace}
 			<a
 				class="brand"
 				href="/?view=overview"
@@ -1193,75 +1183,29 @@
 					>mobility<span class="brand-sub">SANDBOX / MALDIVES</span></span
 				></a
 			>
-			<nav aria-label="Workspace" class="navigation-island">
-				{#each tabs as item (item.id)}
-					<Button
-						variant="ghost"
-						class={tab === item.id ? 'nav-item active' : 'nav-item'}
-						aria-current={tab === item.id ? 'page' : undefined}
-						onclick={() => {
-							if (item.id === 'map') showCountry();
-							else go(item.id);
-						}}><item.icon size={16} /><span>{item.label}</span></Button
-					>
-				{/each}
-			</nav>
+		{/if}
+		<nav aria-label="Workspace" class="navigation-island">
+			{#each tabs as item (item.id)}
+				{@const active = tab === item.id || (item.id === 'map' && isMapWorkspace)}
+				<Button
+					variant="ghost"
+					class={active ? 'nav-item active' : 'nav-item'}
+					aria-current={active ? 'page' : undefined}
+					onclick={() => {
+						if (item.id === 'map') showCountry();
+						else go(item.id);
+					}}><item.icon size={16} /><span>{item.label}</span></Button
+				>
+			{/each}
+		</nav>
+		{#if !isMapWorkspace}
 			<div class="connection" title={connection}>
 				<span class:online={connection === 'Backend connected'}></span><span
 					>{connection === 'Backend connected' ? 'Data connected' : connection}</span
 				>
 			</div>
-		</header>
-	{:else}
-		<details class="workspace-menu" bind:open={workspaceMenuOpen}>
-			<summary aria-label="Open workspace menu"><Menu size={20} /></summary>
-			<div class="workspace-menu-content">
-				<strong>Maldives · Mobility Sandbox</strong>
-				<nav aria-label="Workspace">
-					{#each tabs as item (item.id)}<Button
-							variant="ghost"
-							aria-current={tab === item.id || (item.id === 'map' && isMapWorkspace)
-								? 'page'
-								: undefined}
-							onclick={() => {
-								if (item.id === 'map') showCountry();
-								else go(item.id);
-								workspaceMenuOpen = false;
-							}}><item.icon size={16} />{item.label}</Button
-						>{/each}
-					{#if selectedId && isMapWorkspace}
-						<Button
-							variant="ghost"
-							onclick={() => {
-								setProfileView('route');
-								workspaceMenuOpen = false;
-							}}><Route size={16} />Directions</Button
-						>
-						<Button
-							variant="ghost"
-							onclick={() => {
-								setExploreView('conditions');
-								workspaceMenuOpen = false;
-							}}><CloudSun size={16} />Weather & traffic</Button
-						>
-						<Button
-							variant="ghost"
-							onclick={() => {
-								setProposalView('edit');
-								workspaceMenuOpen = false;
-							}}><GitBranch size={16} />Network modelling</Button
-						>
-					{/if}
-				</nav>
-				<div class="connection" title={connection}>
-					<span class:online={connection === 'Backend connected'}></span>{connection ===
-					'Backend connected'
-						? 'Data connected'
-						: connection}
-				</div>
-			</div>
-		</details>
-	{/if}
+		{/if}
+	</header>
 	{#if fatalError}<div class="fatal" role="alert">
 			<Activity size={22} />
 			<div>

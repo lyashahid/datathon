@@ -238,7 +238,7 @@
 	.map-conditions-panel {
 		position: absolute;
 		right: 18px;
-		top: 76px;
+		top: calc(76px + var(--map-navigation-offset, 0px));
 		bottom: 20px;
 		z-index: 8;
 		width: 370px;
@@ -388,7 +388,7 @@
 	}
 	@media (max-width: 1100px) {
 		.map-conditions-panel {
-			top: 116px;
+			top: calc(116px + var(--map-navigation-offset, 0px));
 			width: 340px;
 		}
 	}

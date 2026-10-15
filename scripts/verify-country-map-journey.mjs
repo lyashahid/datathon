@@ -22,6 +22,7 @@ page.on('pageerror', (error) => report.pageErrors.push(error.message));
 const explorer = page.getByRole('region', { name: 'Accessibility explorer', exact: true });
 const atlas = page.locator('.national-map');
 const panel = page.getByRole('region', { name: 'Island needs and proposal', exact: true });
+const navigation = page.getByRole('navigation', { name: 'Workspace', exact: true });
 
 /** @param {string} name @param {()=>Promise<unknown>} action */
 async function check(name, action) {
@@ -127,7 +128,15 @@ async function fullMapViewport() {
 	assert.ok(Math.abs(bounds.y) <= 1, 'The map starts at the top of the viewport');
 	assert.ok(Math.abs(bounds.height - viewport.height) <= 1, 'The map fills the viewport height');
 	assert.ok(Math.abs(bounds.width - viewport.width) <= 1, 'The map fills the viewport width');
-	await expect(page.locator('.app-header')).toHaveCount(0);
+	await expect(page.locator('.app-header')).toHaveClass(/floating-map-header/);
+	await expect(navigation).toHaveClass(/navigation-island/);
+	await expect(navigation.getByRole('button')).toHaveCount(3);
+	for (const name of ['Analytics', 'Map & planning', 'Evidence'])
+		await expect(navigation.getByRole('button', { name, exact: true })).toBeInViewport();
+	await expect(
+		navigation.getByRole('button', { name: 'Map & planning', exact: true })
+	).toHaveAttribute('aria-current', 'page');
+	await expect(page.locator('.workspace-menu')).toHaveCount(0);
 	await expect(page.locator('.map-tool-nav')).toHaveCount(0);
 	return { bounds, ...(await noOverflow()) };
 }
@@ -363,9 +372,8 @@ try {
 			await drillAtoll(island.atoll);
 			await explorer.locator(`[data-island-id="${islandId}"]`).click();
 			await expect(explorer).not.toBeVisible();
-			await page.getByLabel('Open workspace menu', { exact: true }).click();
 			await page
-				.locator('.workspace-menu')
+				.locator('.map-action-dock')
 				.getByRole('button', { name: 'Directions', exact: true })
 				.click();
 			await expect(page).toHaveURL((url) => url.searchParams.get('profile') === 'route');
@@ -380,12 +388,8 @@ try {
 		}
 	);
 
-	await check('Analytics remains reachable from the compact workspace menu', async () => {
-		await page.getByLabel('Open workspace menu', { exact: true }).click();
-		await page
-			.getByRole('navigation', { name: 'Workspace', exact: true })
-			.getByRole('button', { name: 'Analytics', exact: true })
-			.click();
+	await check('Analytics remains directly reachable from the floating navigation', async () => {
+		await navigation.getByRole('button', { name: 'Analytics', exact: true }).click();
 		const dashboard = page.getByRole('region', { name: 'National analytics', exact: true });
 		await expect(dashboard).toBeVisible();
 		await expect(dashboard).toHaveAttribute('aria-busy', 'false');

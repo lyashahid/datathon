@@ -1964,78 +1964,61 @@ td {
 	font-weight: 500;
 }
 
+.app-header.floating-map-header {
+	position: fixed;
+	top: max(16px, env(safe-area-inset-top));
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 30;
+	display: block;
+	width: max-content;
+	max-width: calc(100% - 24px);
+	height: auto;
+	padding: 0;
+	border: 0;
+	background: transparent;
+}
+.floating-map-header .navigation-island {
+	width: auto;
+	margin: 0;
+	padding: 5px;
+	border-color: #ffffff80;
+	box-shadow:
+		0 0 0 3px #ffffffb3,
+		0 8px 24px #163a3b33,
+		0 2px 5px #163a3b26;
+}
+.floating-map-header .navigation-island .nav-item {
+	color: #e8efeb;
+	font-weight: 550;
+}
+.floating-map-header .navigation-island .nav-item.active {
+	color: #253d36;
+}
+.map-first-shell {
+	--map-navigation-offset: 68px;
+}
 .map-first-shell .workspace-body {
 	min-height: 100dvh;
-}
-.workspace-menu {
-	position: fixed;
-	top: 20px;
-	left: 20px;
-	z-index: 30;
-}
-.workspace-menu > summary {
-	display: grid;
-	place-items: center;
-	width: 44px;
-	height: 44px;
-	list-style: none;
-	cursor: pointer;
-	border: 1px solid #dbe5e1;
-	border-radius: 14px;
-	color: #25453c;
-	background: #fffffff5;
-	box-shadow: 0 5px 20px #16392b12;
-}
-.workspace-menu > summary::-webkit-details-marker {
-	display: none;
-}
-.workspace-menu-content {
-	position: absolute;
-	top: 54px;
-	left: 0;
-	width: 260px;
-	padding: 16px;
-	border: 1px solid #dbe5e1;
-	border-radius: 16px;
-	background: #fff;
-	box-shadow: 0 12px 40px #193b3024;
-}
-.workspace-menu-content > strong {
-	display: block;
-	margin: 0 4px 12px;
-	font-size: 12px;
-	color: #597368;
-}
-.workspace-menu-content nav {
-	display: grid;
-	gap: 3px;
-}
-.workspace-menu-content nav button {
-	justify-content: flex-start;
-	min-height: 44px;
-}
-.workspace-menu-content .connection {
-	margin: 12px 4px 0;
-	font-size: 11px;
 }
 .map-first-shell .map-workspace {
 	height: 100dvh;
 	min-height: 0;
-	--map-focus-top: 80px;
+	--map-focus-top: 148px;
 }
 .map-first-shell .map-workspace.access-exploring {
 	--map-focus-left: 370px;
 	--map-focus-right: 80px;
-	--map-focus-top: 65px;
+	--map-focus-top: 96px;
 	--map-focus-bottom: 75px;
 }
 .accessibility-map-overlay {
 	position: absolute;
-	top: 84px;
+	top: 88px;
 	left: 20px;
 	z-index: 6;
 	width: 310px;
-	max-height: calc(100dvh - 110px);
+	max-height: calc(100dvh - 114px);
 }
 .map-first-shell .accessibility-map-overlay > .country-accessibility-explorer {
 	max-height: inherit;
@@ -2052,29 +2035,53 @@ td {
 	display: none;
 }
 .map-first-shell .map-search-dock {
-	top: 20px;
-	left: 78px;
+	top: calc(20px + var(--map-navigation-offset));
+	left: 20px;
+}
+.map-first-shell .nearby-movement-controls {
+	top: calc(84px + var(--map-navigation-offset));
+}
+.map-first-shell .pick-banner {
+	top: calc(86px + var(--map-navigation-offset));
 }
 .map-first-shell .map-tool-sheet {
-	top: 76px;
+	top: calc(76px + var(--map-navigation-offset));
 	bottom: 20px;
 }
 .map-first-shell .workspace-subnav {
-	padding-left: 84px;
-	min-height: 84px;
-}
-.map-first-shell .evidence-page {
 	padding-top: 88px;
 }
+@media (min-width: 901px) {
+	.map-first-shell .detail-panel {
+		top: calc(24px + var(--map-navigation-offset));
+	}
+}
+@media (min-width: 641px) {
+	.map-first-shell .policy-inspect-trigger {
+		right: 68px;
+	}
+}
+@media (max-width: 1200px) {
+	.map-first-shell .nearby-movement-controls {
+		top: calc(115px + var(--map-navigation-offset));
+	}
+}
 @media (max-width: 700px) {
-	.workspace-menu {
-		top: 14px;
-		left: 14px;
+	.app-header.floating-map-header {
+		top: max(12px, env(safe-area-inset-top));
+	}
+	.floating-map-header .navigation-island .nav-item {
+		flex-direction: row;
+		gap: 6px;
+		height: 44px;
+		padding: 0 12px;
+		font-size: 11px;
+		border-radius: 999px;
 	}
 	.map-first-shell .map-workspace.access-exploring {
 		--map-focus-left: 24px;
 		--map-focus-right: 54px;
-		--map-focus-top: 115px;
+		--map-focus-top: 176px;
 		--map-focus-bottom: 43dvh;
 	}
 	.accessibility-map-overlay {
@@ -2089,15 +2096,15 @@ td {
 		display: none;
 	}
 	.map-first-shell .access-exploring.country-overview .national-map .map-footer {
-		top: 14px;
+		top: calc(14px + var(--map-navigation-offset));
 		bottom: auto;
-		left: 72px;
+		left: 14px;
 		right: auto;
 		max-width: 215px;
 	}
 	.map-first-shell .map-search-dock {
-		top: 14px;
-		left: 68px;
+		top: calc(14px + var(--map-navigation-offset));
+		left: 14px;
 		right: 14px;
 	}
 	.map-first-shell .map-search-dock .island-search-trigger {
@@ -2107,6 +2114,21 @@ td {
 		display: none;
 	}
 	.map-first-shell .workspace-subnav {
-		padding: 72px 14px 14px;
+		padding: 82px 14px 14px;
+	}
+}
+@media (max-width: 640px) {
+	.map-first-shell .nearby-movement-controls {
+		top: calc(156px + var(--map-navigation-offset));
+	}
+	.map-first-shell .pick-banner {
+		top: calc(74px + var(--map-navigation-offset));
+	}
+}
+@media (max-width: 359px) {
+	.floating-map-header .navigation-island .nav-item {
+		gap: 4px;
+		padding-inline: 8px;
+		font-size: 10px;
 	}
 }

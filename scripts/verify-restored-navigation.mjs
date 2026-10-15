@@ -22,6 +22,7 @@ const atlas = page.locator('.national-map');
 const explorer = page.getByRole('region', { name: 'Accessibility explorer', exact: true });
 const header = page.locator('.app-header');
 const planning = page.getByRole('region', { name: 'Island needs and proposal', exact: true });
+const navigation = page.getByRole('navigation', { name: 'Workspace', exact: true });
 
 /** @param {string} name @param {()=>Promise<unknown>} action */
 async function check(name, action) {
@@ -44,6 +45,69 @@ async function noOverflow() {
 		.toBe(true);
 }
 
+async function floatingNavigation() {
+	await expect(header).toHaveClass(/floating-map-header/);
+	await expect(navigation).toHaveClass(/navigation-island/);
+	await expect(navigation.getByRole('button')).toHaveCount(3);
+	for (const name of ['Analytics', 'Map & planning', 'Evidence']) {
+		const button = navigation.getByRole('button', { name, exact: true });
+		await expect(button).toBeInViewport();
+		const bounds = await button.boundingBox();
+		const viewport = page.viewportSize();
+		assert.ok(bounds && viewport);
+		assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= viewport.width, `${name} fully fits`);
+		assert.equal(
+			await button.evaluate((element) => {
+				const rect = element.getBoundingClientRect();
+				return element.contains(
+					document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)
+				);
+			}),
+			true,
+			`${name} remains clickable above the map`
+		);
+	}
+	await expect(
+		navigation.getByRole('button', { name: 'Map & planning', exact: true })
+	).toHaveAttribute('aria-current', 'page');
+	await expect(page.locator('.workspace-menu')).toHaveCount(0);
+	await expect(page.getByLabel('Open workspace menu', { exact: true })).toHaveCount(0);
+	await expect(header.locator('.brand, .connection')).toHaveCount(0);
+	const style = await header.evaluate((element) => {
+		const computed = getComputedStyle(element);
+		return { background: computed.backgroundColor, border: computed.borderBottomWidth };
+	});
+	assert.match(
+		style.background,
+		/(?:rgba\(0, 0, 0, 0\)|transparent)/,
+		'No solid header bar covers the map'
+	);
+	assert.equal(style.border, '0px');
+	const navBounds = await navigation.boundingBox();
+	assert.ok(navBounds);
+	for (const selector of [
+		'.map-search-dock',
+		'.accessibility-map-overlay',
+		'.policy-lens-bar',
+		'.policy-inspect-trigger',
+		'.policy-map-panel',
+		'.map-tool-sheet'
+	]) {
+		for (const element of await page.locator(selector).all()) {
+			if (!(await element.isVisible())) continue;
+			const bounds = await element.boundingBox();
+			if (!bounds) continue;
+			assert.ok(
+				bounds.x + bounds.width <= navBounds.x ||
+					navBounds.x + navBounds.width <= bounds.x ||
+					bounds.y + bounds.height <= navBounds.y ||
+					navBounds.y + navBounds.height <= bounds.y,
+				`Floating navigation does not overlap ${selector}`
+			);
+		}
+	}
+}
+
 async function countryReady() {
 	await expect(explorer).toBeVisible();
 	await expect(explorer).toHaveAttribute('aria-busy', 'false');
@@ -56,7 +120,7 @@ async function countryReady() {
 	await expect(atlas).toHaveAttribute('aria-busy', 'false');
 	await expect(atlas).toHaveAttribute('data-accessibility-overview', 'true');
 	await expect.poll(async () => Number(await atlas.getAttribute('data-zoom'))).toBeLessThan(8);
-	await expect(header).toHaveCount(0);
+	await floatingNavigation();
 	const bounds = await atlas.boundingBox();
 	const viewport = page.viewportSize();
 	assert.ok(bounds && viewport);
@@ -95,11 +159,7 @@ async function visibleMapPoint(coordinates) {
 }
 
 async function returnToAnalytics() {
-	await page.getByLabel('Open workspace menu', { exact: true }).click();
-	await page
-		.locator('.workspace-menu')
-		.getByRole('button', { name: 'Analytics', exact: true })
-		.click();
+	await navigation.getByRole('button', { name: 'Analytics', exact: true }).click();
 	await expect(header).toBeVisible();
 	await expect(header.getByRole('navigation', { name: 'Workspace', exact: true })).toBeVisible();
 	await expect(page.getByRole('region', { name: 'National analytics', exact: true })).toBeVisible();
@@ -163,6 +223,7 @@ try {
 			await expect(
 				page.getByRole('button', { name: 'Create proposal', exact: true })
 			).toBeVisible();
+			await floatingNavigation();
 			await page.locator('.policy-inspect-trigger').click();
 			await expect(planning).toBeVisible();
 			await expect(planning).toHaveAttribute('data-policy-section', 'needs');
@@ -191,6 +252,7 @@ try {
 				planning.getByRole('button', { name: 'Suggest investments within my budget', exact: true })
 			).toBeEnabled();
 			await expect(atlas.locator('.maplibregl-canvas')).toBeVisible();
+			await floatingNavigation();
 			await page.screenshot({ path: path.join(output, 'proposal-desktop.png') });
 			await atlas.getByRole('button', { name: 'Show all Maldives islands', exact: true }).click();
 			await countryReady();
@@ -200,7 +262,7 @@ try {
 		}
 	);
 	await check(
-		'Mobile retains top navigation outside the full-screen map and rich island details inside it',
+		'Mobile retains the same visible navigation across analytics and the full-screen map',
 		async () => {
 			await page.setViewportSize({ width: 390, height: 844 });
 			await expect(header).toBeVisible();
@@ -223,15 +285,52 @@ try {
 				.poll(async () => Number(await atlas.getAttribute('data-policy-gap-cells')))
 				.toBeGreaterThan(0);
 			await expect(atlas).toHaveAttribute('aria-busy', 'false');
+			await floatingNavigation();
 			await noOverflow();
 			await page.screenshot({ path: path.join(output, 'island-mobile.png') });
 			await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
 			await expect(planning).toHaveAttribute('data-policy-section', 'proposal');
 			await expect(planning.getByLabel('Capital budget · MVR', { exact: true })).toBeInViewport();
+			await floatingNavigation();
 			await noOverflow();
 			await page.screenshot({ path: path.join(output, 'proposal-mobile.png') });
 			await returnToAnalytics();
 			await expect(header).toBeInViewport();
+		}
+	);
+	await check(
+		'Tablet and compact phones keep navigation visible and separate from map controls',
+		async () => {
+			await page.setViewportSize({ width: 820, height: 1180 });
+			await header.getByRole('button', { name: 'Map & planning', exact: true }).click();
+			await countryReady();
+			await page.screenshot({ path: path.join(output, 'country-tablet.png') });
+			await explorer.getByRole('button', { name: 'Find out why', exact: true }).click();
+			await explorer.locator('[data-atoll]').filter({ hasText: target.atoll }).click();
+			await explorer.locator(`[data-island-id="${target.id}"]`).click();
+			await expect(explorer).not.toBeVisible();
+			await expect(page.getByLabel('Service coverage map', { exact: true })).toBeVisible();
+			await floatingNavigation();
+			const zoomIn = atlas.locator('.maplibregl-ctrl-zoom-in');
+			await expect(zoomIn).toBeEnabled();
+			assert.equal(
+				await zoomIn.evaluate((element) => {
+					const rect = element.getBoundingClientRect();
+					return element.contains(
+						document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)
+					);
+				}),
+				true,
+				'Island information leaves the native zoom control clickable'
+			);
+			await noOverflow();
+			await page.screenshot({ path: path.join(output, 'island-tablet.png') });
+			await returnToAnalytics();
+			await page.setViewportSize({ width: 320, height: 812 });
+			await header.getByRole('button', { name: 'Map & planning', exact: true }).click();
+			await countryReady();
+			await page.screenshot({ path: path.join(output, 'country-compact-mobile.png') });
+			await returnToAnalytics();
 		}
 	);
 	await check(
