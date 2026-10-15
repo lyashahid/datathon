@@ -271,6 +271,8 @@
 	let lastFocusedAtoll: string | null | undefined;
 	let lastFocusedAtollBounds: [Coordinates, Coordinates] | null = null;
 	let lastFocusVersion = -1;
+	let contextualIsland: string | null = null;
+	let userZoomGesture: { point: [number, number] | null; startZoom: number } | null = null;
 	let lastFittedRoute: LandRoute | null = null;
 	let lastJourneyFocusVersion = 0;
 	let liveAnimating = $state(false);
@@ -309,6 +311,85 @@
 			bottom: padding.bottom ?? 0,
 			left: padding.left ?? 0
 		};
+	}
+
+	function zoomGesturePoint(instance: LibreMap, event?: Event): [number, number] | null {
+		if (
+			!event ||
+			!(event.target instanceof Node) ||
+			!instance.getCanvasContainer().contains(event.target)
+		)
+			return null;
+		let clientX: number;
+		let clientY: number;
+		if ('touches' in event) {
+			const touches = Array.from((event as TouchEvent).touches);
+			// Keep the last two-finger midpoint after either finger is lifted.
+			if (touches.length < 2) return null;
+			clientX = touches.reduce((sum, touch) => sum + touch.clientX, 0) / touches.length;
+			clientY = touches.reduce((sum, touch) => sum + touch.clientY, 0) / touches.length;
+		} else if (event instanceof MouseEvent) {
+			clientX = event.clientX;
+			clientY = event.clientY;
+		} else return null;
+		const canvas = instance.getCanvas();
+		const bounds = canvas.getBoundingClientRect();
+		if (!bounds.width || !bounds.height) return null;
+		return [
+			((clientX - bounds.left) / bounds.width) * canvas.clientWidth,
+			((clientY - bounds.top) / bounds.height) * canvas.clientHeight
+		];
+	}
+
+	function drillIntoVisibleIsland(instance: LibreMap, gesturePoint: [number, number] | null) {
+		if (
+			!ready ||
+			!active ||
+			map !== instance ||
+			selectedId ||
+			picking ||
+			mode !== 'explore' ||
+			instance.getZoom() < 11
+		)
+			return;
+		const center = gesturePoint
+			? { x: gesturePoint[0], y: gesturePoint[1] }
+			: instance.project(instance.getCenter());
+		const centeredIsland = instance
+			.queryRenderedFeatures([center.x, center.y], { layers: ['islands-fill'] })
+			.find(
+				(feature) =>
+					feature.properties.category === 'Residential Island' &&
+					(!atollScope || feature.properties.atoll === atollScope)
+			);
+		// The island under the gesture can be far from the map center. Ocean views
+		// and programmatic national/atoll fits must keep the country context.
+		let nearestDistance = Math.min(
+			180,
+			Math.min(container.clientWidth, container.clientHeight) * 0.32
+		);
+		let nearestId: string | null = centeredIsland ? String(centeredIsland.properties.id) : null;
+		for (const feature of nearestId ? [] : layers.centroids.features) {
+			const properties = feature.properties ?? {};
+			if (
+				properties.category !== 'Residential Island' ||
+				(atollScope && properties.atoll !== atollScope) ||
+				feature.geometry.type !== 'Point'
+			)
+				continue;
+			const coordinates = feature.geometry.coordinates;
+			if (!validCoordinates(coordinates)) continue;
+			const point = instance.project(coordinates);
+			const distance = Math.hypot(point.x - center.x, point.y - center.y);
+			if (distance < nearestDistance) {
+				nearestDistance = distance;
+				nearestId = String(properties.id);
+			}
+		}
+		if (!nearestId) return;
+		contextualIsland = nearestId;
+		closeInspection();
+		onselect(nearestId);
 	}
 
 	function collection(items: Feature<Geometry>[]): FeatureCollection {
@@ -880,6 +961,7 @@
 		const source = map.getSource('live-vessels') as GeoJSONSource;
 		void source.getClusterExpansionZoom(Number(feature.properties.cluster_id)).then((zoom) => {
 			if (!map || !validCoordinates(coordinates)) return;
+			userZoomGesture = null;
 			map.easeTo({
 				center: coordinates,
 				zoom: Math.min(zoom, 17),
@@ -949,6 +1031,7 @@
 
 	function focusJourney() {
 		if (!map) return;
+		userZoomGesture = null;
 		const positions = routeFeatures.features.flatMap((feature) => {
 			if (feature.geometry.type === 'LineString') return feature.geometry.coordinates;
 			if (feature.geometry.type === 'Point') return [feature.geometry.coordinates];
@@ -967,6 +1050,7 @@
 
 	function focusMovement() {
 		if (!map || !freshMovement.length) return;
+		userZoomGesture = null;
 		liveVisible = true;
 		const coordinates = freshMovement.flatMap((feature) =>
 			feature.geometry.type === 'Point' ? [feature.geometry.coordinates] : []
@@ -1045,6 +1129,7 @@
 	}
 
 	function fitNational() {
+		userZoomGesture = null;
 		map?.fitBounds(nationalBounds, {
 			absolutePadding: true,
 			padding: focusPadding(),
@@ -1060,6 +1145,7 @@
 
 	function focusIsland() {
 		if (!map || !selectedIsland?.geometry) return;
+		userZoomGesture = null;
 		const bounds = boundsOf(selectedIsland.geometry);
 		if (bounds)
 			map.fitBounds(bounds, {
@@ -1880,12 +1966,14 @@
 			const center = cluster.geometry.coordinates;
 			const source = map.getSource('pois') as GeoJSONSource;
 			void source.getClusterExpansionZoom(Number(cluster.properties.cluster_id)).then((zoom) => {
-				if (map && validCoordinates(center))
+				if (map && validCoordinates(center)) {
+					userZoomGesture = null;
 					map.easeTo({
 						center,
 						zoom: Math.min(zoom, 16),
 						duration: reducedMotion() ? 0 : 280
 					});
+				}
 			});
 			return;
 		}
@@ -1944,6 +2032,7 @@
 		}
 		overlayPreferenceLoaded = true;
 		let disposed = false;
+		const zoomInputController = new AbortController();
 		let resizeObserver: ResizeObserver | undefined;
 		function syncCameraView(instance: LibreMap) {
 			if (!active) return;
@@ -2006,6 +2095,36 @@
 					renderWorldCopies: false
 				});
 				map = instance;
+				const captureZoomInput = (event: Event) => {
+					if (!active || picking) return;
+					if (event.type === 'click') {
+						if (
+							!(event.target instanceof Element) ||
+							!event.target.closest('.maplibregl-ctrl-zoom-in, .maplibregl-ctrl-zoom-out')
+						)
+							return;
+					} else if (event instanceof KeyboardEvent) {
+						if (!['+', '=', '-', '_'].includes(event.key)) return;
+					} else if ('touches' in event) {
+						if ((event as TouchEvent).touches.length < 2) return;
+					} else if (event instanceof WheelEvent && !event.deltaY) return;
+					const point = zoomGesturePoint(instance, event);
+					userZoomGesture = {
+						point:
+							event.type === 'click' || event.type === 'keydown'
+								? null
+								: (point ?? userZoomGesture?.point ?? null),
+						startZoom: userZoomGesture?.startZoom ?? instance.getZoom()
+					};
+				};
+				// Capture the actual input before MapLibre handles it. Movement events
+				// do not consistently retain originalEvent across library builds.
+				for (const name of ['wheel', 'dblclick', 'touchstart', 'touchmove', 'keydown', 'click'])
+					container.addEventListener(name, captureZoomInput, {
+						capture: true,
+						passive: true,
+						signal: zoomInputController.signal
+					});
 				instance.dragRotate.disable();
 				instance.touchZoomRotate.disableRotation();
 				instance.addControl(new libre.NavigationControl({ showCompass: false }), 'top-right');
@@ -2658,6 +2777,12 @@
 					zoomLevel = instance.getZoom();
 				});
 				instance.on('click', handleClick);
+				instance.on('zoomend', () => {
+					const gesture = userZoomGesture;
+					userZoomGesture = null;
+					if (gesture && instance.getZoom() > gesture.startZoom + 0.01)
+						drillIntoVisibleIsland(instance, gesture.point);
+				});
 				instance.on('move', schedulePlacementAnchor);
 				instance.on('resize', schedulePlacementAnchor);
 				instance.on('moveend', () => syncCameraView(instance));
@@ -2735,6 +2860,8 @@
 		void initialize();
 		return () => {
 			disposed = true;
+			zoomInputController.abort();
+			userZoomGesture = null;
 			document.removeEventListener('mouseup', finishOutsidePan, true);
 			cancelAnimationFrame(liveFrame);
 			cancelAnimationFrame(activationFrame);
@@ -2872,6 +2999,7 @@
 	$effect(() => {
 		if (!ready || !active || !map || !focusPoint) return;
 		const coordinates = focusPoint.coordinates;
+		userZoomGesture = null;
 		untrack(() =>
 			map?.easeTo({
 				center: coordinates,
@@ -3053,8 +3181,16 @@
 				return;
 			instance.resize();
 			mapHeight = container.clientHeight;
-			if (requestedId) focusIsland();
-			else if (requestedAtollBounds)
+			userZoomGesture = null;
+			if (requestedId && requestedId === contextualIsland) {
+				// A zoom gesture is already framing this island. Reveal its detailed
+				// tools without replacing the user's view with another zoom animation.
+				contextualIsland = null;
+				instance.easeTo({ padding: focusPadding(), duration: 0 });
+			} else if (requestedId) {
+				contextualIsland = null;
+				focusIsland();
+			} else if (requestedAtollBounds)
 				instance.fitBounds(requestedAtollBounds, {
 					absolutePadding: true,
 					padding: focusPadding(),
@@ -3075,6 +3211,7 @@
 		if (!ready || !map) return;
 		cancelAnimationFrame(activationFrame);
 		if (!active) {
+			userZoomGesture = null;
 			cancelAnimationFrame(liveFrame);
 			liveAnimating = false;
 			clearTimeout(contextTimer);

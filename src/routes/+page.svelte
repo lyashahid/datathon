@@ -23,6 +23,7 @@
 		X,
 		RefreshCw,
 		Menu,
+		Layers,
 		GitBranch
 	} from '@lucide/svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
@@ -275,6 +276,7 @@
 	let initialized = $state(false);
 	const showAccessExplorer = $derived(
 		isMapWorkspace &&
+			!selectedId &&
 			tab === 'explore' &&
 			exploreView === 'map' &&
 			accessExplorerOpen &&
@@ -611,6 +613,7 @@
 	}
 	function selectIsland(id: string, push = true) {
 		countryAtoll = islands.find((island) => island.properties.id === id)?.properties.atoll ?? null;
+		accessExplorerOpen = false;
 		if (id === selectedId) {
 			sidebarOpen = false;
 			focusVersion += 1;
@@ -725,7 +728,7 @@
 		selectIsland(id, false);
 		panelOpen = false;
 		inspectedCell = null;
-		accessExplorerOpen = true;
+		accessExplorerOpen = false;
 		policyAction('close');
 		writeLocation(true);
 	}
@@ -938,7 +941,7 @@
 				else selectedId = id;
 			} else if (!id && selectedId) resetIslandSelection();
 			countryAtoll = id ? countryAtoll : params.get('atoll');
-			accessExplorerOpen = !params.has('lens') && params.get('tool') !== 'proposals';
+			accessExplorerOpen = !id && !params.has('lens') && params.get('tool') !== 'proposals';
 			const requested = params.get('view') ?? 'map';
 			const tool = params.get('tool');
 			const next =
@@ -1119,7 +1122,7 @@
 		go('explore');
 		exploreView = 'map';
 		if (lens) policyLens = lens;
-		accessExplorerOpen = !lens;
+		accessExplorerOpen = !id && !lens;
 		if (lens) policyAction('gaps');
 		else policyAction('close');
 		writeLocation(false);
@@ -1174,56 +1177,91 @@
 			workspaceMenuOpen = false;
 	}}
 />
-<div class="app-shell map-first-shell">
+<div class="app-shell" class:map-first-shell={isMapWorkspace}>
 	<a class="skip-link" href="#workspace-content">Skip to workspace</a>
-	<details class="workspace-menu" bind:open={workspaceMenuOpen}>
-		<summary aria-label="Open workspace menu"><Menu size={20} /></summary>
-		<div class="workspace-menu-content">
-			<strong>Maldives · Mobility Sandbox</strong>
-			<nav aria-label="Workspace">
-				{#each tabs as item (item.id)}<Button
+	{#if !isMapWorkspace}
+		<header class="app-header">
+			<a
+				class="brand"
+				href="/?view=overview"
+				aria-label="Mobility Sandbox home"
+				onclick={(event) => {
+					event.preventDefault();
+					go('overview');
+				}}
+				><span class="brand-icon"><Layers size={22} strokeWidth={1.7} /></span><span
+					>mobility<span class="brand-sub">SANDBOX / MALDIVES</span></span
+				></a
+			>
+			<nav aria-label="Workspace" class="navigation-island">
+				{#each tabs as item (item.id)}
+					<Button
 						variant="ghost"
-						aria-current={tab === item.id || (item.id === 'map' && isMapWorkspace)
-							? 'page'
-							: undefined}
+						class={tab === item.id ? 'nav-item active' : 'nav-item'}
+						aria-current={tab === item.id ? 'page' : undefined}
 						onclick={() => {
 							if (item.id === 'map') showCountry();
 							else go(item.id);
-							workspaceMenuOpen = false;
-						}}><item.icon size={16} />{item.label}</Button
-					>{/each}
-				{#if selectedId && isMapWorkspace}
-					<Button
-						variant="ghost"
-						onclick={() => {
-							setProfileView('route');
-							workspaceMenuOpen = false;
-						}}><Route size={16} />Directions</Button
+						}}><item.icon size={16} /><span>{item.label}</span></Button
 					>
-					<Button
-						variant="ghost"
-						onclick={() => {
-							setExploreView('conditions');
-							workspaceMenuOpen = false;
-						}}><CloudSun size={16} />Weather & traffic</Button
-					>
-					<Button
-						variant="ghost"
-						onclick={() => {
-							setProposalView('edit');
-							workspaceMenuOpen = false;
-						}}><GitBranch size={16} />Network modelling</Button
-					>
-				{/if}
+				{/each}
 			</nav>
 			<div class="connection" title={connection}>
-				<span class:online={connection === 'Backend connected'}></span>{connection ===
-				'Backend connected'
-					? 'Data connected'
-					: connection}
+				<span class:online={connection === 'Backend connected'}></span><span
+					>{connection === 'Backend connected' ? 'Data connected' : connection}</span
+				>
 			</div>
-		</div>
-	</details>
+		</header>
+	{:else}
+		<details class="workspace-menu" bind:open={workspaceMenuOpen}>
+			<summary aria-label="Open workspace menu"><Menu size={20} /></summary>
+			<div class="workspace-menu-content">
+				<strong>Maldives · Mobility Sandbox</strong>
+				<nav aria-label="Workspace">
+					{#each tabs as item (item.id)}<Button
+							variant="ghost"
+							aria-current={tab === item.id || (item.id === 'map' && isMapWorkspace)
+								? 'page'
+								: undefined}
+							onclick={() => {
+								if (item.id === 'map') showCountry();
+								else go(item.id);
+								workspaceMenuOpen = false;
+							}}><item.icon size={16} />{item.label}</Button
+						>{/each}
+					{#if selectedId && isMapWorkspace}
+						<Button
+							variant="ghost"
+							onclick={() => {
+								setProfileView('route');
+								workspaceMenuOpen = false;
+							}}><Route size={16} />Directions</Button
+						>
+						<Button
+							variant="ghost"
+							onclick={() => {
+								setExploreView('conditions');
+								workspaceMenuOpen = false;
+							}}><CloudSun size={16} />Weather & traffic</Button
+						>
+						<Button
+							variant="ghost"
+							onclick={() => {
+								setProposalView('edit');
+								workspaceMenuOpen = false;
+							}}><GitBranch size={16} />Network modelling</Button
+						>
+					{/if}
+				</nav>
+				<div class="connection" title={connection}>
+					<span class:online={connection === 'Backend connected'}></span>{connection ===
+					'Backend connected'
+						? 'Data connected'
+						: connection}
+				</div>
+			</div>
+		</details>
+	{/if}
 	{#if fatalError}<div class="fatal" role="alert">
 			<Activity size={22} />
 			<div>

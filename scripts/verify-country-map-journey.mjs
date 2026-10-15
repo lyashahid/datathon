@@ -256,37 +256,35 @@ try {
 	);
 
 	await check(
-		'Clicking an island on the map zooms in and explains the exact backend score',
+		'Clicking an island restores its detailed service map and planning tools',
 		async () => {
 			const islandPoint = await expectUnobscured(islandCoordinates, island.name);
 			await page.mouse.click(islandPoint.x, islandPoint.y);
-			await expect(explorer).toHaveAttribute('data-scope', 'island');
-			await expect(explorer.getByRole('heading', { name: island.name, exact: true })).toBeVisible();
-			await expect(explorer.getByTestId('island-accessibility-score')).toHaveText(
-				decimal.format(islandScore.score)
-			);
+			await expect(explorer).not.toBeVisible();
 			await expect(page).toHaveURL((url) => url.searchParams.get('island') === islandId);
 			await expect(atlas).toHaveAttribute('data-accessibility-overview', 'false');
 			await expect.poll(async () => (await mapView()).zoom).toBeGreaterThan(11);
 			await expectUnobscured(islandCoordinates, island.name);
-			const reasons = explorer.getByTestId('island-accessibility-reasons');
-			for (const reason of islandScore.assessment.reasons)
-				await expect(reasons).toContainText(reason.text);
-			await expect(explorer).toContainText(islandScore.assessment.coverage.note);
-			await expect(explorer).toContainText('This index is not the percentage of residents served.');
+			await expect(page.getByLabel('Service coverage map', { exact: true })).toBeVisible();
+			await expect(page.getByLabel('Explore supporting tools', { exact: true })).toBeVisible();
+			await expect(
+				page.getByRole('button', { name: 'Create proposal', exact: true })
+			).toBeVisible();
+			await expect
+				.poll(async () => Number(await atlas.getAttribute('data-policy-gap-cells')))
+				.toBeGreaterThan(0);
 			await noOverflow();
 			await page.screenshot({ path: path.join(output, 'island-desktop.png') });
 			return {
 				island: islandId,
-				score: islandScore.score,
-				reasons: islandScore.assessment.reasons.length,
+				gapCells: await atlas.getAttribute('data-policy-gap-cells'),
 				view: await mapView()
 			};
 		}
 	);
 
 	await check('The island proposal action opens the planning panel on the same map', async () => {
-		await explorer.getByRole('button', { name: 'Create a proposal', exact: true }).click();
+		await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
 		await expect(panel).toBeVisible();
 		await expect(panel).toHaveAttribute('data-policy-section', 'proposal');
 		await expect(panel.getByRole('heading', { name: island.name, exact: true })).toBeVisible();
@@ -327,11 +325,11 @@ try {
 		return { url: page.url(), view: await mapView() };
 	});
 
-	await check('Back actions step from island to atoll and then back to Maldives', async () => {
+	await check('Back actions retain atoll context and return to the national overview', async () => {
 		await drillAtoll(island.atoll);
 		await explorer.locator(`[data-island-id="${islandId}"]`).click();
-		await expect(explorer).toHaveAttribute('data-scope', 'island');
-		await explorer.getByRole('button', { name: 'Back to atoll', exact: true }).click();
+		await expect(explorer).not.toBeVisible();
+		await page.goBack();
 		await expect(explorer).toHaveAttribute('data-scope', 'atoll');
 		await expect(explorer.getByTestId('atoll-accessibility-score')).toHaveText(
 			decimal.format(atollMean)
@@ -347,7 +345,7 @@ try {
 		async () => {
 			await drillAtoll(island.atoll);
 			await explorer.locator(`[data-island-id="${islandId}"]`).click();
-			await expect(explorer).toHaveAttribute('data-scope', 'island');
+			await expect(explorer).not.toBeVisible();
 			await page.goBack();
 			await expect(explorer).toHaveAttribute('data-scope', 'atoll');
 			await expect(atlas).toHaveAttribute('data-atoll-scope', island.atoll);
@@ -364,7 +362,7 @@ try {
 		async () => {
 			await drillAtoll(island.atoll);
 			await explorer.locator(`[data-island-id="${islandId}"]`).click();
-			await expect(explorer).toHaveAttribute('data-scope', 'island');
+			await expect(explorer).not.toBeVisible();
 			await page.getByLabel('Open workspace menu', { exact: true }).click();
 			await page
 				.locator('.workspace-menu')
@@ -391,7 +389,11 @@ try {
 		const dashboard = page.getByRole('region', { name: 'National analytics', exact: true });
 		await expect(dashboard).toBeVisible();
 		await expect(dashboard).toHaveAttribute('aria-busy', 'false');
-		await expect(page.locator('.app-header')).toHaveCount(0);
+		await expect(page.locator('.app-header')).toBeVisible();
+		await expect(page.locator('.navigation-island')).toBeVisible();
+		await expect(
+			page.locator('.app-header').getByRole('button', { name: 'Analytics', exact: true })
+		).toHaveAttribute('aria-current', 'page');
 		await noOverflow();
 		return { url: page.url() };
 	});
@@ -423,10 +425,10 @@ try {
 			await noOverflow();
 			await page.screenshot({ path: path.join(output, 'atoll-mobile.png') });
 			await explorer.locator(`[data-island-id="${islandId}"]`).click();
-			await expect(explorer).toHaveAttribute('data-scope', 'island');
-			await expect(explorer.getByTestId('island-accessibility-score')).toBeInViewport();
+			await expect(explorer).not.toBeVisible();
+			await expect(page.getByLabel('Service coverage map', { exact: true })).toBeVisible();
 			await expectUnobscured(islandCoordinates, island.name);
-			await explorer.getByRole('button', { name: 'Create a proposal', exact: true }).click();
+			await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
 			await expect(panel).toBeVisible();
 			await expect(panel).toHaveAttribute('data-policy-section', 'proposal');
 			await expect(

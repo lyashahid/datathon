@@ -160,6 +160,10 @@
 			{/if}
 			{#if scope === 'country' && !showDetails}
 				<p class="initial-note">Missing map data can lower this score.</p>
+				<p class="country-introduction" data-testid="country-map-introduction">
+					Explore access to healthcare, schools and transport. Zoom in or select an island to see
+					its services, journeys and planning options.
+				</p>
 				<h2 class="score-question">{question}</h2>
 				<Button
 					class="explain-action"
@@ -384,6 +388,12 @@
 		font-size: 11px;
 		line-height: 1.5;
 		color: #7c837e;
+	}
+	.country-introduction {
+		margin-top: 12px;
+		font-size: 12px;
+		line-height: 1.6;
+		color: #57695e;
 	}
 	.explorer-heading .score-question {
 		margin-top: 19px;
