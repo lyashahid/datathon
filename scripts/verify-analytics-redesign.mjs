@@ -298,7 +298,7 @@ try {
 				['transport', 'health', 'education'].find(
 					(name) => target.domains[name].status === 'review'
 				) ?? 'transport';
-			await priorities.locator(`.sector-${domain} .sector-action`).click();
+			await priorities.locator(`.sector-${domain} .sector-action[aria-pressed]`).click();
 			const queue = target.domains[domain].status === 'review' ? 'Review access' : 'Need more data';
 			await priorities.getByRole('button', { name: new RegExp(`^${queue}`) }).click();
 			await priorities.getByLabel('Search priority islands', { exact: true }).fill(target.name);

@@ -46,7 +46,8 @@
 	import { emptyFeatures, type MapPolicyState, type PlacementKind } from '#lib/map-policy.js';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
 	import type { FeatureCollection } from 'geojson';
-	import { api } from '#lib/api.js';
+	import { api, subscribeApiInvalidation } from '#lib/api.js';
+	import { downloadJson } from '#lib/download.js';
 	import { MovementSession, movementScope } from '#lib/movement.js';
 	import {
 		operationLabels,
@@ -97,7 +98,7 @@
 		national: 'national dashboard',
 		forecast: 'passenger outlook',
 		studio: 'data studio',
-		policy: 'proposal workspace',
+		policy: 'advanced service and fleet workspace',
 		places: 'places and directions',
 		conditions: 'weather, traffic and notices',
 		schedules: 'timetables',
@@ -211,7 +212,7 @@
 	let accessController: AbortController | undefined;
 	const emptyPolicyMap = emptyFeatures();
 	const isMapWorkspace = $derived(!['overview', 'evidence'].includes(tab));
-	let proposalView = $state('policy');
+	let proposalView = $state('advanced');
 	let profileView = $state('baseline');
 	let overviewView = $state('national');
 	let exploreView = $state('map');
@@ -227,7 +228,7 @@
 					: 'national'
 			: tab === 'evidence'
 				? 'evidence'
-				: (tab === 'scenarios' || tab === 'recommendations') && proposalView === 'policy'
+				: (tab === 'scenarios' || tab === 'recommendations') && proposalView === 'advanced'
 					? 'policy'
 					: tab === 'explore' && exploreView === 'places'
 						? 'places'
@@ -253,6 +254,7 @@
 	let detailedFeatures = $state.raw<{ islandId: string; data: MapFeatures } | null>(null);
 	let detailError = $state('');
 	let detailVersion = $state(0);
+	let sourceRevision = $state(0);
 	const selectedBoundaryFeatures = $derived<MapFeatures | null>(
 		detailedFeatures?.islandId === selectedId
 			? {
@@ -333,6 +335,13 @@
 	let pickMode = $state<'operation' | 'proposal' | 'start' | 'end' | null>(null);
 	let routeStart = $state.raw<Coordinates | null>(null);
 	let routeEnd = $state.raw<Coordinates | null>(null);
+	// A traffic result belongs to the exact endpoints that produced it, including
+	// changes made while the weather inspector is closed.
+	$effect(() => {
+		void routeStart;
+		void routeEnd;
+		untrack(() => (conditionRoute = []));
+	});
 	let routeStartLabel = $state('Choose a start on the map');
 	let routeEndLabel = $state('Choose a destination on the map');
 	let routeMode = $state('walk');
@@ -572,6 +581,7 @@
 	});
 	$effect(() => {
 		const id = selectedId;
+		void sourceRevision;
 		if (!initialized || activeWorkspace !== 'atlas' || !id) return;
 		const active = new AbortController();
 		transitStopController?.abort();
@@ -599,11 +609,11 @@
 	const message = (cause: unknown) =>
 		cause instanceof Error ? cause.message : 'The request failed. Please retry.';
 
-	async function load() {
+	async function load(preserveContext = false) {
 		controller?.abort();
 		const active = new AbortController();
 		controller = active;
-		loading = true;
+		if (!preserveContext) loading = true;
 		fatalError = '';
 		connection = 'Connecting';
 		void loadAccessScores();
@@ -627,6 +637,8 @@
 			if (active.signal.aborted) return;
 			connection = 'Backend connected';
 			overviewFeatures = map;
+			// Source refreshes replace evidence without moving the camera or reopening tools.
+			if (preserveContext) return;
 			const initial =
 				islands.find((island) => island.properties.id === selectedId) ??
 				(tab === 'scenarios' || tab === 'recommendations'
@@ -640,12 +652,31 @@
 			} else if (selectedId) resetIslandSelection();
 		} catch (cause) {
 			if (!active.signal.aborted) {
-				fatalError = message(cause);
+				if (preserveContext) error = message(cause);
+				else fatalError = message(cause);
 				connection = 'Backend unavailable';
 			}
 		} finally {
 			if (!active.signal.aborted) loading = false;
 		}
+	}
+	function refreshSources() {
+		cancelAction();
+		simulation = null;
+		comparison = null;
+		recommendations = null;
+		route = null;
+		conditionRoute = [];
+		connectionFeatures = emptyFeatures();
+		summary = null;
+		accessScores = null;
+		detailController?.abort();
+		detailedFeatures = null;
+		transitStopController?.abort();
+		transitStops = [];
+		sourceRevision += 1;
+		if (selectedId) void loadProfile(selectedId);
+		void load(true);
 	}
 	async function loadAccessScores() {
 		accessController?.abort();
@@ -868,7 +899,6 @@
 	}
 	function clearJourneyPoint(endpoint: 'start' | 'end') {
 		cancelAction();
-		conditionRoute = [];
 		if (endpoint === 'start') {
 			routeStart = null;
 			routeStartLabel = 'Choose a start on the map';
@@ -998,14 +1028,7 @@
 		);
 	}
 	function exportScenario() {
-		const url = URL.createObjectURL(
-			new Blob([JSON.stringify(scenario, null, 2)], { type: 'application/json' })
-		);
-		const link = document.createElement('a');
-		link.href = url;
-		link.download = `${scenario.id.replace(/[^a-z0-9_-]/gi, '_')}.json`;
-		link.click();
-		URL.revokeObjectURL(url);
+		downloadJson(scenario, `${scenario.id.replace(/[^a-z0-9_-]/gi, '_')}.json`);
 	}
 	async function importScenario(event: Event) {
 		const file = (event.target as HTMLInputElement).files?.[0];
@@ -1106,11 +1129,12 @@
 						: requested;
 			go(next, false);
 			const proposal =
-				params.get('proposal') ?? (requested === 'map' && tool === 'proposals' ? 'policy' : null);
+				params.get('proposal') ??
+				(requested === 'map' && tool === 'proposals' ? 'policy' : 'advanced');
 			if (
 				next === 'scenarios' &&
 				proposal &&
-				['edit', 'candidates', 'review', 'policy'].includes(proposal)
+				['edit', 'candidates', 'review', 'policy', 'advanced'].includes(proposal)
 			) {
 				proposalView = proposal;
 				if (proposal === 'policy') {
@@ -1142,6 +1166,7 @@
 		restoreView();
 		initialized = true;
 		void load();
+		const unsubscribeSources = subscribeApiInvalidation(refreshSources);
 		window.addEventListener('popstate', restoreView);
 		const updateVisibility = () => {
 			documentVisible = !document.hidden;
@@ -1149,6 +1174,7 @@
 		updateVisibility();
 		document.addEventListener('visibilitychange', updateVisibility);
 		return () => {
+			unsubscribeSources();
 			window.removeEventListener('popstate', restoreView);
 			controller?.abort();
 			accessController?.abort();
@@ -1306,14 +1332,7 @@
 				'OpenStreetMap transport data'
 			]
 		};
-		const url = URL.createObjectURL(
-			new Blob([JSON.stringify(brief, null, 2)], { type: 'application/json' })
-		);
-		const link = document.createElement('a');
-		link.href = url;
-		link.download = 'decision-brief-' + scenario.id.replace(/[^a-z0-9_-]/gi, '_') + '.json';
-		link.click();
-		URL.revokeObjectURL(url);
+		downloadJson(brief, `decision-brief-${scenario.id.replace(/[^a-z0-9_-]/gi, '_')}.json`);
 	}
 </script>
 
@@ -1373,7 +1392,7 @@
 				<strong>Planning data is unavailable.</strong>
 				<p>{fatalError}</p>
 			</div>
-			<Button onclick={load}>Retry connection</Button>
+			<Button onclick={() => load()}>Retry connection</Button>
 		</div>{/if}
 	<main id="workspace-content" class="workspace-body" tabindex="-1">
 		{#if tab === 'overview'}<div class="workspace-subnav">
@@ -1386,14 +1405,14 @@
 				><span>Understand demand and the evidence behind it</span>
 			</div>
 		{/if}
-		{#if (tab === 'scenarios' || tab === 'recommendations') && proposalView !== 'policy'}<div
+		{#if tab === 'scenarios' || tab === 'recommendations'}<div
 				class="workspace-subnav tool-detail-nav"
 			>
 				<Tabs.Root
-					value={proposalView === 'policy' ? 'policy' : 'map'}
-					onValueChange={(value) => setProposalView(value === 'policy' ? 'policy' : 'edit')}
+					value={proposalView === 'advanced' ? 'advanced' : 'map'}
+					onValueChange={(value) => setProposalView(value === 'advanced' ? 'advanced' : 'edit')}
 					><Tabs.List aria-label="Proposal workspace"
-						><Tabs.Trigger value="policy">Resident access & services</Tabs.Trigger><Tabs.Trigger
+						><Tabs.Trigger value="advanced">Service & fleet tools</Tabs.Trigger><Tabs.Trigger
 							value="map">Infrastructure edits</Tabs.Trigger
 						></Tabs.List
 					></Tabs.Root
@@ -1418,6 +1437,7 @@
 		{/if}
 		{#if workspaces.national}<div class="analytics-page" hidden={activeWorkspace !== 'national'}>
 				<workspaces.national
+					active={activeWorkspace === 'national'}
 					{summary}
 					features={overviewFeatures}
 					onConnections={openIslandConnections}
@@ -1429,13 +1449,13 @@
 				<workspaces.forecast />
 			</div>{/if}
 		{#if workspaces.studio}<div hidden={activeWorkspace !== 'studio'}>
-				<workspaces.studio />
+				<workspaces.studio active={activeWorkspace === 'studio'} />
 			</div>{/if}
 		{#if workspaces.policy && !loading}<div hidden={activeWorkspace !== 'policy'}>
 				<workspaces.policy
 					islandId={selectedId ?? 'island:1443'}
 					mapFeatures={features}
-					active={(tab === 'scenarios' || tab === 'recommendations') && proposalView === 'policy'}
+					active={activeWorkspace === 'policy'}
 					{scenario}
 					incomingOperation={activeWorkspace === 'policy' ? incomingOperation : null}
 					{incomingPlacement}
@@ -1467,7 +1487,11 @@
 				<Button class="map-tool-close" variant="outline" onclick={returnToExplore}
 					><X size={16} />Back to map</Button
 				>
-				<workspaces.schedules mode="schedules" islandId={selectedId ?? 'island:1443'} />
+				<workspaces.schedules
+					mode="schedules"
+					islandId={selectedId ?? 'island:1443'}
+					active={activeWorkspace === 'schedules'}
+				/>
 			</div>{/if}
 		{#if workspaces.conditions && !loading}<div
 				class="map-tool-sheet"
@@ -1635,6 +1659,7 @@
 						if (!enabled) ferryDestinationId = null;
 					}}
 					onDetails={() => setProfileView('baseline')}
+					onAdvanced={() => setProposalView('advanced')}
 				/>{/if}
 			{#if workspaces.mapConditions && tab === 'explore' && exploreView === 'conditions' && !pickMode}<workspaces.mapConditions
 					coordinates={selectedCoordinates}
@@ -2408,6 +2433,7 @@
 		</div>
 		{#if workspaces.evidence}<div class="evidence-page" hidden={activeWorkspace !== 'evidence'}>
 				<workspaces.evidence
+					active={activeWorkspace === 'evidence'}
 					{summary}
 					onExplore={() => go('explore')}
 					onExport={exportBrief}

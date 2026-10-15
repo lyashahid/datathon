@@ -145,6 +145,47 @@ describe('shared browser API reads', () => {
 		expect(fetcher.mock.calls[0][1]?.body).toBe(JSON.stringify(payload));
 	});
 
+	it('refreshes retained views only after a successful source change and supports cleanup', async () => {
+		const fetcher = vi
+			.fn<typeof fetch>()
+			.mockResolvedValueOnce(snapshot({ score: 20 }))
+			.mockResolvedValueOnce(Response.json({ error: { message: 'Rejected' } }, { status: 422 }))
+			.mockResolvedValueOnce(Response.json({ accepted: true }))
+			.mockResolvedValueOnce(snapshot({ score: 40 }))
+			.mockResolvedValueOnce(Response.json({ capital: 50 }));
+		const client = createApiClient({ fetcher, storage: () => null });
+		const refreshed = vi.fn(() => void client.request('accessibility/summary'));
+		const unsubscribe = client.subscribeInvalidation(refreshed);
+		await client.request('accessibility/summary');
+		const endpoint = `forecasts/sources/${'a'.repeat(32)}/accept`;
+		await expect(client.request(endpoint, {})).rejects.toMatchObject({ status: 422 });
+		expect(refreshed).not.toHaveBeenCalled();
+		await client.request(endpoint, {});
+		expect(refreshed).toHaveBeenCalledTimes(1);
+		await expect(client.request('accessibility/summary')).resolves.toEqual({ score: 40 });
+		await client.request('planning/quote', {});
+		expect(refreshed).toHaveBeenCalledTimes(1);
+		unsubscribe();
+		await client.invalidate();
+		expect(refreshed).toHaveBeenCalledTimes(1);
+	});
+
+	it('keeps HTTP failures readable when a proxy returns HTML or an empty error body', async () => {
+		const fetcher = vi
+			.fn<typeof fetch>()
+			.mockResolvedValueOnce(new Response('<html>Unavailable</html>', { status: 502 }))
+			.mockResolvedValueOnce(new Response('null', { status: 503 }));
+		const client = createApiClient({ fetcher, storage: () => null });
+		await expect(client.request('live/status')).rejects.toMatchObject({
+			status: 502,
+			message: 'Request failed (502). Please retry.'
+		});
+		await expect(client.request('live/status')).rejects.toMatchObject({
+			status: 503,
+			message: 'Request failed (503)'
+		});
+	});
+
 	it('revalidates expired data and reuses the parsed object only for a matching version', async () => {
 		let clock = 1_000;
 		const fetcher = vi

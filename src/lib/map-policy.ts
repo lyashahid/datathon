@@ -2,6 +2,7 @@ import type { FeatureCollection, Geometry, Position } from 'geojson';
 import type { Coordinates } from './types.js';
 import type { PlanningComparison, PlanningOperation, PlanningPlace } from './planning-map.js';
 import type { PlanningEvaluation } from './proposal-review.js';
+import type { ServiceCalendar } from './proposal-experience.js';
 
 export type PlacementKind = 'add_school' | 'add_hospital' | 'add_stop';
 export type PendingPlacementDecision = {
@@ -43,7 +44,7 @@ export type MapBaseline = {
 		stopIds: string[];
 		geometry?: number[][];
 		segmentGeometries?: number[][][];
-		calendar?: { includedDates?: string[]; weekdays?: number[] };
+		calendar?: ServiceCalendar;
 	}[];
 };
 export const emptyFeatures = (): FeatureCollection => ({ type: 'FeatureCollection', features: [] });
@@ -221,27 +222,4 @@ export function draftCosts(operations: PlanningOperation[], defaults: Record<str
 		else annualComplete = false;
 	}
 	return { capital: capitalComplete ? capital : null, annual: annualComplete ? annual : null };
-}
-
-/** Show connectivity before confirmation, without silently relocating a proposed site. */
-export function distanceToRoad(point: Coordinates, edges: MapBaseline['graph_edges']) {
-	if (!point.every(Number.isFinite) || Math.abs(point[0]) > 180 || Math.abs(point[1]) > 90)
-		return null;
-	const scale = 111320 * Math.cos((point[1] * Math.PI) / 180);
-	let nearest = Infinity;
-	for (const edge of edges) {
-		const line = edge.geometry ?? [];
-		for (let i = 1; i < line.length; i++) {
-			const a = line[i - 1],
-				b = line[i];
-			if (!a?.every(Number.isFinite) || !b?.every(Number.isFinite)) continue;
-			const ax = (a[0] - point[0]) * scale,
-				ay = (a[1] - point[1]) * 111320;
-			const dx = (b[0] - a[0]) * scale,
-				dy = (b[1] - a[1]) * 111320;
-			const t = Math.max(0, Math.min(1, -(ax * dx + ay * dy) / (dx * dx + dy * dy || 1)));
-			nearest = Math.min(nearest, Math.hypot(ax + t * dx, ay + t * dy));
-		}
-	}
-	return Number.isFinite(nearest) ? nearest : null;
 }

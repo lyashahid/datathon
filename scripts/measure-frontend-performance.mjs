@@ -22,7 +22,7 @@ const report = {
 };
 try {
 	for (const [name, query] of [
-		['country', '?view=map'],
+		['country', '?view=map&scope=country'],
 		['island', '?view=map&island=island%3A1442'],
 		['analytics', '?view=overview']
 	]) {
@@ -77,11 +77,15 @@ try {
 					);
 					geographyMs = Math.round(performance.now() - started);
 					await page.waitForFunction(
-						() =>
-							document
-								.querySelector('.country-accessibility-explorer')
-								?.getAttribute('aria-busy') === 'false',
-						undefined,
+						(scope) =>
+							scope === 'country'
+								? document
+										.querySelector('.country-accessibility-explorer')
+										?.getAttribute('aria-busy') === 'false'
+								: Number(
+										document.querySelector('.national-map')?.getAttribute('data-policy-gap-cells')
+									) > 0,
+						name,
 						{ timeout: 90000 }
 					);
 					scoreMs = Math.round(performance.now() - started);

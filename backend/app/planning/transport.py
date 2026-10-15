@@ -19,7 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.planning.models import PlanningAssumptions, PlanningOperation, PlanningRequest
 from app.planning.repository import IDENTITY_BRIDGE
-from app.planning.routing import WalkingNetwork, pattern_trips
+from app.planning.routing import WalkingNetwork, pattern_trips, service_day_trips
 from app.routing.engine import _distance_m
 
 
@@ -138,7 +138,7 @@ def transport_summary(world: dict[str, Any], assumptions: PlanningAssumptions) -
     for pattern in world["patterns"]:
         if pattern.get("enabled") is False:
             continue
-        trips = pattern_trips(pattern, assumptions.date)
+        trips = service_day_trips(pattern, assumptions.date)
         if not trips:
             continue
         endpoints = [stops.get(identity) for identity in pattern["stopIds"]]
@@ -267,14 +267,23 @@ class TransportPlanningService:
     def _links(self, service_date: date) -> list[dict[str, Any]]:
         links = []
         baseline = self.planning._baseline_view()
-        stops = {item["id"]: item for item in baseline["stops"]}
+        stops = {item["id"]: item for item in baseline["stops"] if not item.get("disabled")}
         for pattern in baseline["patterns"]:
             trips = pattern_trips(pattern, service_date)
             if not trips or pattern.get("enabled") is False:
                 continue
-            for first_id, second_id in zip(pattern["stopIds"], pattern["stopIds"][1:]):
+            for stop_index, (first_id, second_id) in enumerate(
+                zip(pattern["stopIds"], pattern["stopIds"][1:])
+            ):
                 first, second = stops.get(first_id), stops.get(second_id)
                 if not first or not second or first["islandId"] == second["islandId"]:
+                    continue
+                departures = [
+                    trip
+                    for trip in trips
+                    if 0 <= trip["stopTimes"][stop_index]["departureMinutes"] < 1440
+                ]
+                if not departures:
                     continue
                 a = IDENTITY_BRIDGE.get(first["islandId"], first["islandId"])
                 b = IDENTITY_BRIDGE.get(second["islandId"], second["islandId"])
@@ -286,7 +295,7 @@ class TransportPlanningService:
                         "from_island_id": a,
                         "to_island_id": b,
                         "evidence": "dated_service",
-                        "departure_count": len(trips),
+                        "departure_count": len(departures),
                         "geometry": [[first["lon"], first["lat"]], [second["lon"], second["lat"]]],
                         "source_ids": pattern.get("sourceIds", []),
                     }

@@ -11,6 +11,7 @@ from threading import RLock
 from typing import Any
 
 from app.analytics.sources import file_receipt, read_json
+from app.data.cache import atomic_write
 from app.data.computed_cache import ComputedCache, SourceVersion, model_code_version
 from app.forecasting.analysis import EvidenceAnalysis
 from app.forecasting.engine import (
@@ -423,9 +424,13 @@ class ForecastService:
         path = self.runtime_dir / f"{issue_id}.json"
         with self._lock:
             try:
-                with path.open("x", encoding="utf-8") as handle:
-                    json.dump(issue, handle, ensure_ascii=False, indent=2, allow_nan=False)
-                    handle.write("\n")
+                atomic_write(
+                    path,
+                    (
+                        json.dumps(issue, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
+                    ).encode("utf-8"),
+                    exclusive=True,
+                )
                 created = True
             except FileExistsError:
                 issue = self._verify_issue(read_json(path))

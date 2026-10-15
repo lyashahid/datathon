@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onMount, tick } from 'svelte';
+	import { downloadText } from '#lib/download.js';
+	import { onMount, tick, untrack } from 'svelte';
 	import {
 		ArrowDown,
 		ArrowRight,
@@ -19,7 +20,7 @@
 	import { Badge } from '#lib/components/ui/badge/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
 	import * as NativeSelect from '#lib/components/ui/native-select/index.js';
-	import { api } from '#lib/api.js';
+	import { api, subscribeApiInvalidation } from '#lib/api.js';
 	import PolicyOpportunityOverview from '#lib/components/PolicyOpportunityOverview.svelte';
 	import MobilityPulse from '#lib/components/MobilityPulse.svelte';
 	import IslandAccessibilityDetails from '#lib/components/IslandAccessibilityDetails.svelte';
@@ -42,17 +43,21 @@
 		features,
 		onExplore,
 		onConnections,
-		onForecast
+		onForecast,
+		active = true
 	}: {
 		summary: NationalSummary | null;
 		features: MapFeatures | null;
 		onExplore: (islandId?: string, atoll?: string, lens?: PolicyLens) => void;
 		onConnections?: (islandId?: string) => void;
 		onForecast?: () => void;
+		active?: boolean;
 	} = $props();
 	let accessibility = $state<NationalAccessibility | null>(null);
 	let infrastructure = $state<MapFeatures | null>(null);
 	let loading = $state(true);
+	let mounted = $state(false);
+	let needsRefresh = $state(false);
 	let error = $state('');
 	let cohort = $state('residential');
 	let selectedAtoll = $state('all');
@@ -191,6 +196,10 @@
 	);
 
 	async function load() {
+		needsRefresh = false;
+		scoreController?.abort();
+		scoreDetails = null;
+		scoreDetailsLoading = false;
 		controller?.abort();
 		const requestController = new AbortController();
 		controller = requestController;
@@ -212,6 +221,7 @@
 			if (controller === requestController && !requestController.signal.aborted) {
 				accessibility = result[0];
 				infrastructure = result[1];
+				if (selectedScoreId) void openScoreDetails(selectedScoreId);
 			}
 		} catch (caught) {
 			if (controller === requestController && !requestController.signal.aborted)
@@ -309,20 +319,24 @@
 		]
 			.map((row) => row.map(escape).join(','))
 			.join('\r\n');
-		const url = URL.createObjectURL(new Blob([contents], { type: 'text/csv;charset=utf-8' }));
-		const link = document.createElement('a');
-		link.href = url;
-		link.download = 'maldives-island-screening.csv';
-		link.click();
-		URL.revokeObjectURL(url);
+		downloadText(contents, 'maldives-island-screening.csv', 'text/csv;charset=utf-8');
 	}
 
 	onMount(() => {
-		void load();
+		mounted = true;
+		const unsubscribe = subscribeApiInvalidation(() => {
+			needsRefresh = true;
+		});
+		if (active) void load();
+		else needsRefresh = true;
 		return () => {
+			unsubscribe();
 			controller?.abort();
 			scoreController?.abort();
 		};
+	});
+	$effect(() => {
+		if (mounted && active && needsRefresh) untrack(() => void load());
 	});
 </script>
 
@@ -558,7 +572,7 @@
 					>{:else}Select a category to explore its island records.{/if}
 			</p>
 		</Card.Root>
-		<div class="mobility-pulse-slot"><MobilityPulse {onForecast} /></div>
+		<div class="mobility-pulse-slot"><MobilityPulse {onForecast} {active} /></div>
 
 		<Card.Root class="analytics-card coverage-card">
 			<div class="card-heading">
@@ -688,7 +702,7 @@
 		>
 	{/if}
 
-	<PolicyOpportunityOverview atoll={selectedAtoll} {cohort} {onExplore} {onConnections} />
+	<PolicyOpportunityOverview atoll={selectedAtoll} {cohort} {onExplore} {onConnections} {active} />
 
 	<details class="inventory-disclosure">
 		<summary

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { downloadJson as exportJson } from '#lib/download.js';
 	import { onMount, tick, untrack } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import {
@@ -576,16 +577,7 @@
 			}
 		}
 	}
-	function exportJson(value: unknown, filename: string) {
-		const url = URL.createObjectURL(
-			new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' })
-		);
-		const link = document.createElement('a');
-		link.href = url;
-		link.download = filename;
-		link.click();
-		URL.revokeObjectURL(url);
-	}
+
 	onMount(() => {
 		const measureWorkspace = () => {
 			if (!workspaceElement.offsetParent) return;

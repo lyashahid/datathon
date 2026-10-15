@@ -31,6 +31,7 @@ export function createApiClient({
 } = {}) {
 	const memory = new Map<string, CachedValue>();
 	const flights = new Map<string, Flight>();
+	const invalidationListeners = new Set<() => void>();
 	let memoryBytes = 0;
 	let generation = 0;
 	let clearing = Promise.resolve();
@@ -61,6 +62,21 @@ export function createApiClient({
 			}
 		});
 		await clearing;
+		for (const listener of invalidationListeners) {
+			try {
+				listener();
+			} catch (cause) {
+				// A view refresh must not turn an accepted source update into a failed write.
+				console.error('Unable to refresh a view after a source update.', cause);
+			}
+		}
+	}
+
+	function subscribeInvalidation(listener: () => void) {
+		invalidationListeners.add(listener);
+		return () => {
+			invalidationListeners.delete(listener);
+		};
 	}
 
 	async function persisted(path: string): Promise<CachedValue | null> {
@@ -116,12 +132,23 @@ export function createApiClient({
 	}
 
 	async function body(response: Response) {
-		const value = await response.json();
+		let value;
+		try {
+			value = await response.json();
+		} catch (cause) {
+			if (cause instanceof Error && cause.name === 'AbortError') throw cause;
+			throw new ApiError(
+				response.ok
+					? 'The server returned an unreadable response. Please retry.'
+					: `Request failed (${response.status}). Please retry.`,
+				response.status
+			);
+		}
 		if (!response.ok)
 			throw new ApiError(
-				value.error?.message ?? `Request failed (${response.status})`,
+				value?.error?.message ?? `Request failed (${response.status})`,
 				response.status,
-				value.error?.details
+				value?.error?.details
 			);
 		return value;
 	}
@@ -267,9 +294,11 @@ export function createApiClient({
 		return subscribe<T>(flight, signal);
 	}
 
-	return { request, invalidate };
+	return { request, invalidate, subscribeInvalidation };
 }
 
 const client = createApiClient();
 export const api = client.request;
 export const invalidateApiCache = client.invalidate;
+/** Retained views refresh their source data without losing local filters or drafts. */
+export const subscribeApiInvalidation = client.subscribeInvalidation;

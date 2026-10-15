@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { ArrowLeftRight, Check, MapPin, RefreshCw, Ship, TriangleAlert } from '@lucide/svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
 	import { Label } from '#lib/components/ui/label/index.js';
 	import * as NativeSelect from '#lib/components/ui/native-select/index.js';
-	import { api } from '#lib/api.js';
+	import { api, subscribeApiInvalidation } from '#lib/api.js';
 	import {
 		ferryConnectionLabel,
 		ferryFeatureBounds,
@@ -36,6 +37,7 @@
 	let loading = $state(false);
 	let error = $state('');
 	let retry = $state(0);
+	onMount(() => subscribeApiInvalidation(() => (retry += 1)));
 	const choices = $derived(
 		(islands?.features ?? [])
 			.filter((feature) => feature.properties?.id?.startsWith('island:'))

@@ -478,12 +478,38 @@ def apply_operations(
                             }
                         ],
                     }
-                for window in pattern["timing"]["windows"]:
-                    if kind == "set_frequency":
+                windows = pattern["timing"]["windows"]
+                if kind == "set_frequency":
+                    for window in windows:
                         window["headwayMinutes"] = operation.headway_minutes
-                    else:
-                        window["startMinutes"] = operation.start_minutes
-                        window["endMinutes"] = operation.end_minutes
+                elif len(windows) == 1:
+                    windows[0]["startMinutes"] = operation.start_minutes
+                    windows[0]["endMinutes"] = operation.end_minutes
+                else:
+                    # Preserve midday gaps and each window's frequency. Assigning
+                    # identical hours to every window creates overlapping service
+                    # and rejects an otherwise valid edit to split operating hours.
+                    ordered = sorted(windows, key=lambda window: window["startMinutes"])
+                    start, end = operation.start_minutes, operation.end_minutes
+                    clipped = [
+                        {
+                            **window,
+                            "startMinutes": max(start, window["startMinutes"]),
+                            "endMinutes": min(end, window["endMinutes"]),
+                        }
+                        for window in ordered
+                        if max(start, window["startMinutes"]) < min(end, window["endMinutes"])
+                    ]
+                    if not clipped:
+                        raise ValueError(
+                            "New hours fall entirely between existing service windows; "
+                            "import an explicit timetable to create service during this gap"
+                        )
+                    if start < ordered[0]["startMinutes"]:
+                        clipped[0]["startMinutes"] = start
+                    if end > ordered[-1]["endMinutes"]:
+                        clipped[-1]["endMinutes"] = end
+                    pattern["timing"]["windows"] = clipped
                 validate_service(pattern, world["stops"])
     if closure_applied:
         reroute_bus_services(repository, world, request, warnings)

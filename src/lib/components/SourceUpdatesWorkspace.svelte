@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { downloadJson } from '#lib/download.js';
 	import { onMount, tick, untrack } from 'svelte';
 	import type {
 		UpdateStatus,
@@ -7,7 +8,7 @@
 		NationalItinerary
 	} from '#lib/source-updates.js';
 	import type { IslandFeature } from '#lib/types.js';
-	import { api, ApiError } from '#lib/api.js';
+	import { api, ApiError, subscribeApiInvalidation } from '#lib/api.js';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
 	import { Label } from '#lib/components/ui/label/index.js';
@@ -27,11 +28,14 @@
 
 	let {
 		mode = 'evidence',
-		islandId = 'island:1443'
-	}: { mode?: 'evidence' | 'schedules'; islandId?: string } = $props();
+		islandId = 'island:1443',
+		active = true
+	}: { mode?: 'evidence' | 'schedules'; islandId?: string; active?: boolean } = $props();
 	let sourceData = $state.raw<UpdateStatus | null>(null);
 	let islands = $state.raw<IslandFeature[]>([]);
 	let busy = $state('');
+	let mounted = $state(false);
+	let needsRefresh = $state(false);
 	let error = $state('');
 	let fileInput = $state<HTMLInputElement>();
 	let staged = $state.raw<StagedSchedule | null>(null);
@@ -79,6 +83,7 @@
 	};
 
 	async function load() {
+		needsRefresh = false;
 		loadController?.abort();
 		const request = new AbortController();
 		loadController = request;
@@ -109,11 +114,23 @@
 		}
 	}
 	onMount(() => {
-		void load();
+		mounted = true;
+		const unsubscribe = subscribeApiInvalidation(() => {
+			journeyController?.abort();
+			journey = null;
+			if (busy === 'journey') busy = '';
+			needsRefresh = true;
+		});
+		if (active) void load();
+		else needsRefresh = true;
 		return () => {
+			unsubscribe();
 			loadController?.abort();
 			journeyController?.abort();
 		};
+	});
+	$effect(() => {
+		if (mounted && active && needsRefresh && !busy) untrack(() => void load());
 	});
 	const journeyInputs = $derived(
 		JSON.stringify([origin, destination, dateTime, transfer, includeAssumptions])
@@ -226,14 +243,7 @@
 				'Fill services using the documented schedule contract; do not infer arrivals from opposite-direction departures.'
 			]
 		};
-		const url = URL.createObjectURL(
-			new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' })
-		);
-		const link = document.createElement('a');
-		link.href = url;
-		link.download = 'national-timetable-template.json';
-		link.click();
-		URL.revokeObjectURL(url);
+		downloadJson(content, 'national-timetable-template.json');
 	}
 </script>
 

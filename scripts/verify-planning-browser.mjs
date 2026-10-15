@@ -63,8 +63,49 @@ function responseFor(surface, endpoint) {
 		{ timeout: 90000 }
 	);
 }
+/** @param {import('@playwright/test').Page} surface @param {string} name */
+async function openStep(surface, name) {
+	await surface.locator('.policy-workflow').getByRole('button', { name, exact: true }).click();
+	await expect(surface.locator('#policy-inspector')).toBeVisible();
+}
+/** @param {import('@playwright/test').Page} surface @param {string} title */
+async function openDetails(surface, title) {
+	const summary = surface.locator('#policy-inspector summary').filter({ hasText: title });
+	if (!(await summary.evaluate((element) => element.parentElement?.hasAttribute('open'))))
+		await summary.click();
+}
+/** @param {import('@playwright/test').Page} surface @param {'add_hospital'|'add_school'|'add_stop'|'add_service'} kind */
+async function startChange(surface, kind) {
+	await openStep(surface, 'Changes');
+	if (kind === 'add_service') {
+		await openDetails(surface, 'More changes: services and roads');
+		await surface
+			.getByRole('button', { name: 'Plan a service or road change', exact: true })
+			.click();
+	} else {
+		const map = surface.getByRole('region', { name: 'Interactive proposal map', exact: true });
+		await map
+			.getByRole('button', {
+				name: kind === 'add_hospital' ? 'Hospital' : kind === 'add_school' ? 'School' : 'Bus stop',
+				exact: true
+			})
+			.click();
+		await map.getByRole('button', { name: 'Use map center', exact: true }).click();
+		await map.getByRole('button', { name: 'Name, opening date & details', exact: true }).click();
+	}
+}
+/** @param {import('@playwright/test').Page} surface */
+async function confirmPlace(surface) {
+	await surface.getByRole('button', { name: 'Back to pin to confirm', exact: true }).click();
+	await surface
+		.getByRole('region', { name: 'Confirm proposed location', exact: true })
+		.getByRole('button', { name: 'Confirm place', exact: true })
+		.click();
+	await openStep(surface, 'Changes');
+}
 /** @param {import('@playwright/test').Page} surface @returns {Promise<Evaluation>} */
 async function evaluate(surface) {
+	await openDetails(surface, 'Planning date, access goal and assumptions');
 	const pending = responseFor(surface, 'evaluate');
 	await surface.getByRole('button', { name: 'Evaluate proposal', exact: true }).click();
 	const response = await pending;
@@ -90,37 +131,20 @@ function reconcile(result) {
 
 /** @param {import('@playwright/test').Page} surface */
 async function assertPolicyTabsFit(surface) {
-	// Resize scroll anchoring may move the page between separate locator measurements.
-	const snapshot = await surface.evaluate(async () => {
-		await new Promise((resolve) =>
-			requestAnimationFrame(() => requestAnimationFrame(() => resolve(true)))
-		);
-		const list = document.querySelector('.policy-tabs [role="tablist"]');
-		const content = Array.from(
-			document.querySelectorAll('.policy-tabs [data-slot="tabs-content"]')
-		).find((element) => getComputedStyle(element).display !== 'none');
-		if (!list || !content) return null;
-		/** @param {Element} element */
-		const bounds = (element) => {
-			const rect = element.getBoundingClientRect();
-			return { y: rect.y, height: rect.height };
-		};
-		return {
-			listBox: bounds(list),
-			contentBox: bounds(content),
-			triggers: Array.from(list.querySelectorAll('[role="tab"]')).map(bounds)
-		};
-	});
-	assert.ok(snapshot, 'Policy navigation and active panel have measurable bounds');
-	const { listBox, contentBox } = snapshot;
+	const workflow = surface.locator('.policy-workflow');
+	await expect(workflow).toBeVisible();
 	assert.ok(
-		listBox.y + listBox.height <= contentBox.y + 1,
-		`Policy tabs overlap their panel: ${JSON.stringify({ listBox, contentBox })}`
+		await surface.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+		'Planning has no page overflow'
 	);
-	for (const box of snapshot.triggers) {
+	for (const button of await workflow.getByRole('button').all()) {
+		await button.scrollIntoViewIfNeeded();
+		const bounds = await button.boundingBox();
 		assert.ok(
-			box && box.y + box.height <= listBox.y + listBox.height + 1,
-			`Wrapped trigger exceeds its tab list: ${JSON.stringify({ box, listBox })}`
+			bounds &&
+				bounds.x >= -1 &&
+				bounds.x + bounds.width <= (surface.viewportSize()?.width ?? 0) + 1,
+			'Every workflow action is reachable within its scrolling toolbar'
 		);
 	}
 }
@@ -143,8 +167,8 @@ try {
 		assert.equal(response.status(), 200);
 		baseline = await response.json();
 		assert.ok(baseline.origins.length > 100 && baseline.graph_edges.length > 100);
-		await page.goto(`${baseURL}/?view=scenarios&proposal=policy&island=island%3A1443`);
-		await expect(page.locator('#policy-operation')).toBeVisible();
+		await page.goto(`${baseURL}/?view=scenarios&proposal=advanced&island=island%3A1443`);
+		await openStep(page, 'Changes');
 		assert.equal(baselineRequests, 1);
 		const result = await evaluate(page);
 		reconcile(result);
@@ -160,7 +184,7 @@ try {
 	});
 
 	await check('Real outward/return appointment and stale export guard', async () => {
-		await page.getByRole('tab', { name: '3 · Journeys & returns', exact: true }).click();
+		await openStep(page, 'Journey');
 		await page.locator('#policy-origin').selectOption(baseline.origins[0].id);
 		await page.locator('#policy-appointment').fill('30');
 		const pending = responseFor(page, 'journey');
@@ -198,11 +222,13 @@ try {
 	});
 
 	await check('Hospital investment and unknown facility carbon remain separate', async () => {
-		await page.getByRole('tab', { name: '1 · Design proposal', exact: true }).click();
+		await openStep(page, 'Changes');
+		await startChange(page, 'add_hospital');
 		await page.locator('#policy-name').fill('QA proposed community hospital');
+		await openDetails(page, 'Precise coordinates (optional)');
 		await page.locator('#policy-lon').fill(String(baseline.origins[0].lon));
 		await page.locator('#policy-lat').fill(String(baseline.origins[0].lat));
-		await page.getByRole('button', { name: 'Add intervention', exact: true }).click();
+		await confirmPlace(page);
 		const result = await evaluate(page);
 		reconcile(result);
 		assert.equal(result.economics.delta.capital_mvr, 120_000_000);
@@ -211,18 +237,20 @@ try {
 		assert.equal(result.economics.delta.annual_fleet_operating_kg_co2e, 0);
 		assert.equal(result.economics.delta.embodied_facility_kg_co2e, null);
 		await captureStage(page, 'resident-access');
-		await page.getByRole('tab', { name: '1 · Design proposal', exact: true }).click();
-		await page.getByRole('button', { name: 'Remove intervention 1', exact: true }).click();
+		await openStep(page, 'Changes');
+		await page.getByRole('button', { name: 'Remove proposed change 1', exact: true }).click();
 		return result.economics.delta;
 	});
 
 	await check('School uses explicit energy/construction carbon assumptions', async () => {
+		await startChange(page, 'add_school');
+		await openDetails(page, 'Planning date, access goal and assumptions');
 		await page.locator('#policy-goal').selectOption('education');
-		await page.locator('#policy-operation').selectOption('add_school');
 		await page.locator('#policy-name').fill('QA proposed school');
+		await openDetails(page, 'Facility emissions assumptions (optional)');
 		await page.locator('#policy-facility-annual-carbon').fill('1250');
 		await page.locator('#policy-facility-embodied-carbon').fill('12000');
-		await page.getByRole('button', { name: 'Add intervention', exact: true }).click();
+		await confirmPlace(page);
 		const result = await evaluate(page);
 		assert.equal(result.economics.delta.capital_mvr, 25_000_000);
 		assert.equal(result.economics.delta.annual_facility_operating_kg_co2e, 1250);
@@ -233,16 +261,16 @@ try {
 	await check(
 		'Two-direction service form and stable stop references survive removing an earlier edit',
 		async () => {
-			await page.getByRole('tab', { name: '1 · Design proposal', exact: true }).click();
-			await page.locator('#policy-operation').selectOption('add_stop');
+			await openStep(page, 'Changes');
+			await startChange(page, 'add_stop');
 			await page.locator('#policy-name').fill('QA stable boarding location');
-			await page.getByRole('button', { name: 'Add intervention', exact: true }).click();
+			await confirmPlace(page);
 			let option = await savedOption(page);
 			const stopId = String(
 				option.operations.find((operation) => operation.type === 'add_stop')?.metadata?.proposal_id
 			);
 			assert.ok(stopId.startsWith('proposal:add_stop:'));
-			await page.locator('#policy-operation').selectOption('add_service');
+			await startChange(page, 'add_service');
 			await page.locator('#policy-service-name').fill('QA assumed return service');
 			await page.locator('#policy-service-mode').selectOption('bus');
 			await page.locator('#policy-service-from').selectOption(stopId);
@@ -253,8 +281,8 @@ try {
 			await page.locator('#policy-service-runtime').fill('12');
 			await page.locator('#policy-service-distance').fill('1');
 			await page.locator('#policy-service-return').check();
-			await page.getByRole('button', { name: 'Add intervention', exact: true }).click();
-			await page.getByRole('button', { name: 'Remove intervention 1', exact: true }).click();
+			await page.getByRole('button', { name: 'Save this change', exact: true }).click();
+			await page.getByRole('button', { name: 'Remove proposed change 1', exact: true }).click();
 			option = await savedOption(page);
 			assert.equal(option.operations.length, 3);
 			assert.equal(option.operations[0].metadata?.proposal_id, stopId);
@@ -265,7 +293,7 @@ try {
 			assert.ok(
 				result.economics.delta.capital_mvr !== null && result.economics.delta.capital_mvr > 100_000
 			);
-			await page.getByRole('tab', { name: '4 · Timetables & delivery', exact: true }).click();
+			await openStep(page, 'Budget & services');
 			await expect(
 				page
 					.locator('.policy-tabs [data-slot="tabs-content"]:visible')
@@ -296,8 +324,9 @@ try {
 	await check(
 		'Scoped draft reload, readable export/import, and cross-island scope isolation',
 		async () => {
-			await page.getByRole('tab', { name: '1 · Design proposal', exact: true }).click();
+			await openStep(page, 'Changes');
 			const pending = page.waitForEvent('download');
+			await openDetails(page, 'Advanced assumptions, saved files and source edits');
 			await page.getByRole('button', { name: 'Export reproducible option', exact: true }).click();
 			const download = await pending;
 			const filename = path.join(output, 'policy-scenario.json');
@@ -305,22 +334,27 @@ try {
 			exported = JSON.parse(await readFile(filename, 'utf8'));
 			assert.equal(exported?.operations.length, 3);
 			await page.reload();
+			await openStep(page, 'Changes');
 			await expect(
 				page.getByText('QA stable boarding location', { exact: true }).first()
 			).toBeVisible();
 			assert.deepEqual((await savedOption(page)).operations, exported?.operations);
-			await page.getByRole('button', { name: 'Remove intervention 3', exact: true }).click();
+			await page.getByRole('button', { name: 'Remove proposed change 3', exact: true }).click();
 			await page.getByLabel('Import policy scenario file', { exact: true }).setInputFiles(filename);
 			await expect(
-				page.getByRole('button', { name: 'Remove intervention 3', exact: true })
+				page.getByRole('button', { name: 'Remove proposed change 3', exact: true })
 			).toBeVisible();
 			assert.deepEqual((await savedOption(page)).operations, exported?.operations);
+			await openDetails(page, 'Planning date, access goal and assumptions');
 			await page.getByRole('button', { name: 'Plan across Greater Malé', exact: true }).click();
+			await openStep(page, 'Changes');
+			await openDetails(page, 'Planning date, access goal and assumptions');
 			await expect(
 				page.getByText('667 resident areas · 11 bus patterns', { exact: true })
 			).toBeVisible();
 			assert.equal(await page.locator('.policy-operation-row').count(), 0);
 			await page.reload();
+			await openStep(page, 'Changes');
 			await expect(
 				page.getByText('QA stable boarding location', { exact: true }).first()
 			).toBeVisible();
@@ -330,98 +364,133 @@ try {
 	);
 
 	await check(
-		'Reviewed notice survives delayed first policy mount and is consumed once',
+		'Reviewed notices refresh retained planning evidence without losing drafts',
 		async () => {
-			const noticePage = await context.newPage();
-			noticePage.on('pageerror', (error) => report.errors.push(error.message));
-			await noticePage.goto(`${baseURL}/?view=live&context=conditions&island=island%3A1443`);
-			await noticePage.getByRole('tab', { name: /Public notices/ }).click();
-			await noticePage.locator('#notice-url').fill('https://www.mtcc.mv/');
-			await noticePage.locator('#notice-title').fill('QA exercise: reviewed closure mapping');
-			await noticePage
+			const advancedBefore = (await savedOption(page)).operations;
+			await page
+				.locator('.policy-workflow')
+				.getByRole('button', { name: 'Back to Explore', exact: true })
+				.click();
+			async function openNotices() {
+				await page.getByRole('button', { name: 'Weather & traffic', exact: true }).click();
+				await page
+					.getByRole('button', { name: 'Open notice evidence & disruption tools', exact: true })
+					.click();
+				await page.getByRole('tab', { name: /Public notices/ }).click();
+			}
+			async function mapDraft() {
+				return page.evaluate(() =>
+					JSON.parse(localStorage.getItem('policy-map-v2:island:1443') || '{}')
+				);
+			}
+			await openNotices();
+			await page.locator('#notice-url').fill('https://www.mtcc.mv/');
+			await page.locator('#notice-title').fill('QA exercise: reviewed closure mapping');
+			await page
 				.locator('#notice-text')
 				.fill(
 					'QA exercise supplied by the tester: an assumed road closure for a planning test. This text is not an official current notice.'
 				);
-			const importPending = noticePage.waitForResponse(
+			const importPending = page.waitForResponse(
 				(response) =>
 					response.url().includes('/operations/notices/ingest') &&
 					response.request().method() === 'POST'
 			);
-			await noticePage.getByRole('button', { name: 'Import notice', exact: true }).click();
-			const importResponse = await importPending;
-			assert.equal(importResponse.status(), 200, await importResponse.text());
+			await page.getByRole('button', { name: 'Import notice', exact: true }).click();
+			const imported = await importPending;
+			assert.equal(imported.status(), 200, await imported.text());
 			/** @type {Notice} */
-			const notice = await importResponse.json();
+			const notice = await imported.json();
 			noticeId = notice.id;
-			await noticePage.locator('#notice-kind').selectOption('road_closure');
-			await noticePage.locator('#notice-target').fill(baseline.graph_edges[0].id);
-			await noticePage.getByLabel('Effective from · MVT', { exact: true }).fill('2026-10-10T15:00');
-			await noticePage.getByLabel('Valid until · MVT', { exact: true }).fill('2026-10-10T16:00');
-			await noticePage
+			await page.locator('#notice-kind').selectOption('road_closure');
+			await page.locator('#notice-target').fill(baseline.graph_edges[0].id);
+			await page.getByLabel('Effective from · MVT', { exact: true }).fill('2026-10-10T15:00');
+			await page.getByLabel('Valid until · MVT', { exact: true }).fill('2026-10-10T16:00');
+			await page
 				.locator('#review-notes')
 				.fill(
 					'Automated QA exercise mapping a verified graph target; assumption only, not an official notice.'
 				);
-			const reviewPending = noticePage.waitForResponse(
+			const reviewPending = page.waitForResponse(
 				(response) =>
 					response.url().includes(`/notices/${encodeURIComponent(notice.id)}/review`) &&
 					response.request().method() === 'POST'
 			);
-			await noticePage.getByRole('button', { name: 'Approve mapping', exact: true }).click();
+			await page.getByRole('button', { name: 'Approve mapping', exact: true }).click();
 			assert.equal((await reviewPending).status(), 200);
 			let delayed = false;
-			await noticePage.route('**/api/backend/planning/baseline**', async (route) => {
-				// Only delay actual delivery; do not fabricate or replace source responses.
+			await page.route('**/api/backend/planning/baseline**', async (route) => {
 				if (!delayed) {
 					delayed = true;
 					await new Promise((resolve) => setTimeout(resolve, 750));
 				}
 				await route.continue();
 			});
-			await noticePage.getByRole('button', { name: 'Use in proposal', exact: true }).click();
+			await page.getByRole('button', { name: 'Use in proposal', exact: true }).click();
+			const proposal = page.getByRole('region', { name: 'Island needs and proposal', exact: true });
 			await expect(
-				noticePage.getByText(`Reviewed notice ${notice.id}`, { exact: false })
+				proposal.locator('.policy-operation-list').getByText('Close road', { exact: true })
 			).toBeVisible();
-			const saved = await savedOption(noticePage);
+			await expect
+				.poll(
+					async () =>
+						((await mapDraft()).operations ?? []).filter(
+							/** @param {Operation} operation */ (operation) =>
+								operation.metadata?.notice_id === notice.id
+						).length
+				)
+				.toBe(1);
+			const firstMapDraft = await mapDraft();
+			await page.getByRole('button', { name: 'Close island planning panel', exact: true }).click();
+			await openNotices();
+			await page.getByRole('button', { name: /QA exercise: reviewed closure mapping/ }).click();
+			await page.getByRole('button', { name: 'Use in proposal', exact: true }).click();
+			await expect(
+				proposal.locator('.policy-operation-list').getByText('Close road', { exact: true })
+			).toBeVisible();
+			const repeated = await mapDraft();
 			assert.equal(
-				saved.operations.filter((operation) => operation.metadata?.notice_id === notice.id).length,
+				repeated.operations.filter(
+					/** @param {Operation} operation */ (operation) =>
+						operation.metadata?.notice_id === notice.id
+				).length,
 				1
 			);
-			assert.equal(saved.operations.length, 4);
-			await noticePage.reload();
-			await expect(
-				noticePage.getByText(`Reviewed notice ${notice.id}`, { exact: false })
-			).toBeVisible();
-			await noticePage.goto(`${baseURL}/?view=live&context=conditions&island=island%3A1443`);
-			await noticePage.getByRole('tab', { name: /Public notices/ }).click();
-			await noticePage
-				.getByRole('button', { name: /QA exercise: reviewed closure mapping/ })
+			assert.equal(repeated.operations.length, firstMapDraft.operations.length);
+			const expired = await context.request.post(`${baseURL}/api/backend/planning/evaluate`, {
+				data: {
+					island_id: 'island:1443',
+					operations: repeated.operations,
+					assumptions: { ...repeated.assumptions, departure_minutes: 960 }
+				}
+			});
+			assert.equal(expired.status(), 200, await expired.text());
+			/** @type {Evaluation} */
+			const expiredResult = await expired.json();
+			assert.ok(
+				expiredResult.warnings.some((warning) => warning.includes('outside its validity window'))
+			);
+			const countBefore = baselineRequests;
+			await proposal
+				.getByRole('button', { name: 'Advanced service & fleet tools', exact: true })
 				.click();
-			await noticePage.getByRole('button', { name: 'Use in proposal', exact: true }).click();
-			await expect(
-				noticePage.getByText(`Reviewed notice ${notice.id}`, { exact: false })
-			).toBeVisible();
-			const repeated = await savedOption(noticePage);
-			assert.equal(
-				repeated.operations.filter((operation) => operation.metadata?.notice_id === notice.id)
-					.length,
-				1
+			await openStep(page, 'Changes');
+			await expect(page.locator('.policy-operation-row')).toHaveCount(advancedBefore.length);
+			assert.deepEqual((await savedOption(page)).operations, advancedBefore);
+			assert.ok(
+				baselineRequests > countBefore,
+				'Returning to retained service tools reloads changed source evidence'
 			);
-			assert.equal(repeated.operations.length, 4);
-			await noticePage.locator('#policy-departure').fill('16:00');
-			const result = await evaluate(noticePage);
-			assert.ok(result.warnings.some((warning) => warning.includes('outside its validity window')));
-			await noticePage.screenshot({
-				path: path.join(output, 'reviewed-notice.png'),
+			await page.screenshot({
+				path: path.join(output, 'reviewed-notice-preserved-advanced-draft.png'),
 				fullPage: true
 			});
-			await noticePage.close();
 			return {
 				noticeId: notice.id,
-				delayedFirstBaseline: delayed,
-				persistedOnce: true,
-				repeatedHandoffDeduplicated: true
+				delayedFreshBaseline: delayed,
+				repeatedHandoffDeduplicated: true,
+				preservedAdvancedChanges: advancedBefore.length,
+				freshAdvancedBaseline: true
 			};
 		}
 	);
@@ -429,8 +498,8 @@ try {
 	await check('Desktop and mobile planning remain contained', async () => {
 		await page.screenshot({ path: path.join(output, 'desktop.png'), fullPage: true });
 		await page.setViewportSize({ width: 375, height: 812 });
-		await page.getByRole('tab', { name: '1 · Design proposal', exact: true }).click();
-		await page.locator('#policy-operation').selectOption('add_service');
+		await openStep(page, 'Changes');
+		await startChange(page, 'add_service');
 		await assertPolicyTabsFit(page);
 		const dimensions = await page.evaluate(() => ({
 			width: innerWidth,

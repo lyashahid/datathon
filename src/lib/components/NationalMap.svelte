@@ -2028,8 +2028,10 @@
 		oneditproposal?.(index, action);
 	}
 	function placementCoordinates(coordinates: Coordinates, kind: PlacementKind): Coordinates {
-		return kind === 'add_stop'
-			? nearestPlacementRoad(coordinates, placementRoads).coordinates
+		if (kind !== 'add_stop') return coordinates;
+		const candidate = nearestPlacementRoad(coordinates, placementRoads).coordinates;
+		return selectedId && pointWithinIsland(candidate, features, selectedId) === true
+			? candidate
 			: coordinates;
 	}
 	function updatePlacementPreview() {
@@ -2048,7 +2050,12 @@
 			: (pendingProposal?.coordinates ?? [location.lng, location.lat]);
 		const kind = pendingProposal?.kind ?? placementKind!;
 		const snapped = kind === 'add_stop' ? nearestPlacementRoad(raw, placementRoads) : null;
-		const coordinates = snapped?.coordinates ?? raw;
+		const coordinates =
+			snapped?.snapped &&
+			selectedId &&
+			pointWithinIsland(snapped.coordinates, features, selectedId) === true
+				? snapped.coordinates
+				: raw;
 		const point = map.project(coordinates);
 		const north = map.project([coordinates[0], coordinates[1] + 400 / 111320]);
 		placementPreview = {
@@ -2056,7 +2063,7 @@
 			y: point.y,
 			radius: Math.max(5, Math.min(1600, Math.abs(point.y - north.y))),
 			coordinates,
-			snapped: snapped?.snapped ?? false,
+			snapped: snapped?.snapped === true && coordinates === snapped.coordinates,
 			suitable: selectedId ? pointWithinIsland(coordinates, features, selectedId) : null
 		};
 	}

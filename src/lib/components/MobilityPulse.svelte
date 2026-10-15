@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import {
 		ArrowDownRight,
 		ArrowUpRight,
@@ -7,11 +7,11 @@
 		ChevronRight,
 		RefreshCw
 	} from '@lucide/svelte';
-	import { api } from '#lib/api.js';
+	import { api, subscribeApiInvalidation } from '#lib/api.js';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import * as NativeSelect from '#lib/components/ui/native-select/index.js';
 
-	let { onForecast }: { onForecast?: () => void } = $props();
+	let { onForecast, active = true }: { onForecast?: () => void; active?: boolean } = $props();
 	type Observation = { month: string; value: number };
 	type PassengerSeries = {
 		seriesId: string;
@@ -30,6 +30,8 @@
 	let seriesId = $state('ferry-male-vm');
 	let period = $state<'12m' | 'all'>('12m');
 	let loading = $state(true);
+	let mounted = $state(false);
+	let needsRefresh = $state(false);
 	let error = $state('');
 	let selectedIndex = $state<number | null>(null);
 	let chartWidth = $state(740);
@@ -69,18 +71,15 @@
 			.sort((a, b) => a.month.localeCompare(b.month))
 	);
 	const observations = $derived(period === '12m' ? history.slice(-12) : history);
+	const historyByMonth = $derived(new Map(history.map((item) => [item.month, item])));
 	const previousYear = $derived(
-		period === '12m'
-			? observations.map((item) => history.find((row) => row.month === priorMonth(item.month)))
-			: []
+		period === '12m' ? observations.map((item) => historyByMonth.get(priorMonth(item.month))) : []
 	);
 	const hasComparison = $derived(
 		previousYear.length > 0 && previousYear.every((item) => item !== undefined)
 	);
 	const latest = $derived(history.at(-1));
-	const prior = $derived(
-		latest ? history.find((item) => item.month === priorMonth(latest.month)) : undefined
-	);
+	const prior = $derived(latest ? historyByMonth.get(priorMonth(latest.month)) : undefined);
 	const yearChange = $derived(
 		latest && prior && prior.value > 0 ? (latest.value / prior.value - 1) * 100 : null
 	);
@@ -153,6 +152,7 @@
 	});
 
 	async function load() {
+		needsRefresh = false;
 		controller?.abort();
 		const request = new AbortController();
 		controller = request;
@@ -212,8 +212,19 @@
 		selectedIndex = null;
 	}
 	onMount(() => {
-		void load();
-		return () => controller?.abort();
+		mounted = true;
+		const unsubscribe = subscribeApiInvalidation(() => {
+			needsRefresh = true;
+		});
+		if (active) void load();
+		else needsRefresh = true;
+		return () => {
+			unsubscribe();
+			controller?.abort();
+		};
+	});
+	$effect(() => {
+		if (mounted && active && needsRefresh) untrack(() => void load());
 	});
 </script>
 

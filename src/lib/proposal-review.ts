@@ -8,6 +8,21 @@ export type PlanningReviewRequest = {
 	scenario?: unknown;
 };
 
+/** Cost quotes depend on financial and service assumptions, not the resident-access display. */
+export function planningFinancialKey(request: PlanningReviewRequest): string {
+	return JSON.stringify({
+		...request,
+		assumptions: {
+			...request.assumptions,
+			goal: undefined,
+			target_minutes: undefined,
+			include_origin_geometry: undefined,
+			include_journey_geometry: undefined,
+			include_world: undefined
+		}
+	});
+}
+
 export type PlanningEconomics = {
 	currency: string;
 	basis: string;

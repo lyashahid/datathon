@@ -216,8 +216,8 @@ try {
 			);
 			console.log(`SETUP ${islandId}: place hospital`, site);
 			await page.mouse.click(site.point.x, site.point.y);
-			await panel
-				.locator('.policy-placement-confirm')
+			await atlas
+				.getByTestId('map-placement-confirmation')
 				.getByRole('button', { name: 'Add to proposal', exact: true })
 				.click();
 			console.log(`SETUP ${islandId}: await estimate`);
@@ -228,6 +228,7 @@ try {
 					String(detail.hex_grid?.features.length)
 				);
 			console.log(`SETUP ${islandId}: estimate ready`);
+			await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
 			const costs = await budget.locator('.cost-values').innerText();
 			await panel.locator('.policy-operation-list li').first().getByRole('button').first().click();
 			await expect

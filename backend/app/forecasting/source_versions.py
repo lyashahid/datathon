@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
+from app.data.cache import atomic_write
 from app.forecasting.engine import month_index, validate_series
 
 VERSION_PATTERN = re.compile(r"^[a-f0-9]{32}$")
@@ -156,8 +157,8 @@ class PassengerSourceVersions:
             "review": None,
             "qualification": DISCLAIMER,
         }
-        path.write_text(
-            json.dumps(version, indent=2, ensure_ascii=False, allow_nan=False), encoding="utf-8"
+        atomic_write(
+            path, json.dumps(version, indent=2, ensure_ascii=False, allow_nan=False).encode("utf-8")
         )
         return version
 
@@ -184,12 +185,13 @@ class PassengerSourceVersions:
                 "note": review_note.strip(),
                 "historicalRevisionsAccepted": accept_revisions,
             }
-            (self.directory / f"{identifier}.json").write_text(
-                json.dumps(version, indent=2, ensure_ascii=False, allow_nan=False), encoding="utf-8"
+            atomic_write(
+                self.directory / f"{identifier}.json",
+                json.dumps(version, indent=2, ensure_ascii=False, allow_nan=False).encode("utf-8"),
             )
-        temporary = self.directory / "active.tmp.json"
-        temporary.write_text(json.dumps({"versionId": identifier}), encoding="utf-8")
-        temporary.replace(self.directory / "active.json")
+        atomic_write(
+            self.directory / "active.json", json.dumps({"versionId": identifier}).encode("utf-8")
+        )
         return version
 
     def summaries(self) -> list[dict[str, Any]]:

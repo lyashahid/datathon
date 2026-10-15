@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { downloadText } from '#lib/download.js';
 	import { onMount, untrack } from 'svelte';
 	import {
 		ArrowRight,
@@ -22,7 +23,7 @@
 	import * as Card from '#lib/components/ui/card/index.js';
 	import * as Tabs from '#lib/components/ui/tabs/index.js';
 	import * as NativeSelect from '#lib/components/ui/native-select/index.js';
-	import { api } from '#lib/api.js';
+	import { api, subscribeApiInvalidation } from '#lib/api.js';
 	import DeliveryCalibration from '#lib/components/DeliveryCalibration.svelte';
 	import PlanningMap from '#lib/components/PlanningMap.svelte';
 	import type { Coordinates, MapFeatures } from '#lib/types.js';
@@ -240,6 +241,8 @@
 		onExplore?: () => void;
 	} = $props();
 	let mounted = $state(false);
+	let sourceDirty = $state(false);
+	let loadedIsland = '';
 	let scope = $state('');
 	let baseline = $state<Baseline | null>(null);
 	let loading = $state(false);
@@ -577,7 +580,7 @@
 		return Object.values(unique);
 	});
 
-	async function loadBaseline(nextScope: string) {
+	async function loadBaseline(nextScope: string, preserveDraft = false) {
 		controller?.abort();
 		actionController?.abort();
 		actionController = undefined;
@@ -588,6 +591,7 @@
 		const current = ++sequence;
 		loading = true;
 		error = '';
+		baseline = null;
 		evaluation = null;
 		appointment = null;
 		timetable = null;
@@ -595,13 +599,15 @@
 		editingIndex = null;
 		composerOpen = false;
 		servicePick = 'from';
-		operations = [];
-		changeHistory = [];
-		costOverrides = {};
-		energyOverrides = {};
-		calibrationRecords = [];
-		calibrationSelection = {};
-		fleetResources = [];
+		if (!preserveDraft) {
+			operations = [];
+			changeHistory = [];
+			costOverrides = {};
+			energyOverrides = {};
+			calibrationRecords = [];
+			calibrationSelection = {};
+			fleetResources = [];
+		}
 		try {
 			const data = await api<Baseline>(
 				`planning/baseline?island_id=${encodeURIComponent(nextScope)}`,
@@ -620,7 +626,9 @@
 				longitude = origin.lon;
 				latitude = origin.lat;
 			}
-			const saved = localStorage.getItem(`policy-workbench-v1:${nextScope || 'greater-male'}`);
+			const saved = preserveDraft
+				? null
+				: localStorage.getItem(`policy-workbench-v1:${nextScope || 'greater-male'}`);
 			if (saved) {
 				try {
 					restoreOption(JSON.parse(saved));
@@ -636,10 +644,20 @@
 		}
 	}
 	$effect(() => {
-		if (mounted && islandId) {
-			scope = islandId;
-			untrack(() => void loadBaseline(islandId));
-		}
+		const island = islandId;
+		if (!mounted || !active || !island) return;
+		void sourceDirty;
+		untrack(() => {
+			if (loadedIsland !== island) {
+				loadedIsland = island;
+				scope = island;
+				sourceDirty = false;
+				void loadBaseline(island);
+			} else if (sourceDirty) {
+				sourceDirty = false;
+				void loadBaseline(scope, true);
+			}
+		});
 	});
 	$effect(() => {
 		if (
@@ -698,7 +716,25 @@
 	});
 	onMount(() => {
 		mounted = true;
+		const unsubscribe = subscribeApiInvalidation(() => {
+			sequence++;
+			controller?.abort();
+			actionController?.abort();
+			actionController = undefined;
+			busy = false;
+			busyKind = null;
+			baseline = null;
+			evaluation = null;
+			appointment = null;
+			timetable = null;
+			composerOpen = false;
+			editingIndex = null;
+			sourceDirty = true;
+			mapNotice =
+				'Source evidence changed. Recalculate to review this proposal against the updated data.';
+		});
 		return () => {
+			unsubscribe();
 			sequence++;
 			controller?.abort();
 			actionController?.abort();
@@ -1137,15 +1173,11 @@
 		}
 	}
 	function download(value: unknown, filename: string, type = 'application/json') {
-		const blob = new Blob([typeof value === 'string' ? value : JSON.stringify(value, null, 2)], {
+		downloadText(
+			typeof value === 'string' ? value : JSON.stringify(value, null, 2),
+			filename,
 			type
-		});
-		const url = URL.createObjectURL(blob);
-		const link = document.createElement('a');
-		link.href = url;
-		link.download = filename;
-		link.click();
-		URL.revokeObjectURL(url);
+		);
 	}
 	function exportResidents() {
 		const rows = [

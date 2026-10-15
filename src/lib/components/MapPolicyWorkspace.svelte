@@ -21,7 +21,7 @@
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
 	import { Label } from '#lib/components/ui/label/index.js';
-	import { api } from '#lib/api.js';
+	import { api, subscribeApiInvalidation } from '#lib/api.js';
 	import { impactColors, type PlanningOperation } from '#lib/planning-map.js';
 	import {
 		displayGapHexes,
@@ -35,7 +35,6 @@
 	import {
 		assessDraftBudget,
 		draftCosts,
-		distanceToRoad,
 		emptyFeatures,
 		pointWithinIsland,
 		type MapBaseline,
@@ -47,6 +46,7 @@
 	import {
 		formatAmount,
 		operationName,
+		planningFinancialKey,
 		type PlanningEconomics,
 		type PlanningReviewRequest
 	} from '#lib/proposal-review.js';
@@ -132,6 +132,7 @@
 		onPickFerryDestination = () => {},
 		onPickFerryOrigin = () => {},
 		onDetails,
+		onAdvanced,
 		onConsume = () => {}
 	}: {
 		islandId: string | null;
@@ -158,6 +159,7 @@
 		onPickFerryDestination?: (enabled: boolean) => void;
 		onPickFerryOrigin?: (destination: string, date: string) => void;
 		onDetails: () => void;
+		onAdvanced?: () => void;
 		onConsume?: () => void;
 	} = $props();
 	let mounted = $state(false);
@@ -169,6 +171,7 @@
 	let displayGrid = $state.raw<FeatureCollection>(emptyFeatures());
 	let loading = $state(false);
 	let scopeError = $state(false);
+	let scopeDirty = $state(false);
 	let dataError = $state('');
 	let error = $state('');
 	let title = $state('');
@@ -192,6 +195,7 @@
 	let busQuoting = $state(false);
 	let busError = $state('');
 	let busController: AbortController | undefined;
+	let busRequestedSignature = '';
 	let ferryOpen = $state(false);
 	let ferryDestination = $state('');
 	let ferrySearch = $state('');
@@ -253,6 +257,7 @@
 	let placementQuoteController: AbortController | undefined;
 	let ferryConnectionController: AbortController | undefined;
 	let ferryDraftController: AbortController | undefined;
+	let ferryRequestedSignature = '';
 	let suggestionContext = '';
 	let evaluateTimer: ReturnType<typeof setTimeout> | undefined;
 	const current = $derived(national?.islands.find((row) => row.island_id === islandId));
@@ -292,7 +297,7 @@
 			include_world: false
 		}
 	});
-	const costModelKey = $derived(financialKey(request));
+	const costModelKey = $derived(planningFinancialKey(request));
 	const rawCosts = $derived(draftCosts(operations, costDefaults));
 	const costs = $derived(
 		financialQuote?.key === costModelKey
@@ -370,7 +375,9 @@
 	const suggestionSignature = $derived(JSON.stringify({ request, priorities, costs }));
 	const stale = $derived(!!evaluation && evaluatedSignature !== signature);
 	const roadDistance = $derived(
-		pending && baseline ? distanceToRoad(pending.coordinates, baseline.graph_edges) : null
+		pending && baseline
+			? nearestPlacementRoad(pending.coordinates, baseline.graph_edges, 0).distance
+			: null
 	);
 	const pendingWithin = $derived(
 		pending && islandId ? pointWithinIsland(pending.coordinates, boundaryFeatures, islandId) : null
@@ -466,7 +473,7 @@
 								? localConstructionReason
 								: !boundaryFeatures
 									? boundaryError || 'Loading the detailed island boundary…'
-									: operations.length >= 100
+									: editingIndex === null && operations.length >= 100
 										? 'This proposal has reached the 100-change limit.'
 										: pendingWithin === false
 											? `Move this pin onto ${islandName}. Water and other islands cannot be used.`
@@ -635,7 +642,33 @@
 
 	onMount(() => {
 		mounted = true;
+		const unsubscribe = subscribeApiInvalidation(() => {
+			// Retained map views must replace source-backed evidence after reviewed data changes.
+			// The accepted proposal and its limits stay intact; only previews are discarded.
+			scopeDirty = true;
+			clearTimeout(evaluateTimer);
+			nationalController?.abort();
+			nationalController = undefined;
+			national = null;
+			scopeController?.abort();
+			evaluateController?.abort();
+			placementQuoteController?.abort();
+			cancelPending();
+			closeBusService();
+			closeFerry();
+			cancelSuggestions();
+			baseline = null;
+			gapCells = emptyFeatures();
+			displayGrid = emptyFeatures();
+			evaluation = null;
+			financialQuote = null;
+			evaluatedSignature = '';
+			evaluationQueued = false;
+			evaluating = false;
+			loading = false;
+		});
 		return () => {
+			unsubscribe();
 			clearTimeout(evaluateTimer);
 			nationalController?.abort();
 			scopeController?.abort();
@@ -650,6 +683,7 @@
 		};
 	});
 	$effect(() => {
+		void scopeDirty;
 		if (!mounted || !active || national || nationalController) return;
 		untrack(() => void loadNational());
 	});
@@ -672,8 +706,11 @@
 	}
 	$effect(() => {
 		const scope = scopedKey;
-		if (!mounted || !scope || !active || restoredScope === scope) return;
-		untrack(() => void loadScope(scope));
+		if (!mounted || !scope || !active || (restoredScope === scope && !scopeDirty)) return;
+		untrack(() => {
+			scopeDirty = false;
+			void loadScope(scope);
+		});
 	});
 	async function loadScope(scope: string, restore = restoredScope !== scope) {
 		scopeController?.abort();
@@ -861,6 +898,7 @@
 				return;
 			}
 			closeFerry();
+			closeBusService();
 			quoteController?.abort();
 			checkingBudget = false;
 			pending = {
@@ -966,9 +1004,20 @@
 	$effect(() => {
 		const currentSignature = ferrySignature;
 		untrack(() => {
-			if (ferryDraft && ferryDraft.key !== currentSignature) {
+			if (ferryRequestedSignature && ferryRequestedSignature !== currentSignature) {
 				ferryDraftController?.abort();
 				ferryPreviewing = false;
+				ferryError = '';
+			}
+		});
+	});
+	$effect(() => {
+		const currentSignature = busSignature;
+		untrack(() => {
+			if (busRequestedSignature && busRequestedSignature !== currentSignature) {
+				busController?.abort();
+				busQuoting = false;
+				busError = '';
 			}
 		});
 	});
@@ -1077,10 +1126,12 @@
 			return;
 		const controller = new AbortController();
 		placementQuoteController = controller;
-		const payload: PlanningReviewRequest = {
+		// placementKey contains every cost dependency; access goal/target changes must not
+		// cancel and repeat a financial quote while an independent impact preview updates.
+		const payload: PlanningReviewRequest = untrack(() => ({
 			...request,
 			operations: placementOperations
-		};
+		}));
 		const timer = setTimeout(async () => {
 			try {
 				const value = await api<BudgetQuote>('planning/quote', payload, controller.signal);
@@ -1194,20 +1245,6 @@
 				!['add_stop', 'add_school', 'add_hospital'].includes(operation.type)
 		);
 	}
-	function financialKey(value: PlanningReviewRequest) {
-		// Journey display settings do not change costs; every economic assumption does.
-		return JSON.stringify({
-			...value,
-			assumptions: {
-				...value.assumptions,
-				goal: undefined,
-				target_minutes: undefined,
-				include_origin_geometry: undefined,
-				include_journey_geometry: undefined,
-				include_world: undefined
-			}
-		});
-	}
 	function commitChange(next: PlanningOperation[], undoing = false) {
 		history = undoing ? history.slice(0, -1) : [...history.slice(-29), operations];
 		operations = next;
@@ -1281,7 +1318,7 @@
 				return;
 			}
 			financialQuote = {
-				key: financialKey({ ...request, operations: next }),
+				key: planningFinancialKey({ ...request, operations: next }),
 				capital: result.economics.delta.capital_mvr ?? null,
 				annual: result.economics.delta.annual_operating_mvr ?? null
 			};
@@ -1404,6 +1441,7 @@
 	}
 	function beginBusService() {
 		cancelPending();
+		cancelSuggestions();
 		closeFerry();
 		closeBusService();
 		open('proposal');
@@ -1416,6 +1454,7 @@
 	function closeBusService() {
 		busOpen = false;
 		busController?.abort();
+		busRequestedSignature = '';
 		busQuoting = false;
 		busError = '';
 	}
@@ -1468,6 +1507,7 @@
 		const controller = new AbortController();
 		busController = controller;
 		const key = busSignature;
+		busRequestedSignature = key;
 		busQuoting = true;
 		busError = '';
 		try {
@@ -1510,7 +1550,7 @@
 			return;
 		const next = busOperations();
 		financialQuote = {
-			key: financialKey({ ...request, operations: next }),
+			key: planningFinancialKey({ ...request, operations: next }),
 			capital: busPreview.economics.delta.capital_mvr ?? null,
 			annual: busPreview.economics.delta.annual_operating_mvr ?? null
 		};
@@ -1522,6 +1562,7 @@
 		ferryOpen = false;
 		ferryChoosingDestination = false;
 		ferryDraftController?.abort();
+		ferryRequestedSignature = '';
 		ferryConnectionController?.abort();
 		ferryPreviewing = false;
 		ferryLoading = false;
@@ -1565,6 +1606,7 @@
 		const controller = new AbortController();
 		ferryDraftController = controller;
 		const key = ferrySignature;
+		ferryRequestedSignature = key;
 		ferryPreviewing = true;
 		ferryError = '';
 		try {
@@ -1622,7 +1664,11 @@
 			}
 		}));
 		const next = [...operations, ...additions];
-		financialQuote = { key: financialKey({ ...request, operations: next }), capital, annual };
+		financialQuote = {
+			key: planningFinancialKey({ ...request, operations: next }),
+			capital,
+			annual
+		};
 		commitChange(next);
 		closeFerry();
 		showImpact = false;
@@ -1648,7 +1694,7 @@
 		const acceptedSignature = placementEvaluationKey;
 		const wasMoving = editingIndex !== null;
 		financialQuote = {
-			key: financialKey({ ...request, operations: next }),
+			key: planningFinancialKey({ ...request, operations: next }),
 			capital: quotedPlacement.economics.delta.capital_mvr ?? null,
 			annual: quotedPlacement.economics.delta.annual_operating_mvr ?? null
 		};
@@ -1704,12 +1750,8 @@
 				'Calculate this draft before requesting more investments. Its current cost evidence is incomplete.';
 			return;
 		}
-		if (
-			![Number(capitalBudget), Number(annualBudget)].every(
-				(value) => Number.isFinite(value) && value >= 0
-			)
-		) {
-			error = 'Enter a valid capital budget and yearly running budget.';
+		if (!budgetLimits.allowed) {
+			error = budgetLimits.reason;
 			return;
 		}
 		suggestionController?.abort();
@@ -2250,6 +2292,8 @@
 									operations.length >= 100}
 								ondragstart={(event) => {
 									cancelPending();
+									closeFerry();
+									closeBusService();
 									armedKind = item.kind as PlacementKind;
 									pendingId = `proposal:${item.kind}:${crypto.randomUUID()}`;
 									setGoal(
@@ -2702,6 +2746,9 @@
 						Costs are editable planning illustrations. A bus stop alone adds no service. Draft
 						siting, land rights, staffing and recurring funding require review.
 					</p>
+					{#if onAdvanced}<Button variant="ghost" size="sm" onclick={onAdvanced}
+							>Advanced service & fleet tools <ArrowRight size={14} /></Button
+						>{/if}
 					<small class="policy-saved">{savedMessage}</small>
 				{/if}
 			</div>

@@ -16,6 +16,7 @@ from zoneinfo import ZoneInfo
 import httpx
 from bs4 import BeautifulSoup
 
+from app.data.cache import atomic_write
 from app.data_updates.models import NationalJourney, ScheduleAccept, ScheduleSnapshot
 
 MVT = ZoneInfo("Indian/Maldives")
@@ -43,10 +44,7 @@ MONTHS = {
 
 
 def _write(path: Path, value: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temp = path.with_suffix(".tmp")
-    temp.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
-    temp.replace(path)
+    atomic_write(path, json.dumps(value, ensure_ascii=False, indent=2).encode("utf-8"))
 
 
 def _read(path: Path, fallback: Any) -> Any:

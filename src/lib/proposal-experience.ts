@@ -1,7 +1,5 @@
 import type { Feature, GeoJsonProperties } from 'geojson';
-import type { PlanningOperation, PlanningPlace } from './planning-map.js';
-import { validPoint } from './planning-map.js';
-import type { Coordinates } from './types.js';
+import type { PlanningOperation } from './planning-map.js';
 
 type Cell = Feature | Record<string, unknown>;
 export type ImpactCellExplanation = {
@@ -156,15 +154,6 @@ export function explainImpactCell(
 	};
 }
 
-export type PlacementWalkCatchment = {
-	radiusMetres: number;
-	originCount: number;
-	population: number | null;
-	knownPopulation: number;
-	unknownPopulationOriginCount: number;
-	qualification: string;
-};
-
 export type ServiceCalendar = {
 	includedDates?: string[];
 	excludedDates?: string[];
@@ -188,63 +177,4 @@ export function serviceCalendarRuns(
 		(!calendar.endDate || date <= calendar.endDate) &&
 		(calendar.weekdays?.includes(parsed.getUTCDay()) ?? false)
 	);
-}
-
-/** Fast placement screening only: straight-line proximity is never routed access or a gained-access count. */
-export function placementWalkCatchment(
-	origins: PlanningPlace[],
-	point: Coordinates,
-	options: {
-		targetMinutes: number;
-		walkMetresPerMinute?: number;
-		walkSpeedKph?: number;
-		islandId?: string;
-	}
-): PlacementWalkCatchment {
-	const speed =
-		options.walkMetresPerMinute ??
-		(options.walkSpeedKph === undefined ? 80 : (options.walkSpeedKph * 1000) / 60);
-	if (
-		!validPoint(point) ||
-		!Number.isFinite(options.targetMinutes) ||
-		options.targetMinutes <= 0 ||
-		!Number.isFinite(speed) ||
-		speed <= 0
-	)
-		throw new RangeError(
-			'A valid map point, positive walking speed and positive journey target are required.'
-		);
-	const radiusMetres = options.targetMinutes * speed;
-	let originCount = 0;
-	let knownPopulation = 0;
-	let unknownPopulationOriginCount = 0;
-	for (const origin of origins) {
-		if (
-			(options.islandId && origin.islandId !== options.islandId) ||
-			!validPoint([origin.lon, origin.lat])
-		)
-			continue;
-		const lat = ((origin.lat - point[1]) * Math.PI) / 180;
-		const lon = ((origin.lon - point[0]) * Math.PI) / 180;
-		const haversine =
-			Math.sin(lat / 2) ** 2 +
-			Math.cos((point[1] * Math.PI) / 180) *
-				Math.cos((origin.lat * Math.PI) / 180) *
-				Math.sin(lon / 2) ** 2;
-		const distance = 6371008.8 * 2 * Math.asin(Math.min(1, Math.sqrt(haversine)));
-		if (distance > radiusMetres) continue;
-		originCount += 1;
-		const population = numeric(origin.population2026);
-		if (population === null || population < 0) unknownPopulationOriginCount += 1;
-		else knownPopulation += population;
-	}
-	return {
-		radiusMetres,
-		originCount,
-		population: unknownPopulationOriginCount ? null : knownPopulation,
-		knownPopulation,
-		unknownPopulationOriginCount,
-		qualification:
-			'Straight-line screening radius only. Roads, water, barriers, existing access and service schedules are not checked. Nearby residents are not predicted access gains.'
-	};
 }

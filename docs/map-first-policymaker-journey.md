@@ -1,5 +1,7 @@
 # Map-first policymaker journey
 
+Historical design-pass record. For the latest controls and repeatable checks, see the [proposal interaction guide](proposal-experience.md), [16 October code review](code-review-2026-10-16.md) and [current verification commands](../README.md#verification).
+
 The map is the workspace for exploration, proposal design, conditions and directions. Geographic choices stay visible, and the detail inspector opens in response to a task instead of covering the initial map.
 
 | Before                                                                           | After                                                                                                                                                                 | Why                                                                                    |
@@ -48,7 +50,7 @@ npm test
 npm run test:backend
 npm run lint:backend
 npm run build
-npm run test:browser:map-journey
+npm run test:browser
 npm run test:browser:map-focus
 ```
 

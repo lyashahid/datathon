@@ -8,7 +8,7 @@ from typing import Any
 from app.planning.calibration import calibrate
 from app.planning.models import PlanningAssumptions
 from app.planning.resources import resource_audit
-from app.planning.routing import pattern_trips
+from app.planning.routing import service_day_trips
 from app.routing.engine import _distance_m
 
 # These are editable illustrations, deliberately not labeled as official local prices.
@@ -42,11 +42,7 @@ def fleet_activity(
     groups: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
     selected_trips: dict[str, list[dict[str, Any]]] = {}
     for pattern in world["patterns"]:
-        trips = [
-            trip
-            for trip in pattern_trips(pattern, assumptions.date)
-            if 0 <= trip["stopTimes"][0]["departureMinutes"] < 1440
-        ]
+        trips = service_day_trips(pattern, assumptions.date)
         if trips:
             # Calendar expansion includes previous-service-day trips after midnight.
             selected_trips[pattern["id"]] = trips

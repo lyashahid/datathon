@@ -5,13 +5,16 @@ import { cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import path from 'node:path';
 import { setTimeout as pause } from 'node:timers/promises';
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect as playwrightExpect } from '@playwright/test';
 
 const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
 const output = path.resolve('artifacts/qa/timetable-import');
 const run = path.join(output, `isolated-${Date.now()}`);
 const privateData = path.join(run, 'backend-data');
 const privatePublic = path.join(run, 'public-data');
+const expect = playwrightExpect.configure({ timeout: 60000 });
+/** @type {Array<{method:string,path:string,query:string,body:unknown}>} */
+const sourceRequests = [];
 await mkdir(privateData, { recursive: true });
 /** @type {{baseURL:string,startedAt:string,finishedAt?:string,isolation:Record<string,unknown>,checks:Array<{name:string,status:string,detail?:unknown}>,errors:string[],forwardedRequests:string[]}} */
 const report = {
@@ -221,6 +224,12 @@ try {
 			const suffix = original.pathname.slice('/api/backend/'.length);
 			const resource = suffix === 'health' ? '/health' : `/api/v1/${suffix}`;
 			report.forwardedRequests.push(`${route.request().method()} ${resource}`);
+			sourceRequests.push({
+				method: route.request().method(),
+				path: suffix,
+				query: original.search,
+				body: route.request().postDataJSON()
+			});
 			const response = await route.fetch({
 				url: `${serviceURL}${resource}${original.search}`,
 				timeout: 120000
@@ -231,10 +240,220 @@ try {
 	}
 	const desktop = await context({ width: 1440, height: 1000 });
 	const page = await desktop.newPage();
+	page.setDefaultTimeout(60000);
 	page.on('pageerror', (error) => report.errors.push(error.message));
-	const url = `${baseURL}/?view=map&tool=explore&explorer=schedules&island=island%3A1443`;
+	const url = `${baseURL}/?view=map&tool=explore&explorer=schedules&island=island%3A1442`;
+	const dashboard = page.getByRole('region', { name: 'National analytics', exact: true });
+	const studio = page.getByRole('region', {
+		name: 'Multi-dataset explorer and chart builder',
+		exact: true
+	});
+	const navigation = page.getByRole('navigation', { name: 'Workspace', exact: true });
+	const policyPanel = page.getByRole('region', { name: 'Island needs and proposal', exact: true });
+	const workbench = page.getByRole('region', { name: 'Policy planning workbench', exact: true });
+	const connections = page.getByRole('region', {
+		name: 'Island connections',
+		exact: true,
+		includeHidden: true
+	});
+	const expectedCapital = '123000000';
+	const expectedAnnual = '19000000';
+	const specialistCapital = '230000000';
+	const specialistAnnual = '31000000';
+	const specialistOperation = {
+		type: 'add_stop',
+		name: 'SYNTHETIC QA ONLY retained boarding location',
+		island_id: 'hulhumale',
+		coordinates: [73.538, 4.214],
+		metadata: { proposal_id: 'proposal:add_stop:qa-retained' }
+	};
+	const connectionQuery =
+		'?origin_island_id=island:1443&date=2026-10-14&destination_island_id=island:1442';
+	let selectedAtoll = '';
+	/** @param {string} path @param {string | undefined} query */
+	function requestsFor(path, query = undefined) {
+		const parameters = new URLSearchParams(query);
+		parameters.sort();
+		const expectedQuery = parameters.size ? `?${parameters}` : '';
+		return sourceRequests.filter(
+			(request) => request.path === path && (query === undefined || request.query === expectedQuery)
+		);
+	}
+	function refreshCounts() {
+		return {
+			national: requestsFor('national/summary').length,
+			profile: requestsFor('islands/island%3A1442/profile').length,
+			inventory: requestsFor('map/features', '?layer=infrastructure&include_unlocated=true').length,
+			history: requestsFor('forecasts', '?history_only=true').length,
+			catalogue: requestsFor('datasets').length,
+			chart: requestsFor('datasets/passenger-monthly/chart').length,
+			advancedBaseline: requestsFor('planning/baseline', '?island_id=').length,
+			connections: requestsFor('planning/connectivity', connectionQuery).length
+		};
+	}
+	/** @param {string} name */
+	async function specialistStep(name) {
+		await workbench.locator('.policy-workflow').getByRole('button', { name, exact: true }).click();
+		await expect(workbench.locator('#policy-inspector')).toBeVisible();
+	}
+	await check('Analytics and studio retain working filters before a source update', async () => {
+		await page.goto(`${baseURL}/?view=overview&island=island%3A1442`);
+		await expect(dashboard).toHaveAttribute('aria-busy', 'false');
+		await expect(dashboard.getByRole('region', { name: 'Policy priorities' })).toHaveAttribute(
+			'aria-busy',
+			'false'
+		);
+		await dashboard
+			.getByLabel('Passenger series', { exact: true })
+			.selectOption('bus-male-hulhumale');
+		await dashboard.getByRole('button', { name: 'All history', exact: true }).click();
+		await dashboard.getByLabel('Island cohort', { exact: true }).selectOption('all');
+		await expect
+			.poll(() =>
+				dashboard.getByLabel('Analytics atoll', { exact: true }).locator('option').count()
+			)
+			.toBeGreaterThan(1);
+		selectedAtoll = await dashboard
+			.getByLabel('Analytics atoll', { exact: true })
+			.evaluate((element) => {
+				const select = /** @type {HTMLSelectElement} */ (element);
+				return [...select.options].find((option) => option.value !== 'all')?.value ?? '';
+			});
+		assert.ok(selectedAtoll, 'A real source atoll is available for the retained filter');
+		await dashboard.getByLabel('Analytics atoll', { exact: true }).selectOption(selectedAtoll);
+		await dashboard.evaluate((element) => element.setAttribute('data-qa-retained', 'analytics'));
+		await page.getByRole('tab', { name: 'Data studio', exact: true }).click();
+		await expect(studio.getByRole('button', { name: 'Chart CSV', exact: true })).toBeEnabled();
+		await studio.locator('.filter-details summary').click();
+		await studio.getByLabel('Filter column', { exact: true }).selectOption('mode');
+		await studio.getByLabel('Filter value', { exact: true }).fill('bus');
+		await studio.getByRole('button', { name: 'Add filter', exact: true }).click();
+		const filtered = page.waitForResponse((response) =>
+			response.url().endsWith('/datasets/passenger-monthly/chart')
+		);
+		await studio.getByRole('button', { name: 'Build chart', exact: true }).click();
+		const chart = await (await filtered).json();
+		assert.ok(chart.items.length > 0);
+		assert.ok(chart.items.every((/** @type {{series:string}} */ item) => /bus/i.test(item.series)));
+		await studio.getByLabel('Chart design', { exact: true }).selectOption('bar');
+		await studio.locator('.story-details summary').click();
+		await studio.getByLabel('Story title', { exact: true }).fill('Retained bus analysis');
+		await studio.evaluate((element) => element.setAttribute('data-qa-retained', 'studio'));
+		// Return the national view before leaving Analytics so studio stays inactive after acceptance.
+		await page.getByRole('tab', { name: 'National dashboard', exact: true }).click();
+		await expect(dashboard).toBeVisible();
+		return {
+			selectedAtoll,
+			cohort: 'all',
+			datasetFilter: 'mode = bus',
+			chartRows: chart.items.length
+		};
+	});
+	await check(
+		'Map draft budgets and selected island are ready before timetable review',
+		async () => {
+			await navigation.getByRole('button', { name: 'Map & planning', exact: true }).click();
+			await expect(page.locator('.national-map')).toHaveAttribute('aria-busy', 'false');
+			await expect(page).toHaveURL((value) => value.searchParams.get('island') === 'island:1442');
+			await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
+			await expect(policyPanel.getByLabel('Capital budget · MVR')).toBeVisible();
+			await policyPanel.getByLabel('Capital budget · MVR').fill(expectedCapital);
+			await policyPanel.getByLabel('Annual running budget · MVR').fill(expectedAnnual);
+			await policyPanel
+				.getByLabel('Proposal name', { exact: true })
+				.fill('Retained island proposal');
+			return {
+				island: 'island:1442',
+				capitalBudget: expectedCapital,
+				annualBudget: expectedAnnual
+			};
+		}
+	);
+	await check(
+		'Specialist service tools retain a separate budget and draft before import',
+		async () => {
+			await policyPanel
+				.getByRole('button', { name: 'Advanced service & fleet tools', exact: true })
+				.click();
+			await specialistStep('Changes');
+			await workbench.locator('.policy-context-disclosure summary').click();
+			await workbench
+				.getByRole('button', { name: 'Plan across Greater Malé', exact: true })
+				.click();
+			await expect(
+				workbench
+					.getByRole('tabpanel', { name: 'Changes', exact: true })
+					.getByRole('button', { name: 'Review impact', exact: true })
+			).toBeEnabled();
+			await workbench.getByLabel('Import policy scenario file', { exact: true }).setInputFiles({
+				name: 'SYNTHETIC-QA-ONLY-retained-specialist-draft.json',
+				mimeType: 'application/json',
+				buffer: Buffer.from(
+					JSON.stringify({
+						operations: [specialistOperation],
+						assumptions: {
+							capital_budget_mvr: Number(specialistCapital),
+							annual_operating_budget_mvr: Number(specialistAnnual)
+						}
+					})
+				)
+			});
+			await expect(workbench.locator('.policy-operation-row')).toHaveCount(1);
+			await specialistStep('Budget & services');
+			await expect(workbench.locator('#policy-capital-budget')).toHaveValue(specialistCapital);
+			await expect(workbench.locator('#policy-annual-budget')).toHaveValue(specialistAnnual);
+			await workbench.evaluate((element) => element.setAttribute('data-qa-retained', 'specialist'));
+			await workbench.getByRole('button', { name: 'Back to Explore', exact: true }).click();
+			return {
+				scope: 'greater-male',
+				operation: specialistOperation,
+				specialistCapital,
+				specialistAnnual
+			};
+		}
+	);
+	await check(
+		'Island connection geometry and service evidence are warm before acceptance',
+		async () => {
+			await expect(policyPanel).toBeVisible();
+			await policyPanel
+				.getByRole('button', { name: 'Close island planning panel', exact: true })
+				.click();
+			await page.getByRole('button', { name: 'Directions', exact: true }).click();
+			await page.getByRole('button', { name: 'Island connections', exact: true }).click();
+			await connections.getByLabel('From island', { exact: true }).selectOption('island:1443');
+			await connections
+				.getByLabel('Check service evidence for', { exact: true })
+				.fill('2026-10-14');
+			const pending = page.waitForResponse((response) => {
+				const value = new URL(response.url());
+				return (
+					value.pathname.endsWith('/planning/connectivity') &&
+					value.searchParams.get('origin_island_id') === 'island:1443' &&
+					value.searchParams.get('destination_island_id') === 'island:1442' &&
+					value.searchParams.get('date') === '2026-10-14'
+				);
+			});
+			await connections.getByLabel('To island', { exact: true }).selectOption('island:1442');
+			const evidence = await (await pending).json();
+			assert.notEqual(evidence.status, 'dated_service');
+			await expect(connections).toHaveAttribute('aria-busy', 'false');
+			await expect(connections.locator('.connection-verdict')).toBeVisible();
+			await expect
+				.poll(async () =>
+					Number(
+						await page.locator('.national-map').getAttribute('data-island-connection-features')
+					)
+				)
+				.toBeGreaterThan(0);
+			await connections.evaluate((element) =>
+				element.setAttribute('data-qa-retained', 'connections')
+			);
+			await page.getByRole('button', { name: 'Nationwide schedules', exact: true }).click();
+			return { status: evidence.status, connections: refreshCounts().connections };
+		}
+	);
 	await check('Schedules workspace loads and routing stays disabled before import', async () => {
-		await page.goto(url);
 		await expect(
 			page.getByRole('heading', { name: 'Nationwide timetables', exact: true })
 		).toBeVisible({ timeout: 60000 });
@@ -246,6 +465,7 @@ try {
 			timeout: 60000
 		});
 	});
+	let beforeAcceptance = refreshCounts();
 	let snapshotID = '';
 	await check('JSON upload stages a review without activating its services', async () => {
 		const stagedResponse = page.waitForResponse(
@@ -287,6 +507,7 @@ try {
 	await check(
 		'Acceptance persists a reviewed receipt and activates exactly two services',
 		async () => {
+			beforeAcceptance = refreshCounts();
 			const acceptance = page.waitForResponse(
 				(response) =>
 					response.url().endsWith(`/${snapshotID}/accept`) && response.request().method() === 'POST'
@@ -304,17 +525,178 @@ try {
 			return { snapshotID, acceptedAt: accepted.accepted_at, activeServices: catalogue.total };
 		}
 	);
+	await check(
+		'Accepted sources refresh the active root and defer hidden analysis work',
+		async () => {
+			await expect.poll(() => refreshCounts().national).toBeGreaterThan(beforeAcceptance.national);
+			await expect.poll(() => refreshCounts().profile).toBeGreaterThan(beforeAcceptance.profile);
+			const refreshed = refreshCounts();
+			assert.equal(
+				refreshed.catalogue,
+				beforeAcceptance.catalogue,
+				'Hidden studio defers its catalogue'
+			);
+			assert.equal(
+				refreshed.chart,
+				beforeAcceptance.chart,
+				'Hidden studio defers its filtered chart'
+			);
+			assert.equal(
+				refreshed.history,
+				beforeAcceptance.history,
+				'Hidden passenger history defers its refresh'
+			);
+			assert.equal(
+				refreshed.inventory,
+				beforeAcceptance.inventory,
+				'Hidden analytics defers its inventory'
+			);
+			assert.equal(
+				refreshed.advancedBaseline,
+				beforeAcceptance.advancedBaseline,
+				'Hidden specialist service tools defer their Greater Malé baseline'
+			);
+			await expect.poll(() => refreshCounts().connections).toBe(beforeAcceptance.connections + 1);
+			await expect(connections).toHaveAttribute('data-qa-retained', 'connections');
+			await expect(connections).toHaveAttribute('aria-busy', 'false');
+			await expect(connections.locator('.connection-verdict')).toContainText(
+				'A published service connects these islands'
+			);
+			await expect(connections.locator('.service-evidence').first()).toContainText(
+				'SYNTHETIC QA ONLY first leg'
+			);
+			await expect
+				.poll(async () =>
+					Number(
+						await page.locator('.national-map').getAttribute('data-island-connection-features')
+					)
+				)
+				.toBeGreaterThan(2);
+			await expect(page).toHaveURL((value) => value.searchParams.get('island') === 'island:1442');
+			await page.getByRole('button', { name: 'Back to map', exact: true }).click();
+			await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
+			await expect(policyPanel.getByLabel('Capital budget · MVR')).toHaveValue(expectedCapital);
+			await expect(policyPanel.getByLabel('Annual running budget · MVR')).toHaveValue(
+				expectedAnnual
+			);
+			await expect(policyPanel.getByLabel('Proposal name', { exact: true })).toHaveValue(
+				'Retained island proposal'
+			);
+			return { beforeAcceptance, afterAcceptance: refreshed, retainedIsland: 'island:1442' };
+		}
+	);
+	await check(
+		'Reactivated specialist tools reload evidence while preserving operations and budgets',
+		async () => {
+			await policyPanel
+				.getByRole('button', { name: 'Advanced service & fleet tools', exact: true })
+				.click();
+			await specialistStep('Changes');
+			await expect(workbench.locator('.policy-operation-row')).toHaveCount(1);
+			await expect(workbench.locator('.policy-operation-row')).toContainText(
+				specialistOperation.name
+			);
+			await expect
+				.poll(() => refreshCounts().advancedBaseline)
+				.toBe(beforeAcceptance.advancedBaseline + 1);
+			await expect(workbench).toHaveAttribute('data-qa-retained', 'specialist');
+			await specialistStep('Budget & services');
+			await expect(workbench.locator('#policy-capital-budget')).toHaveValue(specialistCapital);
+			await expect(workbench.locator('#policy-annual-budget')).toHaveValue(specialistAnnual);
+			const saved = await page.evaluate(() =>
+				JSON.parse(localStorage.getItem('policy-workbench-v1:greater-male') || '{}')
+			);
+			assert.deepEqual(saved.operations, [specialistOperation]);
+			assert.equal(saved.assumptions.capital_budget_mvr, Number(specialistCapital));
+			assert.equal(saved.assumptions.annual_operating_budget_mvr, Number(specialistAnnual));
+			return {
+				retainedOperations: saved.operations.length,
+				requests: refreshCounts(),
+				specialistCapital,
+				specialistAnnual
+			};
+		}
+	);
+	await check('Reactivated analytics refresh once and preserve their filters', async () => {
+		await navigation.getByRole('button', { name: 'Analytics', exact: true }).click();
+		await expect(dashboard).toHaveAttribute('aria-busy', 'false');
+		await expect.poll(() => refreshCounts().inventory).toBe(beforeAcceptance.inventory + 1);
+		await expect.poll(() => refreshCounts().history).toBe(beforeAcceptance.history + 1);
+		await expect(dashboard).toHaveAttribute('data-qa-retained', 'analytics');
+		await expect(dashboard.getByLabel('Island cohort', { exact: true })).toHaveValue('all');
+		await expect(dashboard.getByLabel('Analytics atoll', { exact: true })).toHaveValue(
+			selectedAtoll
+		);
+		await expect(dashboard.getByLabel('Passenger series', { exact: true })).toHaveValue(
+			'bus-male-hulhumale'
+		);
+		await expect(
+			dashboard.getByRole('region', { name: 'Passenger movement trends' })
+		).toHaveAttribute('data-period', 'all');
+		assert.equal(refreshCounts().catalogue, beforeAcceptance.catalogue);
+		return {
+			refreshedInventory: refreshCounts().inventory,
+			refreshedHistory: refreshCounts().history,
+			selectedAtoll
+		};
+	});
+	await check(
+		'Reactivated studio rebuilds the filtered chart without losing the working story',
+		async () => {
+			const refreshedChart = page.waitForResponse((response) =>
+				response.url().endsWith('/datasets/passenger-monthly/chart')
+			);
+			await page.getByRole('tab', { name: 'Data studio', exact: true }).click();
+			const response = await refreshedChart;
+			assert.equal(response.status(), 200);
+			const chart = await response.json();
+			assert.ok(chart.items.length > 0);
+			assert.ok(
+				chart.items.every((/** @type {{series:string}} */ item) => /bus/i.test(item.series))
+			);
+			await expect.poll(() => refreshCounts().catalogue).toBe(beforeAcceptance.catalogue + 1);
+			await expect.poll(() => refreshCounts().chart).toBe(beforeAcceptance.chart + 1);
+			const request = requestsFor('datasets/passenger-monthly/chart').at(-1);
+			assert.ok(request);
+			assert.deepEqual(/** @type {{filters:unknown[]}} */ (request.body).filters, [
+				{ column: 'mode', op: 'eq', value: 'bus' }
+			]);
+			await expect(studio).toHaveAttribute('data-qa-retained', 'studio');
+			await expect(studio.getByLabel('Chart design', { exact: true })).toHaveValue('bar');
+			await studio.locator('.story-details summary').click();
+			await expect(studio.getByLabel('Story title', { exact: true })).toHaveValue(
+				'Retained bus analysis'
+			);
+			await expect(studio.getByRole('button', { name: 'Chart CSV', exact: true })).toBeEnabled();
+			await page.getByRole('tab', { name: 'National dashboard', exact: true }).click();
+			await expect(dashboard).toHaveAttribute('aria-busy', 'false');
+			assert.equal(
+				refreshCounts().inventory,
+				beforeAcceptance.inventory + 1,
+				'Clean activation reuses refreshed analytics'
+			);
+			await navigation.getByRole('button', { name: 'Map & planning', exact: true }).click();
+			await page.getByRole('button', { name: 'Nationwide schedules', exact: true }).click();
+			await expect(page.locator('.snapshot')).toContainText('Accepted · 2 services');
+			return {
+				chartRows: chart.items.length,
+				requests: refreshCounts(),
+				retainedStory: 'Retained bus analysis'
+			};
+		}
+	);
 	/** @param {import('@playwright/test').Page} target */
 	async function plan(target) {
-		await target.getByLabel('From island', { exact: true }).selectOption('island:1443');
-		await target.getByLabel('To island', { exact: true }).selectOption('island:1382');
-		await target.getByLabel('Leave after · MVT', { exact: true }).fill('2026-10-14T07:30');
-		await target.getByLabel('Transfer allowance · minutes', { exact: true }).fill('30');
+		const schedules = target.getByRole('region', { name: 'Nationwide timetables', exact: true });
+		await schedules.getByLabel('From island', { exact: true }).selectOption('island:1443');
+		await schedules.getByLabel('To island', { exact: true }).selectOption('island:1382');
+		await schedules.getByLabel('Leave after · MVT', { exact: true }).fill('2026-10-14T07:30');
+		await schedules.getByLabel('Transfer allowance · minutes', { exact: true }).fill('30');
 		const response = target.waitForResponse(
 			(item) =>
 				item.url().endsWith('/data-updates/schedules/journey') && item.request().method() === 'POST'
 		);
-		await target.getByRole('button', { name: 'Find a dated itinerary' }).click();
+		await schedules.getByRole('button', { name: 'Find a dated itinerary' }).click();
 		const result = await response;
 		assert.equal(result.status(), 200);
 		const journey = await result.json();
@@ -325,8 +707,8 @@ try {
 		assert.equal(journey.legs[0].waiting_minutes, 30);
 		assert.equal(journey.legs[1].waiting_minutes, 40);
 		assert.equal(journey.includes_assumptions, false);
-		await expect(target.locator('.itinerary')).toContainText('14 Oct 2026, 10:15 MVT');
-		await expect(target.locator('.journey-leg')).toHaveCount(2);
+		await expect(schedules.locator('.itinerary')).toContainText('14 Oct 2026, 10:15 MVT');
+		await expect(schedules.locator('.journey-leg')).toHaveCount(2);
 		return journey;
 	}
 	await check('Dated UI itinerary respects MVT, waits and the transfer allowance', async () => {
@@ -365,6 +747,50 @@ try {
 		await mobile.close();
 		return { width: 390, acceptedSnapshots: 1, activeServices: 2 };
 	});
+	await check(
+		'Accepting a newer timetable clears its itinerary and preserves source versions',
+		async () => {
+			const savedItinerary = page.locator('.source-updates.standalone .itinerary');
+			await expect(savedItinerary).toHaveCount(1);
+			const evidence = page.getByRole('region', { name: 'Nationwide timetables', exact: true });
+			await expect(evidence.getByText('Loading source receipts…', { exact: true })).toBeHidden();
+			const stagedResponse = page.waitForResponse(
+				(response) =>
+					response.url().endsWith('/data-updates/schedules/stage') &&
+					response.request().method() === 'POST'
+			);
+			await evidence.locator('.file-input').setInputFiles({
+				name: 'SYNTHETIC-QA-ONLY-revalidated-timetable.json',
+				mimeType: 'application/json',
+				buffer: Buffer.from(JSON.stringify({ ...fixture, title: `${fixture.title} — revalidated` }))
+			});
+			const staged = await (await stagedResponse).json();
+			assert.notEqual(staged.id, snapshotID);
+			await evidence
+				.getByLabel('Review note', { exact: true })
+				.fill(
+					'Synthetic QA only: revalidated the same two trips to test a retained itinerary source change.'
+				);
+			await evidence
+				.getByRole('checkbox', {
+					name: 'I checked the source, dates and timing assumptions.'
+				})
+				.check();
+			const acceptance = page.waitForResponse(
+				(response) =>
+					response.url().endsWith(`/${staged.id}/accept`) && response.request().method() === 'POST'
+			);
+			await evidence
+				.getByRole('button', { name: 'Accept reviewed timetable', exact: true })
+				.click();
+			assert.equal((await acceptance).status(), 200);
+			await expect(savedItinerary).toHaveCount(0);
+			const schedules = await api('data-updates/schedules');
+			assert.equal(schedules.snapshots.length, 2);
+			assert.equal(schedules.total, 2);
+			return { acceptedSnapshots: 2, activeServices: 2, retainedItineraryCleared: true };
+		}
+	);
 	await check('Main source receipts and main timetable store remain unchanged', async () => {
 		const after = await originalReceipts();
 		const schedulesAfter = await mainScheduleStore();

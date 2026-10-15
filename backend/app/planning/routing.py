@@ -70,6 +70,22 @@ def pattern_trips(pattern: dict[str, Any], day: date) -> list[dict[str, Any]]:
     return trips
 
 
+def service_day_trips(
+    pattern: dict[str, Any], day: date, *, stop_index: int = 0
+) -> list[dict[str, Any]]:
+    """Departures on the selected civil day, including overnight service carryover.
+
+    Routing needs neighbouring service days to complete journeys across midnight.
+    Timetables, daily costs and connectivity counts must not count those neighbours
+    as departures today. A downstream connection uses its own boarding stop time.
+    """
+    return [
+        trip
+        for trip in pattern_trips(pattern, day)
+        if 0 <= trip["stopTimes"][stop_index]["departureMinutes"] < 1440
+    ]
+
+
 class WalkingNetwork:
     def __init__(
         self,

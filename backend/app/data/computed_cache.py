@@ -307,7 +307,6 @@ class ComputedCache:
         self._flights: dict[str, Future[bytes]] = {}
         self._async_workers: set[asyncio.Task[None]] = set()
         self._shareable_keys: set[str] = set()
-        self._last_prune = 0.0
         self.shared = PostgresStore(database_url) if database_url else None
         self.counts = dict(memory_hits=0, disk_hits=0, shared_hits=0, misses=0, waits=0)
 
@@ -389,7 +388,6 @@ class ComputedCache:
 
     def _prune(self) -> None:
         with self._lock:
-            self._last_prune = time.monotonic()
             try:
                 files = sorted(
                     ((p.stat().st_mtime, p.stat().st_size, p) for p in self.root.glob("*.cache")),

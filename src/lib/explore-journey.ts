@@ -8,20 +8,6 @@ export interface JourneyPoint {
 	island_id?: string | null;
 	operator_code?: string | null;
 }
-export interface TransitStop extends JourneyPoint {
-	route_ids?: string[];
-	route_names?: string[];
-	mode?: 'bus' | 'ferry';
-	verification?: string;
-	timetable_status?: string;
-}
-export interface TransitStopCatalogue {
-	stops: TransitStop[];
-	service_date: string | null;
-	earliest_departure_minutes: number | null;
-	timezone: string;
-	qualification: string;
-}
 export interface JourneyLeg {
 	mode: 'walk' | 'wait' | 'bus' | 'ferry';
 	from: JourneyPoint;

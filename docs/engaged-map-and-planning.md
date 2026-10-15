@@ -1,16 +1,16 @@
 # Map activity and planning experience
 
-Implemented on 14 October 2026. Real-time collaboration remains excluded.
+Historical implementation record from 14 October 2026. See the [current code review](code-review-2026-10-16.md) and [verification commands](../README.md#verification) for the latest controls and checks. Real-time collaboration remains excluded.
 
-| Before | After | Why |
-| --- | --- | --- |
-| Small, similar dots for unrelated records | Distinct bus-stop, ferry-terminal, pier, airport, school and health symbols; numbered clusters at wider zoom | Users can identify a place before opening its source record. A terminal symbol is stationary infrastructure. |
-| Explore required a separate movement workflow | Nearby provider observations load automatically for the selected island, with pause, refresh, counts and a fit-to-movement action | Marine traffic outside a street-level view becomes discoverable without losing the selected island. |
-| No visible route until a calculation completed | Origin and destination pins appear immediately; calculated road geometry follows and is cleared after changing inputs | The map acknowledges a choice and distinguishes the input from the computed path. |
-| Resident planning used forms and tables alone | A focused map remains beside the editable steps on desktop; mobile has a Show map shortcut | Locations, proposed facilities, service connectors and journey paths remain visible during planning. |
-| Effects were difficult to locate | Connected hexagons show the calculated accessibility comparison, with distinct gain, improvement, loss, slower, unavailable and unchanged states | Users can inspect where an option helps, and distinguish missing evidence from measured harm. |
-| Previous results could appear current after an edit | Edits mark results stale, grey the old impact and stop playback; a recalculation pulse runs during the actual request | The interface shows the state of the calculation without fabricating progress or imposing a delay. |
-| Scheduled paths were static | Explicit timetable simulation with play/pause, scrub, outward/return selection and mode-specific movement | Users can inspect walking, waiting, transfers, travel and the return journey. |
+| Before                                              | After                                                                                                                                            | Why                                                                                                          |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| Small, similar dots for unrelated records           | Distinct bus-stop, ferry-terminal, pier, airport, school and health symbols; numbered clusters at wider zoom                                     | Users can identify a place before opening its source record. A terminal symbol is stationary infrastructure. |
+| Explore required a separate movement workflow       | Nearby provider observations load automatically for the selected island, with pause, refresh, counts and a fit-to-movement action                | Marine traffic outside a street-level view becomes discoverable without losing the selected island.          |
+| No visible route until a calculation completed      | Origin and destination pins appear immediately; calculated road geometry follows and is cleared after changing inputs                            | The map acknowledges a choice and distinguishes the input from the computed path.                            |
+| Resident planning used forms and tables alone       | A focused map remains beside the editable steps on desktop; mobile has a Show map shortcut                                                       | Locations, proposed facilities, service connectors and journey paths remain visible during planning.         |
+| Effects were difficult to locate                    | Connected hexagons show the calculated accessibility comparison, with distinct gain, improvement, loss, slower, unavailable and unchanged states | Users can inspect where an option helps, and distinguish missing evidence from measured harm.                |
+| Previous results could appear current after an edit | Edits mark results stale, grey the old impact and stop playback; a recalculation pulse runs during the actual request                            | The interface shows the state of the calculation without fabricating progress or imposing a delay.           |
+| Scheduled paths were static                         | Explicit timetable simulation with play/pause, scrub, outward/return selection and mode-specific movement                                        | Users can inspect walking, waiting, transfers, travel and the return journey.                                |
 
 ## Position and animation contracts
 
@@ -46,18 +46,18 @@ The opacity refinement passed 111 frontend unit tests, Svelte diagnostics with z
 
 ## Verification
 
-The repeatable browser harnesses are `scripts/verify-engaged-map-browser.mjs`, the map-symbol harness and the planning-map harness. Receipts and screenshots are saved under `artifacts/qa`. Unit tests cover polling lifecycle, obsolete responses, Addu scope, retained observations after failure, hexagon semantics and timed journey playback. Backend tests cover provider discovery, spatial filtering, timestamp freshness, timezone conversion, privacy, fallback and cooldown.
+Use `npm run test:browser`, `npm run test:browser:bus-vehicles`, `npm run test:browser:planning` and `npm run test:browser:delivery` for the maintained map and planning checks. The old engaged-map, planning-map and map-first-policy runners were retired with their superseded navigation. Receipts and screenshots are saved under `artifacts/qa`. Unit tests cover polling lifecycle, obsolete responses, Addu scope, retained observations after failure, hexagon semantics and timed journey playback. Backend tests cover provider discovery, spatial filtering, timestamp freshness, timezone conversion, privacy, fallback and cooldown.
 
 The production preview at `http://127.0.0.1:5181` passed 548 backend tests, 55 frontend unit tests, Svelte checks with zero errors/warnings, frontend formatting/ESLint, backend Ruff and the production build. The [final verification receipt](../artifacts/qa/engaged-map/final-verification.json) links the 33 passed browser workflows. The build retains its existing large-chunk advisory; this is not a production deployment.
 
 The completed browser workflows use actual backend map/evaluation/journey responses. Controlled movement samples exercise aircraft icons, newer-position interpolation and reduced-motion behavior; the separate Explore run uses public provider observations. Proposed transit operating assumptions exist only in disposable browser drafts.
 
-| Browser receipt | Passed workflows | Evidence |
-| --- | --- | --- |
-| [Observed movement](../artifacts/qa/engaged-map/browser-verification.json) | 6 | Automatic bounded discovery, fit, pause/resume, island changes, hidden workspace and mobile controls |
-| [Map legibility](../artifacts/qa/map-legibility/report.json) | 10 | Typed icons, source popups, observations, clusters, immediate route inputs, stale routes, mobile key and target-only edits |
-| [Planning map](../artifacts/qa/planning-map/report.json) | 9 | Draft placement, source-weighted hexes, real recalculation, outward/return playback, stale guards, mobile endpoint fit and bus/ferry paths |
-| [Planning regression](../artifacts/qa/planning/report.json) | 8 | Baseline integrity, appointments, costs/carbon, two-direction services, scoped persistence, notices and responsive layout |
+| Browser receipt                                                            | Passed workflows | Evidence                                                                                                                                   |
+| -------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Observed movement](../artifacts/qa/engaged-map/browser-verification.json) | 6                | Automatic bounded discovery, fit, pause/resume, island changes, hidden workspace and mobile controls                                       |
+| [Map legibility](../artifacts/qa/map-legibility/report.json)               | 10               | Typed icons, source popups, observations, clusters, immediate route inputs, stale routes, mobile key and target-only edits                 |
+| [Planning map](../artifacts/qa/planning-map/report.json)                   | 9                | Draft placement, source-weighted hexes, real recalculation, outward/return playback, stale guards, mobile endpoint fit and bus/ferry paths |
+| [Planning regression](../artifacts/qa/planning/report.json)                | 8                | Baseline integrity, appointments, costs/carbon, two-direction services, scoped persistence, notices and responsive layout                  |
 
 The real Explore receipt recorded 261 vessel positions and four public buses near Malé, plus seven vessel positions near Hithadhoo. These counts are timestamped observations rather than a promise of continuous coverage. Aircraft providers returned no current observations during that run; their empty state remains visible.
 

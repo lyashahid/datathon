@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FeatureCollection, Position } from 'geojson';
-import { assessDraftBudget, distanceToRoad, draftCosts, pointWithinIsland } from './map-policy.js';
+import { assessDraftBudget, draftCosts, pointWithinIsland } from './map-policy.js';
 
 const defaults = {
 	school_capital_mvr: 25_000_000,
@@ -208,52 +208,5 @@ describe('live proposal cost arithmetic', () => {
 				defaults
 			)
 		).toEqual({ capital: null, annual: null });
-	});
-});
-
-describe('draft site connection feedback', () => {
-	it('measures the closest segment rather than only the road endpoint', () => {
-		expect(
-			distanceToRoad(
-				[73.5, 4.17],
-				[
-					{
-						geometry: [
-							[73.49, 4.17],
-							[73.51, 4.17]
-						]
-					}
-				]
-			)
-		).toBeLessThan(0.001);
-		expect(
-			distanceToRoad(
-				[73.5, 4.171],
-				[
-					{
-						geometry: [
-							[73.49, 4.17],
-							[73.51, 4.17]
-						]
-					}
-				]
-			)
-		).toBeCloseTo(111.32, 2);
-	});
-	it('keeps unavailable geography and invalid coordinates unavailable', () => {
-		expect(distanceToRoad([73.5, 4.17], [])).toBeNull();
-		expect(
-			distanceToRoad(
-				[Number.NaN, 4.17],
-				[
-					{
-						geometry: [
-							[73.49, 4.17],
-							[73.51, 4.17]
-						]
-					}
-				]
-			)
-		).toBeNull();
 	});
 });

@@ -11,6 +11,34 @@ from tempfile import NamedTemporaryFile
 from typing import Any
 
 
+def atomic_write(destination: Path, content: bytes, *, exclusive: bool = False) -> None:
+    """Publish complete bytes, optionally refusing to overwrite an immutable file."""
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path: Path | None = None
+    try:
+        with NamedTemporaryFile(
+            mode="wb",
+            dir=destination.parent,
+            prefix=f".{destination.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as temporary:
+            temporary_path = Path(temporary.name)
+            temporary.write(content)
+            temporary.flush()
+            os.fsync(temporary.fileno())
+        if exclusive:
+            # Same-directory hard linking publishes the completed file atomically
+            # while retaining the no-overwrite guarantee across processes.
+            os.link(temporary_path, destination)
+        else:
+            os.replace(temporary_path, destination)
+            temporary_path = None
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+
+
 class FileCache:
     """Store raw source files and metadata without overwriting good data in place."""
 
@@ -39,7 +67,7 @@ class FileCache:
         destination = self.path(relative_path)
         destination.parent.mkdir(parents=True, exist_ok=True)
         checksum = hashlib.sha256(content).hexdigest()
-        self._atomic_write(destination, content)
+        atomic_write(destination, content)
 
         metadata = {
             "source": source,
@@ -53,7 +81,7 @@ class FileCache:
             "schema_version": 1,
             "status": "fresh",
         }
-        self._atomic_write(
+        atomic_write(
             Path(f"{destination}.meta.json"),
             json.dumps(metadata, indent=2, sort_keys=True).encode("utf-8"),
         )
@@ -93,7 +121,7 @@ class FileCache:
                 "content_type": "application/json",
                 "sha256": digest.hexdigest(),
             }
-            self._atomic_write(
+            atomic_write(
                 Path(f"{destination}.meta.json"),
                 json.dumps(
                     {
@@ -126,18 +154,3 @@ class FileCache:
 
     def read_metadata(self, relative_path: str | Path) -> dict[str, Any]:
         return self.read_json(f"{relative_path}.meta.json")
-
-    @staticmethod
-    def _atomic_write(destination: Path, content: bytes) -> None:
-        with NamedTemporaryFile(
-            mode="wb",
-            dir=destination.parent,
-            prefix=f".{destination.name}.",
-            suffix=".tmp",
-            delete=False,
-        ) as temporary:
-            temporary.write(content)
-            temporary.flush()
-            os.fsync(temporary.fileno())
-            temporary_path = Path(temporary.name)
-        os.replace(temporary_path, destination)

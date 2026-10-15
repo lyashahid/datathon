@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import {
 		ArrowRight,
 		Bus,
@@ -15,7 +15,7 @@
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
 	import * as Card from '#lib/components/ui/card/index.js';
-	import { api } from '#lib/api.js';
+	import { api, subscribeApiInvalidation } from '#lib/api.js';
 	import {
 		opportunityMatches,
 		opportunityStatusCounts,
@@ -34,15 +34,19 @@
 		atoll = 'all',
 		cohort = 'residential',
 		onExplore,
-		onConnections
+		onConnections,
+		active = true
 	}: {
 		atoll?: string;
 		cohort?: string;
 		onExplore: (islandId?: string, atoll?: string, lens?: PolicyLens) => void;
 		onConnections?: (islandId?: string) => void;
+		active?: boolean;
 	} = $props();
 	let snapshot = $state<PolicyOpportunities | null>(null);
 	let loading = $state(true);
+	let mounted = $state(false);
+	let needsRefresh = $state(false);
 	let error = $state('');
 	let lens = $state<PolicyLens>('overall');
 	let queue = $state<'review' | 'unknown'>('review');
@@ -121,6 +125,7 @@
 	const share = (count: number) => (count / Math.max(1, scoped.length)) * 100;
 
 	async function load() {
+		needsRefresh = false;
 		controller?.abort();
 		const request = new AbortController();
 		controller = request;
@@ -158,8 +163,19 @@
 			: `${locations}. Check travel times and available capacity.`;
 	}
 	onMount(() => {
-		void load();
-		return () => controller?.abort();
+		mounted = true;
+		const unsubscribe = subscribeApiInvalidation(() => {
+			needsRefresh = true;
+		});
+		if (active) void load();
+		else needsRefresh = true;
+		return () => {
+			unsubscribe();
+			controller?.abort();
+		};
+	});
+	$effect(() => {
+		if (mounted && active && needsRefresh) untrack(() => void load());
 	});
 </script>
 

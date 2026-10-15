@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { downloadJson } from '#lib/download.js';
 	import { onMount, untrack } from 'svelte';
 	import { Download, FileCheck, Plus, Trash2, Upload } from '@lucide/svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
@@ -240,14 +241,7 @@
 		}
 	}
 	function exportRecords() {
-		const url = URL.createObjectURL(
-			new Blob([JSON.stringify({ records }, null, 2)], { type: 'application/json' })
-		);
-		const link = document.createElement('a');
-		link.href = url;
-		link.download = 'local-delivery-evidence.json';
-		link.click();
-		URL.revokeObjectURL(url);
+		downloadJson({ records }, 'local-delivery-evidence.json');
 	}
 	function applyRecord(record: CalibrationRecord) {
 		selection = { ...selection, [record.factor]: record.id };

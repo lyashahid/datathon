@@ -57,6 +57,7 @@ function responseFor(endpoint) {
 
 /** @returns {Promise<Evaluation>} */
 async function evaluate() {
+	await openDetails('Planning date, access goal and assumptions');
 	const pending = responseFor('evaluate');
 	await page.getByRole('button', { name: 'Evaluate proposal', exact: true }).click();
 	const response = await pending;
@@ -100,9 +101,15 @@ try {
 	await check(
 		'Delivery sources load through the frontend proxy with explicit provenance',
 		async () => {
-			await page.goto(`${baseURL}/?view=map&tool=proposals&proposal=policy&island=island%3A1443`);
-			await expect(page.locator('#policy-operation')).toBeVisible();
-			await page.getByRole('tab', { name: '4 · Timetables & delivery', exact: true }).click();
+			await page.goto(`${baseURL}/?view=map&tool=proposals&proposal=advanced&island=island%3A1443`);
+			await page
+				.locator('.policy-workflow')
+				.getByRole('button', { name: 'Changes', exact: true })
+				.click();
+			await page
+				.locator('.policy-workflow')
+				.getByRole('button', { name: 'Budget & services', exact: true })
+				.click();
 			await expect(page.getByRole('heading', { name: 'Can this proposal operate?' })).toBeVisible();
 			await page.locator('summary').filter({ hasText: 'Cost and energy evidence' }).click();
 			await page.locator('summary').filter({ hasText: 'Official electricity references' }).click();
@@ -181,7 +188,10 @@ try {
 			const draft = await saved();
 			assert.equal(Object.keys(draft.assumptions.calibration_selection).length, 1);
 			assert.equal(draft.assumptions.energy_overrides.electric_kwh_per_km, 2);
-			await page.getByRole('tab', { name: '4 · Timetables & delivery', exact: true }).click();
+			await page
+				.locator('.policy-workflow')
+				.getByRole('button', { name: 'Budget & services', exact: true })
+				.click();
 			await openDetails('Cost and energy evidence');
 			const downloadPending = page.waitForEvent('download');
 			await page.getByRole('button', { name: 'Export register', exact: true }).click();
@@ -198,13 +208,24 @@ try {
 	await check(
 		'Electric resource envelopes screen actual fleet, capacity, depots, and charging',
 		async () => {
-			await page.getByRole('tab', { name: '1 · Design proposal', exact: true }).click();
+			await page
+				.locator('.policy-workflow')
+				.getByRole('button', { name: 'Changes', exact: true })
+				.click();
+			await openDetails('More changes: services and roads');
+			await page
+				.getByRole('button', { name: 'Plan a service or road change', exact: true })
+				.click();
+			await openDetails('Change what you are proposing');
 			await page.locator('#policy-operation').selectOption('set_fleet');
 			await page.locator('#policy-target-id').selectOption({ index: 1 });
 			await page.locator('#policy-fleet').selectOption('electric');
-			await page.getByRole('button', { name: 'Add intervention', exact: true }).click();
+			await page.getByRole('button', { name: 'Save this change', exact: true }).click();
 			await evaluate();
-			await page.getByRole('tab', { name: '4 · Timetables & delivery', exact: true }).click();
+			await page
+				.locator('.policy-workflow')
+				.getByRole('button', { name: 'Budget & services', exact: true })
+				.click();
 			await page
 				.locator('summary')
 				.filter({ hasText: 'Fleet capacity, depots and charging' })
@@ -252,7 +273,10 @@ try {
 				activity.resource_audit.checks.find((item) => item.key === 'depot_positioning')?.status,
 				'unknown'
 			);
-			await page.getByRole('tab', { name: '4 · Timetables & delivery', exact: true }).click();
+			await page
+				.locator('.policy-workflow')
+				.getByRole('button', { name: 'Budget & services', exact: true })
+				.click();
 			await openDetails('Fleet capacity, depots and charging');
 			await expect(
 				page.locator('.delivery-audit').getByText('constraints failed', { exact: true })
@@ -269,8 +293,14 @@ try {
 			const desktop = await capture(1440, 'delivery-desktop');
 			const mobile = await capture(390, 'delivery-mobile');
 			await page.reload();
-			await expect(page.locator('#policy-operation')).toBeVisible();
-			await page.getByRole('tab', { name: '4 · Timetables & delivery', exact: true }).click();
+			await page
+				.locator('.policy-workflow')
+				.getByRole('button', { name: 'Changes', exact: true })
+				.click();
+			await page
+				.locator('.policy-workflow')
+				.getByRole('button', { name: 'Budget & services', exact: true })
+				.click();
 			await page.locator('summary').filter({ hasText: 'Cost and energy evidence' }).click();
 			await expect(page.getByText('QA local electricity quotation', { exact: true })).toBeVisible();
 			await page
@@ -283,8 +313,12 @@ try {
 			const draft = await saved();
 			assert.equal(draft.assumptions.calibration_records.length, 1);
 			assert.equal(draft.assumptions.fleet_resources.length, 1);
-			await page.getByRole('tab', { name: '1 · Design proposal', exact: true }).click();
+			await page
+				.locator('.policy-workflow')
+				.getByRole('button', { name: 'Changes', exact: true })
+				.click();
 			const downloadPending = page.waitForEvent('download');
+			await openDetails('Advanced assumptions, saved files and source edits');
 			await page.getByRole('button', { name: 'Export reproducible option', exact: true }).click();
 			const download = await downloadPending;
 			const filename = path.join(output, 'delivery-policy-option.json');
@@ -298,14 +332,18 @@ try {
 			const importedContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
 			const importedPage = await importedContext.newPage();
 			await importedPage.goto(
-				`${baseURL}/?view=map&tool=proposals&proposal=policy&island=island%3A1443`
+				`${baseURL}/?view=map&tool=proposals&proposal=advanced&island=island%3A1443`
 			);
-			await expect(importedPage.locator('#policy-operation')).toBeVisible();
+			await importedPage
+				.locator('.policy-workflow')
+				.getByRole('button', { name: 'Changes', exact: true })
+				.click();
 			await importedPage
 				.getByLabel('Import policy scenario file', { exact: true })
 				.setInputFiles(filename);
 			await importedPage
-				.getByRole('tab', { name: '4 · Timetables & delivery', exact: true })
+				.locator('.policy-workflow')
+				.getByRole('button', { name: 'Budget & services', exact: true })
 				.click();
 			await importedPage.locator('summary').filter({ hasText: 'Cost and energy evidence' }).click();
 			await expect(

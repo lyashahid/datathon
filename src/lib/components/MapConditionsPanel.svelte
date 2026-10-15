@@ -58,14 +58,16 @@
 	$effect(() => {
 		const point = coordinates,
 			key = refresh;
-		if (!point) return;
 		void key;
+		controller?.abort();
+		weather = null;
+		marine = null;
+		weatherError = '';
+		loading = false;
+		if (!point) return;
 		const current = new AbortController();
 		controller = current;
 		loading = true;
-		weatherError = '';
-		weather = null;
-		marine = null;
 		void Promise.allSettled([
 			api<Forecast>(
 				`conditions/weather?latitude=${point[1]}&longitude=${point[0]}`,
@@ -190,9 +192,14 @@
 		</div>
 		{#if weatherError}<p class="conditions-error" role="status">{weatherError}</p>{/if}
 		{#if weather?.receipt}<p class="conditions-note">
-				{weather.receipt.stale ? 'Cached forecast · ' : 'Retrieved '}{new Date(
+				Weather · {weather.receipt.stale ? 'Cached forecast · ' : 'Retrieved '}{new Date(
 					weather.receipt.retrieved_at
 				).toLocaleString()}<br />{weather.receipt.qualification}
+			</p>{/if}
+		{#if marine?.receipt}<p class="conditions-note">
+				Sea conditions · {marine.receipt.stale ? 'Cached forecast · ' : 'Retrieved '}{new Date(
+					marine.receipt.retrieved_at
+				).toLocaleString()}<br />{marine.receipt.qualification}
 			</p>{/if}
 		<div class="conditions-heading">
 			<h3>Check a road journey</h3>

@@ -211,6 +211,14 @@ try {
 		await noOverflow();
 		await page.screenshot({ path: path.join(output, 'analytics-desktop.png') });
 	});
+	await check('Old entry links open the correct current workspace', async () => {
+		const forecasts = await page.request.get(`${baseURL}/forecasts`, { maxRedirects: 0 });
+		assert.equal(forecasts.status(), 307);
+		assert.equal(forecasts.headers().location, '/?view=overview&analytics=passengers');
+		const decisions = await page.request.get(`${baseURL}/decisions`, { maxRedirects: 0 });
+		assert.equal(decisions.status(), 307);
+		assert.equal(decisions.headers().location, '/?view=map&tool=proposals&proposal=policy');
+	});
 	await check('Evidence uses the same top navigation and returns directly to the map', async () => {
 		await header.getByRole('button', { name: 'Evidence', exact: true }).click();
 		await expect(
@@ -275,6 +283,21 @@ try {
 			await expect(atlas.locator('.maplibregl-canvas')).toBeVisible();
 			await floatingNavigation();
 			await page.screenshot({ path: path.join(output, 'proposal-desktop.png') });
+			const budget = planning.getByLabel('Capital budget · MVR', { exact: true });
+			await budget.fill('45000000');
+			await planning
+				.getByRole('button', { name: 'Advanced service & fleet tools', exact: true })
+				.click();
+			await expect(page).toHaveURL((url) => url.searchParams.get('proposal') === 'advanced');
+			await expect(
+				page.getByRole('tab', { name: 'Service & fleet tools', exact: true })
+			).toBeVisible();
+			await expect(
+				page.getByRole('region', { name: 'Policy planning workbench', exact: true })
+			).toBeVisible();
+			await page.getByRole('button', { name: 'Map & planning', exact: true }).click();
+			await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
+			await expect(budget).toHaveValue('45000000');
 			await atlas.getByRole('button', { name: 'Show all Maldives islands', exact: true }).click();
 			await countryReady();
 			await expect(planning).not.toBeVisible();

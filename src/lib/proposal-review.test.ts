@@ -5,9 +5,63 @@ import {
 	fiscalProjections,
 	formatAmount,
 	operationName,
+	planningFinancialKey,
 	proposedFerryServiceGroups,
+	type PlanningReviewRequest,
 	type TransportConnectivitySummary
 } from './proposal-review.js';
+
+describe('planning cost request identity', () => {
+	const request: PlanningReviewRequest = {
+		island_id: 'island:1443',
+		operations: [{ type: 'add_school', coordinates: [73.54, 4.2] }],
+		assumptions: {
+			goal: 'education',
+			target_minutes: 30,
+			date: '2026-10-10',
+			departure_minutes: 920,
+			capital_budget_mvr: 30_000_000,
+			annual_operating_budget_mvr: 6_000_000,
+			include_origin_geometry: false,
+			include_journey_geometry: false,
+			include_world: false
+		}
+	};
+	it('reuses a quote while the journey target, goal or geometry display changes', () => {
+		expect(
+			planningFinancialKey({
+				...request,
+				assumptions: {
+					...request.assumptions,
+					goal: 'healthcare',
+					target_minutes: 10,
+					include_origin_geometry: true,
+					include_journey_geometry: true,
+					include_world: true
+				}
+			})
+		).toBe(planningFinancialKey(request));
+	});
+	it('invalidates a quote for economic, budget, schedule, operation or scope changes', () => {
+		const key = planningFinancialKey(request);
+		for (const assumptions of [
+			{ capital_budget_mvr: 29_000_000 },
+			{ annual_operating_budget_mvr: 5_000_000 },
+			{ date: '2026-10-11' },
+			{ departure_minutes: 900 },
+			{ cost_overrides: { school_capital_mvr: 26_000_000 } },
+			{ calibration_records: [{ capital_mvr: 50_000_000 }] }
+		])
+			expect(
+				planningFinancialKey({
+					...request,
+					assumptions: { ...request.assumptions, ...assumptions }
+				})
+			).not.toBe(key);
+		expect(planningFinancialKey({ ...request, operations: [] })).not.toBe(key);
+		expect(planningFinancialKey({ ...request, island_id: 'island:1442' })).not.toBe(key);
+	});
+});
 
 describe('decision brief arithmetic', () => {
 	it('pays capital once and repeats added annual cost at each explicit horizon', () => {

@@ -14,7 +14,7 @@ from app.data.computed_cache import ComputedCache, model_code_version
 from app.planning.economics import COST_DEFAULTS, economics
 from app.planning.models import JourneyRequest, PlanningAssumptions, PlanningRequest
 from app.planning.repository import IDENTITY_BRIDGE, PlanningRepository
-from app.planning.routing import JourneyRouter, WalkingNetwork, pattern_trips
+from app.planning.routing import JourneyRouter, WalkingNetwork, service_day_trips
 from app.planning.transport import transport_summary
 from app.planning.world import apply_operations, baseline_world
 
@@ -522,11 +522,7 @@ class PlanningService:
                         "provenance": pattern.get("provenance"),
                         "stop_ids": pattern["stopIds"],
                         "calendar": pattern.get("calendar"),
-                        "trips": [
-                            t
-                            for t in pattern_trips(pattern, request.assumptions.date)
-                            if 0 <= t["stopTimes"][0]["departureMinutes"] < 1440
-                        ],
+                        "trips": service_day_trips(pattern, request.assumptions.date),
                         "source_ids": pattern.get("sourceIds", []),
                     }
                 )

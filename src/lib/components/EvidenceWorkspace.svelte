@@ -28,12 +28,14 @@
 		summary,
 		onExplore,
 		onExport,
-		canExport
+		canExport,
+		active = true
 	}: {
 		summary: NationalSummary | null;
 		onExplore: () => void;
 		onExport: () => void;
 		canExport: boolean;
+		active?: boolean;
 	} = $props();
 
 	const count = (value: number | undefined) => (value === undefined ? '—' : value.toLocaleString());
@@ -390,7 +392,7 @@
 				</article>{/each}
 		</div>
 	</Card.Root>
-	<SourceUpdatesWorkspace />
+	<SourceUpdatesWorkspace {active} />
 	<Card.Root class="evidence-next"
 		><FileCheck2 size={24} />
 		<div>

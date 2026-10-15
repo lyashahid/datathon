@@ -88,7 +88,7 @@ let bundle;
 let definition;
 
 try {
-	await page.goto(baseURL, { waitUntil: 'domcontentloaded' });
+	await page.goto(`${baseURL}/?view=overview`, { waitUntil: 'domcontentloaded' });
 	await expect(page.getByRole('navigation', { name: 'Workspace' })).toBeVisible();
 	await expect(page.getByText('Data connected', { exact: true })).toBeVisible();
 	await check('Forecasts load real monthly histories and ten chronological policies', async () => {

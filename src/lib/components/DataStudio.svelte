@@ -1,5 +1,14 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { downloadText as download } from '#lib/download.js';
+	import {
+		datasetFilter,
+		validStory,
+		type Column,
+		type Rule,
+		type ChartDefinition,
+		type Story
+	} from '#lib/data-studio.js';
+	import { onMount, untrack } from 'svelte';
 	import { SvelteMap, SvelteURLSearchParams } from 'svelte/reactivity';
 	import {
 		ArrowUpRight,
@@ -22,16 +31,9 @@
 	import * as Card from '#lib/components/ui/card/index.js';
 	import * as NativeSelect from '#lib/components/ui/native-select/index.js';
 	import * as Tabs from '#lib/components/ui/tabs/index.js';
-	import { api } from '#lib/api.js';
+	import { api, subscribeApiInvalidation } from '#lib/api.js';
+	let { active = true }: { active?: boolean } = $props();
 
-	type Column = {
-		name: string;
-		type: string;
-		nullable: boolean;
-		missing_count: number;
-		distinct_count: number;
-		examples: string[];
-	};
 	type Dataset = {
 		id: string;
 		title: string;
@@ -52,22 +54,7 @@
 			}[];
 		};
 	};
-	type Rule = {
-		column: string;
-		op: 'eq' | 'ne' | 'contains' | 'in' | 'gte' | 'lte' | 'gt' | 'lt' | 'missing';
-		value: unknown;
-	};
-	type ChartDefinition = {
-		group_by: string;
-		series_by: string | null;
-		measure: string | null;
-		aggregation: string;
-		filters: Rule[];
-		q: string | null;
-		sort: string;
-		descending: boolean;
-		limit: number;
-	};
+
 	type ChartItem = {
 		group: string;
 		series: string | null;
@@ -94,22 +81,7 @@
 		offset: number;
 		dataset: Dataset;
 	};
-	type Story = {
-		id: string;
-		title: string;
-		insight: string;
-		updatedAt: string;
-		version: 1;
-		primaryId: string;
-		comparisonId: string;
-		primary: ChartDefinition;
-		comparison: ChartDefinition;
-		chartType: string;
-		mode: string;
-		alignment: string;
-		keyDomain: string;
-		receipts: unknown[];
-	};
+
 	const storageKey = 'mobility-v3-data-stories';
 	let catalogue = $state<Dataset[]>([]);
 	let datasetId = $state('passenger-monthly');
@@ -144,12 +116,16 @@
 	let builtSignature = $state('');
 	let chartSeriesLabel = $state('value');
 	let rows = $state<RowResult | null>(null);
+	let displayedColumns = $state<string[]>([]);
+	let builtRowsSignature = $state('');
 	let selectedColumns = $state<string[]>([]);
 	let sortColumn = $state('');
 	let descending = $state(false);
 	let page = $state(0);
 	let view = $state('chart');
 	let loading = $state(true);
+	let mounted = $state(false);
+	let needsRefresh = $state(false);
 	let drawing = $state(false);
 	let rowsLoading = $state(false);
 	let exporting = $state(false);
@@ -300,6 +276,7 @@
 	const chartLabel = $derived(storyTitle.trim() || dataset?.title || 'Data story');
 	const chartSources = $derived(chart?.datasets ?? (chart?.dataset ? [chart.dataset] : []));
 	const chartDirty = $derived(!!chart && builtSignature !== definitionSignature());
+	const rowsDirty = $derived(!!rows && builtRowsSignature !== recordsSignature());
 
 	function defaultColumns(item: Dataset) {
 		return [
@@ -327,6 +304,9 @@
 		chart = null;
 		rows = null;
 		comparisonId = '';
+		filterScope = 'primary';
+		filterColumn = '';
+		filterValue = '';
 		comparisonFilters = [];
 		filters = [];
 		search = '';
@@ -369,6 +349,11 @@
 	}
 	function chooseComparison(id: string) {
 		comparisonId = id;
+		if (filterScope === 'comparison') {
+			filterColumn = '';
+			filterValue = '';
+		}
+		if (!id) filterScope = 'primary';
 		comparisonFilters = [];
 		comparisonSort = 'group';
 		comparisonDescending = false;
@@ -421,11 +406,12 @@
 		});
 	}
 	async function draw() {
+		controller?.abort();
 		if (!groupBy || !dataset) {
 			chart = null;
+			drawing = false;
 			return;
 		}
-		controller?.abort();
 		const request = new AbortController();
 		controller = request;
 		drawing = true;
@@ -460,26 +446,40 @@
 			if (controller === request) drawing = false;
 		}
 	}
+	function recordsQuery() {
+		return {
+			q: appliedSearch || null,
+			filters,
+			sort: sortColumn || null,
+			descending,
+			limit: 12,
+			offset: page * 12,
+			columns: selectedColumns.length ? selectedColumns : null
+		};
+	}
+	function recordsSignature() {
+		return JSON.stringify({ datasetId, query: recordsQuery() });
+	}
 	async function loadRows() {
 		rowController?.abort();
+		if (!selectedColumns.length) {
+			rowsLoading = false;
+			error = 'Choose at least one visible column to update the records.';
+			return;
+		}
 		const request = new AbortController();
 		rowController = request;
 		rowsLoading = true;
+		const query = recordsQuery();
+		const signature = recordsSignature();
+		const requestedColumns = [...selectedColumns];
 		try {
-			const result = await api<RowResult>(
-				`datasets/${datasetId}/query`,
-				{
-					q: appliedSearch || null,
-					filters,
-					sort: sortColumn || null,
-					descending,
-					limit: 12,
-					offset: page * 12,
-					columns: selectedColumns.length ? selectedColumns : null
-				},
-				request.signal
-			);
-			if (!request.signal.aborted) rows = result;
+			const result = await api<RowResult>(`datasets/${datasetId}/query`, query, request.signal);
+			if (!request.signal.aborted) {
+				rows = result;
+				displayedColumns = requestedColumns;
+				builtRowsSignature = signature;
+			}
 		} catch (caught) {
 			if (!request.signal.aborted)
 				error = caught instanceof Error ? caught.message : 'Records could not be loaded.';
@@ -493,28 +493,17 @@
 		await Promise.all([draw(), loadRows()]);
 	}
 	function addFilter() {
-		if (!filterColumn) return;
-		const column = filterColumns.find((item) => item.name === filterColumn);
-		let value: unknown = filterValue;
-		if (filterOp === 'missing') value = true;
-		else if (column?.type === 'number' && filterOp !== 'contains') {
-			value = Number(filterValue);
-			if (!filterValue.trim() || !Number.isFinite(value as number)) {
-				error = 'Enter a finite numeric filter value.';
-				return;
-			}
-		} else if (column?.type === 'boolean') {
-			if (!['true', 'false'].includes(filterValue.toLowerCase())) {
-				error = 'Boolean filters use true or false.';
-				return;
-			}
-			value = filterValue.toLowerCase() === 'true';
+		try {
+			const current = filterScope === 'comparison' ? comparisonFilters : filters;
+			if (current.length >= 30) throw new Error('Use at most 30 filters per source collection.');
+			const rule = datasetFilter(filterColumns, filterColumn, filterOp, filterValue);
+			if (filterScope === 'comparison') comparisonFilters = [...comparisonFilters, rule];
+			else filters = [...filters, rule];
+			filterValue = '';
+			error = '';
+		} catch (caught) {
+			error = caught instanceof Error ? caught.message : 'This source filter is invalid.';
 		}
-		const rule: Rule = { column: filterColumn, op: filterOp, value };
-		if (filterScope === 'comparison') comparisonFilters = [...comparisonFilters, rule];
-		else filters = [...filters, rule];
-		filterValue = '';
-		error = '';
 	}
 	function removeFilter(index: number, secondary = false) {
 		if (secondary) comparisonFilters = comparisonFilters.filter((_, i) => i !== index);
@@ -525,17 +514,12 @@
 			? selectedColumns.filter((item) => item !== name)
 			: [...selectedColumns, name];
 	}
-	function download(contents: string, name: string, type: string) {
-		const url = URL.createObjectURL(new Blob([contents], { type }));
-		const anchor = document.createElement('a');
-		anchor.href = url;
-		anchor.download = name;
-		anchor.click();
-		URL.revokeObjectURL(url);
-	}
+
 	async function exportRows() {
+		if (exporting || rowsLoading || rowsDirty || !rows) return;
 		exporting = true;
 		error = '';
+		const requestedDataset = datasetId;
 		try {
 			const query = new SvelteURLSearchParams({ filters: JSON.stringify(filters) });
 			if (appliedSearch) query.set('q', appliedSearch);
@@ -544,9 +528,9 @@
 				query.set('descending', String(descending));
 			}
 			if (selectedColumns.length) query.set('columns', selectedColumns.join(','));
-			const response = await fetch(`/api/backend/datasets/${datasetId}/export.csv?${query}`);
+			const response = await fetch(`/api/backend/datasets/${requestedDataset}/export.csv?${query}`);
 			if (!response.ok) throw new Error('The dataset export could not be prepared.');
-			download(await response.text(), `${datasetId}-filtered.csv`, 'text/csv;charset=utf-8');
+			download(await response.text(), `${requestedDataset}-filtered.csv`, 'text/csv;charset=utf-8');
 			message = 'All filtered records exported, with spreadsheet formula strings neutralized.';
 		} catch (caught) {
 			error = caught instanceof Error ? caught.message : 'Export failed.';
@@ -606,86 +590,12 @@
 			mode,
 			alignment,
 			keyDomain,
-			receipts: chartSources.map((item) => item.provenance?.receipt)
-		};
-	}
-	function validStory(value: unknown): value is Story {
-		if (!value || typeof value !== 'object') return false;
-		const text = (value: unknown, maximum: number, minimum = 0): value is string =>
-			typeof value === 'string' && value.length >= minimum && value.length <= maximum;
-		const optionalColumn = (value: unknown) => value === null || text(value, 180);
-		const scalar = (value: unknown) =>
-			value === null ||
-			typeof value === 'string' ||
-			typeof value === 'boolean' ||
-			(typeof value === 'number' && Number.isFinite(value));
-		const validRule = (value: unknown) => {
-			if (!value || typeof value !== 'object') return false;
-			const rule = value as Rule;
-			if (
-				!text(rule.column, 180, 1) ||
-				!['eq', 'ne', 'contains', 'in', 'gte', 'lte', 'gt', 'lt', 'missing'].includes(rule.op)
+			receipts: chartSources.flatMap((item) =>
+				item.provenance?.receipt ? [item.provenance.receipt] : []
 			)
-				return false;
-			if (rule.op === 'in')
-				return Array.isArray(rule.value) && rule.value.length <= 500 && rule.value.every(scalar);
-			if (rule.op === 'missing') return rule.value === null || typeof rule.value === 'boolean';
-			if (['gte', 'lte', 'gt', 'lt'].includes(rule.op))
-				return typeof rule.value === 'number' && Number.isFinite(rule.value);
-			if (rule.op === 'contains') return text(rule.value, 1000);
-			return scalar(rule.value);
 		};
-		const validDefinition = (value: unknown, active = true) => {
-			if (!value || typeof value !== 'object') return false;
-			const definition = value as ChartDefinition;
-			return (
-				text(definition.group_by, 180, active ? 1 : 0) &&
-				optionalColumn(definition.series_by) &&
-				optionalColumn(definition.measure) &&
-				['count', 'sum', 'mean', 'min', 'max'].includes(definition.aggregation) &&
-				(!active || definition.aggregation === 'count' || !!definition.measure) &&
-				Array.isArray(definition.filters) &&
-				definition.filters.length <= 30 &&
-				definition.filters.every(validRule) &&
-				(definition.q === null || text(definition.q, 300)) &&
-				['group', 'value'].includes(definition.sort) &&
-				typeof definition.descending === 'boolean' &&
-				Number.isInteger(definition.limit) &&
-				definition.limit >= 1 &&
-				definition.limit <= 500
-			);
-		};
-		const candidate = value as Story;
-		return (
-			candidate.version === 1 &&
-			text(candidate.id, 160, 1) &&
-			text(candidate.title, 120, 1) &&
-			text(candidate.insight, 3000) &&
-			text(candidate.updatedAt, 40, 1) &&
-			Number.isFinite(Date.parse(candidate.updatedAt)) &&
-			text(candidate.primaryId, 160, 1) &&
-			/^[a-z0-9-]+$/.test(candidate.primaryId) &&
-			text(candidate.comparisonId, 160) &&
-			(!candidate.comparisonId || /^[a-z0-9-]+$/.test(candidate.comparisonId)) &&
-			['bar', 'line', 'scatter', 'heatmap'].includes(candidate.chartType) &&
-			['values', 'indexed'].includes(candidate.mode) &&
-			['common', 'union'].includes(candidate.alignment) &&
-			['calendar-month', 'calendar-year', 'island-id', 'category'].includes(candidate.keyDomain) &&
-			validDefinition(candidate.primary) &&
-			validDefinition(candidate.comparison, !!candidate.comparisonId) &&
-			Array.isArray(candidate.receipts) &&
-			candidate.receipts.length <= 2 &&
-			candidate.receipts.every((receipt) => {
-				if (!receipt || typeof receipt !== 'object') return false;
-				const source = receipt as Record<string, unknown>;
-				return (
-					text(source.artifact, 200, 1) &&
-					text(source.sha256, 64, 64) &&
-					/^[a-f0-9]{64}$/i.test(source.sha256)
-				);
-			})
-		);
 	}
+
 	function persist(next: Story[]) {
 		if (storageBlocked) {
 			error = 'Saved-story storage is unavailable. Export the definition to keep this story.';
@@ -723,6 +633,9 @@
 		}
 		chart = null;
 		rows = null;
+		filterScope = 'primary';
+		filterColumn = '';
+		filterValue = '';
 		datasetId = saved.primaryId;
 		comparisonId = saved.comparisonId;
 		groupBy = saved.primary.group_by;
@@ -772,7 +685,39 @@
 			input.value = '';
 		}
 	}
+	async function loadCatalogue() {
+		needsRefresh = false;
+		initialController?.abort();
+		controller?.abort();
+		rowController?.abort();
+		const request = new AbortController();
+		initialController = request;
+		loading = true;
+		try {
+			const result = await api<{ items: Dataset[] }>('datasets', undefined, request.signal);
+			if (request.signal.aborted) return;
+			const keepQuery = catalogue.some((item) => item.id === datasetId);
+			catalogue = result.items;
+			const item =
+				result.items.find((item) => item.id === datasetId && item.status === 'available') ??
+				result.items.find((item) => item.status === 'available');
+			if (item) {
+				if (keepQuery && item.id === datasetId) await refresh();
+				else chooseDataset(item.id);
+			}
+		} catch (caught) {
+			if (!request.signal.aborted)
+				error =
+					caught instanceof Error ? caught.message : 'The dataset catalogue could not be loaded.';
+		} finally {
+			if (initialController === request) loading = false;
+		}
+	}
 	onMount(() => {
+		mounted = true;
+		const unsubscribe = subscribeApiInvalidation(() => {
+			needsRefresh = true;
+		});
 		try {
 			const raw = localStorage.getItem(storageKey);
 			if (raw) {
@@ -787,30 +732,17 @@
 			storageBlocked = true;
 			message = 'Browser saved-story storage is unavailable. JSON exports still work.';
 		}
-		const request = new AbortController();
-		initialController = request;
-		void (async () => {
-			try {
-				const result = await api<{ items: Dataset[] }>('datasets', undefined, request.signal);
-				if (request.signal.aborted) return;
-				catalogue = result.items;
-				const item =
-					result.items.find((item) => item.id === datasetId && item.status === 'available') ??
-					result.items.find((item) => item.status === 'available');
-				if (item) chooseDataset(item.id);
-			} catch (caught) {
-				if (!request.signal.aborted)
-					error =
-						caught instanceof Error ? caught.message : 'The dataset catalogue could not be loaded.';
-			} finally {
-				if (!request.signal.aborted) loading = false;
-			}
-		})();
+		if (active) void loadCatalogue();
+		else needsRefresh = true;
 		return () => {
+			unsubscribe();
 			initialController?.abort();
 			controller?.abort();
 			rowController?.abort();
 		};
+	});
+	$effect(() => {
+		if (mounted && active && needsRefresh) untrack(() => void loadCatalogue());
 	});
 </script>
 
@@ -1020,6 +952,10 @@
 										{#if comparison}<NativeSelect.Root
 												aria-label="Filter source collection"
 												bind:value={filterScope}
+												onchange={() => {
+													filterColumn = '';
+													filterValue = '';
+												}}
 												><option value="primary">Primary collection</option><option
 													value="comparison">Comparison collection</option
 												></NativeSelect.Root
@@ -1042,7 +978,7 @@
 											/>{/if}<Button
 											size="sm"
 											variant="outline"
-											disabled={!filterColumn}
+											disabled={!filterColumns.some((column) => column.name === filterColumn)}
 											onclick={addFilter}><Plus size={13} /> Add filter</Button
 										>
 									</div>
@@ -1346,7 +1282,11 @@
 								Record counts retain the source grain. Missing values are shown as “Not reported”.
 							</p>
 						</div>
-						<Button variant="outline" size="sm" disabled={exporting} onclick={exportRows}
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={exporting || rowsLoading || rowsDirty || !rows}
+							onclick={exportRows}
 							><Download size={14} />{exporting ? 'Exporting…' : 'Export filtered CSV'}</Button
 						>
 					</div>
@@ -1392,19 +1332,22 @@
 							onclick={loadRows}>Apply columns</Button
 						>
 					</details>
+					{#if rowsDirty && !rowsLoading}<p class="chart-warning" role="status">
+							Record settings changed. Apply them to update the table and its export.
+						</p>{/if}
 					<div class="records-scroll">
 						<table>
 							<caption class="sr-only">Source dataset records</caption><thead
 								><tr
-									>{#each selectedColumns as column (column)}<th>{column}</th>{/each}</tr
+									>{#each displayedColumns as column (column)}<th>{column}</th>{/each}</tr
 								></thead
 							><tbody
 								>{#each rows?.items ?? [] as row, index (`${page}-${index}`)}<tr
-										>{#each selectedColumns as column (column)}<td title={number(row[column])}
+										>{#each displayedColumns as column (column)}<td title={number(row[column])}
 												><span class:missing={row[column] == null}>{number(row[column])}</span></td
 											>{/each}</tr
 									>{:else}<tr
-										><td colspan={Math.max(1, selectedColumns.length)} class="table-empty"
+										><td colspan={Math.max(1, displayedColumns.length)} class="table-empty"
 											>{rowsLoading
 												? 'Loading source records…'
 												: 'No records match this scope. Clear the search or filters.'}</td
@@ -1416,7 +1359,7 @@
 					<div class="records-footer">
 						<span
 							>{rows?.total
-								? `${page * 12 + 1}–${Math.min((page + 1) * 12, rows.total)} of ${number(rows.total)} filtered records`
+								? `${rows.offset + 1}–${Math.min(rows.offset + rows.items.length, rows.total)} of ${number(rows.total)} filtered records`
 								: 'No matching records'} · {filters.length} active filters</span
 						>
 						<div>

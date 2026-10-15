@@ -37,6 +37,8 @@ from app.cli.precompute import precompute_startup
 from app.conditions.service import ConditionsService
 from app.config.settings import Settings
 from app.data.computed_cache import ComputedCache, SourceVersion
+from app.data_updates.service import DataUpdateService
+from app.forecasting.service import ForecastService
 from app.live.config import LiveConfig
 from app.live.service import LiveService
 from app.operations.service import NoticeStore
@@ -133,6 +135,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.conditions = ConditionsService()
     app.state.notices = NoticeStore(app_settings.data_dir / "runtime", app_settings.public_data_dir)
     app.state.repository = NormalizedRepository(app_settings.data_dir)
+    # Construct shared mutable services before concurrent request dependencies run.
+    # Forecast acceptance and dataset cache readers must use the same instances.
+    app.state.forecasts = ForecastService(
+        app_settings.public_data_dir,
+        app_settings.data_dir,
+        cache=app.state.computed_cache,
+    )
+    app.state.datasets = app.state.forecasts.evidence_analysis.datasets
+    app.state.data_updates = DataUpdateService(
+        app_settings.public_data_dir, app_settings.data_dir, app.state.repository
+    )
     app.state.routing = RoutingRepository(app_settings.data_dir)
     app.state.accessibility = AccessibilityService(
         app_settings.data_dir, app.state.routing, computed_cache=app.state.computed_cache

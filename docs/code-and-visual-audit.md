@@ -1,6 +1,6 @@
 # Code and visual audit — 14–15 October 2026
 
-Implemented against the running application and the supplied backend. The audit keeps the current planning capabilities, saved drafts, source receipts and forecast methodology. Real-time collaboration remains excluded.
+Historical implementation record. See the [16 October code review](code-review-2026-10-16.md) and the [current verification commands](../README.md#verification) for the latest navigation, loading behavior and checks. Real-time collaboration remains excluded.
 
 | Before                                                                                                                              | After                                                                                                                                                  | Why                                                                                                         |
 | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
@@ -39,7 +39,7 @@ Final validation includes frontend formatting/lint, Svelte/TypeScript diagnostic
 
 The browser receipts cover all eight main desktop/mobile workspaces, 390 × 844 layouts, on-demand loading, failed-asset recovery, retained filters/drafts, stable map pins, canceled route/evaluation requests, proposal placement and impact, journey playback, forecasts/backtests and frozen receipts, multi-dataset comparison and complete exports, live map points, provider route geometry, notice/advisory demand loading and keyboard inspector dismissal.
 
-Run the focused audit with `npm run test:browser:audit` and `node scripts/verify-secondary-audit-browser.mjs`. Set `MOBILITY_QA_URL` to the production preview URL when running other browser suites. [Combined verification receipt](../artifacts/qa/code-visual-audit/verification.json) records the completed suites and source hashes.
+The former focused audit runner has been retired because it targeted superseded navigation. Use `npm run test:browser` for the maintained journey suites. [Historical combined verification receipt](../artifacts/qa/code-visual-audit/verification.json) records this pass and its source hashes.
 
 ## Remaining performance boundary
 

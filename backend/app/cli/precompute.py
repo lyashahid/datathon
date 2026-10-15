@@ -13,7 +13,7 @@ import json
 import logging
 import time
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 import httpx
 
@@ -93,6 +93,7 @@ async def warm_application(
     continue_on_error: bool = False,
     cooperative_delay: float = 0.0,
     retry_delay: float = 1.0,
+    on_progress: Callable[[dict[str, Any]], None] | None = None,
 ) -> list[dict[str, Any]]:
     """Warm API-identical results sequentially, without parallel CPU bursts.
 
@@ -132,6 +133,8 @@ async def warm_application(
             }
             if progress:
                 print(json.dumps(row), flush=True)
+            if on_progress is not None:
+                on_progress(row)
             # Give interactive requests a scheduling opportunity between jobs.
             await asyncio.sleep(cooperative_delay)
             return row
@@ -148,8 +151,20 @@ async def warm_application(
 
 async def precompute_startup(app: Any) -> None:
     """Prepare all supported defaults after startup; availability never waits."""
-    state = {"status": "running", "completed": 0, "total": 23, "failed_jobs": []}
+    state = {
+        "status": "running",
+        "completed": 0,
+        "total": len(_jobs(include_planning=True, include_analysis=True)),
+        "failed_jobs": [],
+    }
     app.state.precompute = state
+    completed: dict[str, str] = {}
+
+    def record_progress(row: dict[str, Any]) -> None:
+        completed[row["name"]] = row["status"]
+        state["completed"] = sum(status == "ready" for status in completed.values())
+        state["failed_jobs"] = [name for name, status in completed.items() if status == "failed"]
+
     started = time.perf_counter()
     LOGGER.info("Preparing analytics and planning in the background; the app is available.")
     try:
@@ -159,6 +174,7 @@ async def precompute_startup(app: Any) -> None:
             include_analysis=True,
             continue_on_error=True,
             cooperative_delay=0.05,
+            on_progress=record_progress,
         )
         failed = [row["name"] for row in results if row["status"] == "failed"]
         state.update(

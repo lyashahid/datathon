@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { downloadJson as download } from '#lib/download.js';
 	import { onMount } from 'svelte';
 	import { ArrowUpRight, Download, FileUp, RefreshCw, ShieldCheck } from '@lucide/svelte';
 	import { api } from '#lib/api.js';
@@ -123,16 +124,7 @@
 			if (controller === request) loading = false;
 		}
 	}
-	function download(data: unknown, name: string) {
-		const url = URL.createObjectURL(
-			new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-		);
-		const anchor = document.createElement('a');
-		anchor.href = url;
-		anchor.download = name;
-		anchor.click();
-		URL.revokeObjectURL(url);
-	}
+
 	async function template() {
 		try {
 			download(await api('forecasts/sources/template'), 'passenger-source-contract.json');
@@ -400,6 +392,7 @@
 				id="passenger-source-file"
 				type="file"
 				accept="application/json,.json"
+				disabled={importing}
 				onchange={(event) => {
 					sourceFile = event.currentTarget.files?.[0] ?? null;
 					staged = null;

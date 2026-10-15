@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-	explainImpactCell,
-	placementWalkCatchment,
-	serviceCalendarRuns
-} from './proposal-experience.js';
-import type { PlanningOperation, PlanningPlace } from './planning-map.js';
+import { explainImpactCell, serviceCalendarRuns } from './proposal-experience.js';
+import type { PlanningOperation } from './planning-map.js';
 
 const operations: PlanningOperation[] = [
 	{
@@ -121,67 +117,6 @@ describe('selected proposal impact explanations', () => {
 			{ operations: [{ type: 'add_service', service: { mode: 'ferry' } }] }
 		);
 		expect(explanation.reasons.join(' ')).toContain('without shortening the walk');
-	});
-});
-
-describe('fast placement walk screening', () => {
-	const origins: PlanningPlace[] = [
-		{ id: 'near', islandId: 'island:1', lon: 73.5, lat: 4.2, population2026: 100 },
-		{ id: 'near2', islandId: 'island:1', lon: 73.501, lat: 4.2, population2026: 50 },
-		{ id: 'far', islandId: 'island:1', lon: 73.6, lat: 4.2, population2026: 250 },
-		{ id: 'other-island', islandId: 'island:2', lon: 73.5, lat: 4.2, population2026: 300 }
-	];
-	it('uses actual origins and matching walking assumptions, excluding other islands when scoped', () => {
-		const result = placementWalkCatchment(origins, [73.5, 4.2], {
-			targetMinutes: 10,
-			islandId: 'island:1'
-		});
-		expect(result).toMatchObject({
-			radiusMetres: 800,
-			originCount: 2,
-			population: 150,
-			knownPopulation: 150,
-			unknownPopulationOriginCount: 0
-		});
-		expect(result.qualification).toContain('not predicted access gains');
-		expect(
-			placementWalkCatchment(origins, [73.5, 4.2], { targetMinutes: 10, walkSpeedKph: 3.6 })
-				.radiusMetres
-		).toBe(600);
-	});
-
-	it('does not normalize missing population away or invent residents in an empty catchment', () => {
-		const unknown: PlanningPlace = { id: 'unknown', islandId: 'island:1', lon: 73.5, lat: 4.2 };
-		expect(
-			placementWalkCatchment([...origins, unknown], [73.5, 4.2], {
-				targetMinutes: 10,
-				islandId: 'island:1'
-			})
-		).toMatchObject({ population: null, knownPopulation: 150, unknownPopulationOriginCount: 1 });
-		expect(placementWalkCatchment(origins, [72, 4], { targetMinutes: 10 })).toMatchObject({
-			population: 0,
-			originCount: 0
-		});
-	});
-
-	it('rejects invalid placement inputs and ignores invalid origin coordinates', () => {
-		expect(() => placementWalkCatchment(origins, [181, 4.2], { targetMinutes: 10 })).toThrow(
-			RangeError
-		);
-		expect(() => placementWalkCatchment(origins, [73.5, 4.2], { targetMinutes: 0 })).toThrow(
-			RangeError
-		);
-		expect(() =>
-			placementWalkCatchment(origins, [73.5, 4.2], {
-				targetMinutes: 10,
-				walkMetresPerMinute: Number.NaN
-			})
-		).toThrow(RangeError);
-		expect(
-			placementWalkCatchment([{ ...origins[0], lat: Number.NaN }], [73.5, 4.2], {
-				targetMinutes: 10
-			}).originCount
-		).toBe(0);
 	});
 });
 

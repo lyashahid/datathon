@@ -100,34 +100,23 @@ npm run lint:backend
 npm run build
 ```
 
-Run the browser harness with both services running:
+Run the maintained end-to-end suite with both services running. It covers analytics, forecasts and data exploration, navigation, map controls, proposal editing and PDFs, and island connections:
 
 ```powershell
 npx playwright install chromium
-npm run test:browser:map-journey
-npm run test:browser:map-focus
-npm run test:browser:bus-vehicles
-npm run test:browser:unified-policy-journey
-npm run test:browser:policy-drag
-npm run test:browser:proposal-experience
-npm run test:browser:accessibility
-node scripts/verify-analytics-redesign.mjs
 npm run test:browser
+```
+
+Additional focused checks cover specialist service/fleet planning, isolated timetable imports, island evidence, and movement rendering:
+
+```powershell
 npm run test:policy-api
-npm run test:browser:forecasts
 npm run test:browser:planning
-npm run test:browser:places
-npm run test:browser:map
-npm run test:browser:workspace
 npm run test:browser:delivery
 npm run test:browser:timetables
-npm run test:browser:movement
-npm run test:browser:map-legibility
-npm run test:browser:planning-map
-npm run test:browser:policymaker
-npm run test:browser:map-first-policy
-npm run test:browser:map-first-conditions
-npm run test:browser:map-first-places
+npm run test:browser:accessibility
+npm run test:browser:map-focus
+npm run test:browser:bus-vehicles
 ```
 
 Browser harnesses default to http://127.0.0.1:5173, matching `npm start`. Set `MOBILITY_QA_URL` only to test another frontend URL. For production-preview verification, run `npm run build`, start `npm run preview -- --host 127.0.0.1 --port 5180`, keep FastAPI running, and set the harness URL to http://127.0.0.1:5180.
@@ -135,3 +124,5 @@ Browser harnesses default to http://127.0.0.1:5173, matching `npm start`. Set `M
 The frontend uses SvelteKit's Node adapter with precompressed static assets. `npm start -- --port 5180` serves the optimized application at another port; `--force-build` rebuilds it explicitly. Hosting requires managed Node/FastAPI processes and deployment access controls. Private source caches and environment files remain ignored.
 
 See [performance architecture and repeatable measurements](docs/performance.md) for compact country loading, persistent computed results, browser caching and the optional PostgreSQL cache. A fresh clone uses local caching automatically; database credentials remain private.
+
+The [current code review and cleanup](docs/code-review-2026-10-16.md) records corrected calculation, refresh and cancellation behavior, shared helpers, removed obsolete checks and verification results. Earlier design-pass documents retain historical screenshots and test receipts; use the commands above for the current navigation.
