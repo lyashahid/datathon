@@ -3,7 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
-// Exercise the public navigation and country-to-planning journey against real data.
+// Exercise the shared navigation, capital opening, and optional country-to-planning journey.
 const baseURL = process.env.BASE_URL || process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
 const output = path.resolve('artifacts/qa/restored-navigation');
 await mkdir(output, { recursive: true });
@@ -108,6 +108,27 @@ async function floatingNavigation() {
 	}
 }
 
+async function capitalReady() {
+	await expect(explorer).not.toBeVisible();
+	await expect(atlas).toHaveAttribute('aria-busy', 'false');
+	await expect(atlas).toHaveAttribute('data-accessibility-overview', 'false');
+	await expect(page).toHaveURL(
+		(url) =>
+			url.searchParams.get('island') === 'island:1442' &&
+			url.searchParams.get('scope') === 'capital'
+	);
+	await expect(page.getByLabel('Service coverage map', { exact: true })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Create proposal', exact: true })).toBeVisible();
+	await floatingNavigation();
+	await noOverflow();
+}
+
+async function openOptionalCountry() {
+	await capitalReady();
+	await atlas.getByRole('button', { name: 'Show all Maldives islands', exact: true }).click();
+	await countryReady();
+}
+
 async function countryReady() {
 	await expect(explorer).toBeVisible();
 	await expect(explorer).toHaveAttribute('aria-busy', 'false');
@@ -200,7 +221,7 @@ try {
 			'page'
 		);
 		await header.getByRole('button', { name: 'Map & planning', exact: true }).click();
-		await countryReady();
+		await openOptionalCountry();
 		await expect(explorer.getByRole('button', { name: 'Find out why', exact: true })).toBeVisible();
 		await page.screenshot({ path: path.join(output, 'country-desktop.png') });
 	});
@@ -271,7 +292,7 @@ try {
 			await noOverflow();
 			await page.screenshot({ path: path.join(output, 'analytics-mobile.png') });
 			await header.getByRole('button', { name: 'Map & planning', exact: true }).click();
-			await countryReady();
+			await openOptionalCountry();
 			await explorer.getByRole('button', { name: 'Find out why', exact: true }).click();
 			await explorer.locator('[data-atoll]').filter({ hasText: target.atoll }).click();
 			await expect(explorer).toHaveAttribute('data-scope', 'atoll');
@@ -303,7 +324,7 @@ try {
 		async () => {
 			await page.setViewportSize({ width: 820, height: 1180 });
 			await header.getByRole('button', { name: 'Map & planning', exact: true }).click();
-			await countryReady();
+			await openOptionalCountry();
 			await page.screenshot({ path: path.join(output, 'country-tablet.png') });
 			await explorer.getByRole('button', { name: 'Find out why', exact: true }).click();
 			await explorer.locator('[data-atoll]').filter({ hasText: target.atoll }).click();
@@ -328,7 +349,7 @@ try {
 			await returnToAnalytics();
 			await page.setViewportSize({ width: 320, height: 812 });
 			await header.getByRole('button', { name: 'Map & planning', exact: true }).click();
-			await countryReady();
+			await openOptionalCountry();
 			await page.screenshot({ path: path.join(output, 'country-compact-mobile.png') });
 			await returnToAnalytics();
 		}
@@ -338,7 +359,7 @@ try {
 		async () => {
 			await page.setViewportSize({ width: 1440, height: 1000 });
 			await header.getByRole('button', { name: 'Map & planning', exact: true }).click();
-			await countryReady();
+			await openOptionalCountry();
 			await explorer.getByRole('button', { name: 'Find out why', exact: true }).click();
 			await explorer.locator('[data-atoll]').filter({ hasText: target.atoll }).click();
 			await expect(explorer).toHaveAttribute('data-scope', 'atoll');

@@ -3,7 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
-// Walk the public country-to-island journey using the real backend and map.
+// Walk the optional country-to-island journey using the real backend and map.
 const baseURL = process.env.BASE_URL || process.env.MOBILITY_QA_URL || 'http://localhost:5173';
 const output = path.resolve('artifacts/qa/country-map-journey');
 await mkdir(output, { recursive: true });
@@ -208,9 +208,9 @@ try {
 	const islandCoordinates = island.centroid;
 	let initialCountryView = { longitude: 0, latitude: 0, zoom: 0 };
 
-	await page.goto(baseURL, { waitUntil: 'domcontentloaded' });
+	await page.goto(`${baseURL}/?view=map&scope=country`, { waitUntil: 'domcontentloaded' });
 	await check(
-		'Opening the app shows the entire Maldives map and a real residential score',
+		'The optional country view shows the entire Maldives and a real residential score',
 		async () => {
 			await countryReady();
 			await expect(explorer.getByTestId('national-accessibility-score')).toHaveText(
@@ -403,10 +403,10 @@ try {
 	});
 
 	await check(
-		'A narrow screen retains the country-first pitch and a usable drill down',
+		'A narrow screen retains the optional national overview and a usable drill down',
 		async () => {
 			await page.setViewportSize({ width: 390, height: 844 });
-			await page.goto(baseURL, { waitUntil: 'domcontentloaded' });
+			await page.goto(`${baseURL}/?view=map&scope=country`, { waitUntil: 'domcontentloaded' });
 			await countryReady();
 			await expect(explorer.getByTestId('national-accessibility-score')).toBeInViewport();
 			await expect(

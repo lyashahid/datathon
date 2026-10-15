@@ -116,6 +116,12 @@
 		{ id: 'map', label: 'Map & planning', icon: MapIcon },
 		{ id: 'evidence', label: 'Evidence', icon: BookOpen }
 	];
+	const capitalIslandId = 'island:1442';
+	const capitalBounds: [Coordinates, Coordinates] = [
+		[73.497, 4.165],
+		[73.555, 4.245]
+	];
+	let capitalRegion = $state(false);
 	let policyLens = $state<PolicyLens>('overall');
 	let policyCommand = $state<{
 		id: number;
@@ -148,7 +154,7 @@
 	}
 	let tab = $state('explore');
 	let countryAtoll = $state<string | null>(null);
-	let accessExplorerOpen = $state(true);
+	let accessExplorerOpen = $state(false);
 	let accessScores = $state.raw<NationalAccessibility | null>(null);
 	let accessLoading = $state(true);
 	let accessError = $state('');
@@ -577,7 +583,9 @@
 					? islands.find((island) => /^(mal[eé]|male.? city)$/i.test(island.properties.name ?? ''))
 					: undefined);
 			if (initial) {
+				const keepCapitalRegion = capitalRegion;
 				selectIsland(initial.properties.id, false);
+				capitalRegion = keepCapitalRegion;
 				writeLocation(false);
 			} else if (selectedId) resetIslandSelection();
 		} catch (cause) {
@@ -609,6 +617,7 @@
 		}
 	}
 	function resetIslandSelection() {
+		capitalRegion = false;
 		profileController?.abort();
 		profile = null;
 		profileLoading = false;
@@ -632,6 +641,22 @@
 		focusVersion += 1;
 		writeLocation(true);
 	}
+	function showCapitalRegion() {
+		resetIslandSelection();
+		policyLens = 'overall';
+		atoll = '';
+		search = '';
+		selectIsland(capitalIslandId, false);
+		capitalRegion = true;
+		go('map', false);
+		focusVersion += 1;
+		writeLocation(true);
+	}
+	function focusSelectedIsland() {
+		capitalRegion = false;
+		focusVersion += 1;
+		writeLocation(true);
+	}
 	function showAtoll(name: string) {
 		resetIslandSelection();
 		policyLens = 'overall';
@@ -643,6 +668,7 @@
 		writeLocation(true);
 	}
 	function selectIsland(id: string, push = true) {
+		capitalRegion = false;
 		countryAtoll = islands.find((island) => island.properties.id === id)?.properties.atoll ?? null;
 		accessExplorerOpen = false;
 		if (id === selectedId) {
@@ -966,14 +992,23 @@
 		}
 		const restoreView = () => {
 			const params = new URL(location.href).searchParams;
-			const id = params.get('island');
+			const requested = params.get('view') ?? 'map';
+			const isMapView = !['overview', 'evidence'].includes(requested);
+			const explicitIsland = params.get('island');
+			const isCapitalView =
+				isMapView &&
+				params.get('scope') !== 'country' &&
+				!params.has('atoll') &&
+				(!explicitIsland ||
+					(explicitIsland === capitalIslandId && params.get('scope') === 'capital'));
+			const id = explicitIsland ?? (isCapitalView ? capitalIslandId : null);
 			if (id && id !== selectedId) {
 				if (features) selectIsland(id, false);
 				else selectedId = id;
 			} else if (!id && selectedId) resetIslandSelection();
+			capitalRegion = isCapitalView;
 			countryAtoll = id ? countryAtoll : params.get('atoll');
 			accessExplorerOpen = !id && !params.has('lens') && params.get('tool') !== 'proposals';
-			const requested = params.get('view') ?? 'map';
 			const tool = params.get('tool');
 			const next =
 				requested === 'map'
@@ -1080,6 +1115,9 @@
 		else url.searchParams.delete('tool');
 		if (selectedId) url.searchParams.set('island', selectedId);
 		else url.searchParams.delete('island');
+		if (isMapWorkspace && capitalRegion) url.searchParams.set('scope', 'capital');
+		else if (isMapWorkspace && !selectedId) url.searchParams.set('scope', 'country');
+		else url.searchParams.delete('scope');
 		if (isMapWorkspace && !selectedId && countryAtoll) url.searchParams.set('atoll', countryAtoll);
 		else url.searchParams.delete('atoll');
 		if (tab === 'scenarios' || tab === 'recommendations')
@@ -1226,7 +1264,7 @@
 					class={active ? 'nav-item active' : 'nav-item'}
 					aria-current={active ? 'page' : undefined}
 					onclick={() => {
-						if (item.id === 'map') showCountry();
+						if (item.id === 'map') showCapitalRegion();
 						else go(item.id);
 					}}><item.icon size={16} /><span>{item.label}</span></Button
 				>
@@ -1374,8 +1412,10 @@
 						{features}
 						{selectedId}
 						atollScope={countryAtoll}
+						scopeBounds={capitalRegion ? capitalBounds : null}
 						accessibilityScores={displayedScores}
 						onnational={showCountry}
+						onfocusisland={focusSelectedIsland}
 						{focusVersion}
 						{focusPoint}
 						{conditionRoute}
@@ -1426,9 +1466,9 @@
 						>
 					</div>
 				{:else if loading || !workspaces.atlas}<div class="map-loading" role="status">
-						<span class="spinner" aria-hidden="true"></span><strong
-							>Opening the national atlas</strong
-						><span>Loading island geography and source records.</span>
+						<span class="spinner" aria-hidden="true"></span><strong>Opening the map</strong><span
+							>Loading island geography and source records.</span
+						>
 					</div>{/if}
 			</div>
 			{#if showAccessExplorer}
@@ -1519,7 +1559,7 @@
 						size="icon"
 						title="Focus selected island"
 						aria-label="Focus selected island"
-						onclick={() => (focusVersion += 1)}><LocateFixed size={17} /></Button
+						onclick={focusSelectedIsland}><LocateFixed size={17} /></Button
 					>
 					<Button
 						variant="outline"

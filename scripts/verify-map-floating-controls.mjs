@@ -204,7 +204,7 @@ try {
 	)?.properties;
 	assert.ok(target, 'The real planning island is available');
 
-	await page.goto(`${baseURL}/?view=map`, { waitUntil: 'domcontentloaded' });
+	await page.goto(`${baseURL}/?view=map&scope=country`, { waitUntil: 'domcontentloaded' });
 	await check('Country search opens a compact dropdown and Escape restores focus', async () => {
 		const explorer = page.getByRole('region', { name: 'Accessibility explorer', exact: true });
 		await expect(explorer).toHaveAttribute('aria-busy', 'false');

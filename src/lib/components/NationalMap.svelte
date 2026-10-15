@@ -63,9 +63,11 @@
 		features: MapFeatures | null;
 		selectedId: string | null;
 		atollScope?: string | null;
+		scopeBounds?: [Coordinates, Coordinates] | null;
 		accessibilityScores?: Accessibility[] | null;
 		onselect: (id: string) => void;
 		onnational?: () => void;
+		onfocusisland?: () => void;
 		onpick: (coordinates: Coordinates) => void;
 		onplanpoint?: (coordinates: Coordinates) => void;
 		onmovejourneypoint?: (endpoint: 'start' | 'end') => void;
@@ -124,9 +126,11 @@
 		features,
 		selectedId,
 		atollScope = null,
+		scopeBounds = null,
 		accessibilityScores = null,
 		onselect,
 		onnational,
+		onfocusisland,
 		onpick,
 		onplanpoint,
 		onmovejourneypoint,
@@ -270,6 +274,7 @@
 	let lastFocusedId: string | null | undefined;
 	let lastFocusedAtoll: string | null | undefined;
 	let lastFocusedAtollBounds: [Coordinates, Coordinates] | null = null;
+	let lastFocusedScopeBounds: [Coordinates, Coordinates] | null = null;
 	let lastFocusVersion = -1;
 	let contextualIsland: string | null = null;
 	let userZoomGesture: { point: [number, number] | null; startZoom: number } | null = null;
@@ -1135,6 +1140,25 @@
 			padding: focusPadding(),
 			duration: reducedMotion() ? 0 : 280
 		});
+	}
+	function scopeFocusPadding() {
+		const padding = focusPadding();
+		if (!scopeBounds || container.clientWidth > 1100) return padding;
+		// On narrow maps, keep both cities above the legend and bottom action docks.
+		const frame = container.getBoundingClientRect();
+		const information = container.parentElement
+			?.querySelector('.map-information-card')
+			?.getBoundingClientRect();
+		if (information?.height) {
+			// Reserve the full tablet key before coverage rows arrive, avoiding a cold-load overlap.
+			const legendHeight =
+				container.clientWidth > 620 ? Math.max(information.height, 240) : information.height;
+			padding.bottom = Math.max(
+				padding.bottom,
+				Math.min(frame.bottom - information.bottom + legendHeight + 24, frame.height * 0.48)
+			);
+		}
+		return padding;
 	}
 	function nationalView() {
 		closeInspection();
@@ -2086,8 +2110,8 @@
 							}
 						]
 					},
-					bounds: nationalBounds,
-					fitBoundsOptions: { absolutePadding: true, padding: focusPadding() },
+					bounds: scopeBounds ?? nationalBounds,
+					fitBoundsOptions: { absolutePadding: true, padding: scopeFocusPadding() },
 					minZoom: 4,
 					maxZoom: 19,
 					maxPitch: 0,
@@ -3154,6 +3178,7 @@
 		const requestedIsland = selectedIsland;
 		const requestedAtoll = atollScope;
 		const requestedAtollBounds = atollBounds;
+		const requestedScopeBounds = scopeBounds;
 		const requestedVersion = focusVersion;
 		const instance = map;
 		if (
@@ -3161,6 +3186,7 @@
 			Boolean(requestedIsland) === Boolean(lastFocusedIsland) &&
 			requestedAtoll === lastFocusedAtoll &&
 			(requestedId || Boolean(requestedAtollBounds) === Boolean(lastFocusedAtollBounds)) &&
+			requestedScopeBounds === lastFocusedScopeBounds &&
 			requestedVersion === lastFocusVersion
 		)
 			return;
@@ -3176,13 +3202,22 @@
 				selectedIsland !== requestedIsland ||
 				atollScope !== requestedAtoll ||
 				atollBounds !== requestedAtollBounds ||
+				scopeBounds !== requestedScopeBounds ||
 				focusVersion !== requestedVersion
 			)
 				return;
 			instance.resize();
 			mapHeight = container.clientHeight;
 			userZoomGesture = null;
-			if (requestedId && requestedId === contextualIsland) {
+			if (requestedScopeBounds) {
+				contextualIsland = null;
+				instance.fitBounds(requestedScopeBounds, {
+					absolutePadding: true,
+					padding: scopeFocusPadding(),
+					maxZoom: 14,
+					duration: reducedMotion() ? 0 : 280
+				});
+			} else if (requestedId && requestedId === contextualIsland) {
 				// A zoom gesture is already framing this island. Reveal its detailed
 				// tools without replacing the user's view with another zoom animation.
 				contextualIsland = null;
@@ -3202,6 +3237,7 @@
 			lastFocusedIsland = requestedIsland;
 			lastFocusedAtoll = requestedAtoll;
 			lastFocusedAtollBounds = requestedAtollBounds;
+			lastFocusedScopeBounds = requestedScopeBounds;
 			lastFocusVersion = requestedVersion;
 		});
 		scopeFocusFrame = frame;
@@ -3565,7 +3601,8 @@
 								class="map-view-action"
 								disabled={!selectedIsland || !ready}
 								onclick={() => {
-									focusIsland();
+									if (onfocusisland) onfocusisland();
+									else focusIsland();
 									closeControls(true);
 								}}><LocateFixed size={16} /><span>Focus selected island</span></Button
 							>
