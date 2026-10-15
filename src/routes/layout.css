@@ -510,22 +510,6 @@
 	outline: 3px solid #403265;
 	outline-offset: 4px;
 }
-.map-workspace .policy-map-panel .proposal-cost-strip {
-	border: 0;
-	border-radius: 0;
-	background: transparent;
-	padding: 0;
-	gap: 8px;
-}
-.map-workspace .policy-map-panel .cost-values strong {
-	font-size: 17px;
-}
-.map-workspace .policy-map-panel .cost-values small {
-	font-size: 10px;
-}
-.map-workspace .policy-map-panel .review-button {
-	height: 34px;
-}
 @media (max-width: 1200px) {
 	.map-workspace .map-search-dock {
 		top: 15px;
@@ -538,33 +522,6 @@
 	}
 }
 @media (max-width: 640px) {
-	.map-workspace .policy-map-panel .proposal-cost-strip {
-		gap: 5px;
-	}
-	.map-workspace .policy-map-panel .cost-heading {
-		flex-direction: row;
-		align-items: center;
-		gap: 6px;
-	}
-	.map-workspace .policy-map-panel .draft-label {
-		font-size: 10px;
-	}
-	.map-workspace .policy-map-panel .cost-status {
-		font-size: 9px;
-	}
-	.map-workspace .policy-map-panel .cost-values {
-		gap: 6px;
-	}
-	.map-workspace .policy-map-panel .cost-values > div {
-		gap: 2px;
-	}
-	.map-workspace .policy-map-panel .cost-values strong {
-		font-size: 15px;
-	}
-	.map-workspace .policy-map-panel .budget-line,
-	.map-workspace .policy-map-panel .budget-track {
-		display: none;
-	}
 	.unified-map-title {
 		font-size: 10px !important;
 	}

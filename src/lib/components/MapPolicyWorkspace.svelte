@@ -1944,7 +1944,6 @@
 	{#if opened}<section
 			class="policy-map-panel"
 			class:placing={(!!pending || !!armedKind) && !budgetEditing}
-			class:ferry-composing={ferryOpen}
 			aria-label="Island needs and proposal"
 			data-policy-section={section}
 		>
@@ -2179,11 +2178,13 @@
 						}}>Island details & directions</Button
 					>
 				{:else}
-					<Label for="map-proposal-title">Proposal name</Label><Input
-						id="map-proposal-title"
-						bind:value={title}
-						maxlength={160}
-					/>
+					<div class="policy-field">
+						<Label for="map-proposal-title">Proposal name</Label><Input
+							id="map-proposal-title"
+							bind:value={title}
+							maxlength={160}
+						/>
+					</div>
 					<div class="policy-budget-grid">
 						<div>
 							<Label for="map-capital-budget">Capital budget · MVR</Label><Input
@@ -2214,17 +2215,19 @@
 							Checking the cost against both budgets…
 						</p>{/if}
 					<div class="policy-priorities">
-						<span>Priorities</span
-						>{#each ['transport', 'health', 'education'] as domain (domain)}<button
-								class:active={priorities.includes(domain as PolicyDomain)}
-								aria-pressed={priorities.includes(domain as PolicyDomain)}
-								onclick={() => togglePriority(domain as PolicyDomain)}
-								>{domain === 'health'
-									? 'Health'
-									: domain === 'education'
-										? 'Education'
-										: 'Transport'}</button
-							>{/each}
+						<span>Priorities</span>
+						<div class="policy-priority-options">
+							{#each ['transport', 'health', 'education'] as domain (domain)}<button
+									class:active={priorities.includes(domain as PolicyDomain)}
+									aria-pressed={priorities.includes(domain as PolicyDomain)}
+									onclick={() => togglePriority(domain as PolicyDomain)}
+									>{domain === 'health'
+										? 'Health'
+										: domain === 'education'
+											? 'Education'
+											: 'Transport'}</button
+								>{/each}
+						</div>
 					</div>
 					<Button
 						variant="outline"
@@ -2755,6 +2758,7 @@
 			{#if baseline && (section === 'proposal' || operations.length || pending)}<footer>
 					<ProposalCostStrip
 						compact
+						embedded
 						economics={visibleEconomics}
 						capitalBudget={Number.isFinite(budgetNumber(capitalBudget))
 							? budgetNumber(capitalBudget)
@@ -3068,6 +3072,7 @@
 		animation: panel-in 180ms ease-out;
 	}
 	.policy-map-panel > header {
+		flex-shrink: 0;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
@@ -3086,9 +3091,10 @@
 		letter-spacing: 1.3px;
 	}
 	.policy-panel-tabs {
+		flex-shrink: 0;
 		display: flex;
 		border-bottom: 1px solid #e3e9e4;
-		padding: 0 18px;
+		padding: 0 20px;
 		gap: 20px;
 	}
 	.policy-panel-tabs button {
@@ -3110,13 +3116,17 @@
 		font-size: 10px;
 	}
 	.policy-panel-scroll {
+		flex: 1;
 		overflow: auto;
-		padding: 18px 20px;
+		padding: 20px;
 		display: flex;
 		flex-direction: column;
-		gap: 14px;
+		gap: 16px;
 		min-height: 0;
 		overscroll-behavior: contain;
+	}
+	.policy-panel-scroll > * {
+		flex-shrink: 0;
 	}
 	.policy-intro {
 		font-size: 13px;
@@ -3228,6 +3238,7 @@
 	}
 	.policy-map-panel :global(label) {
 		font-size: 11px;
+		line-height: 1.4;
 		color: #68765f;
 		font-weight: 550;
 	}
@@ -3238,27 +3249,34 @@
 	}
 	.policy-budget-grid {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 10px;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: end;
+		gap: 12px;
 	}
+	.policy-field,
 	.policy-budget-grid > div {
 		display: flex;
 		flex-direction: column;
-		gap: 7px;
+		gap: 8px;
+		min-width: 0;
 	}
 	.policy-priorities {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-		font-size: 10px;
+		display: grid;
+		gap: 8px;
+		font-size: 11px;
+		line-height: 1.4;
 	}
 	.policy-priorities > span {
-		margin-right: auto;
 		color: #7b8375;
+	}
+	.policy-priority-options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
 	}
 	.policy-priorities button {
 		border: 1px solid #dce4d7;
-		padding: 5px 7px;
+		padding: 6px 10px;
 		border-radius: 6px;
 		color: #6b795f;
 	}
@@ -3270,11 +3288,14 @@
 	.policy-place-heading h3,
 	.policy-draft-heading h3 {
 		font-size: 12px;
-		margin: 2px 0 5px;
+		line-height: 1.4;
+		margin: 0 0 6px;
 		font-weight: 600;
 	}
 	.policy-place-heading small {
-		font-size: 10px;
+		display: block;
+		font-size: 11px;
+		line-height: 1.5;
 		color: #7c8674;
 	}
 	.policy-palette {
@@ -3771,9 +3792,10 @@
 		gap: 5px;
 	}
 	.policy-map-panel > footer {
+		flex-shrink: 0;
 		border-top: 1px solid #dde5d6;
 		background: #f9fbf5;
-		padding: 12px 15px;
+		padding: 16px 20px;
 	}
 	.policy-recalculating {
 		position: absolute;
@@ -4003,14 +4025,11 @@
 			top: auto;
 			bottom: 10px;
 			width: auto;
-			max-height: min(70%, 620px);
+			max-height: min(80%, 680px);
 			border-radius: 17px;
 		}
 		.policy-map-panel > header {
 			padding: 10px 16px 8px;
-		}
-		.policy-map-panel.ferry-composing {
-			max-height: min(58%, 520px);
 		}
 		.policy-map-panel h2 {
 			font-size: 19px;
@@ -4022,6 +4041,9 @@
 		}
 		.policy-panel-tabs button {
 			padding-block: 8px;
+		}
+		.policy-panel-tabs {
+			padding-inline: 16px;
 		}
 		.policy-map-panel :global(input) {
 			font-size: 16px;
@@ -4039,8 +4061,7 @@
 			display: none;
 		}
 		.policy-map-panel > footer {
-			padding: 8px 12px;
-			flex-shrink: 0;
+			padding: 12px 16px max(12px, env(safe-area-inset-bottom));
 		}
 		.policy-palette button {
 			padding: 9px 5px;

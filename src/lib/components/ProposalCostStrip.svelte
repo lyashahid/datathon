@@ -22,6 +22,7 @@
 		stale = false,
 		operationCount = 0,
 		compact = false,
+		embedded = false,
 		preview = false,
 		previewChecking = false,
 		gainedResidents = null,
@@ -37,6 +38,7 @@
 		stale?: boolean;
 		operationCount?: number;
 		compact?: boolean;
+		embedded?: boolean;
 		preview?: boolean;
 		previewChecking?: boolean;
 		gainedResidents?: number | null;
@@ -75,6 +77,7 @@
 <section
 	class="proposal-cost-strip"
 	class:compact
+	class:embedded
 	aria-label="Proposal budget"
 	aria-busy={pending}
 	data-preview={preview}
@@ -101,18 +104,18 @@
 	<div class="cost-values">
 		<div>
 			<small>{compact ? 'Upfront cost' : 'One-time investment'}</small><strong
-				>{#if previewUnpriced}—{:else}<span class="currency">MVR</span>
+				>{#if previewUnpriced || capital === null}—{:else}<span class="currency">MVR</span>
 					{formatAmount(capital, true)}{/if}</strong
 			>
 		</div>
 		<div>
 			<small>{compact ? 'Yearly running' : 'Added yearly running cost'}</small><strong
-				>{#if previewUnpriced}—{:else}<span class="currency">MVR</span>
+				>{#if previewUnpriced || annual === null}—{:else}<span class="currency">MVR</span>
 					{formatAmount(annual, true)}{/if}</strong
 			>
 		</div>
 		{#if compact}<div class="resident-value">
-				<small>Gaining access</small><strong
+				<small>Gaining access</small><strong class:updating={displayGained === null && pending}
 					>{displayGained === null
 						? pending
 							? 'Updating…'
@@ -190,6 +193,7 @@
 
 <style>
 	.proposal-cost-strip {
+		container-type: inline-size;
 		display: grid;
 		gap: 12px;
 		padding: 16px;
@@ -225,11 +229,18 @@
 		color: var(--muted-foreground);
 	}
 	.compact {
-		gap: 10px;
-		padding: 12px;
+		gap: 12px;
+		padding: 16px;
 		border-color: color-mix(in srgb, var(--border) 85%, transparent);
 		background: color-mix(in srgb, var(--card) 97%, transparent);
 		box-shadow: 0 8px 28px #173e3915;
+	}
+	.embedded {
+		padding: 0;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
 	}
 	.compact .cost-values {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -243,7 +254,7 @@
 		font-size: 17px;
 		letter-spacing: -0.45px;
 		line-height: 1.2;
-		overflow-wrap: anywhere;
+		white-space: nowrap;
 	}
 	.compact .cost-values .currency {
 		font-size: 10px;
@@ -253,35 +264,47 @@
 	}
 	.compact .cost-values small {
 		font-size: 10px;
+		line-height: 1.4;
 	}
 	.compact .resident-value strong {
 		color: var(--chart-1);
+	}
+	.compact .resident-value strong.updating {
+		font-size: 12px;
+		letter-spacing: 0;
 	}
 	.compact .budgets {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 12px;
 	}
 	.compact .budget-line {
-		flex-wrap: wrap;
-		gap: 2px 5px;
+		display: grid;
+		justify-content: start;
+		gap: 3px;
 		font-size: 10px;
 	}
+	.compact .budget-line > span:last-child {
+		font-weight: 550;
+		font-variant-numeric: tabular-nums;
+	}
 	.compact-actions {
-		display: flex;
+		display: grid;
+		grid-template-columns: auto auto minmax(0, 1fr);
 		align-items: center;
-		gap: 4px;
-		padding-top: 8px;
+		gap: 6px;
+		padding-top: 12px;
 		border-top: 1px solid var(--border);
 	}
 	.compact-actions :global(button) {
 		min-width: 0;
+		height: 36px;
 		gap: 5px;
 		padding-inline: 8px;
 		font-size: 11px;
 	}
 	.proposal-cost-strip.compact .compact-actions :global(.review-button) {
-		width: auto;
-		margin-left: auto;
+		width: 100%;
+		justify-content: center;
 	}
 	.cost-heading,
 	.budget-line {
@@ -289,6 +312,11 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 10px;
+		line-height: 1.4;
+	}
+	.cost-heading {
+		flex-wrap: wrap;
+		gap: 4px 10px;
 	}
 	.draft-label {
 		font-size: 12px;
@@ -328,6 +356,8 @@
 	.budget-summary {
 		display: grid;
 		gap: 5px;
+		min-width: 0;
+		line-height: 1.4;
 	}
 	.budget-summary small {
 		font-size: 10px;
@@ -368,55 +398,23 @@
 			animation: none;
 		}
 	}
-	@media (max-width: 700px) {
-		.compact {
-			gap: 6px;
-			padding: 8px 10px;
-		}
-		.compact .cost-values div {
-			gap: 2px;
-		}
+	@container (max-width: 300px) {
 		.compact .cost-values strong {
 			font-size: 15px;
 		}
-		.compact .preview-note,
-		.compact .budget-track {
+		.compact .preview-note {
 			display: none;
 		}
-		.compact .budget-summary {
-			gap: 2px;
-		}
-		.compact .budget-line {
-			font-size: 9px;
-		}
-		.compact .budget-summary small {
-			font-size: 9px;
+	}
+	@container (max-width: 280px) {
+		.compact .cost-values small {
+			min-height: 2.8em;
 		}
 		.compact-actions {
-			padding-top: 5px;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
-		.compact .cost-values small {
-			font-size: 9px;
-		}
-	}
-	@media (max-width: 420px) {
-		.cost-heading {
-			align-items: flex-start;
-			flex-direction: column;
-			gap: 5px;
-		}
-		.cost-values strong {
-			font-size: 17px;
-		}
-		.compact .cost-heading {
-			flex-direction: row;
-			align-items: center;
-		}
-		.compact .cost-values strong {
-			font-size: 16px;
-		}
-		.compact-actions :global(button) {
-			padding-inline: 7px;
+		.proposal-cost-strip.compact .compact-actions :global(.review-button) {
+			grid-column: 1 / -1;
 		}
 	}
 </style>
