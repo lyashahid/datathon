@@ -9,7 +9,12 @@
 	import * as Card from '#lib/components/ui/card/index.js';
 	import * as NativeSelect from '#lib/components/ui/native-select/index.js';
 	import { api } from '#lib/api.js';
-	import type { CalibrationRecord, FleetResources, ResourceAudit } from '#lib/planning-delivery.js';
+	import {
+		fleetResourceError,
+		type CalibrationRecord,
+		type FleetResources,
+		type ResourceAudit
+	} from '#lib/planning-delivery.js';
 	let {
 		records = $bindable([]),
 		selection = $bindable({}),
@@ -172,6 +177,12 @@
 					}
 				: {})
 		};
+		const validationError = fleetResourceError(next);
+		if (validationError) {
+			error = validationError;
+			message = '';
+			return;
+		}
 		resources = [...resources.filter((r) => r.activity_id !== activityId), next];
 		message = 'Resources saved in this proposal.';
 		error = '';
@@ -594,6 +605,7 @@
 							id="resource-capacity"
 							type="number"
 							min="1"
+							max="10000"
 							bind:value={capacity}
 						/>
 					</div>
@@ -602,6 +614,8 @@
 							id="resource-demand"
 							type="number"
 							min="0"
+							max="1000000"
+							step="any"
 							bind:value={peak}
 						/>
 					</div>
@@ -629,6 +643,7 @@
 								id="resource-battery"
 								type="number"
 								min="1"
+								max="100000"
 								step="any"
 								bind:value={battery}
 							/>
@@ -647,6 +662,7 @@
 								id="resource-energy"
 								type="number"
 								min="0.001"
+								max="100"
 								step="any"
 								placeholder="Or selected energy evidence"
 								bind:value={consumption}
@@ -657,6 +673,7 @@
 								id="resource-chargers"
 								type="number"
 								min="0"
+								max="10000"
 								bind:value={chargers}
 							/>
 						</div>
@@ -665,6 +682,7 @@
 								id="resource-power"
 								type="number"
 								min="0.1"
+								max="10000"
 								step="any"
 								bind:value={power}
 							/>

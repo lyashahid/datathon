@@ -148,10 +148,17 @@ class NoticeStore:
 
     def list(self, status: str | None = None) -> dict:
         with self.connection() as db:
-            rows = db.execute("SELECT body FROM notices ORDER BY rowid DESC LIMIT 500").fetchall()
+            if status:
+                rows = db.execute(
+                    "SELECT body FROM notices WHERE json_extract(body, '$.status') = ? "
+                    "ORDER BY rowid DESC LIMIT 500",
+                    (status,),
+                ).fetchall()
+            else:
+                rows = db.execute(
+                    "SELECT body FROM notices ORDER BY rowid DESC LIMIT 500"
+                ).fetchall()
         items = [json.loads(r[0]) for r in rows]
-        if status:
-            items = [n for n in items if n["status"] == status]
         return {"items": items, "total": len(items), "limit": 500}
 
     async def ingest(

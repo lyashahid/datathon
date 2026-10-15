@@ -80,10 +80,12 @@ $env:MOBILITY_QA_URL='http://127.0.0.1:5180'
 node scripts/verify-browser.mjs
 node scripts/verify-forecast-data-browser.mjs
 node scripts/verify-planning-browser.mjs
-node scripts/verify-places-browser.mjs
+npm run test:browser:places
 ```
 
 Use the URL of the production preview built with `npm run build`. Unit/type/style checks are `npm test`, `npm run test:backend`, `npm run check`, `npm run lint` and `npm run lint:backend`. Browser scripts assert real application responses and write machine-readable reports/screenshots under `artifacts/qa`; they do not replace backend calculations with mock results.
+
+The maintained places command runs `verify-map-first-places-browser.mjs`, with current reports under `artifacts/qa/map-first-places`. The places/operations receipts below record the historical interface.
 
 The policy API report is `artifacts/qa/policy-expansion/api-report.json`. The full Vela live-provider receipt is `backend/data/metadata/places-live-verification.json`. Final browser verification results and screenshots are recorded in the corresponding harness report directories.
 

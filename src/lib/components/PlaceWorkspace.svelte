@@ -268,10 +268,14 @@
 		}
 	};
 
-	function cancelRequests() {
-		for (const controller of controllers.values()) controller.abort();
-		controllers.clear();
-		busy = {};
+	function cancelRequests(keepProviderStatus = false) {
+		for (const [key, controller] of controllers) {
+			// Provider availability is independent of the island and must survive a scope change.
+			if (keepProviderStatus && key === 'status') continue;
+			controller.abort();
+			controllers.delete(key);
+		}
+		busy = keepProviderStatus && controllers.has('status') ? { status: true } : {};
 	}
 	$effect(() => {
 		const coordinates = selectedIsland?.coordinates;
@@ -281,7 +285,7 @@
 		untrack(() => {
 			if (nextScope === scopeKey) return;
 			scopeKey = nextScope;
-			cancelRequests();
+			cancelRequests(true);
 			latitude = originLatitude = panoLatitude = nextLatitude;
 			longitude = originLongitude = panoLongitude = nextLongitude;
 			destinationLatitude = nextLatitude + 0.003;
@@ -297,7 +301,7 @@
 			searchResult = detail = photos = reviews = null;
 			suggestions = chosen = null;
 			directions = panorama = null;
-			errors = {};
+			errors = errors.status ? { status: errors.status } : {};
 			waypoints = [];
 			if (tileSrc) URL.revokeObjectURL(tileSrc);
 			tileSrc = '';

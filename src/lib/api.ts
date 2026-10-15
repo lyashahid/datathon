@@ -207,7 +207,15 @@ export function createApiClient({
 		}
 		if (!response.ok || !cacheable) return body(response);
 		const text = await response.text();
-		const value: unknown = JSON.parse(text);
+		let value: unknown;
+		try {
+			value = JSON.parse(text);
+		} catch {
+			throw new ApiError(
+				'The server returned an unreadable response. Please retry.',
+				response.status
+			);
+		}
 		controller.signal.throwIfAborted();
 		if (epoch === generation) {
 			const entry = {

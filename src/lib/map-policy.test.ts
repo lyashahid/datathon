@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { FeatureCollection, Position } from 'geojson';
-import { assessDraftBudget, draftCosts, pointWithinIsland } from './map-policy.js';
+import {
+	assessDraftBudget,
+	draftCosts,
+	pointWithinIsland,
+	restorePlanningOperations
+} from './map-policy.js';
 
 const defaults = {
 	school_capital_mvr: 25_000_000,
@@ -9,6 +14,109 @@ const defaults = {
 	hospital_annual_operating_mvr: 20_000_000,
 	stop_capital_mvr: 100_000
 };
+
+describe('saved proposal recovery', () => {
+	const stop = { type: 'add_stop', coordinates: [73.5, 4.2], name: 'New stop' };
+	it('recovers valid changes alongside corrupt or obsolete browser entries without crashing', () => {
+		expect(
+			restorePlanningOperations([
+				null,
+				'old change',
+				[],
+				{ type: 'obsolete_port' },
+				{ type: 'add_school' },
+				{ ...stop, coordinates: [73.5, 91] },
+				{ ...stop, metadata: [] },
+				{ ...stop, name: {} },
+				stop
+			])
+		).toEqual({ operations: [stop], discarded: 8 });
+		expect(restorePlanningOperations(null)).toEqual({ operations: [], discarded: 0 });
+	});
+	it('rejects incomplete map metadata before it reaches map and route derivations', () => {
+		for (const ui_map_features of [
+			null,
+			{ type: 'FeatureCollection', features: null },
+			{ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: null }] }
+		])
+			expect(restorePlanningOperations([{ ...stop, metadata: { ui_map_features } }])).toEqual({
+				operations: [],
+				discarded: 1
+			});
+	});
+	it('rejects malformed route coordinates before focusing or rendering a restored service', () => {
+		for (const geometry of [
+			{ type: 'LineString', coordinates: [null] },
+			{ type: 'LineString', coordinates: [[73.5, 4.2]] },
+			{
+				type: 'LineString',
+				coordinates: [
+					[73.5, 4.2],
+					[73.51, 91]
+				]
+			},
+			{ type: 'Point', coordinates: [] },
+			{ type: 'MultiLineString', coordinates: [[null]] },
+			{ type: 'Polygon', coordinates: [null] },
+			{ type: 'unsupported', coordinates: [] }
+		]) {
+			const ui_map_features = {
+				type: 'FeatureCollection',
+				features: [{ type: 'Feature', geometry }]
+			};
+			expect(restorePlanningOperations([{ ...stop, metadata: { ui_map_features } }])).toEqual({
+				operations: [],
+				discarded: 1
+			});
+		}
+	});
+	it('keeps a valid routed package intact and removes the entire package if one member is broken', () => {
+		const first = {
+			...stop,
+			metadata: {
+				ui_package: 'bus-route:one',
+				ui_map_features: {
+					type: 'FeatureCollection',
+					features: [
+						{
+							type: 'Feature',
+							geometry: {
+								type: 'LineString',
+								coordinates: [
+									[73.5, 4.2],
+									[73.51, 4.21]
+								]
+							}
+						}
+					]
+				}
+			}
+		};
+		const returning = {
+			type: 'add_service',
+			service: { id: 'return', mode: 'bus' },
+			metadata: { ui_package: 'bus-route:one' }
+		};
+		expect(restorePlanningOperations([first, returning])).toEqual({
+			operations: [first, returning],
+			discarded: 0
+		});
+		expect(restorePlanningOperations([stop, first, { ...returning, service: [] }])).toEqual({
+			operations: [stop],
+			discarded: 2
+		});
+		expect(
+			restorePlanningOperations([stop, { type: 'obsolete', metadata: { ui_package: '' } }])
+		).toEqual({ operations: [stop], discarded: 1 });
+	});
+	it('does not silently truncate an oversized proposal halfway through a service package', () => {
+		expect(restorePlanningOperations(Array(100).fill(stop)).operations).toHaveLength(100);
+		expect(restorePlanningOperations(Array(101).fill(stop))).toEqual({
+			operations: [],
+			discarded: 101
+		});
+	});
+});
 
 describe('proposal budget commitments', () => {
 	it('permits the exact capital and annual limits, including zero-cost changes', () => {

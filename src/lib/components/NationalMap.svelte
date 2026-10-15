@@ -1582,7 +1582,7 @@
 	}
 
 	function controlsKeydown(event: KeyboardEvent) {
-		if (event.key !== 'Escape') return;
+		if (!active || event.defaultPrevented || event.key !== 'Escape') return;
 		if (serviceEditor && oncancelservice) {
 			event.preventDefault();
 			oncancelservice();
@@ -2114,6 +2114,21 @@
 		// Use the available map height; long editors scroll inside their own card.
 		const maxHeight = Math.max(160, viewport.bottom - viewport.top);
 		const height = Math.min(serviceCard?.offsetHeight || 360, maxHeight);
+		// Keep the route above its editor on phones instead of covering its destination.
+		if (container.clientWidth < 700) {
+			const x = container.clientWidth / 2;
+			serviceAnchor = {
+				x,
+				y: viewport.bottom - height,
+				below: true,
+				width,
+				maxHeight,
+				side: null,
+				arrowY: 0,
+				arrow: Math.max(20, Math.min(width - 20, width / 2 + point.x - x))
+			};
+			return;
+		}
 		// On a wide map the route should stay visible beside its editor.
 		const mode = serviceEditor.mode === 'ferry' ? 'ferry' : 'bus';
 		const destination = policyServiceFeatures.features.find(
@@ -2820,19 +2835,21 @@
 						clusterMaxZoom: 16,
 						clusterProperties: { stale_count: ['+', ['case', ['get', 'stale'], 1, 0]] }
 					});
-					instance.on('styleimagemissing', (event) => {
-						if (event.id.startsWith('atlas-vessels-') && !instance.hasImage(event.id)) {
-							const count = Number(event.id.slice('atlas-vessels-'.length));
+					// Resolve before MapLibre snapshots its icon response. The legacy missing-image
+					// event fires afterwards and can leave the first clustered icons invisible.
+					instance.setMissingStyleImageResolver((id) => {
+						if (id.startsWith('atlas-vessels-') && !instance.hasImage(id)) {
+							const count = Number(id.slice('atlas-vessels-'.length));
 							if (!Number.isSafeInteger(count) || count <= 0) return;
 							const data = atlasVesselClusterSymbol(count);
-							if (data) instance.addImage(event.id, data, { pixelRatio: 2 });
+							if (data) instance.addImage(id, data, { pixelRatio: 2 });
 							return;
 						}
-						if (!event.id.startsWith('atlas-cluster-') || instance.hasImage(event.id)) return;
-						const count = Number(event.id.slice('atlas-cluster-'.length));
+						if (!id.startsWith('atlas-cluster-') || instance.hasImage(id)) return;
+						const count = Number(id.slice('atlas-cluster-'.length));
 						if (!Number.isSafeInteger(count) || count <= 0) return;
 						const image = atlasClusterSymbol(count);
-						if (image) instance.addImage(event.id, image, { pixelRatio: 2 });
+						if (image) instance.addImage(id, image, { pixelRatio: 2 });
 					});
 					for (const name of [
 						'islands',
@@ -3885,22 +3902,35 @@
 		if (!ready || !active || !map || !focusBounds) return;
 		const bounds = focusBounds.bounds;
 		userZoomGesture = null;
-		untrack(() =>
+		untrack(() => {
+			const padding =
+				window.innerWidth > 900
+					? { top: 150, bottom: 230, left: 370, right: 440 }
+					: {
+							top: Math.min(170, Math.round(window.innerHeight * 0.2)),
+							bottom: Math.round(window.innerHeight * 0.6),
+							left: 40,
+							right: 40
+						};
+			if (container.clientWidth < 700 && serviceEditor && serviceCard) {
+				const viewport = serviceViewport();
+				const height = Math.min(
+					serviceCard.offsetHeight,
+					Math.max(160, viewport.bottom - viewport.top)
+				);
+				padding.top = Math.max(padding.top, viewport.top + 52);
+				padding.bottom = Math.min(
+					container.clientHeight - padding.top - 24,
+					Math.max(80, container.clientHeight - viewport.bottom + height + 24)
+				);
+			}
 			map?.fitBounds(bounds, {
 				absolutePadding: true,
 				maxZoom: 14.5,
 				duration: reducedMotion() ? 0 : 280,
-				padding:
-					window.innerWidth > 900
-						? { top: 150, bottom: 230, left: 370, right: 440 }
-						: {
-								top: Math.min(170, Math.round(window.innerHeight * 0.2)),
-								bottom: Math.round(window.innerHeight * 0.6),
-								left: 40,
-								right: 40
-							}
-			})
-		);
+				padding
+			});
+		});
 	});
 	$effect(() => {
 		if (!ready || !active || !map || !focusPoint) return;

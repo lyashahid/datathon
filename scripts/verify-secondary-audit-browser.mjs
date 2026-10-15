@@ -167,6 +167,16 @@ try {
 			await page.goto(`${baseURL}/?view=map&tool=live&island=island%3A1442`, {
 				waitUntil: 'domcontentloaded'
 			});
+			const conditions = page.getByRole('region', { name: 'Weather and traffic on this map' });
+			await expect(conditions.getByRole('button', { name: 'Refresh weather' })).toBeEnabled();
+			assert.equal(
+				requests.filter((value) => value === '/api/backend/operations/notices').length,
+				0
+			);
+			await conditions
+				.getByRole('button', { name: 'Open notice evidence & disruption tools', exact: true })
+				.click();
+			await expect(page).toHaveURL(/explorer=notices/);
 			const operations = page.locator('.operations-workspace');
 			await expect(
 				operations.getByRole('button', { name: 'Update forecast', exact: true }).last()
@@ -174,10 +184,6 @@ try {
 			await expect(operations.locator('.metrics')).not.toContainText('Loading');
 			assert.equal(
 				requests.filter((value) => value === '/api/backend/operations/notices').length,
-				0
-			);
-			assert.equal(
-				requests.filter((value) => value === '/api/backend/planning/baseline').length,
 				0
 			);
 			assert.equal(
@@ -196,11 +202,11 @@ try {
 			await expect
 				.poll(() => requests.filter((value) => value === '/api/backend/operations/notices').length)
 				.toBe(1);
-			await expect
-				.poll(() => requests.filter((value) => value === '/api/backend/planning/baseline').length)
-				.toBe(1);
+			await page.reload();
+			await expect(operations).toBeVisible();
+			await expect(page).toHaveURL(/explorer=notices/);
 			page.off('request', capture);
-			return { deferredOperations: ['notices', 'planning baseline', 'advisories'] };
+			return { deferredOperations: ['notices', 'advisories'], noticeToolsSurviveReload: true };
 		}
 	);
 	await check(

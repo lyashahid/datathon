@@ -35,7 +35,7 @@
 		"test:policy-api": "node scripts/verify-policy-api.mjs",
 		"test:browser:forecasts": "node scripts/verify-forecast-data-browser.mjs",
 		"test:browser:planning": "node scripts/verify-planning-browser.mjs",
-		"test:browser:places": "node scripts/verify-places-browser.mjs",
+		"test:browser:places": "node scripts/verify-map-first-places-browser.mjs",
 		"test:browser:map": "node scripts/verify-map-context-browser.mjs",
 		"test:browser:delivery": "node scripts/verify-delivery-browser.mjs",
 		"test:browser:timetables": "node scripts/verify-timetable-import-browser.mjs",

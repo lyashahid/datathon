@@ -1174,10 +1174,13 @@
 					? 'places'
 					: params.get('explorer') === 'schedules'
 						? 'schedules'
-						: params.get('explorer') === 'conditions' ||
-							  ((tool === 'live' || requested === 'live') && params.get('context') !== 'positions')
-							? 'conditions'
-							: 'map';
+						: params.get('explorer') === 'notices'
+							? 'notices'
+							: params.get('explorer') === 'conditions' ||
+								  ((tool === 'live' || requested === 'live') &&
+										params.get('context') !== 'positions')
+								? 'conditions'
+								: 'map';
 		};
 		restoreView();
 		initialized = true;
@@ -1360,7 +1363,13 @@
 >
 <svelte:window
 	onkeydown={(event) => {
-		if (event.key === 'Escape' && !event.defaultPrevented && !islandSearchOpen) cancelPick();
+		if (
+			activeWorkspace === 'atlas' &&
+			event.key === 'Escape' &&
+			!event.defaultPrevented &&
+			!islandSearchOpen
+		)
+			cancelPick();
 	}}
 />
 <div class="app-shell" class:map-first-shell={isMapWorkspace}>
@@ -1462,7 +1471,7 @@
 				/>
 			</div>{/if}
 		{#if workspaces.forecast}<div hidden={activeWorkspace !== 'forecast'}>
-				<workspaces.forecast />
+				<workspaces.forecast active={activeWorkspace === 'forecast'} />
 			</div>{/if}
 		{#if workspaces.studio}<div hidden={activeWorkspace !== 'studio'}>
 				<workspaces.studio active={activeWorkspace === 'studio'} />
@@ -1705,7 +1714,7 @@
 					onRoute={(coordinates) => (conditionRoute = coordinates)}
 					onNotices={() => {
 						void loadWorkspace('conditions');
-						exploreView = 'notices';
+						setExploreView('notices');
 					}}
 				/>{/if}
 			{#if !showAccessExplorer}<div class="map-search-dock">

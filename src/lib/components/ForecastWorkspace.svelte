@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { downloadJson as download } from '#lib/download.js';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import {
 		ArrowUpRight,
 		CalendarDays,
@@ -16,8 +16,9 @@
 	import * as Card from '#lib/components/ui/card/index.js';
 	import * as NativeSelect from '#lib/components/ui/native-select/index.js';
 	import * as Tabs from '#lib/components/ui/tabs/index.js';
-	import { api } from '#lib/api.js';
+	import { api, subscribeApiInvalidation } from '#lib/api.js';
 	import ForecastAnalysis from '#lib/components/ForecastAnalysis.svelte';
+	let { active = true }: { active?: boolean } = $props();
 
 	type Metrics = {
 		mae: number;
@@ -134,6 +135,8 @@
 	let issues = $state.raw<IssueView[]>([]);
 	let issuesLoading = $state(true);
 	let issuesError = $state('');
+	let mounted = $state(false);
+	let needsRefresh = $state(false);
 	let targetMonth = $state('');
 	let seriesId = $state('');
 	let loading = $state(true);
@@ -224,27 +227,26 @@
 		};
 	});
 
-	async function load() {
+	async function load(requestedTarget = targetMonth, updateTarget = true) {
 		controller?.abort();
 		const request = new AbortController();
 		controller = request;
 		loading = true;
 		error = '';
 		notice = '';
-		const requestedTarget = targetMonth;
 		try {
 			const result = await api<Bundle>(
 				`forecasts${requestedTarget ? `?target_month=${encodeURIComponent(requestedTarget)}` : ''}`,
 				undefined,
 				request.signal
 			);
-			if (request.signal.aborted || targetMonth !== requestedTarget) return;
+			if (request.signal.aborted || (updateTarget && targetMonth !== requestedTarget)) return;
 			bundle = result;
-			targetMonth = result.target.month;
+			if (updateTarget) targetMonth = result.target.month;
 			if (!result.monthly.some((item) => item.seriesId === seriesId))
 				seriesId = result.monthly[0]?.seriesId ?? '';
 		} catch (caught) {
-			if (!request.signal.aborted && targetMonth === requestedTarget)
+			if (!request.signal.aborted && (!updateTarget || targetMonth === requestedTarget))
 				error = caught instanceof Error ? caught.message : 'Passenger outlook could not be loaded.';
 		} finally {
 			if (controller === request) loading = false;
@@ -296,12 +298,25 @@
 	}
 
 	onMount(() => {
-		void load();
-		void loadIssues();
+		mounted = true;
+		const unsubscribe = subscribeApiInvalidation(() => {
+			needsRefresh = true;
+		});
+		needsRefresh = true;
 		return () => {
+			unsubscribe();
 			controller?.abort();
 			issueController?.abort();
 		};
+	});
+	$effect(() => {
+		if (mounted && active && needsRefresh && !freezing)
+			untrack(() => {
+				needsRefresh = false;
+				// Refresh the displayed source scope without applying a target the user is still editing.
+				void load(bundle?.target.month ?? targetMonth, !bundle);
+				void loadIssues();
+			});
 	});
 </script>
 
@@ -346,7 +361,7 @@
 			</p>{/if}
 	</Card.Root>
 	{#if error}<div class="feedback error" role="alert">
-			{error}<Button size="sm" variant="outline" onclick={load}>Try again</Button>
+			{error}<Button size="sm" variant="outline" onclick={() => void load()}>Try again</Button>
 		</div>{/if}
 	{#if notice}<div class="feedback success" role="status">{notice}</div>{/if}
 	{#if bundle}
@@ -638,10 +653,7 @@
 			</Tabs.Content>
 			<Tabs.Content value="analysis"
 				>{#if view === 'analysis'}<ForecastAnalysis
-						onsourcechange={() => {
-							void load();
-							void loadIssues();
-						}}
+						active={active && view === 'analysis'}
 					/>{/if}</Tabs.Content
 			>
 			<Tabs.Content value="issues">

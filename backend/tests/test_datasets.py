@@ -416,3 +416,71 @@ def test_comparison_does_not_silently_align_truncated_charts(tmp_path):
     request.primary.query.limit = 1
     with pytest.raises(ValueError, match="complete groups"):
         _service(tmp_path).compare(request)
+
+
+@pytest.mark.parametrize("mode", ["values", "indexed"])
+def test_comparison_preserves_both_sources_with_identical_custom_labels(tmp_path, mode):
+    request = _comparison_request(mode=mode)
+    request.primary.label = request.comparison.label = "Passenger movements"
+
+    result = _service(tmp_path).compare(request)
+
+    assert len(result["items"]) == 2
+    assert len({item["series"] for item in result["items"]}) == 2
+    assert {item["raw_value"] for item in result["items"]} == {75, 150}
+    assert all("Passenger movements" in item["series"] for item in result["items"])
+
+
+def test_raw_comparison_honors_plural_units_column(tmp_path):
+    service = _service(tmp_path)
+    path = service.public_dir / "policy-evidence" / "bundle.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    for row in data["observations"]:
+        row["units"] = row.pop("unit")
+    path.write_text(json.dumps(data), encoding="utf-8")
+    request = _comparison_request(mode="values")
+    request.primary.query.filters = [DatasetFilter(column="units", value="movements")]
+    request.comparison.query.filters = [DatasetFilter(column="units", value="MVR")]
+
+    with pytest.raises(ValueError, match="Different units"):
+        service.compare(request)
+
+    request.mode = "indexed"
+    indexed = service.compare(request)
+    assert indexed["unit"] == "index (common base = 100)"
+    assert {item["raw_value"] for item in indexed["items"]} == {150, 1000}
+
+
+def test_sorted_csv_exports_all_rows_in_one_filter_pass(tmp_path, monkeypatch):
+    service = _service(tmp_path)
+    path = service.public_dir / "policy-evidence" / "bundle.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["observations"] = [
+        {"id": str(index), "value": index, "unit": "movements"} for index in range(2500)
+    ] + [{"id": "missing", "value": None, "unit": "movements"}]
+    path.write_text(json.dumps(data), encoding="utf-8")
+    matches = 0
+    original = service._matches
+
+    def count_matches(row, rule):
+        nonlocal matches
+        matches += 1
+        return original(row, rule)
+
+    monkeypatch.setattr(service, "_matches", count_matches)
+    csv_text = service.csv(
+        "policy-observations",
+        DatasetQuery(
+            columns=["id", "value"],
+            sort="value",
+            descending=True,
+            filters=[DatasetFilter(column="unit", value="movements")],
+        ),
+    )
+    records = list(csv.DictReader(io.StringIO(csv_text)))
+
+    assert len(records) == 2501
+    assert records[0] == {"id": "2499", "value": "2499"}
+    assert records[-2] == {"id": "0", "value": "0"}
+    assert records[-1] == {"id": "missing", "value": ""}
+    assert matches == 2501

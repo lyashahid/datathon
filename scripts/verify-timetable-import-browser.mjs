@@ -248,6 +248,9 @@ try {
 		name: 'Multi-dataset explorer and chart builder',
 		exact: true
 	});
+	const forecast = page.getByRole('region', { name: 'Passenger forecasts', exact: true });
+	let forecastTarget = '';
+	const draftForecastTarget = '2027-03';
 	const navigation = page.getByRole('navigation', { name: 'Workspace', exact: true });
 	const policyPanel = page.getByRole('region', { name: 'Island needs and proposal', exact: true });
 	const workbench = page.getByRole('region', { name: 'Policy planning workbench', exact: true });
@@ -285,6 +288,10 @@ try {
 			profile: requestsFor('islands/island%3A1442/profile').length,
 			inventory: requestsFor('map/features', '?layer=infrastructure&include_unlocated=true').length,
 			history: requestsFor('forecasts', '?history_only=true').length,
+			outlook: requestsFor('forecasts').filter((request) => request.query !== '?history_only=true')
+				.length,
+			analysis: requestsFor('forecasts/analysis').length,
+			forecastIssues: requestsFor('forecasts/issues').length,
 			catalogue: requestsFor('datasets').length,
 			chart: requestsFor('datasets/passenger-monthly/chart').length,
 			advancedBaseline: requestsFor('planning/baseline', '?island_id=').length,
@@ -339,6 +346,22 @@ try {
 		await studio.locator('.story-details summary').click();
 		await studio.getByLabel('Story title', { exact: true }).fill('Retained bus analysis');
 		await studio.evaluate((element) => element.setAttribute('data-qa-retained', 'studio'));
+		await page.getByRole('tab', { name: 'Passenger outlook', exact: true }).click();
+		await expect(
+			forecast.getByRole('button', { name: 'Update outlook', exact: true })
+		).toBeEnabled();
+		forecastTarget = await forecast.getByLabel('Target month', { exact: true }).inputValue();
+		assert.ok(forecastTarget);
+		await forecast.getByRole('tab', { name: 'Data & method', exact: true }).click();
+		await expect(forecast.locator('.audit-metrics strong').first()).not.toHaveText('');
+		await expect(
+			forecast.getByRole('button', { name: 'Refresh analysis', exact: true })
+		).toBeEnabled();
+		await forecast.getByLabel('Target month', { exact: true }).fill(draftForecastTarget);
+		await expect(
+			forecast.getByRole('button', { name: 'Freeze forecast', exact: true })
+		).toBeDisabled();
+		await forecast.evaluate((element) => element.setAttribute('data-qa-retained', 'forecast'));
 		// Return the national view before leaving Analytics so studio stays inactive after acceptance.
 		await page.getByRole('tab', { name: 'National dashboard', exact: true }).click();
 		await expect(dashboard).toBeVisible();
@@ -551,6 +574,12 @@ try {
 				beforeAcceptance.inventory,
 				'Hidden analytics defers its inventory'
 			);
+			for (const key of ['outlook', 'analysis', 'forecastIssues'])
+				assert.equal(
+					refreshed[/** @type {keyof typeof refreshed} */ (key)],
+					beforeAcceptance[/** @type {keyof typeof beforeAcceptance} */ (key)],
+					`Hidden ${key} defers its source refresh`
+				);
 			assert.equal(
 				refreshed.advancedBaseline,
 				beforeAcceptance.advancedBaseline,
@@ -640,6 +669,42 @@ try {
 			selectedAtoll
 		};
 	});
+	await check(
+		'Reactivated forecasts refresh source analysis without applying the draft target month',
+		async () => {
+			await page.getByRole('tab', { name: 'Passenger outlook', exact: true }).click();
+			await expect.poll(() => refreshCounts().outlook).toBe(beforeAcceptance.outlook + 1);
+			await expect.poll(() => refreshCounts().analysis).toBe(beforeAcceptance.analysis + 1);
+			await expect
+				.poll(() => refreshCounts().forecastIssues)
+				.toBe(beforeAcceptance.forecastIssues + 1);
+			await expect(
+				forecast.getByRole('button', { name: 'Update outlook', exact: true })
+			).toBeEnabled();
+			await expect(
+				forecast.getByRole('button', { name: 'Refresh analysis', exact: true })
+			).toBeEnabled();
+			await expect(forecast).toHaveAttribute('data-qa-retained', 'forecast');
+			await expect(forecast.getByLabel('Target month', { exact: true })).toHaveValue(
+				draftForecastTarget
+			);
+			await expect(
+				forecast.getByRole('button', { name: 'Freeze forecast', exact: true })
+			).toBeDisabled();
+			await expect(forecast.locator('.source-caption')).toContainText('apply the new target');
+			const requested = requestsFor('forecasts')
+				.filter((request) => request.query !== '?history_only=true')
+				.at(-1);
+			assert.equal(new URLSearchParams(requested?.query).get('target_month'), forecastTarget);
+			await page.getByRole('tab', { name: 'National dashboard', exact: true }).click();
+			return {
+				refreshedOutlook: true,
+				refreshedAnalysis: true,
+				forecastTarget,
+				draftForecastTarget
+			};
+		}
+	);
 	await check(
 		'Reactivated studio rebuilds the filtered chart without losing the working story',
 		async () => {

@@ -561,3 +561,23 @@ def test_notice_dismissal_removes_proposed_operation(tmp_path):
         assert dismissed.status_code == 200
         assert dismissed.json()["status"] == "dismissed"
         assert dismissed.json()["proposed_operation"] is None
+
+
+def test_notice_status_filter_applies_before_the_result_limit(tmp_path):
+    store = NoticeStore(tmp_path / "runtime", tmp_path / "public")
+    notices = [{"id": "approved:old", "status": "approved"}] + [
+        {"id": f"candidate:{index}", "status": "candidate"} for index in range(501)
+    ]
+    with store.connection() as db:
+        db.executemany(
+            "INSERT INTO notices (id,body) VALUES (?,?)",
+            [(notice["id"], json.dumps(notice)) for notice in notices],
+        )
+
+    approved = store.list("approved")
+
+    assert approved["total"] == 1
+    assert approved["items"][0]["id"] == "approved:old"
+    assert store.list("dismissed")["items"] == []
+    assert len(store.list("candidate")["items"]) == 500
+    assert len(store.list()["items"]) == 500

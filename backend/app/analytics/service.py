@@ -642,7 +642,21 @@ class DatasetService:
         self._validate_columns(
             metadata, ([query.sort] if query.sort else []) + (query.columns or [])
         )
-        filtered = self._filtered(rows, metadata, query)
+        filtered = self._ordered(self._filtered(rows, metadata, query), query)
+        page = filtered[query.offset : query.offset + query.limit]
+        if query.columns:
+            page = [{key: row.get(key) for key in query.columns} for row in page]
+        return {
+            "dataset": metadata,
+            "items": page,
+            "total": len(filtered),
+            "limit": query.limit,
+            "offset": query.offset,
+            "query": query.model_dump(),
+        }
+
+    def _ordered(self, filtered: list[dict[str, Any]], query: DatasetQuery) -> list[dict[str, Any]]:
+        """Share null-last ordering between paginated rows and complete exports."""
         if query.sort:
             present = [row for row in filtered if row.get(query.sort) is not None]
             missing = [row for row in filtered if row.get(query.sort) is None]
@@ -655,17 +669,7 @@ class DatasetService:
                 reverse=query.descending,
             )
             filtered = present + missing
-        page = filtered[query.offset : query.offset + query.limit]
-        if query.columns:
-            page = [{key: row.get(key) for key in query.columns} for row in page]
-        return {
-            "dataset": metadata,
-            "items": page,
-            "total": len(filtered),
-            "limit": query.limit,
-            "offset": query.offset,
-            "query": query.model_dump(),
-        }
+        return filtered
 
     def chart(self, dataset_id: str, request: ChartRequest) -> dict[str, Any]:
         _, rows, metadata = self._load(dataset_id)
@@ -748,21 +752,14 @@ class DatasetService:
 
     def csv(self, dataset_id: str, query: DatasetQuery) -> str:
         _, rows, metadata = self._load(dataset_id)
-        self._validate_columns(metadata, query.columns or [])
+        self._validate_columns(
+            metadata, ([query.sort] if query.sort else []) + (query.columns or [])
+        )
         names = query.columns or [item["name"] for item in metadata["columns"]]
-        result = self.query(dataset_id, query.model_copy(update={"limit": 1000, "offset": 0}))
-        total = result["total"]
-        if total > 100000:
-            raise ValueError("CSV export is limited to 100,000 filtered records; narrow the query")
         filtered = self._filtered(rows, metadata, query)
-        if query.sort:
-            filtered = []
-            for offset in range(0, total, 1000):
-                filtered.extend(
-                    self.query(
-                        dataset_id, query.model_copy(update={"limit": 1000, "offset": offset})
-                    )["items"]
-                )
+        if len(filtered) > 100000:
+            raise ValueError("CSV export is limited to 100,000 filtered records; narrow the query")
+        filtered = self._ordered(filtered, query)
         output = io.StringIO(newline="")
         writer = csv.writer(output, lineterminator="\n")
         writer.writerow(names)
@@ -810,7 +807,16 @@ class DatasetService:
             filtered = self._filtered(
                 source_rows, metadata, DatasetQuery(q=source.query.q, filters=source.query.filters)
             )
-            units = {str(row["unit"]) for row in filtered if row.get("unit")}
+            units = {
+                str(row[column])
+                for row in filtered
+                for column in ("unit", "units")
+                if row.get(column)
+            }
+            if source.query.aggregation != "count" and len(units) > 1 and request.mode == "values":
+                raise ValueError(
+                    "Different units require indexed comparison; raw values cannot share an axis"
+                )
             source_units.append(
                 "record count"
                 if source.query.aggregation == "count"
@@ -825,7 +831,9 @@ class DatasetService:
         series_items: dict[str, dict[str, Any]] = {}
         for index, chart in enumerate(charts):
             source = (request.primary, request.comparison)[index]
-            label = source.label or f"{'A' if index == 0 else 'B'} · {chart['dataset']['title']}"
+            # User-facing labels are not unique identities. Retain the source
+            # prefix even when both charts have the same custom label.
+            label = f"{'A' if index == 0 else 'B'} · {source.label or chart['dataset']['title']}"
             for item in chart["items"]:
                 name = f"{label} · {item['series'] or source.query.measure or source_units[index]}"
                 series_items.setdefault(name, {})[item["group"]] = item

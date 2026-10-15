@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { downloadJson as download } from '#lib/download.js';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { ArrowUpRight, Download, FileUp, RefreshCw, ShieldCheck } from '@lucide/svelte';
-	import { api } from '#lib/api.js';
+	import { api, subscribeApiInvalidation } from '#lib/api.js';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Badge } from '#lib/components/ui/badge/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
 	import * as Card from '#lib/components/ui/card/index.js';
 	import * as NativeSelect from '#lib/components/ui/native-select/index.js';
 
-	let { onsourcechange }: { onsourcechange: () => void } = $props();
+	let { active = true }: { active?: boolean } = $props();
 	type Analysis = {
 		summary: {
 			collections: number;
@@ -78,6 +78,8 @@
 	let analysis = $state.raw<Analysis | null>(null);
 	let selectedSeries = $state('');
 	let loading = $state(false);
+	let mounted = $state(false);
+	let needsRefresh = $state(false);
 	let importing = $state(false);
 	let error = $state('');
 	let message = $state('');
@@ -102,6 +104,7 @@
 	const percent = (value: number | null | undefined) =>
 		value == null ? 'Unavailable' : `${(value * 100).toFixed(1)}%`;
 	async function load() {
+		needsRefresh = false;
 		controller?.abort();
 		const request = new AbortController();
 		controller = request;
@@ -166,7 +169,6 @@
 			sourceFile = null;
 			message =
 				'Reviewed source accepted. New forecasts use this version; frozen forecasts retain their original inputs.';
-			onsourcechange();
 			await load();
 		} catch (caught) {
 			error = caught instanceof Error ? caught.message : 'Source could not be accepted.';
@@ -175,8 +177,16 @@
 		}
 	}
 	onMount(() => {
-		void load();
-		return () => controller?.abort();
+		mounted = true;
+		const unsubscribe = subscribeApiInvalidation(() => (needsRefresh = true));
+		needsRefresh = true;
+		return () => {
+			unsubscribe();
+			controller?.abort();
+		};
+	});
+	$effect(() => {
+		if (mounted && active && needsRefresh && !importing) untrack(() => void load());
 	});
 </script>
 

@@ -186,6 +186,21 @@ describe('shared browser API reads', () => {
 		});
 	});
 
+	it('reports unreadable public snapshots consistently and retries without caching the broken body', async () => {
+		const fetcher = vi
+			.fn<typeof fetch>()
+			.mockResolvedValueOnce(new Response('{"scores":', { headers: { etag: 'W/"truncated"' } }))
+			.mockResolvedValueOnce(snapshot({ scores: [30] }));
+		const client = createApiClient({ fetcher, storage: () => null });
+		await expect(client.request('accessibility/summary')).rejects.toMatchObject({
+			name: 'Error',
+			status: 200,
+			message: 'The server returned an unreadable response. Please retry.'
+		});
+		await expect(client.request('accessibility/summary')).resolves.toEqual({ scores: [30] });
+		expect(fetcher).toHaveBeenCalledTimes(2);
+	});
+
 	it('revalidates expired data and reuses the parsed object only for a matching version', async () => {
 		let clock = 1_000;
 		const fetcher = vi

@@ -23,11 +23,29 @@ const atlas = page.locator('.national-map');
 const journey = page.getByRole('region', { name: 'Explore journey directions', exact: true });
 const connections = page.getByRole('region', { name: 'Island connections', exact: true });
 const planning = page.getByRole('region', { name: 'Island needs and proposal', exact: true });
-const composer = planning.getByRole('region', { name: 'Plan a ferry service', exact: true });
+const composer = page.getByRole('region', { name: 'Plan a ferry service', exact: true });
 const navigation = page.getByRole('navigation', { name: 'Workspace', exact: true });
 const serviceDay = '2026-10-10';
 const capitalBudget = 1000000000;
 const annualBudget = 1000000000;
+/** @type {Array<{request: typeof ferryPayload, body: any}>} */
+const ferryResponses = [];
+page.on('response', async (response) => {
+	if (
+		new URL(response.url()).pathname !== '/api/backend/planning/ferry-service' ||
+		response.request().method() !== 'POST' ||
+		response.status() !== 200
+	)
+		return;
+	try {
+		ferryResponses.push({
+			request: response.request().postDataJSON(),
+			body: await response.json()
+		});
+	} catch {
+		// Superseded service previews may be aborted while their replacement loads.
+	}
+});
 /** @type {Array<{name:string,coordinates:[number,number]}>} */
 const terminalEndpoints = [];
 const ferryPayload = {
@@ -167,23 +185,19 @@ async function openConnections(targetPage) {
 	return targetConnections;
 }
 
-async function previewService() {
-	const responsePromise = page.waitForResponse(
-		(response) =>
-			new URL(response.url()).pathname === '/api/backend/planning/ferry-service' &&
-			response.request().method() === 'POST'
-	);
-	await composer
-		.getByRole('button', { name: /^(Preview route & costs|Update service preview)$/ })
-		.click();
-	const response = await responsePromise;
-	assert.equal(response.status(), 200, await response.text());
-	const result = await response.json();
-	await expect(composer.locator('.ferry-service-preview')).toHaveAttribute(
-		'data-ferry-draft-status',
-		'ready'
-	);
-	return result;
+async function previewService(capitalLimit = capitalBudget, annualLimit = annualBudget) {
+	const current = () =>
+		ferryResponses.findLast(
+			({ request }) =>
+				request.assumptions.date === serviceDay &&
+				request.assumptions.capital_budget_mvr === capitalLimit &&
+				request.assumptions.annual_operating_budget_mvr === annualLimit
+		);
+	await expect.poll(() => current()?.body.status).toBe('ready');
+	await expect(composer.locator('.service-costs')).toBeVisible();
+	const response = current();
+	assert.ok(response, 'The matching service quote has completed');
+	return response.body;
 }
 
 try {
@@ -349,12 +363,15 @@ try {
 			);
 			await connections.getByRole('button', { name: 'Plan a ferry service', exact: true }).click();
 			await expect(composer).toBeVisible();
-			await expect(planning).toHaveAttribute('data-policy-section', 'proposal');
+			await expect(atlas).toHaveAttribute('data-policy-service-editor', 'ferry');
+			await expect(planning).not.toBeVisible();
 			await expect(journey).not.toBeVisible();
-			await expect(composer.locator('.ferry-selected-destination')).toContainText('Malé');
+			await expect(composer.locator('.service-destination')).toContainText('Malé');
 			await expect(composer).toContainText('Hulhumalé');
-			await expect(composer).toContainText('2026-10-11');
-			await expect(composer).toContainText('It does not build a port.');
+			await expect(composer.getByLabel('Service date', { exact: true })).toHaveValue('2026-10-11');
+			await expect(composer).toContainText('No new port is built.');
+			await composer.getByRole('button', { name: 'Edit budgets', exact: true }).click();
+			await expect(planning).toHaveAttribute('data-policy-section', 'proposal');
 			await planning
 				.getByLabel('Proposal name', { exact: true })
 				.fill('Hulhumalé to Malé ferry service');
@@ -364,7 +381,7 @@ try {
 			await planning.getByText('Travel target, date & assumptions', { exact: true }).click();
 			await expect(planning.getByLabel('Service date', { exact: true })).toHaveValue('2026-10-11');
 			await planning.getByLabel('Service date', { exact: true }).fill(serviceDay);
-			await expect(composer).toContainText(serviceDay);
+			await expect(composer.getByLabel('Service date', { exact: true })).toHaveValue(serviceDay);
 			return {
 				origin: 'Hulhumalé',
 				destination: 'Malé',
@@ -379,12 +396,14 @@ try {
 		async () => {
 			await planning.getByLabel('Capital budget · MVR', { exact: true }).fill('1');
 			await planning.getByLabel('Annual running budget · MVR', { exact: true }).fill('1');
-			const draft = await previewService();
+			const draft = await previewService(1, 1);
 			assert.equal(draft.quote.budget.allowed, false);
 			await expect(
-				composer.getByRole('button', { name: 'Add ferry service to proposal', exact: true })
+				composer.getByRole('button', { name: 'Accept ferry service', exact: true })
 			).toBeDisabled();
-			await expect(composer.getByRole('alert')).toContainText(/budget/i);
+			await expect(composer.locator('.policy-budget-alert[role="alert"]').first()).toContainText(
+				/budget/i
+			);
 			await expect(planning.locator('.policy-operation-list li')).toHaveCount(0);
 			await page.screenshot({ path: path.join(output, 'ferry-budget-blocked.png') });
 			return { allowed: draft.quote.budget.allowed, reasons: draft.quote.budget.reasons };
@@ -400,23 +419,24 @@ try {
 				.getByLabel('Annual running budget · MVR', { exact: true })
 				.fill(String(annualBudget));
 			await expect(
-				composer.getByRole('button', { name: 'Add ferry service to proposal', exact: true })
-			).not.toBeVisible();
+				composer.getByRole('button', { name: 'Accept ferry service', exact: true })
+			).toBeDisabled();
 			const draft = await previewService();
 			assert.equal(draft.quote.budget.allowed, true);
 			await expect(
-				composer.getByRole('button', { name: 'Add ferry service to proposal', exact: true })
+				composer.getByRole('button', { name: 'Accept ferry service', exact: true })
 			).toBeEnabled();
-			await expect(composer).toContainText('departures each way');
+			await expect(composer).toContainText('trips each way');
 			await expect(composer).toContainText('MVR 0');
 			await expect
 				.poll(async () => Number(await atlas.getAttribute('data-policy-service-features')))
 				.toBeGreaterThan(0);
+			await composer
+				.getByRole('button', { name: 'See the full route on the map', exact: true })
+				.click();
 			await expectVisibleTerminals();
 			await page.screenshot({ path: path.join(output, 'ferry-preview.png') });
-			await composer
-				.getByRole('button', { name: 'Add ferry service to proposal', exact: true })
-				.click();
+			await composer.getByRole('button', { name: 'Accept ferry service', exact: true }).click();
 			await expect(composer).not.toBeVisible();
 			await expect(planning.locator('.policy-operation-list li')).toHaveCount(1);
 			await expect(planning.locator('.policy-ferry-outcome')).toContainText('1 ferry service');
@@ -523,21 +543,18 @@ try {
 					exact: true
 				});
 				await expect(mobileComposer).toBeVisible();
-				await expect(mobileComposer.locator('.ferry-selected-destination')).toContainText('Malé');
-				await expectVisibleTerminals(mobilePage.locator('.national-map'));
+				await expect(mobileComposer.locator('.service-destination')).toContainText('Malé');
 				await expect
 					.poll(() =>
 						mobilePage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)
 					)
 					.toBe(true);
 				await mobilePage.screenshot({ path: path.join(output, 'ferry-composer-mobile.png') });
+				await expect(mobileComposer.locator('.service-metrics')).toBeVisible();
+				await expect(mobileComposer.locator('.service-costs')).toBeVisible();
 				await mobileComposer
-					.getByRole('button', { name: 'Preview route & costs', exact: true })
+					.getByRole('button', { name: 'See the full route on the map', exact: true })
 					.click();
-				await expect(mobileComposer.locator('.ferry-service-preview')).toHaveAttribute(
-					'data-ferry-draft-status',
-					'ready'
-				);
 				await expectVisibleTerminals(mobilePage.locator('.national-map'));
 				await mobilePage.screenshot({ path: path.join(output, 'ferry-preview-mobile.png') });
 				return { viewport: { width: 390, height: 844 }, horizontalOverflow: false };
@@ -577,11 +594,11 @@ try {
 					await expect(button).toBeDisabled();
 					await expect(button).toHaveAttribute('draggable', 'false');
 				}
-				const newService = nationalPlanning.getByRole('button', { name: /New ferry service/ });
+				const newService = nationalPlanning.getByRole('button', { name: /Ferry service/ });
 				await expect(newService).toBeEnabled();
 				await newService.click();
 				await expect(
-					nationalPlanning.getByRole('region', { name: 'Plan a ferry service', exact: true })
+					nationalPage.getByRole('region', { name: 'Plan a ferry service', exact: true })
 				).toBeVisible();
 				await expect(nationalPlanning.locator('.policy-operation-list li')).toHaveCount(0);
 				await nationalPage.screenshot({

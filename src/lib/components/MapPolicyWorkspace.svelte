@@ -38,6 +38,7 @@
 		draftCosts,
 		emptyFeatures,
 		pointWithinIsland,
+		restorePlanningOperations,
 		type MapBaseline,
 		type MapEvaluation,
 		type MapPolicyState,
@@ -282,6 +283,7 @@
 	let impactView = $state<'current' | 'proposal'>('proposal');
 	let restoredScope = $state('');
 	let savedMessage = $state('');
+	let restorationWarning = $state('');
 	let consumedPlacement = 0,
 		consumedMove = 0,
 		consumedCommand = 0;
@@ -1105,6 +1107,7 @@
 		closeFerry();
 		onPickKind(null);
 		if (restore) {
+			restorationWarning = '';
 			ferryDestination = '';
 			ferrySearch = '';
 			ferryConnection = null;
@@ -1136,7 +1139,10 @@
 							? (draft.assumptions as Record<string, unknown>)
 							: {};
 					extraAssumptions = assumptions;
-					if (Array.isArray(draft.operations)) operations = draft.operations.slice(0, 100);
+					const restored = restorePlanningOperations(draft.operations);
+					operations = restored.operations;
+					if (restored.discarded)
+						restorationWarning = `${restored.discarded} saved change${restored.discarded === 1 ? '' : 's'} could not be restored. Review the remaining draft before continuing.`;
 					if (typeof draft.title === 'string') title = draft.title;
 					const capital = assumptions.capital_budget_mvr ?? draft.capitalBudget;
 					const annual = assumptions.annual_operating_budget_mvr ?? draft.annualBudget;
@@ -1147,8 +1153,8 @@
 					const savedGoal = assumptions.goal ?? draft.goal;
 					if (savedGoal === 'healthcare' || savedGoal === 'education' || savedGoal === 'transport')
 						goal = savedGoal;
-					if (typeof assumptions.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(assumptions.date))
-						date = assumptions.date;
+					const savedDate = ferryPlanningDate(assumptions.date);
+					if (savedDate) date = savedDate;
 					if (
 						typeof assumptions.target_minutes === 'number' &&
 						assumptions.target_minutes > 0 &&
@@ -2355,8 +2361,9 @@
 			: ferryOpen
 				? !ferryPreview?.summary
 				: !busPattern}
-		onclick={() => {
+		onclick={async () => {
 			serviceEditorCompact = true;
+			await tick();
 			focusFerryFeatures(
 				busConnectionMode
 					? busConnection!.map_features
@@ -2960,6 +2967,7 @@
 				>
 			</div>
 			<div class="policy-panel-scroll">
+				{#if restorationWarning}<p class="policy-error" role="alert">{restorationWarning}</p>{/if}
 				{#if dataError}<p class="policy-error" role="alert">
 						{dataError}<Button variant="link" onclick={() => void loadNational()}
 							>Retry evidence</Button

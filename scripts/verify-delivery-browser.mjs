@@ -239,6 +239,26 @@ try {
 			const electric = activities.find((item) => item.value.endsWith('|electric'));
 			assert.ok(electric, JSON.stringify(activities));
 			await page.locator('#resource-activity').selectOption(electric.value);
+			await check('Invalid fleet inputs stay out of the saved proposal', async () => {
+				for (const [field, value, message] of [
+					['#resource-vehicles', '-1', 'Available vehicles is outside'],
+					['#resource-vehicles', '1.5', 'Available vehicles must be a whole number'],
+					['#resource-capacity', '0', 'Onboard capacity is outside'],
+					['#resource-efficiency', '101', 'Charging efficiency is outside']
+				]) {
+					await page.locator('#resource-vehicles').fill('1');
+					await page.locator('#resource-capacity').fill('40');
+					await page.locator('#resource-efficiency').fill('90');
+					await page.locator(field).fill(value);
+					await page.getByRole('button', { name: 'Save resource envelope', exact: true }).click();
+					await expect(page.locator('.delivery-calibration').getByRole('alert')).toContainText(
+						message
+					);
+					assert.equal((await saved()).assumptions.fleet_resources.length, 0);
+				}
+				await page.locator('#resource-efficiency').fill('90');
+				return { invalidCases: 4, savedInvalidEnvelopes: 0 };
+			});
 			await page.locator('#resource-vehicles').fill('0');
 			await page.locator('#resource-capacity').fill('40');
 			await page.locator('#resource-demand').fill('100');
@@ -341,6 +361,15 @@ try {
 			await importedPage
 				.getByLabel('Import policy scenario file', { exact: true })
 				.setInputFiles(filename);
+			await expect
+				.poll(() =>
+					importedPage.evaluate(
+						() =>
+							JSON.parse(localStorage.getItem('policy-workbench-v1:island:1443') || '{}')
+								.assumptions?.fleet_resources?.length ?? 0
+					)
+				)
+				.toBe(1);
 			await importedPage
 				.locator('.policy-workflow')
 				.getByRole('button', { name: 'Budget & services', exact: true })

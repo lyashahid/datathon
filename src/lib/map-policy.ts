@@ -4,6 +4,131 @@ import type { Coordinates } from './types.js';
 import type { PlanningComparison, PlanningOperation, PlanningPlace } from './planning-map.js';
 import type { PlanningEvaluation } from './proposal-review.js';
 import type { ServiceCalendar } from './proposal-experience.js';
+import { validPoint } from './planning-map.js';
+
+const operationTypes = new Set([
+	'add_hospital',
+	'add_school',
+	'add_stop',
+	'move_stop',
+	'disable_facility',
+	'disable_stop',
+	'enable_stop',
+	'disable_service',
+	'enable_service',
+	'shift_timetable',
+	'set_frequency',
+	'set_hours',
+	'set_fleet',
+	'add_service',
+	'use_existing_ferry_terminal',
+	'replace_service',
+	'road_closure',
+	'pedestrian_connection',
+	'weather_disruption'
+]);
+
+const record = (value: unknown): value is Record<string, unknown> =>
+	!!value && typeof value === 'object' && !Array.isArray(value);
+
+function validMapGeometry(value: unknown): boolean {
+	if (!record(value)) return false;
+	const position = (point: unknown) => validPoint(point) && point.every(Number.isFinite);
+	const line = (points: unknown, minimum = 2) =>
+		Array.isArray(points) && points.length >= minimum && points.every(position);
+	const ring = (points: unknown) => {
+		if (!Array.isArray(points) || !line(points, 4)) return false;
+		const first = points[0];
+		const last = points[points.length - 1];
+		return first[0] === last[0] && first[1] === last[1];
+	};
+	const polygon = (rings: unknown) => Array.isArray(rings) && rings.length > 0 && rings.every(ring);
+	const coordinates = value.coordinates;
+	switch (value.type) {
+		case 'Point':
+			return position(coordinates);
+		case 'MultiPoint':
+			return line(coordinates, 1);
+		case 'LineString':
+			return line(coordinates);
+		case 'MultiLineString':
+			return (
+				Array.isArray(coordinates) &&
+				coordinates.length > 0 &&
+				coordinates.every((part) => line(part))
+			);
+		case 'Polygon':
+			return polygon(coordinates);
+		case 'MultiPolygon':
+			return Array.isArray(coordinates) && coordinates.length > 0 && coordinates.every(polygon);
+		case 'GeometryCollection':
+			return Array.isArray(value.geometries) && value.geometries.every(validMapGeometry);
+		default:
+			return false;
+	}
+}
+
+/** Browser drafts may outlive an application version; never trust their operation shapes. */
+export function restorePlanningOperations(value: unknown): {
+	operations: PlanningOperation[];
+	discarded: number;
+} {
+	if (!Array.isArray(value)) return { operations: [], discarded: value == null ? 0 : 1 };
+	const valid = (operation: unknown): operation is PlanningOperation => {
+		if (
+			!record(operation) ||
+			typeof operation.type !== 'string' ||
+			!operationTypes.has(operation.type)
+		)
+			return false;
+		if (operation.metadata !== undefined && !record(operation.metadata)) return false;
+		if (operation.service !== undefined && operation.service !== null && !record(operation.service))
+			return false;
+		for (const key of ['name', 'target_id', 'island_id', 'opening_date'])
+			if (operation[key] != null && typeof operation[key] !== 'string') return false;
+		if (operation.coordinates != null && !validPoint(operation.coordinates)) return false;
+		if (
+			['add_hospital', 'add_school', 'add_stop', 'move_stop'].includes(operation.type) &&
+			!validPoint(operation.coordinates)
+		)
+			return false;
+		const display = record(operation.metadata) ? operation.metadata.ui_map_features : undefined;
+		if (
+			display !== undefined &&
+			(!record(display) ||
+				display.type !== 'FeatureCollection' ||
+				!Array.isArray(display.features) ||
+				display.features.some(
+					(feature) =>
+						!record(feature) ||
+						feature.type !== 'Feature' ||
+						(feature.properties != null && !record(feature.properties)) ||
+						!validMapGeometry(feature.geometry)
+				))
+		)
+			return false;
+		return true;
+	};
+	// A route package is atomic: restoring half a return route misrepresents its service and cost.
+	const rejectedPackages = new Set(
+		value.flatMap((operation) =>
+			!valid(operation) &&
+			record(operation) &&
+			record(operation.metadata) &&
+			typeof operation.metadata.ui_package === 'string' &&
+			operation.metadata.ui_package.length > 0
+				? [operation.metadata.ui_package]
+				: []
+		)
+	);
+	const operations = value.filter(
+		(operation): operation is PlanningOperation =>
+			valid(operation) && !rejectedPackages.has(String(operation.metadata?.ui_package ?? ''))
+	);
+	// Never truncate a routed package halfway at the API's 100-operation limit.
+	if (operations.length > 100) return { operations: [], discarded: value.length };
+	return { operations, discarded: value.length - operations.length };
+}
 
 export type PlacementKind = 'add_school' | 'add_hospital' | 'add_stop';
 export type PendingPlacementDecision = {

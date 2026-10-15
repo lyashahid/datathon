@@ -77,6 +77,21 @@ async function noOverflow() {
 }
 
 try {
+	let releaseStatus = () => {};
+	let statusStarted = () => {};
+	const statusGate = new Promise((resolve) => {
+		releaseStatus = () => resolve(undefined);
+	});
+	const statusReady = new Promise((resolve) => {
+		statusStarted = () => resolve(undefined);
+	});
+	await page.route('**/api/backend/places/status', async (route) => {
+		// Delay a real provider status response so an island selection occurs while it is in flight.
+		const response = await route.fetch();
+		statusStarted();
+		await statusGate;
+		await route.fulfill({ response });
+	});
 	await page.goto(`${baseURL}/?view=map&tool=places&island=island%3A1442`, {
 		waitUntil: 'domcontentloaded'
 	});
@@ -84,7 +99,26 @@ try {
 		workspace.getByRole('heading', { name: 'Places & journeys', exact: true })
 	).toBeVisible();
 	await expect(map.locator('.maplibregl-canvas')).toBeVisible();
-	await expect(workspace.getByText('Vela connected', { exact: true })).toBeVisible();
+	await check('Island selection preserves an in-flight provider availability check', async () => {
+		try {
+			await statusReady;
+			await expect(workspace.getByText('Checking provider', { exact: true })).toBeVisible();
+			await page.getByRole('button', { name: /Find an island or atoll/ }).click();
+			await page.getByRole('textbox', { name: 'Search islands', exact: true }).fill('Malé');
+			await page.locator('.island-list button[data-island-id="island:1443"]').click();
+			await expect(page).toHaveURL((url) => url.searchParams.get('island') === 'island:1443');
+			releaseStatus();
+			await expect(workspace.getByText('Vela connected', { exact: true })).toBeVisible();
+			await page.unroute('**/api/backend/places/status');
+			await page.getByRole('button', { name: /Find an island or atoll/ }).click();
+			await page.getByRole('textbox', { name: 'Search islands', exact: true }).fill('Hulhumalé');
+			await page.locator('.island-list button[data-island-id="island:1442"]').click();
+			await expect(page).toHaveURL((url) => url.searchParams.get('island') === 'island:1442');
+			return { providerStatusRecovered: true, islandChanges: 2 };
+		} finally {
+			releaseStatus();
+		}
+	});
 	await check('clean map home and optional details', async () => {
 		await expect(inspector).toBeHidden();
 		await expect(workspace.locator('input[type="number"]:visible')).toHaveCount(0);
@@ -140,7 +174,8 @@ try {
 		};
 	});
 	await check('named destination and actual provider route shown on map', async () => {
-		await workspace.getByRole('button', { name: 'Route to this place', exact: true }).click();
+		await workspace.getByRole('tab', { name: 'Directions', exact: true }).click();
+		await workspace.getByRole('button', { name: 'Use selected place', exact: true }).click();
 		await expect(inspector).toBeHidden();
 		await expect(map.locator('.point-toolbar')).toContainText(selectedName);
 		await expect(map.locator('.location-endpoint.destination')).toHaveCount(1);
@@ -285,6 +320,9 @@ try {
 		return { layouts, ...(await noOverflow()) };
 	});
 	assert.equal(report.pageErrors.length, 0, report.pageErrors.join('\n'));
+} catch (error) {
+	await page.screenshot({ path: path.join(output, 'failure.png'), fullPage: true });
+	throw error;
 } finally {
 	report.finishedAt = new Date().toISOString();
 	await writeFile(path.join(output, 'report.json'), JSON.stringify(report, null, 2));
