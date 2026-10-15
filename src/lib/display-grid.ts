@@ -200,12 +200,78 @@ export const accessColors: Record<string, string> = {
 	unknown: '#b7c3c4'
 };
 
-/** Current and proposed access reuse the improvement mesh and the evaluated journey evidence. */
-export function displayAccessHexes(
+type AccessCounts = {
+	within_target: number;
+	beyond_target: number;
+	unavailable: number;
+	unknown: number;
+};
+
+function phaseAccess(
+	parts: Contribution[],
+	byOrigin: Map<string, PlanningPlace>,
+	byComparison: Map<string, PlanningComparison>,
+	phase: 'before' | 'after',
+	targetMinutes: number,
+	population: unknown
+) {
+	const counts: AccessCounts = {
+		within_target: 0,
+		beyond_target: 0,
+		unavailable: 0,
+		unknown: 0
+	};
+	let missingPopulation = false;
+	let unknownEvidence = false;
+	for (const { origin_id, share } of parts) {
+		const row = byComparison.get(origin_id);
+		const count = residents(row?.population ?? byOrigin.get(origin_id)?.population2026);
+		if (count === null) {
+			missingPopulation = true;
+			continue;
+		}
+		if (count === 0) continue;
+		const journey = row?.[phase];
+		const minutes = numeric(journey?.minutes);
+		const key =
+			!journey ||
+			(journey.status !== 'reachable' && journey.status !== 'unavailable') ||
+			(journey.status === 'reachable' && (minutes === null || minutes < 0))
+				? 'unknown'
+				: journey.status === 'unavailable'
+					? 'unavailable'
+					: minutes! <= targetMinutes
+						? 'within_target'
+						: 'beyond_target';
+		if (key === 'unknown') unknownEvidence = true;
+		counts[key] += count * share;
+	}
+	const access =
+		missingPopulation || unknownEvidence || !population
+			? 'unknown'
+			: counts.unavailable > 0
+				? 'unavailable'
+				: counts.within_target > 0 && counts.beyond_target > 0
+					? 'mixed'
+					: counts.beyond_target > 0
+						? 'beyond_target'
+						: 'within_target';
+	return {
+		access,
+		color: accessColors[access],
+		residents_within_target: counts.within_target,
+		residents_beyond_target: counts.beyond_target,
+		residents_unavailable: counts.unavailable,
+		residents_unknown: missingPopulation ? null : counts.unknown,
+		partial_evidence: missingPopulation || unknownEvidence || counts.unavailable > 0 || !population
+	};
+}
+
+/** Build both phases once so switching the comparison only changes the map's paint. */
+export function displayComparisonHexes(
 	origins: PlanningPlace[],
 	comparisons: PlanningComparison[],
 	mesh: FeatureCollection,
-	phase: 'before' | 'after',
 	targetMinutes: number
 ): FeatureCollection {
 	if (!Number.isFinite(targetMinutes) || targetMinutes <= 0)
@@ -216,62 +282,63 @@ export function displayAccessHexes(
 	return {
 		...impact,
 		features: impact.features.map((cell) => {
-			const counts = { within_target: 0, beyond_target: 0, unavailable: 0, unknown: 0 };
-			let missingPopulation = false;
-			let unknownEvidence = false;
-			for (const { origin_id, share } of contributions(cell)) {
-				const row = byComparison.get(origin_id);
-				const count = residents(row?.population ?? byOrigin.get(origin_id)?.population2026);
-				if (count === null) {
-					missingPopulation = true;
-					continue;
-				}
-				if (count === 0) continue;
-				const journey = row?.[phase];
-				const minutes = numeric(journey?.minutes);
-				const key =
-					!journey ||
-					(journey.status !== 'reachable' && journey.status !== 'unavailable') ||
-					(journey.status === 'reachable' && (minutes === null || minutes < 0))
-						? 'unknown'
-						: journey.status === 'unavailable'
-							? 'unavailable'
-							: minutes! <= targetMinutes
-								? 'within_target'
-								: 'beyond_target';
-				if (key === 'unknown') unknownEvidence = true;
-				counts[key] += count * share;
+			const parts = contributions(cell);
+			const properties = { ...cell.properties, view: 'comparison', target_minutes: targetMinutes };
+			for (const phase of ['before', 'after'] as const) {
+				const values = phaseAccess(
+					parts,
+					byOrigin,
+					byComparison,
+					phase,
+					targetMinutes,
+					cell.properties?.population
+				);
+				Object.assign(
+					properties,
+					Object.fromEntries(
+						Object.entries(values).map(([key, value]) => [`${phase}_${key}`, value])
+					)
+				);
 			}
-			const access =
-				missingPopulation || unknownEvidence || !cell.properties?.population
-					? 'unknown'
-					: counts.unavailable > 0
-						? 'unavailable'
-						: counts.within_target > 0 && counts.beyond_target > 0
-							? 'mixed'
-							: counts.beyond_target > 0
-								? 'beyond_target'
-								: 'within_target';
-			return {
-				...cell,
-				properties: {
-					...cell.properties,
-					view: phase,
-					access,
-					color: accessColors[access],
-					selected_minutes: cell.properties?.[phase] ?? null,
-					target_minutes: targetMinutes,
-					residents_within_target: counts.within_target,
-					residents_beyond_target: counts.beyond_target,
-					residents_unavailable: counts.unavailable,
-					residents_unknown: missingPopulation ? null : counts.unknown,
-					partial_evidence:
-						missingPopulation ||
-						unknownEvidence ||
-						counts.unavailable > 0 ||
-						!cell.properties?.population
-				}
-			};
+			return { ...cell, properties };
 		})
+	};
+}
+
+/** Resolve just the inspected cell; never copy the full mesh to change the selected phase. */
+export function comparisonCellProperties(
+	properties: Record<string, unknown>,
+	phase: 'before' | 'after'
+): Record<string, unknown> {
+	if (properties.view !== 'comparison') return properties;
+	return {
+		...properties,
+		view: phase,
+		access: properties[`${phase}_access`],
+		color: properties[`${phase}_color`],
+		selected_minutes: properties[phase] ?? null,
+		residents_within_target: properties[`${phase}_residents_within_target`],
+		residents_beyond_target: properties[`${phase}_residents_beyond_target`],
+		residents_unavailable: properties[`${phase}_residents_unavailable`],
+		residents_unknown: properties[`${phase}_residents_unknown`],
+		partial_evidence: properties[`${phase}_partial_evidence`]
+	};
+}
+
+/** Current and proposed access reuse the improvement mesh and the evaluated journey evidence. */
+export function displayAccessHexes(
+	origins: PlanningPlace[],
+	comparisons: PlanningComparison[],
+	mesh: FeatureCollection,
+	phase: 'before' | 'after',
+	targetMinutes: number
+): FeatureCollection {
+	const comparison = displayComparisonHexes(origins, comparisons, mesh, targetMinutes);
+	return {
+		...comparison,
+		features: comparison.features.map((cell) => ({
+			...cell,
+			properties: comparisonCellProperties(cell.properties ?? {}, phase)
+		}))
 	};
 }

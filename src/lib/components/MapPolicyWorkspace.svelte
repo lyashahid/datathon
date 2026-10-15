@@ -23,11 +23,11 @@
 	import { Input } from '#lib/components/ui/input/index.js';
 	import { Label } from '#lib/components/ui/label/index.js';
 	import { api, subscribeApiInvalidation } from '#lib/api.js';
-	import { impactColors, type PlanningOperation } from '#lib/planning-map.js';
+	import type { PlanningOperation } from '#lib/planning-map.js';
 	import {
 		displayGapHexes,
-		displayImpactHexes,
-		displayAccessHexes,
+		displayComparisonHexes,
+		comparisonCellProperties,
 		accessColors
 	} from '#lib/display-grid.js';
 	import { explainImpactCell, serviceCalendarRuns } from '#lib/proposal-experience.js';
@@ -279,8 +279,7 @@
 	const calculating = $derived(evaluationQueued || evaluating);
 	let evaluatedSignature = $state('');
 	let review = $state(false);
-	let showImpact = $state(true);
-	let impactView = $state<'current' | 'proposal' | 'improvement'>('improvement');
+	let impactView = $state<'current' | 'proposal'>('proposal');
 	let restoredScope = $state('');
 	let savedMessage = $state('');
 	let consumedPlacement = 0,
@@ -741,29 +740,50 @@
 							: [])
 					]
 	});
-	const impact = $derived(
-		restoredScope === scopedKey && evaluation && !stale && showImpact && displayGrid.features.length
-			? impactView === 'improvement'
-				? displayImpactHexes(baseline?.origins ?? [], evaluation.origins ?? [], displayGrid)
-				: displayAccessHexes(
-						baseline?.origins ?? [],
-						evaluation.origins ?? [],
-						displayGrid,
-						impactView === 'current' ? 'before' : 'after',
-						Number(targetMinutes)
-					)
+	const comparisonPreview = $derived(!!pendingEvaluation && !!pendingDecision?.allowed);
+	const comparisonEvaluation = $derived(comparisonPreview ? pendingEvaluation : evaluation);
+	const comparisonAssumptions = $derived(
+		comparisonEvaluation?.assumptions as Record<string, unknown> | undefined
+	);
+	const comparisonTarget = $derived(Number(comparisonAssumptions?.target_minutes ?? targetMinutes));
+	const comparisonGoalLabel = $derived(
+		comparisonAssumptions?.goal === 'transport'
+			? 'walking access to public transport'
+			: comparisonAssumptions?.goal === 'education'
+				? 'education access'
+				: 'healthcare access'
+	);
+	// Keep the last valid geometry while a change recalculates. Switching the view
+	// changes only the map paint; it never re-bins residents or reloads GeoJSON.
+	const comparisonHexes = $derived(
+		comparisonEvaluation && displayGrid.features.length
+			? displayComparisonHexes(
+					baseline?.origins ?? [],
+					comparisonEvaluation.origins ?? [],
+					displayGrid,
+					comparisonTarget
+				)
 			: emptyFeatures()
 	);
-	const selectedImpactCell = $derived(
-		impact.features.find((feature) => String(feature.properties?.id) === String(cell?.id))
-			?.properties
+	const impact = $derived(
+		restoredScope === scopedKey && (operations.length || comparisonPreview)
+			? comparisonHexes
+			: emptyFeatures()
 	);
+	const selectedImpactCell = $derived.by(() => {
+		const properties = impact.features.find(
+			(feature) => String(feature.properties?.id) === String(cell?.id)
+		)?.properties;
+		return properties
+			? comparisonCellProperties(properties, impactView === 'current' ? 'before' : 'after')
+			: null;
+	});
 	const selectedExplanation = $derived(
 		selectedImpactCell
 			? explainImpactCell(selectedImpactCell, {
-					goalLabel,
-					targetMinutes: Number(targetMinutes),
-					operations
+					goalLabel: comparisonGoalLabel,
+					targetMinutes: comparisonTarget,
+					operations: comparisonPreview ? placementOperations : operations
 				})
 			: null
 	);
@@ -1232,7 +1252,6 @@
 			opened = command!.kind !== 'close';
 			if (opened) {
 				section = command!.kind === 'compose' ? 'proposal' : 'needs';
-				if (command!.kind === 'gaps') showImpact = false;
 				onCloseOthers();
 			} else close();
 		});
@@ -1254,14 +1273,22 @@
 			busConnectionDraft = null;
 			quoteController?.abort();
 			checkingBudget = false;
+			const nextKind = placement!.kind ?? armedKind ?? 'add_school';
+			const newPlacement = !pending || pending.kind !== nextKind;
 			pending = {
-				coordinates: placementCoordinates(
-					[placement!.longitude, placement!.latitude],
-					placement!.kind ?? armedKind ?? 'add_school'
-				),
-				kind: placement!.kind ?? 'add_school'
+				coordinates: placementCoordinates([placement!.longitude, placement!.latitude], nextKind),
+				kind: nextKind
 			};
 			if (!pendingId) pendingId = `proposal:${pending.kind}:${crypto.randomUUID()}`;
+			if (newPlacement)
+				setGoal(
+					pending.kind === 'add_stop'
+						? 'transport'
+						: pending.kind === 'add_school'
+							? 'education'
+							: 'healthcare'
+				);
+			impactView = 'proposal';
 			armedKind = null;
 			budgetEditing = false;
 			suggested = null;
@@ -1484,11 +1511,13 @@
 			pendingDecision: restoredScope === scopedKey ? pendingDecision : null,
 			gapFeatures: mapGaps,
 			impactFeatures: impact,
+			policyComparisonView: impactView,
+			comparisonPreview,
 			serviceFeatures,
 			serviceEditor,
 			serviceEditorContent,
-			calculating,
-			stale,
+			calculating: calculating || previewCalculating,
+			stale: !comparisonPreview && stale,
 			panelOpen: opened,
 			placementRoads: baseline?.graph_edges ?? []
 		};
@@ -1634,8 +1663,7 @@
 		operations = next;
 		suggested = null;
 		error = '';
-		showImpact = true;
-		impactView = 'improvement';
+		impactView = 'proposal';
 		actionMessage = undoing ? 'Last change undone' : 'Proposal updated';
 	}
 	function change(next: PlanningOperation[], undoing = false) {
@@ -1801,6 +1829,7 @@
 		cancelPending();
 		opened = false;
 		section = 'proposal';
+		impactView = 'proposal';
 		armedKind = kind;
 		pendingId = `proposal:${kind}:${crypto.randomUUID()}`;
 		actionMessage = `Click the map to place a ${placementLabel(kind).toLowerCase()}`;
@@ -2084,7 +2113,6 @@
 		};
 		commitChange(next);
 		closeFerry();
-		showImpact = true;
 		actionMessage = 'Ferry service added · recalculating journeys and costs';
 	}
 	function confirm() {
@@ -2302,10 +2330,22 @@
 		{ id: 'education', label: 'Education' }
 	];
 	function selectLens(value: PolicyLens) {
-		showImpact = false;
 		onLensChange(value);
 	}
 </script>
+
+{#snippet comparisonViews()}
+	<div class="proposal-map-views" role="group" aria-label="Proposal map view">
+		{#each [{ id: 'current', label: 'Without proposal' }, { id: 'proposal', label: 'With proposal' }] as view (view.id)}
+			<button
+				class:active={impactView === view.id}
+				aria-pressed={impactView === view.id}
+				disabled={!impact.features.length}
+				onclick={() => (impactView = view.id as typeof impactView)}>{view.label}</button
+			>
+		{/each}
+	</div>
+{/snippet}
 
 {#snippet serviceMapPreviewAction()}
 	<button
@@ -2365,6 +2405,10 @@
 					>MVR {formatAmount(visibleEconomics.delta.capital_mvr, true)} upfront</strong
 				><small>MVR {formatAmount(visibleEconomics.delta.annual_operating_mvr, true)} yearly</small>
 			</div>
+			{#if comparisonPreview}<div class="service-comparison-controls">
+					<small>Preview · {comparisonGoalLabel} within {comparisonTarget} min</small>
+					{@render comparisonViews()}
+				</div>{/if}
 			<footer>
 				<Button
 					disabled={busConnectionMode
@@ -2401,6 +2445,10 @@
 					>
 				</header>
 				{@render serviceMapPreviewAction()}
+				{#if comparisonPreview}<div class="service-comparison-controls">
+						<small>Preview · {comparisonGoalLabel} within {comparisonTarget} min</small>
+						{@render comparisonViews()}
+					</div>{/if}
 				<p>
 					The suggested shuttle follows mapped roads in both directions. Choose another highlighted
 					stop to change its path.
@@ -2804,7 +2852,11 @@
 {/snippet}
 
 {#if active && !serviceEditor}
-	<div class="policy-map-controls" class:panel-open={opened}>
+	<div
+		class="policy-map-controls"
+		class:panel-open={opened}
+		class:comparing={operations.length > 0 || comparisonPreview}
+	>
 		{#if !opened}<Button
 				variant="ghost"
 				class="policy-inspect-trigger"
@@ -2814,23 +2866,25 @@
 					>{islandName} · {impact.features.length ? 'proposal impact' : 'service gaps'}</span
 				></Button
 			>{/if}
+		{#if operations.length || comparisonPreview}<div class="proposal-map-metric">
+				<label for="map-comparison-goal">Access to</label>
+				<select
+					id="map-comparison-goal"
+					aria-label="Access shown on map"
+					value={goal}
+					onchange={(event) => setGoal(event.currentTarget.value as typeof goal)}
+				>
+					<option value="transport">Public transport</option>
+					<option value="healthcare">Healthcare</option>
+					<option value="education">Education</option>
+				</select>
+				<span>within {comparisonTarget} min</span>
+			</div>{/if}
 		<div class="policy-lens-bar" aria-label="Service coverage map">
-			{#if operations.length}
-				<div class="proposal-map-views" role="group" aria-label="Proposal map view">
-					{#each [{ id: 'current', label: 'Current access' }, { id: 'proposal', label: 'With proposal' }, { id: 'improvement', label: 'Improvement' }] as view (view.id)}
-						<button
-							class:active={showImpact && impactView === view.id}
-							aria-pressed={showImpact && impactView === view.id}
-							disabled={!evaluation || stale || calculating}
-							onclick={() => {
-								impactView = view.id as typeof impactView;
-								showImpact = true;
-							}}>{view.label}</button
-						>
-					{/each}
-				</div>
+			{#if operations.length || comparisonPreview}
+				{@render comparisonViews()}
 			{:else}<span><Layers size={15} />Service gaps</span>{/if}
-			{#each operations.length ? [] : coverageLenses as option (option.id)}
+			{#each operations.length || comparisonPreview ? [] : coverageLenses as option (option.id)}
 				<button
 					class="coverage-lens-option"
 					class:active={lens === option.id && !impact.features.length}
@@ -2838,7 +2892,7 @@
 					onclick={() => selectLens(option.id)}>{option.label}</button
 				>
 			{/each}
-			{#if !operations.length}<select
+			{#if !operations.length && !comparisonPreview}<select
 					class="compact-coverage-lens"
 					aria-label="Service coverage"
 					value={lens}
@@ -2856,6 +2910,18 @@
 				onclick={() => open('needs')}><ChevronDown size={16} /></button
 			>
 		</div>
+		{#if impact.features.length && (previewCalculating || (!comparisonPreview && stale))}
+			<p class="proposal-map-result" role="status">Updating access · previous result shown</p>
+		{:else if impact.features.length && comparisonEvaluation}
+			<p class="proposal-map-result" aria-live="polite">
+				{#if comparisonPreview}<span>Preview · </span>{/if}
+				{#if comparisonEvaluation.summary.gained_residents === null}
+					Access gain needs more evidence
+				{:else if comparisonEvaluation.summary.gained_residents > 0}
+					+{formatAmount(comparisonEvaluation.summary.gained_residents)} residents within target
+				{:else}No additional residents within target{/if}
+			</p>
+		{/if}
 	</div>
 {/if}
 {#if active}
@@ -2884,13 +2950,11 @@
 					class:active={section === 'needs'}
 					onclick={() => {
 						section = 'needs';
-						showImpact = false;
 					}}>Service gaps</button
 				><button
 					class:active={section === 'proposal'}
 					onclick={() => {
 						section = 'proposal';
-						showImpact = true;
 					}}
 					>Your proposal {#if operations.length}<span>{draftItems.length}</span>{/if}</button
 				>
@@ -2917,54 +2981,47 @@
 				{#if section === 'needs'}
 					<p class="policy-intro">
 						{impact.features.length
-							? `Your proposal’s modeled ${goalLabel}. Select a hexagon to compare current and proposed journeys.`
+							? `Compare modeled ${comparisonGoalLabel}, with and without your proposal. Select a hexagon to inspect its journeys.`
 							: needsLabel(current)}
 					</p>
 					<div class="policy-map-key">
-						{#if impact.features.length && impactView !== 'improvement'}
+						{#if impact.features.length}
 							<span><i style:background={accessColors.within_target}></i>Within target</span>
 							<span><i style:background={accessColors.beyond_target}></i>Beyond target</span>
 							<span><i style:background={accessColors.mixed}></i>Mixed access</span>
 							<span><i style:background={accessColors.unavailable}></i>No routed access</span>
 							<span><i style:background={accessColors.unknown}></i>Unknown</span>
-						{:else}<span
-								><i
-									class="gap-high"
-									style:background={impact.features.length ? impactColors.lost : GAP_PALETTE.longer}
-								></i>{impact.features.length
-									? 'Lost / slower'
-									: gapCells.features.length
-										? 'At / beyond target'
-										: 'Review need'}</span
-							><span
-								><i
-									class="gap-low"
-									style:background={impact.features.length
-										? impactColors.gained
-										: GAP_PALETTE.shorter}
-								></i>{impact.features.length
-									? 'Gained / faster'
-									: gapCells.features.length
-										? 'Shorter journey'
-										: 'More evidence'}</span
-							><span
-								><i
-									class="gap-unknown"
-									style:background={impact.features.length
-										? impactColors.uncomputed
-										: GAP_PALETTE.unknown}
-								></i>Unknown</span
+						{:else}
+							<span
+								><i style:background={GAP_PALETTE.longer}></i>{gapCells.features.length
+									? 'At / beyond target'
+									: 'Review need'}</span
 							>
-							{#if impact.features.length}<span
-									><i style:background={impactColors.unchanged}></i>Unchanged</span
-								>{/if}
+							<span
+								><i style:background={GAP_PALETTE.shorter}></i>{gapCells.features.length
+									? 'Shorter journey'
+									: 'More evidence'}</span
+							>
+							<span><i style:background={GAP_PALETTE.unknown}></i>Unknown</span>
 						{/if}
 					</div>
+					{#if impact.features.length}
+						<p class="policy-evidence-note">
+							Green means residents meet the {comparisonTarget}-minute target. Red means longer
+							journeys. Unshaded land has no resident estimate.
+						</p>
+						{#if comparisonAssumptions?.goal === 'transport'}
+							<p class="policy-evidence-note">
+								This view measures the walk to a stop. More frequent buses or a new ferry can
+								improve service without changing that walk. Choose healthcare or education above the
+								comparison to see onward journey access.
+							</p>
+						{/if}
+					{/if}
 					<Button
 						class="policy-primary"
 						onclick={() => {
 							section = 'proposal';
-							showImpact = true;
 						}}
 						><Sparkles size={16} />{operations.length
 							? 'Edit your proposal'
@@ -3803,6 +3860,63 @@
 		display: flex;
 		gap: 2px;
 	}
+	.proposal-map-views button {
+		padding: 7px 10px;
+		border-radius: 7px;
+		color: #53635c;
+		font-size: 12px;
+	}
+	.proposal-map-views button.active {
+		background: #dff0e8;
+		color: #185943;
+		font-weight: 650;
+	}
+	.service-comparison-controls {
+		display: grid;
+		gap: 6px;
+		padding: 10px;
+		border: 1px solid #d9e2dd;
+		border-radius: 9px;
+		background: #f7faf7;
+	}
+	.service-comparison-controls small {
+		color: #617568;
+		font-size: 11px;
+	}
+	.service-comparison-controls .proposal-map-views button {
+		flex: 1;
+	}
+	.proposal-map-metric {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		padding: 4px 8px 2px;
+		color: #617568;
+		font-size: 11px;
+	}
+	.proposal-map-metric select {
+		min-width: 0;
+		padding: 4px 20px 4px 6px;
+		border: 1px solid #d9e2dd;
+		border-radius: 6px;
+		background: #f5f8f3;
+		color: #185943;
+		font-size: inherit;
+	}
+	.proposal-map-metric span {
+		white-space: nowrap;
+	}
+	.proposal-map-result {
+		margin: 2px 8px 4px;
+		color: #456655;
+		font-size: 10px;
+	}
+	.policy-evidence-note {
+		margin: 10px 0;
+		color: #617568;
+		font-size: 11px;
+		line-height: 1.6;
+	}
 	.proposal-map-views button:active,
 	.proposal-open-draft:active {
 		transform: scale(0.98);
@@ -4577,6 +4691,19 @@
 			flex-direction: row;
 			align-items: center;
 			gap: 2px;
+		}
+		.policy-map-controls.comparing {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.comparing .policy-lens-bar {
+			justify-content: center;
+		}
+		.proposal-map-metric {
+			justify-content: center;
+		}
+		.proposal-map-result {
+			text-align: center;
 		}
 		.policy-lens-bar {
 			flex-shrink: 0;

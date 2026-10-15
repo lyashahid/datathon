@@ -1565,6 +1565,8 @@
 						oncancelservice={() => policyAction('cancel-service')}
 						gapFeatures={accessExplorerOpen ? emptyPolicyMap : policyState.gapFeatures}
 						impactFeatures={accessExplorerOpen ? emptyPolicyMap : policyState.impactFeatures}
+						policyComparisonView={policyState.policyComparisonView}
+						comparisonPreview={policyState.comparisonPreview}
 						gapLens={policyLens}
 						policyOperations={accessExplorerOpen ? emptyOperations : policyState.operations}
 						pendingProposal={accessExplorerOpen ? null : policyState.pending}

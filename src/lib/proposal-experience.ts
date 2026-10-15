@@ -49,7 +49,12 @@ export function explainImpactCell(
 	const delta = numeric(values.delta);
 	const target = numeric(options.targetMinutes) ?? numeric(values.target_minutes);
 	const population = numeric(values.population);
-	const audience = population === null ? 'Residents here' : `About ${number(population)} residents`;
+	const audience =
+		population === null
+			? 'Residents here'
+			: population > 0 && population < 1
+				? 'Residents here (under 1 estimated)'
+				: `About ${number(population)} residents`;
 	const reasons: string[] = [];
 	let title = 'Impact needs more evidence';
 	let summary =

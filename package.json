@@ -46,7 +46,8 @@
 		"test:browser:bus-vehicles": "node scripts/verify-bus-vehicle-map.mjs",
 		"test:browser:unified-policy-journey": "node scripts/verify-unified-policy-journey.mjs",
 		"test:browser:policy-drag": "node scripts/verify-policy-native-drag.mjs",
-		"test:browser:map-transport": "node scripts/verify-map-transport-planning.mjs"
+		"test:browser:map-transport": "node scripts/verify-map-transport-planning.mjs",
+		"test:browser:map-comparison": "node scripts/verify-proposal-map-comparison.mjs"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",

@@ -41,7 +41,7 @@
 	import { atlasSymbols, atlasClusterSymbol, atlasVesselClusterSymbol } from './map/symbols.js';
 	import { validPoint as validCoordinates } from '#lib/planning-map.js';
 	import { impactColors, type PlanningOperation } from '#lib/planning-map.js';
-	import { accessColors } from '#lib/display-grid.js';
+	import { accessColors, comparisonCellProperties } from '#lib/display-grid.js';
 	import { pointWithinIsland } from '#lib/map-policy.js';
 	import { nearestPlacementRoad } from '#lib/map-placement-preview.js';
 	import type { MapPolicyState, PendingPlacementDecision, PlacementKind } from '#lib/map-policy.js';
@@ -114,6 +114,8 @@
 		active?: boolean;
 		gapFeatures?: FeatureCollection;
 		impactFeatures?: FeatureCollection;
+		policyComparisonView?: 'current' | 'proposal';
+		comparisonPreview?: boolean;
 		gapLens?: PolicyLens;
 		policyOperations?: PlanningOperation[];
 		pendingProposal?: { coordinates: Coordinates; kind: PlacementKind } | null;
@@ -176,6 +178,8 @@
 		active = true,
 		gapFeatures = { type: 'FeatureCollection', features: [] },
 		impactFeatures = { type: 'FeatureCollection', features: [] },
+		policyComparisonView = 'proposal',
+		comparisonPreview = false,
 		gapLens = 'overall',
 		policyOperations = [],
 		pendingProposal = null,
@@ -282,10 +286,33 @@
 	const mapKeyId = $props.id();
 	const overlayControlId = `${mapKeyId}-overlay-opacity`;
 	const gapOpacity = $derived(impactFeatures.features.length ? 0 : overlayOpacity / 100);
-	const impactOpacity = $derived(
-		impactFeatures.features.length ? (overlayOpacity / 100) * (policyStale ? 0.4 : 1) : 0
+	const impactOpacity = $derived(impactFeatures.features.length ? overlayOpacity / 100 : 0);
+	const currentAccessOpacity = $derived(
+		impactFeatures.features[0]?.properties?.view === 'comparison' &&
+			policyComparisonView === 'current'
+			? impactOpacity
+			: 0
 	);
-	const policyOverlayView = $derived(impactFeatures.features[0]?.properties?.view ?? 'improvement');
+	const policyOverlayView = $derived(
+		impactFeatures.features[0]?.properties?.view === 'comparison'
+			? policyComparisonView === 'current'
+				? 'before'
+				: 'after'
+			: (impactFeatures.features[0]?.properties?.view ?? 'improvement')
+	);
+	let impactSourceUpdates = $state(0);
+	const comparisonDiagnostics = $derived.by(() => {
+		let changed = 0;
+		let beforeBeyond = 0;
+		let afterWithin = 0;
+		for (const { properties } of impactFeatures.features) {
+			if (properties?.view !== 'comparison') continue;
+			if (properties.before_access !== properties.after_access) changed++;
+			if (properties.before_access === 'beyond_target') beforeBeyond++;
+			if (properties.after_access === 'within_target') afterWithin++;
+		}
+		return { changed, beforeBeyond, afterWithin };
+	});
 	const policyOverlayLegend = $derived(
 		policyOverlayView === 'before' || policyOverlayView === 'after'
 			? [
@@ -308,7 +335,7 @@
 	);
 	const policyHitLayers = $derived(
 		impactFeatures.features.length
-			? ['policy-impact-fill']
+			? ['policy-current-fill', 'policy-impact-fill']
 			: ['policy-gaps-fill', 'policy-gaps-points']
 	);
 	let labelsVisible = $state(true);
@@ -331,6 +358,12 @@
 	let renderedVesselGroups = $state(0);
 	let renderedPoiIcons = $state(0);
 	let renderedClusters = $state(0);
+	const diagnosticsDirty = { context: true, movement: true, places: true };
+	function invalidateMapDiagnostics() {
+		diagnosticsDirty.context = true;
+		diagnosticsDirty.movement = true;
+		diagnosticsDirty.places = true;
+	}
 	let contextSummary = $state({ roads: 0, buildings: 0, truncated: false });
 	let contextRequest: AbortController | null = null;
 	let contextGeneration = 0;
@@ -1570,6 +1603,11 @@
 		const source = instance?.getSource(name) as GeoJSONSource | undefined;
 		if (!instance || !source || untrack(() => sourceData.get(name)) === data) return;
 		untrack(() => sourceData.set(name, data));
+		if (name === 'street-context') diagnosticsDirty.context = true;
+		else if (name === 'live' || name === 'live-vessels') diagnosticsDirty.movement = true;
+		else if (['pois', 'facilities', 'transport', 'bus-stops'].includes(name))
+			diagnosticsDirty.places = true;
+		if (name === 'policy-impact') untrack(() => impactSourceUpdates++);
 		const version = name === 'islands' ? ++islandsDataVersion : 0;
 		if (name === 'islands') islandsDataReady = false;
 		void source
@@ -2616,7 +2654,14 @@
 			closeInspection();
 			const id = String(gap.properties.island_id ?? selectedId ?? '');
 			if (id && id !== selectedId) onselect(id);
-			oninspectgap?.(gap.properties);
+			oninspectgap?.(
+				gap.source === 'policy-impact'
+					? comparisonCellProperties(
+							gap.properties,
+							policyComparisonView === 'current' ? 'before' : 'after'
+						)
+					: gap.properties
+			);
 			return;
 		}
 		const scoredIsland = rendered.find((feature) => feature.source === 'accessibility-centroids');
@@ -2648,6 +2693,7 @@
 		let resizeObserver: ResizeObserver | undefined;
 		function syncCameraView(instance: LibreMap) {
 			if (!active) return;
+			invalidateMapDiagnostics();
 			nationalScale = instance.getZoom() < 9;
 			centerCoordinates = [instance.getCenter().lng, instance.getCenter().lat];
 			cameraPadding = cameraInsets(instance);
@@ -2876,17 +2922,23 @@
 							'circle-stroke-color': '#ffffff'
 						}
 					});
-					instance.addLayer({
-						id: 'policy-impact-fill',
-						type: 'fill',
-						source: 'policy-impact',
-						paint: {
-							'fill-color': ['get', 'color'],
-							'fill-opacity': 0,
-							'fill-opacity-transition': { duration: 0 },
-							'fill-antialias': false
-						}
-					});
+					// Data-driven paint changes relayout MapLibre's feature buckets. Prepare
+					// both colors once and compare with constant opacity uniforms instead.
+					for (const [id, color] of [
+						['policy-current-fill', 'before_color'],
+						['policy-impact-fill', 'after_color']
+					])
+						instance.addLayer({
+							id,
+							type: 'fill',
+							source: 'policy-impact',
+							paint: {
+								'fill-color': ['coalesce', ['get', color], ['get', 'color']],
+								'fill-opacity': 0,
+								'fill-opacity-transition': { duration: reducedMotion() ? 0 : 180 },
+								'fill-antialias': false
+							}
+						});
 					instance.addLayer({
 						id: 'policy-impact-outline',
 						type: 'line',
@@ -2961,6 +3013,7 @@
 						'policy-gaps-fill',
 						'policy-gaps-outline',
 						'policy-gaps-points',
+						'policy-current-fill',
 						'policy-impact-fill',
 						'policy-impact-outline'
 					]) {
@@ -3488,18 +3541,30 @@
 				instance.on('move', schedulePlacementPreview);
 				instance.on('resize', schedulePlacementAnchor);
 				instance.on('resize', schedulePlacementPreview);
+				instance.on('resize', invalidateMapDiagnostics);
 				instance.on('moveend', () => syncCameraView(instance));
 				instance.on('idle', () => {
 					if (!ready || !active) return;
-					renderedRoads = instance.queryRenderedFeatures({ layers: ['context-roads'] }).length;
-					renderedBuildings = instance.queryRenderedFeatures({
-						layers: ['context-buildings']
-					}).length;
-					syncMovementCounts();
-					renderedPoiIcons = instance.queryRenderedFeatures({
-						layers: ['facilities-symbols', 'transport-symbols', 'bus-stop-symbols']
-					}).length;
-					renderedClusters = instance.queryRenderedFeatures({ layers: ['poi-clusters'] }).length;
+					// Counting whole-viewport roads/buildings deserializes their geometry.
+					// Overlay paint is independent: a comparison must not repeat these scans.
+					if (diagnosticsDirty.context) {
+						diagnosticsDirty.context = false;
+						renderedRoads = instance.queryRenderedFeatures({ layers: ['context-roads'] }).length;
+						renderedBuildings = instance.queryRenderedFeatures({
+							layers: ['context-buildings']
+						}).length;
+					}
+					if (diagnosticsDirty.movement) {
+						diagnosticsDirty.movement = false;
+						syncMovementCounts();
+					}
+					if (diagnosticsDirty.places) {
+						diagnosticsDirty.places = false;
+						renderedPoiIcons = instance.queryRenderedFeatures({
+							layers: ['facilities-symbols', 'transport-symbols', 'bus-stop-symbols']
+						}).length;
+						renderedClusters = instance.queryRenderedFeatures({ layers: ['poi-clusters'] }).length;
+					}
 				});
 				instance.on('mousemove', (event) => {
 					if (!ready || !active) return;
@@ -3782,7 +3847,12 @@
 		map.setPaintProperty('policy-gaps-points', 'circle-opacity', gapOpacity);
 		map.setPaintProperty('policy-gaps-points', 'circle-stroke-opacity', gapOpacity);
 		map.setPaintProperty('policy-gaps-outline', 'line-opacity', gapOpacity * 0.7);
-		map.setPaintProperty('policy-impact-fill', 'fill-opacity', impactOpacity);
+		map.setPaintProperty('policy-current-fill', 'fill-opacity', currentAccessOpacity);
+		map.setPaintProperty(
+			'policy-impact-fill',
+			'fill-opacity',
+			currentAccessOpacity ? 0 : impactOpacity
+		);
 		map.setPaintProperty('policy-impact-outline', 'line-opacity', impactOpacity * 0.7);
 		map.setPaintProperty('selected-island', 'fill-opacity', hasPolicyOverlay ? 0 : 0.09);
 	});
@@ -3895,6 +3965,7 @@
 			map.setLayoutProperty(id, 'visibility', streetsVisible ? 'visible' : 'none');
 		for (const id of ['context-buildings', 'context-green'])
 			map.setLayoutProperty(id, 'visibility', buildingsVisible ? 'visible' : 'none');
+		diagnosticsDirty.context = true;
 		syncStreetLabels();
 		syncStopLabels();
 		const canvas = map.getCanvas();
@@ -3934,6 +4005,8 @@
 			map.setLayoutProperty(id, 'visibility', transportVisible ? 'visible' : 'none');
 		for (const id of ['live-symbols', 'live-vessel-symbols', 'live-vessel-clusters'])
 			map.setLayoutProperty(id, 'visibility', liveVisible ? 'visible' : 'none');
+		diagnosticsDirty.places = true;
+		diagnosticsDirty.movement = true;
 		syncMovementCounts();
 		syncStopLabels();
 		map.getCanvas().style.cursor = picking || islandPicking ? 'crosshair' : '';
@@ -4161,6 +4234,10 @@
 		.length}
 	data-policy-impact-cells={impactFeatures.features.length}
 	data-policy-impact-view={policyOverlayView}
+	data-policy-impact-source-updates={impactSourceUpdates}
+	data-policy-comparison-changed-cells={comparisonDiagnostics.changed}
+	data-policy-before-beyond-cells={comparisonDiagnostics.beforeBeyond}
+	data-policy-after-within-cells={comparisonDiagnostics.afterWithin}
 	data-policy-overlay-opacity={overlayOpacity}
 	data-policy-gap-opacity={gapOpacity}
 	data-policy-impact-opacity={impactOpacity}
@@ -4355,7 +4432,7 @@
 				{#if pendingPlacementDecision?.accessPreview}
 					<p class="placement-access-preview" role="status">
 						{#if pendingPlacementDecision.accessPreview.residents !== null}<strong
-								>{new Intl.NumberFormat('en').format(
+								>{new Intl.NumberFormat('en', { maximumFractionDigits: 0 }).format(
 									pendingPlacementDecision.accessPreview.residents
 								)}</strong
 							>{/if}
@@ -4701,14 +4778,14 @@
 									? 'Shorter → at / beyond target'
 									: 'More evidence → review need'}</span
 							>
-							<small>Grey: unknown · click a coloured area</small>
+							<small>Unshaded land: no resident estimate · Grey: unknown</small>
 						</div>{:else if impactFeatures.features.length}<div
 							class="policy-colour-key"
 							aria-label="Proposal impact colours"
 						>
 							<strong
 								>{policyOverlayView === 'before'
-									? 'Current access'
+									? 'Without proposal'
 									: policyOverlayView === 'after'
 										? 'With proposal'
 										: 'Proposed access change'}</strong
@@ -4718,7 +4795,18 @@
 										><i style:background={item.color}></i>{item.label}</span
 									>{/each}
 							</div>
-							<small>Select a cell to see what changes here</small>
+							{#if policyStale || policyCalculating}
+								<small class="policy-overlay-status" data-testid="policy-overlay-status"
+									>Updating proposal · {policyOverlayView === 'before'
+										? 'current access shown'
+										: 'showing previous result'}</small
+								>
+							{:else if comparisonPreview && policyOverlayView === 'after'}
+								<small class="policy-overlay-status" data-testid="policy-overlay-status"
+									>Placement preview · not added</small
+								>
+							{/if}
+							<small>Unshaded land: no resident estimate · select a cell to compare</small>
 						</div>{/if}
 					{#if scenarioPreview.unlocated}<div class="street-context-status" role="status">
 							<X size={12} />{scenarioPreview.unlocated}
@@ -5790,6 +5878,14 @@
 	.policy-colour-key small {
 		font-size: 9px;
 		color: #7d8a7c;
+	}
+	.policy-colour-key .policy-overlay-status {
+		padding: 4px 6px;
+		border-radius: 5px;
+		background: #edf5ef;
+		color: #376551;
+		font-size: 10px;
+		line-height: 1.4;
 	}
 	.policy-gap-gradient {
 		width: 54px;

@@ -33,6 +33,8 @@ export type MapPolicyState = {
 	pendingDecision: PendingPlacementDecision | null;
 	gapFeatures: FeatureCollection;
 	impactFeatures: FeatureCollection;
+	policyComparisonView?: 'current' | 'proposal';
+	comparisonPreview?: boolean;
 	serviceFeatures: FeatureCollection;
 	calculating: boolean;
 	stale: boolean;

@@ -18,7 +18,9 @@ Select a proposed marker to **Move**, **Duplicate** or **Remove** it. A move or 
 
 ## Compare the effect
 
-Use **Current access**, **With proposal** and **Improvement** to compare the same resident analysis without recalculating it for every view change. The shared hexagon grid keeps the geographic comparison consistent. Unknown or incomplete evidence stays distinct from a measured improvement.
+Use **Without proposal** and **With proposal** to compare the same resident analysis. Switching updates the colors on one prepared hexagon grid; it does not resend geometry or request another evaluation. The access selector chooses walking access to public transport, healthcare or education, with the journey target shown alongside it. Green means within that target and red means longer journeys. New placements select **With proposal** and preview valid, affordable changes before acceptance; canceling restores the accepted proposal. While recalculating, the map retains its last result with an updating label.
+
+Unknown or incomplete evidence stays distinct from a measured improvement. Unshaded land has no resident estimate. An unchanged color can be correct: a faster journey may already meet the target, and frequency improvements alone do not shorten the walk to a stop. See the [transport planning guide](map-transport-planning.md#compare-access-on-the-map) for the data boundaries.
 
 Select a hexagon to inspect current and proposed journey times, modeled residents and an explanation of the local change. The quick figures are estimates while work is calculating; the full review is available after the latest calculation finishes. Finish or cancel any pending placement or service preview before opening the review, so the brief always describes accepted changes. **Review full impact** opens the decision brief, including cost, access results, assumptions and PDF export.
 

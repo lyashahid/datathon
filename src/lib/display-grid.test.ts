@@ -2,7 +2,9 @@ import type { Feature, FeatureCollection, MultiPolygon } from 'geojson';
 import { describe, expect, it } from 'vitest';
 import {
 	accessColors,
+	comparisonCellProperties,
 	displayAccessHexes,
+	displayComparisonHexes,
 	displayGapHexes,
 	displayImpactHexes
 } from './display-grid.js';
@@ -264,6 +266,54 @@ describe('display impact grid', () => {
 });
 
 describe('current and proposed access views', () => {
+	it('prepares both access colors on one immutable mesh without rebuilding it to switch views', () => {
+		const rows = comparisons();
+		const grid = mesh();
+		const snapshot = JSON.stringify({ rows, grid, origins });
+		const prepared = displayComparisonHexes(origins, rows, grid, 25);
+		const feature = prepared.features[0];
+		const before = comparisonCellProperties(feature.properties!, 'before');
+		const after = comparisonCellProperties(feature.properties!, 'after');
+		expect(feature.geometry).toBe(grid.features[0].geometry);
+		expect(feature.properties).toMatchObject({
+			view: 'comparison',
+			before_access: 'mixed',
+			before_color: accessColors.mixed,
+			after_access: 'mixed',
+			after_color: accessColors.mixed,
+			before_residents_within_target: 25,
+			after_residents_within_target: 25
+		});
+		expect(before).toMatchObject({ view: 'before', selected_minutes: 30 });
+		expect(after).toMatchObject({ view: 'after', selected_minutes: 20 });
+		expect(prepared.features[0]).toBe(feature);
+		expect(feature.properties?.view).toBe('comparison');
+		expect(JSON.stringify({ rows, grid, origins })).toBe(snapshot);
+	});
+
+	it('keeps a real red-to-green threshold crossing and per-phase unknown evidence on the same cell', () => {
+		const rows = comparisons();
+		rows[0].before = journey(40);
+		rows[1].before = journey(45);
+		rows[0].after = journey(10);
+		rows[1].after = journey(15);
+		const properties = displayComparisonHexes(origins, rows, mesh(), 30).features[0].properties!;
+		expect(properties).toMatchObject({
+			before_color: accessColors.beyond_target,
+			after_color: accessColors.within_target,
+			before_residents_beyond_target: 50,
+			after_residents_within_target: 50
+		});
+		rows[0].after = journey(null);
+		const unavailable = displayComparisonHexes(origins, rows, mesh(), 30).features[0].properties!;
+		expect(comparisonCellProperties(unavailable, 'before').partial_evidence).toBe(false);
+		expect(comparisonCellProperties(unavailable, 'after')).toMatchObject({
+			access: 'unavailable',
+			residents_unavailable: 25,
+			partial_evidence: true
+		});
+	});
+
 	it('reuses identical clipped cell geometry and IDs for every phase with real evaluated times', () => {
 		const rows = comparisons();
 		const grid = mesh();

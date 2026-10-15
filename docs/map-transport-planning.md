@@ -28,6 +28,16 @@ Click an accepted route or ferry endpoint to inspect the proposed service and op
 
 ## Analysis and cost interpretation
 
+### Compare access on the map
+
+The map has two proposal views: **Without proposal** and **With proposal**. They share one prepared hex mesh and the same journey target. Switching views updates colors without rebuilding geometry, sending GeoJSON again, or requesting another evaluation. Click the same hexagon in either view to inspect the corresponding journey evidence. The access selector above the comparison switches between walking access to public transport, healthcare and education.
+
+A valid, affordable placement previews the whole proposal before acceptance. Its legend says **Placement preview · not added**. Cancel removes the preview; acceptance reuses its result when the proposal and assumptions still match. Changing a location, target or proposal recalculates in the background while retaining the last valid map with an updating label. New placements select **With proposal** automatically.
+
+Green means the modeled residents meet the displayed journey target; red means longer journeys. A proposal changes a cell only when the evaluated journeys justify it. More frequent buses can improve waiting time without shortening the walk to a stop. Residents already within the target can have faster journeys without an additional threshold crossing. Detailed journeys and the full impact review retain those distinctions.
+
+Hexes cover the supplied resident footprints, rather than all land. Unshaded land has no resident estimate and must not be interpreted as zero population or good access. In the supplied snapshot, about 58% of Hulhumalé's mapped land has modeled resident footprints; the airport has none. The mesh is complete within those footprints, including clipped coastal cells. Grey cells indicate incomplete evidence within the modeled area.
+
 - Every accepted service uses ordinary backend planning operations, so routing, accessibility, fleet, financial and emissions calculations consume the same proposal shown on the map.
 - Costs shown before acceptance include existing proposal commitments and both spending limits. Changing endpoints, timetable, date or budget invalidates the previous quote.
 - Walking access measures proximity to a boarding point. Service connectivity and scheduled journeys are separate outcomes; a new service must not be presented as a walking-access gain by itself.
@@ -37,4 +47,4 @@ Click an accepted route or ferry endpoint to inspect the proposed service and op
 
 `POST /api/v1/planning/bus-connection` returns source-backed candidate geometry, stop/service operations and an authoritative quote. The endpoint reuses the baseline road graph; previews do not trigger a full resident evaluation. The frontend debounces changes, cancels obsolete requests and reuses an exact matching impact preview after confirmation.
 
-Verification: `node scripts/verify-map-transport-planning.mjs` and `npm run test:browser:proposal-experience` against the running production app.
+Verification: `npm run test:browser:map-comparison`, `node scripts/verify-map-transport-planning.mjs` and `npm run test:browser:proposal-experience` against the running production app. The comparison check uses real source-data improvements, before/after screenshot pixels, pending-preview cancellation, mobile layout and rapid switching under CPU throttling. Backend regressions are in `backend/tests/test_planning_map_comparison.py`.

@@ -493,13 +493,12 @@ try {
 	// The final view and ferry scenarios below are kept with the same session so they
 	// also catch state leaking between placement, inspection and navigation modes.
 	await check(
-		'Proposal comparison switches three map views without a new resident calculation',
+		'Proposal comparison switches before and after without a new resident calculation',
 		async () => {
 			const before = evaluationRequests.length;
 			for (const [name, view] of [
-				['Current access', 'before'],
-				['With proposal', 'after'],
-				['Improvement', 'improvement']
+				['Without proposal', 'before'],
+				['With proposal', 'after']
 			]) {
 				const action = page.getByRole('button', { name, exact: true });
 				await action.click();
@@ -507,8 +506,8 @@ try {
 				await expect(atlas).toHaveAttribute('data-policy-impact-view', view);
 			}
 			assert.equal(evaluationRequests.length, before);
-			await page.screenshot({ path: path.join(output, 'improvement-comparison.png') });
-			return { views: 3, additionalCalculations: 0 };
+			await page.screenshot({ path: path.join(output, 'proposal-comparison.png') });
+			return { views: 2, additionalCalculations: 0 };
 		}
 	);
 	await check(
@@ -522,11 +521,21 @@ try {
 				if (await explanation.isVisible()) break;
 			}
 			await expect(explanation).toBeVisible();
+			const cellId = await explanation.getAttribute('data-cell-id');
+			assert.ok(cellId, 'A neighbourhood cell is selected');
+			await page.getByRole('button', { name: 'Without proposal', exact: true }).click();
+			await expect(atlas).toHaveAttribute('data-policy-impact-view', 'before');
+			await expect(explanation).toHaveAttribute('data-cell-id', cellId);
 			await expect(explanation).toContainText(/current|before/i);
+			await expect(explanation).not.toContainText('wp:');
+			const before = await explanation.innerText();
+			await page.getByRole('button', { name: 'With proposal', exact: true }).click();
+			await expect(atlas).toHaveAttribute('data-policy-impact-view', 'after');
+			await expect(explanation).toHaveAttribute('data-cell-id', cellId);
 			await expect(explanation).toContainText(/proposal|after/i);
 			await expect(explanation).not.toContainText('wp:');
 			await page.screenshot({ path: path.join(output, 'neighbourhood-explanation.png') });
-			return { explanation: await explanation.innerText() };
+			return { cellId, before, after: await explanation.innerText() };
 		}
 	);
 	await check('The full review is available after the latest impact completes', async () => {
