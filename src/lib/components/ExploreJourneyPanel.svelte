@@ -16,7 +16,9 @@
 	import { Label } from '#lib/components/ui/label/index.js';
 	import * as NativeSelect from '#lib/components/ui/native-select/index.js';
 	import { journeyClock } from '#lib/explore-journey.js';
-	import type { Coordinates, LandRoute } from '#lib/types.js';
+	import IslandConnectionsPanel from './IslandConnectionsPanel.svelte';
+	import type { FeatureCollection } from 'geojson';
+	import type { Coordinates, MapFeatures, LandRoute } from '#lib/types.js';
 	let {
 		start,
 		end,
@@ -33,7 +35,15 @@
 		onSwap,
 		onBack,
 		onFind,
-		onChange
+		onChange,
+		journeyKind = $bindable('local'),
+		islands = null,
+		originIslandId = $bindable(''),
+		destinationIslandId = $bindable(''),
+		onPickIsland,
+		onConnectionPreview,
+		onConnectionFocus,
+		onProposeFerry
 	}: {
 		start: Coordinates | null;
 		end: Coordinates | null;
@@ -51,6 +61,14 @@
 		onBack: () => void;
 		onFind: () => void;
 		onChange: () => void;
+		journeyKind?: 'local' | 'islands';
+		islands?: MapFeatures | null;
+		originIslandId?: string;
+		destinationIslandId?: string;
+		onPickIsland: (endpoint: 'origin' | 'destination') => void;
+		onConnectionPreview: (features: FeatureCollection) => void;
+		onConnectionFocus: (bounds: [Coordinates, Coordinates]) => void;
+		onProposeFerry: (origin: string, destination: string, serviceDate: string) => void;
 	} = $props();
 	const journey = $derived(result?.journey);
 	const unavailable = $derived(journey?.reason ?? result?.reason);
@@ -67,160 +85,189 @@
 <section class="explore-journey" aria-label="Explore journey directions">
 	<div class="journey-heading">
 		<Button variant="ghost" size="sm" onclick={onBack}><ArrowLeft size={14} />Back to map</Button
-		><Button variant="ghost" size="sm" disabled={!start && !end} onclick={onReset}
-			><RotateCcw size={14} />Reset</Button
+		><Button
+			variant="ghost"
+			size="sm"
+			disabled={!start && !end && !destinationIslandId}
+			onclick={onReset}><RotateCcw size={14} />Reset</Button
 		>
 	</div>
-	<h2>Where would you like to go?</h2>
-	<p>Choose places on the map, or click a stop or a service. Drag A or B to move it.</p>
-	<div class="journey-endpoints">
-		{#each ['start', 'end'] as endpoint (endpoint)}
-			{@const point = endpoint as 'start' | 'end'}
-			{@const chosen = point === 'start' ? start : end}
-			<div class="journey-endpoint" class:destination={point === 'end'}>
-				<span class="endpoint-letter">{point === 'start' ? 'A' : 'B'}</span><button
-					class="endpoint-choice"
-					onclick={() => onPick(point)}
-					><small>{point === 'start' ? 'Start' : 'Destination'}</small><span
-						>{point === 'start' ? startLabel : endLabel}</span
-					></button
-				><Button
-					variant="ghost"
-					size="icon-sm"
-					disabled={!chosen}
-					aria-label={point === 'start' ? 'Remove start point' : 'Remove destination point'}
-					onclick={() => onClear(point)}><X size={15} /></Button
-				>
-			</div>
-		{/each}
+	<div class="journey-kinds" aria-label="Journey type">
+		<Button
+			variant={journeyKind === 'local' ? 'secondary' : 'ghost'}
+			size="sm"
+			aria-pressed={journeyKind === 'local'}
+			onclick={() => (journeyKind = 'local')}>Local directions</Button
+		><Button
+			variant={journeyKind === 'islands' ? 'secondary' : 'ghost'}
+			size="sm"
+			aria-pressed={journeyKind === 'islands'}
+			onclick={() => (journeyKind = 'islands')}><Ship size={14} />Island connections</Button
+		>
 	</div>
-	<Button variant="ghost" size="sm" disabled={!start || !end} onclick={onSwap}
-		><ArrowLeftRight size={14} />Swap start & destination</Button
-	>
-	<Label for="route-mode">Travel by</Label><NativeSelect.Root
-		id="route-mode"
-		bind:value={mode}
-		onchange={onChange}
-		><NativeSelect.Option value="walk">Walk</NativeSelect.Option><NativeSelect.Option
-			value="transit">Bus & public transport</NativeSelect.Option
-		><NativeSelect.Option value="bicycle">Bicycle</NativeSelect.Option><NativeSelect.Option
-			value="car">Car</NativeSelect.Option
-		><NativeSelect.Option value="taxi">Taxi</NativeSelect.Option></NativeSelect.Root
-	>
-	{#if mode === 'transit'}
-		<div class="timetable-scope">
-			<Bus size={16} /><span
-				><strong>Captured timetable · 10 Oct 2026</strong><small
-					>Bus departures from 15:20 MVT. This is a dated timetable, not today's service.</small
-				></span
-			>
+	{#if journeyKind === 'islands'}
+		<IslandConnectionsPanel
+			{islands}
+			bind:originId={originIslandId}
+			bind:destinationId={destinationIslandId}
+			bind:serviceDate
+			onPick={onPickIsland}
+			onPreview={onConnectionPreview}
+			onFocus={onConnectionFocus}
+			onPropose={onProposeFerry}
+		/>
+	{:else}
+		<h2>Where would you like to go?</h2>
+		<p>Choose places on the map, or click a stop or a service. Drag A or B to move it.</p>
+		<div class="journey-endpoints">
+			{#each ['start', 'end'] as endpoint (endpoint)}
+				{@const point = endpoint as 'start' | 'end'}
+				{@const chosen = point === 'start' ? start : end}
+				<div class="journey-endpoint" class:destination={point === 'end'}>
+					<span class="endpoint-letter">{point === 'start' ? 'A' : 'B'}</span><button
+						class="endpoint-choice"
+						onclick={() => onPick(point)}
+						><small>{point === 'start' ? 'Start' : 'Destination'}</small><span
+							>{point === 'start' ? startLabel : endLabel}</span
+						></button
+					><Button
+						variant="ghost"
+						size="icon-sm"
+						disabled={!chosen}
+						aria-label={point === 'start' ? 'Remove start point' : 'Remove destination point'}
+						onclick={() => onClear(point)}><X size={15} /></Button
+					>
+				</div>
+			{/each}
 		</div>
-		<div class="departure-fields">
-			<Label for="journey-date"
-				>Service date<Input
-					id="journey-date"
-					type="date"
-					bind:value={serviceDate}
-					onchange={onChange}
-				/></Label
-			><Label for="journey-time"
-				>Leave at · MVT<Input
-					id="journey-time"
-					type="time"
-					bind:value={departureTime}
-					onchange={onChange}
-				/></Label
-			>
-		</div>
-	{/if}
-	<Button
-		class="find-journey"
-		disabled={!start || !end || busy || (mode === 'transit' && (!serviceDate || !departureTime))}
-		onclick={onFind}
-		>{busy ? 'Finding your journey…' : 'Find directions'}<ArrowRight size={16} /></Button
-	>
-	{#if result}
-		{#if result.status === 'ok' && journey}
-			<div class="journey-summary" role="status">
-				<strong>{Math.ceil(journey.minutes ?? 0)} min</strong><span
-					>Arrive {journeyClock(journey.arrival_minutes)} MVT</span
-				><small
-					>{journey.uses_transit
-						? 'Walk to the stop, take the named service, then continue to B.'
-						: 'Walking is the quickest available option. No bus is needed for this route.'}</small
+		<Button variant="ghost" size="sm" disabled={!start || !end} onclick={onSwap}
+			><ArrowLeftRight size={14} />Swap start & destination</Button
+		>
+		<Label for="route-mode">Travel by</Label><NativeSelect.Root
+			id="route-mode"
+			bind:value={mode}
+			onchange={onChange}
+			><NativeSelect.Option value="walk">Walk</NativeSelect.Option><NativeSelect.Option
+				value="transit">Bus & public transport</NativeSelect.Option
+			><NativeSelect.Option value="bicycle">Bicycle</NativeSelect.Option><NativeSelect.Option
+				value="car">Car</NativeSelect.Option
+			><NativeSelect.Option value="taxi">Taxi</NativeSelect.Option></NativeSelect.Root
+		>
+		{#if mode === 'transit'}
+			<div class="timetable-scope">
+				<Bus size={16} /><span
+					><strong>Captured timetable · 10 Oct 2026</strong><small
+						>Bus departures from 15:20 MVT. This is a dated timetable, not today's service.</small
+					></span
 				>
 			</div>
-			<ol class="journey-itinerary" aria-label="Step by step journey">
-				{#each journey.legs as leg, index (index)}
-					<li class:ride={leg.mode === 'bus' || leg.mode === 'ferry'}>
-						<span class="leg-icon"
-							>{#if leg.mode === 'bus'}<Bus size={17} />{:else if leg.mode === 'ferry'}<Ship
-									size={17}
-								/>{:else if leg.mode === 'wait'}<Clock size={17} />{:else}<Footprints
-									size={17}
-								/>{/if}</span
-						>
-						<div>
-							<strong
-								>{leg.mode === 'bus' || leg.mode === 'ferry'
-									? `Take ${leg.route_name ?? (leg.mode === 'bus' ? 'the bus' : 'the ferry')}`
-									: leg.mode === 'wait'
-										? `Wait at ${leg.from.name}`
-										: `Walk to ${leg.to.name}`}</strong
-							><span
-								>{leg.mode === 'bus' || leg.mode === 'ferry'
-									? `${leg.from.name} → ${leg.to.name}`
-									: leg.mode === 'walk'
-										? `From ${leg.from.name}`
-										: leg.route_name
-											? `For ${leg.route_name}`
-											: 'Until departure'}</span
-							><small
-								>{journeyClock(leg.departure_minutes)}–{journeyClock(leg.arrival_minutes)} · {Math.ceil(
-									leg.minutes
-								)} min{leg.distance_m != null && leg.mode === 'walk'
-									? ` · ${Math.round(leg.distance_m)} m`
-									: ''}</small
-							>
-							{#if leg.mode === 'bus' || leg.mode === 'ferry'}<div class="boarding-copy">
-									<b>Board:</b>
-									{leg.from.name}<br /><b>Get off:</b>
-									{leg.to.name}
-								</div>{/if}
-							{#if leg.stops.length > 2}<details>
-									<summary>{leg.stops.length - 2} stops along the way</summary>
-									<ul>
-										{#each leg.stops.slice(1, -1) as stop (stop.id)}<li>
-												{stop.name}<small>{journeyClock(stop.arrival_minutes)}</small>
-											</li>{/each}
-									</ul>
-								</details>{/if}
-						</div>
-					</li>
-				{/each}
-			</ol>
-			{#if journey.warnings.length}<details class="journey-data-note">
-					<summary>Timetable & route coverage</summary
-					>{#each journey.warnings as warning (warning)}<p>{warning}</p>{/each}
-				</details>{/if}
-		{:else if result.status === 'ok'}
-			<div class="journey-summary" role="status">
-				<strong>{Math.round(result.distance_m ?? 0).toLocaleString()} m</strong><span
-					>Shortest mapped {mode === 'walk' ? 'walking' : mode === 'bicycle' ? 'cycling' : 'road'} route</span
-				><small>Road distance only. Travel time and live traffic are unavailable.</small>
+			<div class="departure-fields">
+				<Label for="journey-date"
+					>Service date<Input
+						id="journey-date"
+						type="date"
+						bind:value={serviceDate}
+						onchange={onChange}
+					/></Label
+				><Label for="journey-time"
+					>Leave at · MVT<Input
+						id="journey-time"
+						type="time"
+						bind:value={departureTime}
+						onchange={onChange}
+					/></Label
+				>
 			</div>
-		{:else}<div class="journey-unavailable" role="status">
-				<MapPin size={18} />
-				<p>
-					{reasons[unavailable ?? ''] ??
-						(journey?.reason ||
-							'No verified journey is available between these places at this time.')}
-				</p>
-				{#if journey?.warnings.length}<details>
-						<summary>Why this journey is unavailable</summary
+		{/if}
+		<Button
+			class="find-journey"
+			disabled={!start || !end || busy || (mode === 'transit' && (!serviceDate || !departureTime))}
+			onclick={onFind}
+			>{busy ? 'Finding your journey…' : 'Find directions'}<ArrowRight size={16} /></Button
+		>
+		{#if result}
+			{#if result.status === 'ok' && journey}
+				<div class="journey-summary" role="status">
+					<strong>{Math.ceil(journey.minutes ?? 0)} min</strong><span
+						>Arrive {journeyClock(journey.arrival_minutes)} MVT</span
+					><small
+						>{journey.uses_transit
+							? 'Walk to the stop, take the named service, then continue to B.'
+							: 'Walking is the quickest available option. No bus is needed for this route.'}</small
+					>
+				</div>
+				<ol class="journey-itinerary" aria-label="Step by step journey">
+					{#each journey.legs as leg, index (index)}
+						<li class:ride={leg.mode === 'bus' || leg.mode === 'ferry'}>
+							<span class="leg-icon"
+								>{#if leg.mode === 'bus'}<Bus size={17} />{:else if leg.mode === 'ferry'}<Ship
+										size={17}
+									/>{:else if leg.mode === 'wait'}<Clock size={17} />{:else}<Footprints
+										size={17}
+									/>{/if}</span
+							>
+							<div>
+								<strong
+									>{leg.mode === 'bus' || leg.mode === 'ferry'
+										? `Take ${leg.route_name ?? (leg.mode === 'bus' ? 'the bus' : 'the ferry')}`
+										: leg.mode === 'wait'
+											? `Wait at ${leg.from.name}`
+											: `Walk to ${leg.to.name}`}</strong
+								><span
+									>{leg.mode === 'bus' || leg.mode === 'ferry'
+										? `${leg.from.name} → ${leg.to.name}`
+										: leg.mode === 'walk'
+											? `From ${leg.from.name}`
+											: leg.route_name
+												? `For ${leg.route_name}`
+												: 'Until departure'}</span
+								><small
+									>{journeyClock(leg.departure_minutes)}–{journeyClock(leg.arrival_minutes)} · {Math.ceil(
+										leg.minutes
+									)} min{leg.distance_m != null && leg.mode === 'walk'
+										? ` · ${Math.round(leg.distance_m)} m`
+										: ''}</small
+								>
+								{#if leg.mode === 'bus' || leg.mode === 'ferry'}<div class="boarding-copy">
+										<b>Board:</b>
+										{leg.from.name}<br /><b>Get off:</b>
+										{leg.to.name}
+									</div>{/if}
+								{#if leg.stops.length > 2}<details>
+										<summary>{leg.stops.length - 2} stops along the way</summary>
+										<ul>
+											{#each leg.stops.slice(1, -1) as stop (stop.id)}<li>
+													{stop.name}<small>{journeyClock(stop.arrival_minutes)}</small>
+												</li>{/each}
+										</ul>
+									</details>{/if}
+							</div>
+						</li>
+					{/each}
+				</ol>
+				{#if journey.warnings.length}<details class="journey-data-note">
+						<summary>Timetable & route coverage</summary
 						>{#each journey.warnings as warning (warning)}<p>{warning}</p>{/each}
 					</details>{/if}
-			</div>{/if}
+			{:else if result.status === 'ok'}
+				<div class="journey-summary" role="status">
+					<strong>{Math.round(result.distance_m ?? 0).toLocaleString()} m</strong><span
+						>Shortest mapped {mode === 'walk' ? 'walking' : mode === 'bicycle' ? 'cycling' : 'road'} route</span
+					><small>Road distance only. Travel time and live traffic are unavailable.</small>
+				</div>
+			{:else}<div class="journey-unavailable" role="status">
+					<MapPin size={18} />
+					<p>
+						{reasons[unavailable ?? ''] ??
+							(journey?.reason ||
+								'No verified journey is available between these places at this time.')}
+					</p>
+					{#if journey?.warnings.length}<details>
+							<summary>Why this journey is unavailable</summary
+							>{#each journey.warnings as warning (warning)}<p>{warning}</p>{/each}
+						</details>{/if}
+				</div>{/if}
+		{/if}
 	{/if}
 </section>
 
@@ -229,6 +276,18 @@
 		display: grid;
 		gap: 13px;
 		min-width: 0;
+	}
+	.journey-kinds {
+		display: flex;
+		padding: 4px;
+		border: 1px solid #dce7e1;
+		border-radius: 11px;
+		gap: 3px;
+	}
+	.journey-kinds :global(button) {
+		flex: 1;
+		font-size: 11px;
+		padding-inline: 7px;
 	}
 	.journey-heading {
 		display: flex;

@@ -17,9 +17,23 @@ def report_pdf(
     title: str = Query(default="Community investment proposal", min_length=1, max_length=160),
     service: PlanningService = Depends(get_planning),
 ) -> Response:
-    evaluation = invoke(service, "evaluate", payload)
+    # Browser impact requests deliberately omit the world to stay small. The
+    # report needs canonical stop names and service detail, so request the full
+    # internal representation without trusting client-supplied labels/totals.
+    report_request = payload.model_copy(
+        update={"assumptions": payload.assumptions.model_copy(update={"include_world": True})}
+    )
+    evaluation = invoke(service, "evaluate", report_request)
+    includes_ferry = any(
+        (operation.service or {}).get("mode") == "ferry" for operation in payload.operations
+    )
     return Response(
-        build_planning_report(payload, evaluation, title, service.baseline(payload.island_id)),
+        build_planning_report(
+            payload,
+            evaluation,
+            title,
+            service.baseline(None if includes_ferry else payload.island_id),
+        ),
         media_type="application/pdf",
         headers={
             "Content-Disposition": 'attachment; filename="proposal-review.pdf"',

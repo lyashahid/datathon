@@ -357,6 +357,35 @@ def test_unknown_national_scope_has_nulls_not_zero(service):
     assert all(b["residents"] is None for b in result["travel_time_bands"]["after"])
 
 
+@pytest.mark.parametrize("kind", ["add_stop", "add_school", "add_hospital"])
+@pytest.mark.parametrize("scope_source", ["request", "operation", "missing"])
+def test_unsupported_local_construction_is_rejected_before_budget_approval(
+    service, kind, scope_source
+):
+    before = copy.deepcopy(service.repository.baseline)
+    operation = {"type": kind, "coordinates": [73.084, -0.605]}
+    payload = {
+        "operations": [operation],
+        "assumptions": {"capital_budget_mvr": 0, "annual_operating_budget_mvr": 0},
+    }
+    if scope_source == "request":
+        payload["island_id"] = "island:1152"
+    elif scope_source == "operation":
+        payload["island_id"] = "male"
+        operation["island_id"] = "island:1152"
+    app = FastAPI()
+    app.state.planning = service
+    app.include_router(router)
+    client = TestClient(app)
+
+    for endpoint in ("quote", "evaluate"):
+        response = client.post(f"/api/v1/planning/{endpoint}", json=payload)
+        assert response.status_code == 422
+        assert "supported" in response.json()["detail"]
+        assert "budget" not in response.json()
+    assert service.repository.baseline == before
+
+
 def test_imported_frequency_respects_departures_and_stop_ids(service):
     world = baseline_world(service.repository)
     pattern = dict(

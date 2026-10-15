@@ -45,6 +45,7 @@
 	import type { NationalAccessibility } from '#lib/analytics.js';
 	import { emptyFeatures, type MapPolicyState, type PlacementKind } from '#lib/map-policy.js';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
+	import type { FeatureCollection } from 'geojson';
 	import { api } from '#lib/api.js';
 	import { MovementSession, movementScope } from '#lib/movement.js';
 	import {
@@ -141,6 +142,46 @@
 		panelOpen: false
 	});
 	let conditionRoute = $state<Coordinates[]>([]);
+	let connectionFeatures = $state.raw<FeatureCollection>(emptyFeatures());
+	let connectionOriginId = $state('island:1442');
+	let connectionDestinationId = $state('');
+	let journeyKind = $state<'local' | 'islands'>('local');
+	let islandPick = $state<'origin' | 'destination' | 'ferry' | null>(null);
+	let ferryDestinationId = $state<string | null>(null);
+	let focusBounds = $state<{ id: number; bounds: [Coordinates, Coordinates] } | null>(null);
+	function focusConnection(bounds: [Coordinates, Coordinates]) {
+		focusPoint = null;
+		focusBounds = { id: ++policySequence, bounds };
+	}
+	function chooseConnectionIsland(endpoint: 'origin' | 'destination') {
+		islandPick = endpoint;
+		panelOpen = false;
+		pickMode = null;
+	}
+	function openIslandConnections(islandId?: string) {
+		if (islandId) selectIsland(islandId, false);
+		go('explore', false);
+		exploreView = 'map';
+		journeyKind = 'islands';
+		connectionOriginId = selectedId ?? capitalIslandId;
+		profileView = 'route';
+		panelOpen = true;
+		policyAction('close');
+		writeLocation(true);
+	}
+	function proposeFerry(origin: string, destination: string, serviceDate: string) {
+		selectIsland(origin, false);
+		panelOpen = false;
+		islandPick = null;
+		connectionFeatures = emptyFeatures();
+		incomingOperation = {
+			type: 'compose_ferry_service',
+			origin_island_id: origin,
+			destination_island_id: destination,
+			service_date: serviceDate
+		};
+		policyAction('compose');
+	}
 	let focusPoint = $state<{ id: number; coordinates: Coordinates } | null>(null);
 	let inspectedCell = $state<Record<string, unknown> | null>(null);
 	let policySequence = 0;
@@ -150,6 +191,7 @@
 		policyCommand = { id: ++policySequence, kind };
 	}
 	function focusPolicyPoint(coordinates: Coordinates) {
+		focusBounds = null;
 		focusPoint = { id: ++policySequence, coordinates };
 	}
 	let tab = $state('explore');
@@ -617,6 +659,9 @@
 		}
 	}
 	function resetIslandSelection() {
+		focusBounds = null;
+		islandPick = null;
+		connectionFeatures = emptyFeatures();
 		capitalRegion = false;
 		profileController?.abort();
 		profile = null;
@@ -653,6 +698,7 @@
 		writeLocation(true);
 	}
 	function focusSelectedIsland() {
+		focusBounds = null;
 		capitalRegion = false;
 		focusVersion += 1;
 		writeLocation(true);
@@ -668,6 +714,7 @@
 		writeLocation(true);
 	}
 	function selectIsland(id: string, push = true) {
+		focusBounds = null;
 		capitalRegion = false;
 		countryAtoll = islands.find((island) => island.properties.id === id)?.properties.atoll ?? null;
 		accessExplorerOpen = false;
@@ -782,6 +829,16 @@
 		writeLocation(true);
 	}
 	function inspectIsland(id: string) {
+		if (islandPick) {
+			if (islandPick === 'ferry') ferryDestinationId = id;
+			else {
+				if (islandPick === 'origin') connectionOriginId = id;
+				else connectionDestinationId = id;
+				panelOpen = true;
+			}
+			islandPick = null;
+			return;
+		}
 		selectIsland(id, false);
 		panelOpen = false;
 		inspectedCell = null;
@@ -808,6 +865,9 @@
 		pickMode = null;
 	}
 	function resetJourney() {
+		connectionDestinationId = '';
+		connectionOriginId = selectedId ?? capitalIslandId;
+		connectionFeatures = emptyFeatures();
 		clearJourneyPoint('start');
 		clearJourneyPoint('end');
 		error = '';
@@ -819,12 +879,20 @@
 		route = null;
 	}
 	function cancelPick() {
+		if (islandPick) {
+			if (islandPick !== 'ferry') panelOpen = true;
+			islandPick = null;
+			return;
+		}
 		const wasJourney = pickMode === 'start' || pickMode === 'end';
 		pickMode = null;
 		policyPickKind = null;
+		ferryDestinationId = null;
 		if (wasJourney) panelOpen = true;
 	}
 	function closeJourney() {
+		islandPick = null;
+		connectionFeatures = emptyFeatures();
 		pickMode = null;
 		panelOpen = false;
 		profileView = 'baseline';
@@ -1101,6 +1169,7 @@
 		if (next === 'recommendations') proposalView = 'candidates';
 		if (next === 'scenarios' && proposalView === 'candidates') proposalView = 'edit';
 		pickMode = null;
+		islandPick = null;
 		islandSearchOpen = false;
 		error = '';
 		panelOpen = next !== 'explore';
@@ -1171,6 +1240,8 @@
 		setProposalView('policy');
 	}
 	function setProfileView(value: string) {
+		if (value === 'route' && !connectionDestinationId)
+			connectionOriginId = selectedId ?? capitalIslandId;
 		policyAction('close');
 		profileView = value;
 		panelOpen = true;
@@ -1331,6 +1402,7 @@
 				<workspaces.national
 					{summary}
 					features={overviewFeatures}
+					onConnections={openIslandConnections}
 					onExplore={exploreFromOverview}
 					onForecast={() => setOverviewView('passengers')}
 				/>
@@ -1413,6 +1485,9 @@
 						{selectedId}
 						atollScope={countryAtoll}
 						scopeBounds={capitalRegion ? capitalBounds : null}
+						{focusBounds}
+						{connectionFeatures}
+						islandPicking={!!islandPick}
 						accessibilityScores={displayedScores}
 						onnational={showCountry}
 						onfocusisland={focusSelectedIsland}
@@ -1523,6 +1598,12 @@
 					}}
 					onCloseOthers={() => (panelOpen = false)}
 					onFocus={focusPolicyPoint}
+					onFocusBounds={focusConnection}
+					{ferryDestinationId}
+					onPickFerryDestination={(enabled) => {
+						islandPick = enabled ? 'ferry' : null;
+						if (!enabled) ferryDestinationId = null;
+					}}
 					onDetails={() => setProfileView('baseline')}
 				/>{/if}
 			{#if workspaces.mapConditions && tab === 'explore' && exploreView === 'conditions' && !pickMode}<workspaces.mapConditions
@@ -1601,6 +1682,14 @@
 							>
 						</div>
 					</details>
+				</div>{/if}
+			{#if islandPick}<div class="pick-banner" role="status">
+					<MapPin size={18} /><span
+						>Choose {islandPick === 'origin'
+							? 'your starting island'
+							: 'a destination island'}<small>Click an island on the map · Escape to cancel</small
+						></span
+					><Button variant="ghost" size="sm" onclick={cancelPick}>Cancel</Button>
 				</div>{/if}
 			{#if pickMode}<div class="pick-banner" role="status">
 					<LocateFixed size={18} /><span
@@ -1794,6 +1883,14 @@
 							<Tabs.Content value="route" class="context-tab-content">
 								{#if workspaces.journey}<workspaces.journey
 										start={routeStart}
+										islands={overviewFeatures}
+										bind:journeyKind
+										bind:originIslandId={connectionOriginId}
+										bind:destinationIslandId={connectionDestinationId}
+										onPickIsland={chooseConnectionIsland}
+										onConnectionPreview={(value) => (connectionFeatures = value)}
+										onConnectionFocus={focusConnection}
+										onProposeFerry={proposeFerry}
 										end={routeEnd}
 										startLabel={routeStartLabel}
 										endLabel={routeEndLabel}
@@ -2248,10 +2345,7 @@
 					<span class="dock-label">EXPLORE THIS PLACE</span><Button
 						variant="ghost"
 						disabled={loading || !selected}
-						onclick={() => {
-							setProfileView('route');
-							if (!routeStart) chooseJourneyPoint('start');
-						}}><Route size={17} />Directions</Button
+						onclick={() => setProfileView('route')}><Route size={17} />Directions</Button
 					><span class="dock-divider"></span><Button
 						variant="ghost"
 						disabled={loading || !selected}

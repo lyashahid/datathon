@@ -64,6 +64,9 @@
 		selectedId: string | null;
 		atollScope?: string | null;
 		scopeBounds?: [Coordinates, Coordinates] | null;
+		focusBounds?: { id: number; bounds: [Coordinates, Coordinates] } | null;
+		connectionFeatures?: FeatureCollection;
+		islandPicking?: boolean;
 		accessibilityScores?: Accessibility[] | null;
 		onselect: (id: string) => void;
 		onnational?: () => void;
@@ -127,6 +130,9 @@
 		selectedId,
 		atollScope = null,
 		scopeBounds = null,
+		focusBounds = null,
+		connectionFeatures = { type: 'FeatureCollection', features: [] },
+		islandPicking = false,
 		accessibilityScores = null,
 		onselect,
 		onnational,
@@ -1952,6 +1958,19 @@
 	}
 	function handleClick(event: MapMouseEvent) {
 		if (!map || !ready) return;
+		if (islandPicking) {
+			const hits = map.queryRenderedFeatures(event.point, {
+				layers: ['islands-fill', 'island-centroids', 'accessibility-centroids'].filter(
+					(id) => !!map?.getLayer(id)
+				)
+			});
+			const island = hits.find((hit) => hit.properties?.id || hit.properties?.island_id);
+			if (island) {
+				closeInspection();
+				onselect(String(island.properties.island_id ?? island.properties.id));
+			}
+			return;
+		}
 		if (picking) {
 			controlsPanel = null;
 			closeInspection();
@@ -2214,6 +2233,7 @@
 						'policy-gaps',
 						'policy-impact',
 						'policy-service',
+						'island-connections',
 						'conditions-route',
 						'street-context'
 					]) {
@@ -2788,6 +2808,40 @@
 							'line-opacity': 0.85
 						}
 					});
+					for (const source of ['island-connections', 'policy-service']) {
+						if (source === 'island-connections')
+							instance.addLayer({
+								id: 'island-connection-line',
+								type: 'line',
+								source,
+								filter: ['==', ['geometry-type'], 'LineString'],
+								paint: {
+									'line-color': '#397eb0',
+									'line-width': 4,
+									'line-dasharray': [2, 1.5],
+									'line-opacity': 0.9
+								}
+							});
+						instance.addLayer({
+							id: `${source}-terminal-halo`,
+							type: 'circle',
+							source,
+							filter: ['==', ['geometry-type'], 'Point'],
+							paint: {
+								'circle-radius': 14,
+								'circle-color': '#fff',
+								'circle-stroke-color': source === 'island-connections' ? '#397eb0' : '#7765b2',
+								'circle-stroke-width': 2
+							}
+						});
+						instance.addLayer({
+							id: `${source}-terminal-symbol`,
+							type: 'symbol',
+							source,
+							filter: ['==', ['geometry-type'], 'Point'],
+							layout: { 'icon-image': 'atlas-ferry', 'icon-size': 0.7, 'icon-allow-overlap': true }
+						});
+					}
 					instance.addLayer({
 						id: 'conditions-route-line',
 						type: 'line',
@@ -2953,6 +3007,7 @@
 	$effect(() => {
 		if (!ready || !active || !map) return;
 		setData('policy-service', policyServiceFeatures);
+		setData('island-connections', connectionFeatures);
 	});
 	$effect(() => {
 		if (!ready || !active || !map) return;
@@ -3018,6 +3073,27 @@
 						]
 					: []
 			)
+		);
+	});
+	$effect(() => {
+		if (!ready || !active || !map || !focusBounds) return;
+		const bounds = focusBounds.bounds;
+		userZoomGesture = null;
+		untrack(() =>
+			map?.fitBounds(bounds, {
+				absolutePadding: true,
+				maxZoom: 14.5,
+				duration: reducedMotion() ? 0 : 280,
+				padding:
+					window.innerWidth > 900
+						? { top: 150, bottom: 230, left: 370, right: 440 }
+						: {
+								top: Math.min(170, Math.round(window.innerHeight * 0.2)),
+								bottom: Math.round(window.innerHeight * 0.6),
+								left: 40,
+								right: 40
+							}
+			})
 		);
 	});
 	$effect(() => {
@@ -3124,7 +3200,7 @@
 			map.setLayoutProperty(id, 'visibility', liveVisible ? 'visible' : 'none');
 		syncMovementCounts();
 		syncStopLabels();
-		map.getCanvas().style.cursor = picking ? 'crosshair' : '';
+		map.getCanvas().style.cursor = picking || islandPicking ? 'crosshair' : '';
 		if (
 			picking ||
 			(inspectedSource === 'facilities' && !facilitiesVisible) ||
@@ -3175,6 +3251,9 @@
 	$effect(() => {
 		if (!ready || !map || !active) return;
 		const requestedId = selectedId;
+		// A fast cached connection can resolve before the deferred island focus.
+		// Keep its corridor framing authoritative until a new island is selected.
+		if (focusBounds) return;
 		const requestedIsland = selectedIsland;
 		const requestedAtoll = atollScope;
 		const requestedAtollBounds = atollBounds;
@@ -3198,6 +3277,7 @@
 				!ready ||
 				!active ||
 				map !== instance ||
+				focusBounds ||
 				selectedId !== requestedId ||
 				selectedIsland !== requestedIsland ||
 				atollScope !== requestedAtoll ||
@@ -3335,6 +3415,9 @@
 		validCoordinates(operation.coordinates)
 	).length}
 	data-policy-pending-points={pendingProposal ? 1 : 0}
+	data-island-connection-features={connectionFeatures.features.length}
+	data-policy-service-features={policyServiceFeatures.features.length}
+	data-island-picking={islandPicking}
 	data-policy-gap-cells={gapFeatures.features.length}
 	data-policy-hex-grid={gapFeatures.features.filter((feature) => feature.properties?.display_grid)
 		.length}

@@ -7,6 +7,7 @@
 		Info,
 		LoaderCircle,
 		MapPin,
+		Ship,
 		TrendingUp,
 		X
 	} from '@lucide/svelte';
@@ -19,6 +20,7 @@
 		formatAmount,
 		operationLabel,
 		operationName,
+		proposedFerryServiceGroups,
 		type PlanningEvaluation,
 		type PlanningReviewRequest
 	} from '#lib/proposal-review.js';
@@ -66,7 +68,52 @@
 	const target = $derived(
 		finiteValue(evaluation?.target_minutes ?? request.assumptions.target_minutes) ?? 30
 	);
-	const goal = $derived(request.assumptions.goal === 'education' ? 'education' : 'healthcare');
+	const goal = $derived(
+		request.assumptions.goal === 'transport'
+			? 'public transport'
+			: request.assumptions.goal === 'education'
+				? 'education'
+				: 'healthcare'
+	);
+	const walkingGoal = $derived(request.assumptions.goal === 'transport');
+	const transport = $derived(evaluation?.transport_connectivity);
+	const proposedFerries = $derived(proposedFerryServiceGroups(transport?.after));
+	const hasFerryProposal = $derived(
+		request.operations.some((operation) => operation.service?.mode === 'ferry')
+	);
+	const proposalItems = $derived(
+		request.operations.flatMap((operation, index) =>
+			typeof operation.metadata?.ui_package === 'string' &&
+			operation.metadata.ui_package.startsWith('ferry-service:') &&
+			!operation.metadata.ui_ferry_summary
+				? []
+				: [{ operation, index }]
+		)
+	);
+	const transportMetrics = $derived(
+		transport
+			? [
+					{
+						label: 'Islands with modeled services',
+						before: transport.before.islands_connected.length,
+						after: transport.after.islands_connected.length
+					},
+					{
+						label: 'Ferry departure schedules',
+						before: transport.before.ferry_lines,
+						after: transport.after.ferry_lines
+					},
+					{
+						label: 'Inter-island departure schedules',
+						before: transport.before.inter_island_lines,
+						after: transport.after.inter_island_lines
+					}
+				]
+			: []
+	);
+	const maximumConnections = $derived(
+		Math.max(1, ...transportMetrics.flatMap((metric) => [metric.before, metric.after]))
+	);
 	const maximumBand = $derived(
 		Math.max(
 			1,
@@ -146,12 +193,16 @@
 				<div>
 					<span class="eyebrow">{islandName} · Decision brief</span>
 					<h1 id="proposal-forecast-title">{title}</h1>
-					<p>What changes for residents, what it costs, and what the evidence can support.</p>
+					<p>
+						{hasFerryProposal
+							? 'Island connections, return sailings, resident access and the full funding commitment.'
+							: 'What changes for residents, what it costs, and what the evidence can support.'}
+					</p>
 				</div>
 				<div class="report-date">
 					<small>Evaluation date</small><strong
 						>{String(request.assumptions.date ?? 'Not selected')}</strong
-					><span>{formatAmount(request.assumptions.population_year)} resident projection</span>
+					><span>{request.assumptions.population_year ?? 'Selected year'} resident projection</span>
 				</div>
 			</div>
 			{#if error || exportError}<div class="report-alert error" role="alert">
@@ -183,8 +234,14 @@
 			{:else}
 				<div class="headline-metrics" class:outdated={stale || pending}>
 					<article class="metric reach">
-						<small>Residents gaining {goal} access</small><strong>{formatAmount(gained)}</strong
-						><span>Newly within {target} minutes in this model</span>
+						{#if hasFerryProposal}<small>Ferry services in your proposal</small><strong
+								>{transport ? proposedFerries.length : 'Unavailable'}</strong
+							><span>Return sailings are reviewed separately from walking access.</span
+							>{:else}<small>Residents gaining {goal} access</small><strong
+								>{formatAmount(gained)}</strong
+							><span
+								>Newly within {target} minutes{walkingGoal ? ' on foot' : ''} in this model</span
+							>{/if}
 					</article>
 					<article class="metric">
 						<small>One-time investment</small><strong>MVR {formatAmount(capital, true)}</strong
@@ -212,6 +269,78 @@
 						><span>Capital + 10 years of added operating cost</span>
 					</article>
 				</div>
+				{#if transport && hasFerryProposal}<section
+						class="report-card transport-card"
+						class:outdated={stale || pending}
+						aria-label="Public transport and island connections"
+					>
+						<div class="section-heading">
+							<div>
+								<span class="eyebrow">Public transport & island connections</span>
+								<h2>What the ferry service changes</h2>
+							</div>
+							<Ship size={23} />
+						</div>
+						<p>
+							Compare modeled connections on {transport.after.service_date}. Each direction has its
+							own departure schedule; an outward and return service count as two schedules.
+						</p>
+						<div class="transport-report-layout">
+							<div class="transport-comparison">
+								<div class="band-key">
+									<span><i class="baseline-key"></i>Current</span><span
+										><i class="proposed-key"></i>Proposal</span
+									>
+								</div>
+								{#each transportMetrics as metric (metric.label)}<div
+										class="transport-comparison-row"
+									>
+										<div>
+											<strong>{metric.label}</strong><span>{metric.before} → {metric.after}</span>
+										</div>
+										<div class="band-track" aria-hidden="true">
+											<span
+												class="baseline"
+												style:width={`${(metric.before / maximumConnections) * 100}%`}
+											></span>
+										</div>
+										<div class="band-track" aria-hidden="true">
+											<span
+												class="proposed"
+												style:width={`${(metric.after / maximumConnections) * 100}%`}
+											></span>
+										</div>
+									</div>{/each}
+							</div>
+							<div class="transport-service-list">
+								{#each proposedFerries as ferry (ferry.key)}<article>
+										<div><Ship size={18} /><strong>{ferry.name}</strong></div>
+										<p>
+											<b>{formatAmount(ferry.departures)}</b> modeled departures{ferry.returnService
+												? ' across both directions'
+												: ''}
+										</p>
+										<span
+											>{ferry.returnService
+												? 'Outward and return sailings included'
+												: 'Return service needs review'}</span
+										>
+									</article>{:else}<p>
+										No proposed ferry is active on this service date. Check its opening date and
+										timetable before making a decision.
+									</p>{/each}
+							</div>
+						</div>
+						<div class="transport-cost-note">
+							<span><strong>MVR 0</strong> new port construction for this ferry service</span>
+							<p>
+								Existing landing places are reused. Vessel procurement and yearly operation are
+								included in the proposal costs above; a mapped landing place still needs suitability
+								and permission checks.
+							</p>
+						</div>
+						<p class="method-note">{transport.after.qualification}</p>
+					</section>{/if}
 				<div class="report-grid">
 					<section class="report-card access-card">
 						<div class="section-heading">
@@ -222,8 +351,10 @@
 							<Badge variant="secondary">{target}-minute target</Badge>
 						</div>
 						<p>
-							Residents with a modeled journey to {goal}. Each resident origin is counted once, even
-							if several proposed sites serve it.
+							Residents with a modeled {walkingGoal
+								? 'walk to a bus stop or ferry landing place'
+								: `journey to ${goal}`}. Each resident origin is counted once, even if several
+							proposed sites serve it.
 						</p>
 						<div class="access-bars">
 							{#each [{ label: 'Current services', count: before, className: 'baseline' }, { label: 'With your proposal', count: after, className: 'proposed' }] as row (row.label)}<div
@@ -266,24 +397,26 @@
 							<div>
 								<span class="eyebrow">Your proposed changes</span>
 								<h2>
-									{request.operations.length}
-									{request.operations.length === 1 ? 'intervention' : 'interventions'}
+									{proposalItems.length}
+									{proposalItems.length === 1 ? 'intervention' : 'interventions'}
 								</h2>
 							</div>
 							<MapPin size={19} />
 						</div>
 						<ol class="site-list">
-							{#each request.operations as operation, index (index)}<li>
-									<span class="site-number">{index + 1}</span>
+							{#each proposalItems as { operation, index }, rowNumber (index)}<li>
+									<span class="site-number">{rowNumber + 1}</span>
 									<div>
 										<strong>{operationName(operation)}</strong><small
-											>{operationLabel(operation)}</small
+											>{operation.metadata?.ui_ferry_summary
+												? 'Return ferry service · existing landing places'
+												: operationLabel(operation)}</small
 										>{#if operation.coordinates}<span
 												>Placed on the map{#if operation.island_id}
 													· {operation.island_id}{/if}</span
 											>{/if}
 									</div>
-									{#if onFocusOperation && operation.coordinates}<Button
+									{#if onFocusOperation && (operation.coordinates || operation.metadata?.ui_ferry_summary)}<Button
 											variant="ghost"
 											size="icon-sm"
 											aria-label={`View ${operationName(operation)} on map`}
@@ -646,6 +779,111 @@
 		gap: 20px;
 		margin-bottom: 20px;
 	}
+	.transport-card {
+		margin-bottom: 20px;
+		border-color: #c7dfe3;
+		background: #faffff;
+	}
+	.transport-card .section-heading > :global(svg) {
+		color: #437c8b;
+	}
+	.transport-report-layout {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 34px;
+		margin-top: 24px;
+	}
+	.transport-comparison {
+		display: grid;
+		gap: 19px;
+		align-content: start;
+	}
+	.transport-comparison .band-key {
+		margin-bottom: 0;
+	}
+	.transport-comparison-row > div:first-child {
+		display: flex;
+		justify-content: space-between;
+		gap: 14px;
+		margin-bottom: 9px;
+		font-size: 11px;
+	}
+	.transport-comparison-row strong {
+		font-weight: 550;
+		color: #50696f;
+	}
+	.transport-comparison-row > div > span {
+		font-variant-numeric: tabular-nums;
+		color: #315f6a;
+	}
+	.transport-service-list {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.transport-service-list article {
+		border: 1px solid #dce9eb;
+		padding: 15px;
+		border-radius: 12px;
+		background: #eff7f8;
+	}
+	.transport-service-list article > div {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		color: #346b79;
+		font-size: 12px;
+	}
+	.transport-service-list article strong {
+		font-weight: 600;
+	}
+	.transport-service-list article p {
+		font-size: 11px;
+		color: #607f87;
+		margin: 12px 0 6px;
+	}
+	.transport-service-list article b {
+		font-size: 21px;
+		letter-spacing: -0.5px;
+		color: #2c6473;
+		font-weight: 600;
+	}
+	.transport-service-list article > span {
+		font-size: 10px;
+		color: #5a8a7e;
+	}
+	.transport-service-list > p {
+		font-size: 12px;
+		line-height: 1.8;
+		color: #7a7c70;
+	}
+	.transport-cost-note {
+		display: flex;
+		gap: 25px;
+		padding: 18px 0 0;
+		margin-top: 22px;
+		border-top: 1px solid #dfeaec;
+		align-items: center;
+	}
+	.transport-cost-note > span {
+		font-size: 10px;
+		color: #6d868d;
+		flex-shrink: 0;
+		display: grid;
+		gap: 5px;
+	}
+	.transport-cost-note strong {
+		font-size: 21px;
+		font-weight: 600;
+		color: #376c79;
+		letter-spacing: -0.5px;
+	}
+	.transport-cost-note p {
+		margin: 0;
+		font-size: 11px;
+		color: #73888e;
+		line-height: 1.8;
+	}
 	.report-card {
 		border: 1px solid var(--border);
 		border-radius: 20px;
@@ -1005,6 +1243,15 @@
 		}
 	}
 	@media (max-width: 700px) {
+		.transport-report-layout {
+			grid-template-columns: 1fr;
+			gap: 20px;
+		}
+		.transport-cost-note {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 10px;
+		}
 		.forecast-header {
 			padding: 12px;
 			gap: 5px;

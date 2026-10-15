@@ -43,6 +43,7 @@ from app.operations.service import NoticeStore
 from app.planning.models import PlanningAssumptions
 from app.planning.repository import PlanningRepository
 from app.planning.service import PlanningService
+from app.planning.transport import terminal_catalogue
 from app.recommendation.service import RecommendationService
 from app.routing.engine import RoutingRepository
 from app.simulation.engine import ScenarioEngine
@@ -66,6 +67,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app_settings.ensure_data_directories()
         app.state.repository.reload()
         app.state.routing.reload()
+        app.state.planning.repository.ferry_terminals = terminal_catalogue(
+            app.state.repository, app.state.routing, app_settings.public_data_dir
+        )
         app.state.accessibility.reload()
         app.state.simulation.reload()
         app.state.recommendations.reload()

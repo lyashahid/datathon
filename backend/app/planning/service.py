@@ -15,6 +15,7 @@ from app.planning.economics import COST_DEFAULTS, economics
 from app.planning.models import JourneyRequest, PlanningAssumptions, PlanningRequest
 from app.planning.repository import IDENTITY_BRIDGE, PlanningRepository
 from app.planning.routing import JourneyRouter, WalkingNetwork, pattern_trips
+from app.planning.transport import transport_summary
 from app.planning.world import apply_operations, baseline_world
 
 
@@ -48,6 +49,7 @@ class PlanningService:
         # Content keys invalidate closures, stop moves, calendars, facility edits
         # and in-process snapshot changes. Budget/geometry changes do not alter a
         # journey, and consequently reuse the same exact routing calculations.
+        world = self._world_for_goal(world, assumptions)
         routing_inputs = assumptions.model_dump(
             mode="json",
             include={
@@ -84,6 +86,27 @@ class PlanningService:
             while len(self._routers) > 4:
                 self._routers.popitem(last=False)
             return router
+
+    def _world_for_goal(
+        self, world: dict[str, Any], assumptions: PlanningAssumptions
+    ) -> dict[str, Any]:
+        if assumptions.goal != "transport":
+            return world
+        destinations = {stop["id"]: stop for stop in world["stops"] if not stop.get("disabled")}
+        disabled = {stop["id"] for stop in world["stops"] if stop.get("disabled")}
+        for terminal in self.repository.ferry_terminals.values():
+            if terminal["id"] in destinations or terminal["id"] in disabled:
+                continue
+            lon, lat = terminal["coordinates"]
+            destinations[terminal["id"]] = {
+                "id": terminal["id"],
+                "name": terminal["name"],
+                "islandId": self.repository.planning_id(terminal["island_id"]),
+                "lon": lon,
+                "lat": lat,
+                "mode": "ferry",
+            }
+        return {**world, "transport_destinations": list(destinations.values())}
 
     def quote(self, request: PlanningRequest) -> dict[str, Any]:
         """Authoritative project cost gate without any resident access searches."""
@@ -212,6 +235,7 @@ class PlanningService:
                     self.repository.baseline,
                     self.repository.calendars,
                     self.repository.receipts,
+                    self.repository.ferry_terminals,
                     request.model_dump(mode="json"),
                 ],
                 lambda: self._evaluate(request),
@@ -315,6 +339,12 @@ class PlanningService:
             for band in values:
                 band["residents"] = round(band["residents"], 3)
         warnings = self.repository.summary(request.island_id)["warnings"] + operation_warnings
+        if request.assumptions.goal == "transport":
+            warnings.append(
+                "Transport access measures walking to mapped boarding points. "
+                "It does not verify a departing service, frequency, capacity, "
+                "passenger demand or an inter-island arrival time."
+            )
         coverage = self.coverage(request)
         if not origins:
             warnings.append(
@@ -360,6 +390,10 @@ class PlanningService:
             "origins": comparisons,
             "island_summaries": island_summaries,
             "economics": financial,
+            "transport_connectivity": {
+                "before": transport_summary(before_world, request.assumptions),
+                "after": transport_summary(after_world, request.assumptions),
+            },
             "world": copy.deepcopy({k: after_world[k] for k in ("facilities", "stops", "patterns")})
             if request.assumptions.include_world
             else {
@@ -389,15 +423,19 @@ class PlanningService:
         if origin is None:
             raise ValueError("Resident origin ID not found in the selected supported scope")
         world, warnings = apply_operations(self.repository, request)
+        world = self._world_for_goal(world, request.assumptions)
         destinations = None
         if request.destination_id:
             from app.planning.routing import destination_eligible
 
             destinations = [
                 f
-                for f in world["facilities"]
+                for f in world.get("transport_destinations", world["facilities"])
                 if f["id"] == request.destination_id
-                and destination_eligible(f, request.assumptions)
+                and (
+                    request.assumptions.goal == "transport"
+                    or destination_eligible(f, request.assumptions)
+                )
             ]
             if not destinations:
                 raise ValueError("Destination is not eligible/open for this goal and scenario date")
@@ -419,7 +457,11 @@ class PlanningService:
         }
         if request.appointment_minutes is None or outward["status"] != "reachable":
             return result
-        destination = next(f for f in world["facilities"] if f["id"] == outward["destination_id"])
+        destination = next(
+            f
+            for f in world.get("transport_destinations", world["facilities"])
+            if f["id"] == outward["destination_id"]
+        )
         return_departure = outward["arrival_minutes"] + request.appointment_minutes
         day_offset = int(return_departure // 1440)
         assumptions = request.assumptions.model_copy(

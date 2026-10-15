@@ -57,10 +57,14 @@ def _jobs(*, include_planning: bool, include_analysis: bool) -> list[WarmupJob]:
                         f"gaps_{island}", f"/api/v1/planning/opportunities/island%3A{island}"
                     ),
                     WarmupJob(f"profile_{island}", f"/api/v1/islands/island%3A{island}/profile"),
+                    WarmupJob(
+                        f"connections_{island}",
+                        f"/api/v1/planning/connectivity?origin_island_id=island%3A{island}",
+                    ),
                 ]
             )
         for island in ("1443", "1442", "1382"):
-            for goal in ("healthcare", "education"):
+            for goal in ("healthcare", "education", "transport"):
                 jobs.append(
                     WarmupJob(
                         f"baseline_impact_{island}_{goal}",
@@ -69,6 +73,7 @@ def _jobs(*, include_planning: bool, include_analysis: bool) -> list[WarmupJob]:
                             "island_id": f"island:{island}",
                             "assumptions": {
                                 "goal": goal,
+                                **({"target_minutes": 10} if goal == "transport" else {}),
                                 "include_origin_geometry": False,
                                 "include_journey_geometry": False,
                                 "include_world": False,

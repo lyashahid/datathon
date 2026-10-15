@@ -20,6 +20,10 @@ class PlanningRepository:
         self.public_dir = public_dir
         self.baseline = self._read("planning-baseline.json", {})
         self.calendars = self._read("policy-evidence/service-calendars.json", {})
+        # Populated from the normalized, tag-aware terminal catalogue at startup.
+        # Scenario operations reference these source identities; they cannot
+        # introduce a free fictitious port through arbitrary coordinates.
+        self.ferry_terminals: dict[str, dict[str, Any]] = {}
         self.receipts = []
         for name in ("planning-baseline.json", "policy-evidence/service-calendars.json"):
             path = public_dir / name

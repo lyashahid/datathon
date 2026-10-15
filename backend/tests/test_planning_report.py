@@ -171,6 +171,26 @@ def test_report_distinguishes_missing_inputs_budget_overruns_and_operating_savin
     assert compact_amount(25_000_000) == "25m"
 
 
+def test_transport_report_explains_walking_access_separately_from_scheduled_services():
+    result = evaluation()
+    result["access_method"] = (
+        "Shortest elapsed time including walking, scheduled waits and transfers."
+    )
+    reader = PdfReader(
+        BytesIO(
+            build_planning_report(
+                PlanningRequest(assumptions={"goal": "transport", "target_minutes": 10}),
+                result,
+                "Transport access review",
+            )
+        )
+    )
+    text = " ".join(" ".join(page.extract_text() for page in reader.pages).split())
+    assert "Shortest walking time to mapped public transport boarding points" in text
+    assert "excludes scheduled waits, sailing times and transfers" in text
+    assert result["access_method"] not in text
+
+
 def test_chart_unknowns_remain_visible_and_bar_geometry_has_no_inverted_corners():
     missing = fiscal_chart(100_000, None, 480)
     assert any(

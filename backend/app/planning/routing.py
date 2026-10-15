@@ -278,6 +278,8 @@ class JourneyRouter:
         self.facilities = (
             destinations
             if destinations is not None
+            else world.get("transport_destinations", list(self.stops.values()))
+            if assumptions.goal == "transport"
             else [f for f in world["facilities"] if destination_eligible(f, assumptions)]
         )
         self.facility_snaps = {
@@ -304,6 +306,11 @@ class JourneyRouter:
             for facility_id, snap in self.facility_snaps.items()
             if snap
         }
+        if assumptions.goal == "transport":
+            # Reaching a boarding point is a walking-access question. Riding a
+            # bus/ferry must not turn stop proximity into assumed service access.
+            self.patterns_at, self.trips, self.stop_walk, self.egress = {}, {}, {}, {}
+            return
         self.patterns_at: dict[str, list[tuple[dict[str, Any], int]]] = {}
         self.trips = {}
         for pattern in world["patterns"]:
@@ -415,6 +422,22 @@ class JourneyRouter:
             [walk_leg(origin["id"], direct[1]["id"], direct[0], direct[2])] if direct else []
         )
         best_id = direct[1]["id"] if direct else None
+        if a.goal == "transport":
+            if direct:
+                return {
+                    "status": "reachable",
+                    "minutes": round(direct[0], 3),
+                    "destination_id": best_id,
+                    "arrival_minutes": round(best_time, 3),
+                    "path": best_path,
+                    "geometry": [point for leg in best_path for point in leg["geometry"]],
+                    "reason": None,
+                }
+            return fail(
+                "unavailable",
+                "No mapped boarding point has a supported walking path "
+                "within the journey horizon. Missing evidence is not measured no access.",
+            )
         queue: list[tuple[float, str, int]] = []
         labels: dict[tuple[str, int], float] = {}
         paths = {}

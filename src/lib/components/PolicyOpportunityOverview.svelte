@@ -9,7 +9,8 @@
 		GraduationCap,
 		HeartPulse,
 		MapPin,
-		Search
+		Search,
+		Ship
 	} from '@lucide/svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
@@ -32,11 +33,13 @@
 	let {
 		atoll = 'all',
 		cohort = 'residential',
-		onExplore
+		onExplore,
+		onConnections
 	}: {
 		atoll?: string;
 		cohort?: string;
 		onExplore: (islandId?: string, atoll?: string, lens?: PolicyLens) => void;
+		onConnections?: (islandId?: string) => void;
 	} = $props();
 	let snapshot = $state<PolicyOpportunities | null>(null);
 	let loading = $state(true);
@@ -288,6 +291,17 @@
 							size={13}
 						/></Button
 					>
+					{#if sector.domain === 'transport' && onConnections}
+						<Button
+							variant="secondary"
+							size="sm"
+							class="sector-action sector-connection"
+							onclick={() => onConnections?.()}
+							><span><Ship size={14} /> Check island connections</span><ArrowRight
+								size={13}
+							/></Button
+						>
+					{/if}
 				</Card.Root>
 			{/each}
 		</div>
@@ -739,6 +753,18 @@
 		color: #7953c4;
 		font-size: 11px;
 		border-radius: 9px;
+	}
+	:global(.policy-overview .sector-connection) {
+		color: #995e29;
+		background: #fff4e9;
+	}
+	:global(.policy-overview .sector-connection:hover) {
+		background: #ffead6;
+	}
+	:global(.policy-overview .sector-connection span) {
+		display: inline-flex;
+		align-items: center;
+		gap: 7px;
 	}
 	:global(.policy-overview button:active) {
 		transform: scale(0.98);

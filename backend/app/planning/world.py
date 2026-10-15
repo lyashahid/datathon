@@ -264,14 +264,44 @@ def apply_operations(
                 continue
         kind = operation.type
         scope = repository.planning_id(operation.island_id or request.island_id)
-        if kind in {"add_hospital", "add_school", "add_stop"}:
+        if kind == "use_existing_ferry_terminal":
+            terminal = repository.ferry_terminals.get(operation.target_id or "")
+            if not terminal:
+                raise ValueError("Choose an existing source-mapped passenger ferry terminal")
+            if operation.island_id and operation.island_id != terminal["island_id"]:
+                raise ValueError("Ferry terminal identity does not match its island")
+            if not any(stop["id"] == terminal["id"] for stop in world["stops"]):
+                coordinates = terminal["coordinates"]
+                world["stops"].append(
+                    {
+                        "id": terminal["id"],
+                        "name": terminal["name"],
+                        "mode": "ferry",
+                        "islandId": repository.planning_id(terminal["island_id"]),
+                        "lon": coordinates[0],
+                        "lat": coordinates[1],
+                        "coordinate": coordinates,
+                        "provenance": "source-mapped",
+                        "sourceIds": [terminal["source"]],
+                        "reusedInfrastructure": True,
+                    }
+                )
+            warnings.append(
+                "Existing mapped ferry terminal reused; berth suitability and operator "
+                "permission remain unverified. No port construction is costed."
+            )
+        elif kind in {"add_hospital", "add_school", "add_stop"}:
             coordinates = list(operation.coordinates or [])
             if not scope:
-                warnings.append(f"Operation {index}: an explicit island is required")
-                continue
+                raise ValueError(
+                    "Choose a supported island before adding a bus stop, school or hospital"
+                )
             if scope not in {i["id"] for i in repository.baseline.get("islands", [])}:
-                warnings.append(f"Operation {index}: island is outside the supported graph")
-                continue
+                raise ValueError(
+                    "Local construction is outside the supported planning area. "
+                    "Choose a supported island, or plan a ferry service using existing "
+                    "mapped landing points. No construction or budget has been committed."
+                )
             proposal_id = operation.metadata.get("proposal_id", f"proposal:{kind}:{index}")
             if not isinstance(proposal_id, str) or not re.fullmatch(
                 rf"proposal:{kind}:[A-Za-z0-9_-]{{1,100}}", proposal_id

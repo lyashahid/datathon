@@ -37,7 +37,7 @@ class PlanningAssumptions(BaseModel):
     date: ServiceDate = ServiceDate(2026, 10, 10)
     departure_minutes: float = Field(default=920, ge=0, lt=1440)
     target_minutes: float = Field(default=30, gt=0, le=180)
-    goal: Literal["healthcare", "education"] = "healthcare"
+    goal: Literal["healthcare", "education", "transport"] = "healthcare"
     population_year: Literal[2026, 2030] = 2026
     walk_m_per_minute: float = Field(default=80, ge=10, le=180)
     max_journey_minutes: float = Field(default=180, gt=0, le=360)
@@ -98,6 +98,7 @@ class PlanningOperation(BaseModel):
         "set_hours",
         "set_fleet",
         "add_service",
+        "use_existing_ferry_terminal",
         "replace_service",
         "road_closure",
         "pedestrian_connection",

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, untrack } from 'svelte';
+	import { onMount, tick, untrack } from 'svelte';
 	import {
 		ArrowRight,
 		BusFront,
@@ -11,6 +11,7 @@
 		MapPin,
 		Plus,
 		RefreshCw,
+		Ship,
 		Sparkles,
 		Trash2,
 		Undo2,
@@ -48,6 +49,15 @@
 		PolicyDomain
 	} from '#lib/policy-opportunities.js';
 	import type { Coordinates, MapFeatures } from '#lib/types.js';
+	import {
+		canConfirmFerry,
+		ferryConnectionLabel,
+		ferryFeatureBounds,
+		ferryPlanningDate,
+		ferryServiceInput,
+		type FerryConnectivity,
+		type FerryDraft
+	} from '#lib/ferry-planning.js';
 	import type { FeatureCollection } from 'geojson';
 	import ProposalCostStrip from './ProposalCostStrip.svelte';
 	import ProposalForecastReview from './ProposalForecastReview.svelte';
@@ -106,6 +116,9 @@
 		onPickKind,
 		onCloseOthers,
 		onFocus,
+		onFocusBounds,
+		ferryDestinationId = null,
+		onPickFerryDestination = () => {},
 		onDetails,
 		onConsume = () => {}
 	}: {
@@ -127,6 +140,9 @@
 		onPickKind: (kind: PlacementKind | null) => void;
 		onCloseOthers: () => void;
 		onFocus: (coordinates: Coordinates) => void;
+		onFocusBounds?: (bounds: [Coordinates, Coordinates]) => void;
+		ferryDestinationId?: string | null;
+		onPickFerryDestination?: (enabled: boolean) => void;
 		onDetails: () => void;
 		onConsume?: () => void;
 	} = $props();
@@ -145,9 +161,30 @@
 	let operations = $state.raw<PlanningOperation[]>([]);
 	let history = $state.raw<PlanningOperation[][]>([]);
 	let pending = $state<{ coordinates: Coordinates; kind: PlacementKind } | null>(null);
+	let ferryOpen = $state(false);
+	let ferryDestination = $state('');
+	let ferrySearch = $state('');
+	let ferryChoosingDestination = $state(false);
+	let ferryHeadway = $state<number | string>(120);
+	let ferryStart = $state('06:00');
+	let ferryEnd = $state('20:00');
+	let ferrySpeed = $state<number | string>(25);
+	let ferryConnection = $state.raw<{ key: string; value: FerryConnectivity } | null>(null);
+	let ferryDraft = $state.raw<{ key: string; value: FerryDraft } | null>(null);
+	let ferryLoading = $state(false);
+	let ferryPreviewing = $state(false);
+	let ferryError = $state('');
+	let ferryComposer = $state<HTMLElement | null>(null);
 	let capitalBudget = $state<number | string>(150_000_000);
 	let annualBudget = $state<number | string>(25_000_000);
-	let goal = $state<'healthcare' | 'education'>('healthcare');
+	let goal = $state<'healthcare' | 'education' | 'transport'>('healthcare');
+	const goalLabel = $derived(
+		goal === 'transport'
+			? 'walking access to public transport'
+			: goal === 'education'
+				? 'education access'
+				: 'healthcare access'
+	);
 	let targetMinutes = $state<number | string>(30);
 	let date = $state('2026-10-10');
 	let departure = $state('15:20');
@@ -182,6 +219,8 @@
 	let suggestionController: AbortController | undefined;
 	let quoteController: AbortController | undefined;
 	let placementQuoteController: AbortController | undefined;
+	let ferryConnectionController: AbortController | undefined;
+	let ferryDraftController: AbortController | undefined;
 	let suggestionContext = '';
 	let evaluateTimer: ReturnType<typeof setTimeout> | undefined;
 	const current = $derived(national?.islands.find((row) => row.island_id === islandId));
@@ -190,6 +229,11 @@
 			title = `${current.name} service improvement`;
 	});
 	const supported = $derived(current?.planning_supported ?? false);
+	const localConstructionReason = $derived(
+		current
+			? 'Local construction planning needs detailed road and resident data, which are unavailable for this island. You can still plan a ferry service using existing landing places.'
+			: 'Loading the island evidence before placing local construction…'
+	);
 	const scopedKey = $derived(islandId ?? '');
 	const costDefaults = $derived({
 		...(baseline?.cost_defaults ?? {}),
@@ -229,6 +273,68 @@
 		assessDraftBudget(costs, budgetNumber(capitalBudget), budgetNumber(annualBudget))
 	);
 	const signature = $derived(JSON.stringify(request));
+	const ferryInput = $derived(
+		ferryServiceInput(
+			islandId,
+			{
+				destinationId: ferryDestination,
+				headway: ferryHeadway,
+				start: ferryStart,
+				end: ferryEnd,
+				speed: ferrySpeed
+			},
+			request
+		)
+	);
+	const ferrySignature = $derived(JSON.stringify(ferryInput.payload));
+	const ferryConnectionKey = $derived(`${islandId}:${ferryDestination}:${date}`);
+	const connection = $derived(
+		ferryConnection?.key === ferryConnectionKey ? ferryConnection.value : null
+	);
+	const ferryPreview = $derived(ferryDraft?.key === ferrySignature ? ferryDraft.value : null);
+	const ferryAllowed = $derived(
+		canConfirmFerry(
+			ferryPreview,
+			ferryDraft?.key ?? '',
+			ferrySignature,
+			checkingBudget || ferryPreviewing
+		) && operations.length + (ferryPreview?.operations.length ?? 0) <= 100
+	);
+	const ferryIslands = $derived.by(() => {
+		const query = ferrySearch.trim().toLocaleLowerCase();
+		return (national?.islands ?? [])
+			.filter(
+				(island) => island.island_id !== islandId && island.name && !/^unnamed/i.test(island.name)
+			)
+			.filter(
+				(island) => !query || `${island.name} ${island.atoll}`.toLocaleLowerCase().includes(query)
+			)
+			.sort((a, b) => {
+				const featured = (id: string) => (id === 'island:1442' || id === 'island:1443' ? 0 : 1);
+				return featured(a.island_id) - featured(b.island_id) || a.name.localeCompare(b.name);
+			})
+			.slice(0, 8);
+	});
+	const ferryDestinationName = $derived(
+		national?.islands.find((island) => island.island_id === ferryDestination)?.name ??
+			'Choose a destination'
+	);
+	const draftedFerries = $derived(
+		operations.flatMap((operation) =>
+			operation.metadata?.ui_ferry_summary
+				? [operation.metadata.ui_ferry_summary as NonNullable<FerryDraft['summary']>]
+				: []
+		)
+	);
+	const draftItems = $derived(
+		operations.flatMap((operation, index) =>
+			typeof operation.metadata?.ui_package === 'string' &&
+			operation.metadata.ui_package.startsWith('ferry-service:') &&
+			!operation.metadata.ui_ferry_summary
+				? []
+				: [{ operation, index }]
+		)
+	);
 	const suggestionSignature = $derived(JSON.stringify({ request, priorities, costs }));
 	const stale = $derived(!!evaluation && evaluatedSignature !== signature);
 	const roadDistance = $derived(
@@ -269,6 +375,7 @@
 					annual: pendingCosts?.annual ?? null,
 					allowed:
 						!!baseline &&
+						supported &&
 						!!boundaryFeatures &&
 						!loading &&
 						operations.length < 100 &&
@@ -280,15 +387,17 @@
 					reason:
 						loading || !baseline
 							? 'Loading the island cost and site evidence…'
-							: !boundaryFeatures
-								? boundaryError || 'Loading the detailed island boundary…'
-								: operations.length >= 100
-									? 'This proposal has reached the 100-change limit.'
-									: pendingWithin === false
-										? `Move this pin onto ${islandName}. Water and other islands cannot be used.`
-										: !budgetLimits.allowed
-											? budgetLimits.reason
-											: placementError || quotedPlacement?.budget.reasons.join(' '),
+							: !supported
+								? localConstructionReason
+								: !boundaryFeatures
+									? boundaryError || 'Loading the detailed island boundary…'
+									: operations.length >= 100
+										? 'This proposal has reached the 100-change limit.'
+										: pendingWithin === false
+											? `Move this pin onto ${islandName}. Water and other islands cannot be used.`
+											: !budgetLimits.allowed
+												? budgetLimits.reason
+												: placementError || quotedPlacement?.budget.reasons.join(' '),
 					remaining: quotedPlacement?.budget.capital.remaining_mvr,
 					note:
 						roadDistance !== null
@@ -300,7 +409,11 @@
 						loading ||
 						(!boundaryFeatures && !boundaryError) ||
 						checkingBudget ||
-						(!quotedPlacement && !placementError && budgetLimits.allowed && pendingWithin !== false)
+						(supported &&
+							!quotedPlacement &&
+							!placementError &&
+							budgetLimits.allowed &&
+							pendingWithin !== false)
 				}
 			: null
 	);
@@ -374,7 +487,10 @@
 								(operation.metadata?.ui_map_features as FeatureCollection | undefined)?.features ??
 								[]
 						),
-						...(suggested?.selected.flatMap((item) => item.map_features?.features ?? []) ?? [])
+						...(suggested?.selected.flatMap((item) => item.map_features?.features ?? []) ?? []),
+						...(ferryOpen
+							? ((ferryPreview?.map_features ?? connection?.map_features)?.features ?? [])
+							: [])
 					]
 	});
 	const impact = $derived(
@@ -403,6 +519,8 @@
 			suggestionController?.abort();
 			quoteController?.abort();
 			placementQuoteController?.abort();
+			ferryConnectionController?.abort();
+			ferryDraftController?.abort();
 		};
 	});
 	$effect(() => {
@@ -450,8 +568,12 @@
 		evaluationQueued = false;
 		evaluating = false;
 		review = false;
+		closeFerry();
 		onPickKind(null);
 		if (restore) {
+			ferryDestination = '';
+			ferrySearch = '';
+			ferryConnection = null;
 			gapCells = emptyFeatures();
 			displayGrid = emptyFeatures();
 			operations = [];
@@ -489,7 +611,8 @@
 					if (typeof annual === 'number' && Number.isFinite(annual) && annual >= 0)
 						annualBudget = annual;
 					const savedGoal = assumptions.goal ?? draft.goal;
-					if (savedGoal === 'healthcare' || savedGoal === 'education') goal = savedGoal;
+					if (savedGoal === 'healthcare' || savedGoal === 'education' || savedGoal === 'transport')
+						goal = savedGoal;
 					if (typeof assumptions.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(assumptions.date))
 						date = assumptions.date;
 					if (
@@ -594,6 +717,12 @@
 		if (!active || !placement || placement.id === consumedPlacement) return;
 		untrack(() => {
 			consumedPlacement = placement!.id;
+			if (!supported) {
+				error = localConstructionReason;
+				onPickKind(null);
+				return;
+			}
+			closeFerry();
 			quoteController?.abort();
 			checkingBudget = false;
 			pending = {
@@ -608,9 +737,20 @@
 		});
 	});
 	$effect(() => {
-		if (!active || !incomingOperation || !baseline || loading || restoredScope !== scopedKey)
-			return;
+		if (!active || !incomingOperation) return;
 		const incoming = incomingOperation;
+		if (incoming.type === 'compose_ferry_service') {
+			untrack(() => {
+				const serviceDate = ferryPlanningDate(incoming.service_date);
+				if (serviceDate) date = serviceDate;
+				beginFerry();
+				if (typeof incoming.destination_island_id === 'string')
+					chooseFerryDestination(incoming.destination_island_id);
+				onConsume();
+			});
+			return;
+		}
+		if (!baseline || loading || restoredScope !== scopedKey) return;
 		untrack(() => {
 			if (typeof incoming.type !== 'string') {
 				error = 'This notice does not contain a supported planning change.';
@@ -633,6 +773,52 @@
 				open('proposal');
 			}
 			onConsume();
+		});
+	});
+	$effect(() => {
+		if (!ferryOpen || !ferryDestinationId || ferryDestinationId === islandId) return;
+		untrack(() => chooseFerryDestination(ferryDestinationId!));
+	});
+	$effect(() => {
+		const key = ferryConnectionKey;
+		const origin = islandId;
+		const destination = ferryDestination;
+		const serviceDate = date;
+		if (!mounted || !active || !ferryOpen || !origin || !destination) return;
+		const controller = new AbortController();
+		ferryConnectionController = controller;
+		untrack(() => {
+			ferryLoading = true;
+			ferryError = '';
+		});
+		void api<FerryConnectivity>(
+			`planning/connectivity?${new URLSearchParams({ origin_island_id: origin, destination_island_id: destination, date: serviceDate })}`,
+			undefined,
+			controller.signal
+		)
+			.then((value) => {
+				if (!controller.signal.aborted && ferryConnectionKey === key) {
+					ferryConnection = { key, value };
+					focusFerryFeatures(value.map_features);
+				}
+			})
+			.catch((cause) => {
+				if (!controller.signal.aborted)
+					ferryError =
+						cause instanceof Error ? cause.message : 'The island connection could not be checked.';
+			})
+			.finally(() => {
+				if (ferryConnectionController === controller) ferryLoading = false;
+			});
+		return () => controller.abort();
+	});
+	$effect(() => {
+		const currentSignature = ferrySignature;
+		untrack(() => {
+			if (ferryDraft && ferryDraft.key !== currentSignature) {
+				ferryDraftController?.abort();
+				ferryPreviewing = false;
+			}
 		});
 	});
 	$effect(() => {
@@ -716,6 +902,7 @@
 			!active ||
 			!site ||
 			!baseline ||
+			!supported ||
 			loading ||
 			!budgetLimits.allowed ||
 			pendingWithin === false
@@ -927,19 +1114,142 @@
 		opened = false;
 		pending = null;
 		review = false;
+		closeFerry();
 		cancelSuggestions();
 		onPickKind(null);
 	}
 	function begin(kind: PlacementKind) {
+		if (!supported) {
+			error = localConstructionReason;
+			return;
+		}
 		quoteController?.abort();
 		checkingBudget = false;
 		open('proposal');
 		pending = null;
 		suggested = null;
+		closeFerry();
 		onPickKind(kind);
+	}
+	function beginFerry() {
+		cancelPending();
+		cancelSuggestions();
+		open('proposal');
+		ferryOpen = true;
+		ferryError = '';
+		ferryChoosingDestination = !ferryDestination;
+		onLensChange('transport');
+		setGoal('transport');
+		void tick().then(() => ferryComposer?.scrollIntoView({ block: 'nearest' }));
+	}
+	function closeFerry() {
+		ferryOpen = false;
+		ferryChoosingDestination = false;
+		ferryDraftController?.abort();
+		ferryConnectionController?.abort();
+		ferryPreviewing = false;
+		ferryLoading = false;
+		ferryDraft = null;
+		ferryError = '';
+		onPickFerryDestination(false);
+	}
+	function chooseFerryDestination(id: string) {
+		if (id === islandId) {
+			ferryError = 'Choose a different island for this ferry service.';
+			return;
+		}
+		ferryDestination = id;
+		ferrySearch = '';
+		ferryChoosingDestination = false;
+		ferryError = '';
+		onPickFerryDestination(false);
+	}
+	function focusFerryFeatures(features: FeatureCollection) {
+		const bounds = ferryFeatureBounds(features);
+		if (bounds && onFocusBounds) onFocusBounds(bounds);
+	}
+	async function previewFerry() {
+		const input = ferryInput;
+		if (!input.payload) {
+			ferryError = input.error;
+			return;
+		}
+		if (!budgetLimits.allowed) {
+			ferryError = budgetLimits.reason;
+			return;
+		}
+		ferryDraftController?.abort();
+		const controller = new AbortController();
+		ferryDraftController = controller;
+		const key = ferrySignature;
+		ferryPreviewing = true;
+		ferryError = '';
+		try {
+			const value = await api<FerryDraft>(
+				'planning/ferry-service',
+				input.payload,
+				controller.signal
+			);
+			if (!controller.signal.aborted && key === ferrySignature) {
+				ferryDraft = { key, value };
+				focusFerryFeatures(value.map_features);
+			}
+		} catch (cause) {
+			if (!controller.signal.aborted)
+				ferryError =
+					cause instanceof Error
+						? cause.message
+						: 'The ferry service could not be costed. Try again.';
+		} finally {
+			if (ferryDraftController === controller) ferryPreviewing = false;
+		}
+	}
+	function confirmFerry() {
+		if (!ferryAllowed || !ferryPreview?.quote) {
+			ferryError =
+				ferryPreview?.quote?.budget.reasons.join(' ') ||
+				'Preview this service and verify both budgets before adding it.';
+			return;
+		}
+		const preview = ferryPreview;
+		const group = `ferry-service:${crypto.randomUUID()}`;
+		const capital = preview.quote!.economics.delta.capital_mvr ?? null;
+		const annual = preview.quote!.economics.delta.annual_operating_mvr ?? null;
+		const additions = preview.operations.map((operation, index) => ({
+			...operation,
+			...(index === 0 && preview.summary ? { name: preview.summary.name } : {}),
+			metadata: {
+				...operation.metadata,
+				ui_package: group,
+				ui_capital:
+					index === 0
+						? capital !== null && costs.capital !== null
+							? capital - costs.capital
+							: undefined
+						: 0,
+				ui_annual:
+					index === 0
+						? annual !== null && costs.annual !== null
+							? annual - costs.annual
+							: undefined
+						: 0,
+				...(index === 0
+					? { ui_map_features: preview.map_features, ui_ferry_summary: preview.summary }
+					: {})
+			}
+		}));
+		const next = [...operations, ...additions];
+		financialQuote = { key: financialKey({ ...request, operations: next }), capital, annual };
+		commitChange(next);
+		closeFerry();
+		showImpact = false;
 	}
 	function confirm() {
 		if (!pending || operations.length >= 100) return;
+		if (!supported) {
+			error = localConstructionReason;
+			return;
+		}
 		if (!pendingDecision?.allowed) {
 			error = pendingDecision?.reason || 'Verify this site and its budget before adding it.';
 			return;
@@ -972,8 +1282,22 @@
 	function inferGoal(next: PlanningOperation[]) {
 		const school = next.some((operation) => operation.type === 'add_school');
 		const hospital = next.some((operation) => operation.type === 'add_hospital');
-		if (school && !hospital) goal = 'education';
-		else if (hospital && !school) goal = 'healthcare';
+		if (school && !hospital && goal !== 'education') setGoal('education');
+		else if (hospital && !school && goal !== 'healthcare') setGoal('healthcare');
+		else if (
+			!school &&
+			!hospital &&
+			next.some((operation) =>
+				['add_stop', 'add_service', 'use_existing_ferry_terminal'].includes(operation.type)
+			) &&
+			goal !== 'transport'
+		)
+			setGoal('transport');
+	}
+	function setGoal(value: 'healthcare' | 'education' | 'transport') {
+		if (goal === value) return;
+		goal = value;
+		targetMinutes = value === 'transport' ? 10 : 30;
 	}
 	function removeOperation(index: number) {
 		const group = operations[index]?.metadata?.ui_package;
@@ -1115,6 +1439,13 @@
 		if (change(next)) cancelSuggestions();
 	}
 	function focusOperation(index: number) {
+		const ferryFeatures = operations[index]?.metadata?.ui_map_features as
+			FeatureCollection | undefined;
+		if (operations[index]?.metadata?.ui_ferry_summary && ferryFeatures) {
+			review = false;
+			focusFerryFeatures(ferryFeatures);
+			return;
+		}
 		const coordinates = operations[index]?.coordinates;
 		if (coordinates?.length === 2) {
 			review = false;
@@ -1191,6 +1522,7 @@
 	{#if opened}<section
 			class="policy-map-panel"
 			class:placing={!!pending}
+			class:ferry-composing={ferryOpen}
 			aria-label="Island needs and proposal"
 			data-policy-section={section}
 		>
@@ -1221,7 +1553,7 @@
 						section = 'proposal';
 						showImpact = true;
 					}}
-					>Your proposal {#if operations.length}<span>{operations.length}</span>{/if}</button
+					>Your proposal {#if operations.length}<span>{draftItems.length}</span>{/if}</button
 				>
 			</div>
 			<div class="policy-panel-scroll">
@@ -1246,7 +1578,7 @@
 				{#if section === 'needs'}
 					<p class="policy-intro">
 						{impact.features.length
-							? `Your proposal’s modeled ${goal === 'healthcare' ? 'healthcare' : 'education'} access. Select a hexagon to compare current and proposed journeys.`
+							? `Your proposal’s modeled ${goalLabel}. Select a hexagon to compare current and proposed journeys.`
 							: needsLabel(current)}
 					</p>
 					<div class="policy-map-key">
@@ -1289,6 +1621,13 @@
 							? 'Edit your proposal'
 							: 'Build a funded proposal'}<ArrowRight size={16} /></Button
 					>
+					<button class="policy-ferry-entry" onclick={beginFerry}>
+						<Ship size={22} /><span
+							><strong>Island-to-island travel</strong><small
+								>Check a connection and plan a ferry service.</small
+							></span
+						><ArrowRight size={16} />
+					</button>
 					{#if cell?.origin_id && !impact.features.length}<div
 							class="policy-selected-cell"
 							data-cell-id={String(cell.origin_id)}
@@ -1312,9 +1651,7 @@
 							data-cell-id={String(cell.id ?? '')}
 						>
 							<strong>Access change here</strong><span
-								>{formatAmount(cell.population)} modeled residents · {goal === 'healthcare'
-									? 'healthcare'
-									: 'education'}</span
+								>{formatAmount(cell.population)} modeled residents · {goalLabel}</span
 							>
 							<p>
 								{cell.display_grid ? 'Average current journey' : 'Current journey'}<b
@@ -1465,8 +1802,7 @@
 							: 'Suggest investments within my budget'}</Button
 					>
 					{#if !supported && current}<p class="policy-qualification">
-							Detailed resident and road data are not available here. You can save a mapped concept;
-							a defensible access forecast needs local network, schedule and population data.
+							{localConstructionReason}
 						</p>{/if}
 					{#if suggested}<div
 							class="policy-suggestion"
@@ -1497,13 +1833,21 @@
 								</div>{/if}
 						</div>{/if}
 					<div class="policy-place-heading">
-						<h3>Or place it yourself</h3>
-						<small>Drag onto the map, or select then click a site.</small>
+						<h3>Add to your proposal</h3>
+						<small>Drag a local service onto the map, or connect two islands.</small>
 					</div>
 					<div class="policy-palette">
 						{#each [{ kind: 'add_stop', label: 'Bus stop', icon: BusFront }, { kind: 'add_school', label: 'School', icon: GraduationCap }, { kind: 'add_hospital', label: 'Hospital', icon: Hospital }] as item (item.kind)}<button
-								draggable={!!baseline && !loading && !checkingBudget && operations.length < 100}
-								disabled={!baseline || loading || checkingBudget || operations.length >= 100}
+								draggable={!!baseline &&
+									supported &&
+									!loading &&
+									!checkingBudget &&
+									operations.length < 100}
+								disabled={!baseline ||
+									!supported ||
+									loading ||
+									checkingBudget ||
+									operations.length >= 100}
 								ondragstart={(event) => {
 									event.dataTransfer?.setData('application/x-policy-placement', item.kind);
 									if (event.dataTransfer) {
@@ -1519,12 +1863,227 @@
 								><span>{item.label}</span><Plus size={12} /></button
 							>{/each}
 					</div>
+					<button
+						class="policy-ferry-entry"
+						class:active={ferryOpen}
+						onclick={beginFerry}
+						disabled={loading || checkingBudget || operations.length >= 97}
+					>
+						<Ship size={24} /><span
+							><strong>New ferry service</strong><small
+								>Connect two islands using existing landing places.</small
+							></span
+						><Plus size={16} />
+					</button>
+					{#if ferryOpen}<section
+							bind:this={ferryComposer}
+							class="policy-ferry-composer"
+							aria-label="Plan a ferry service"
+						>
+							<header>
+								<div>
+									<span class="eyebrow">CONNECT ISLANDS</span>
+									<h3>Plan a ferry service</h3>
+								</div>
+								<Button
+									variant="ghost"
+									size="icon-sm"
+									aria-label="Close ferry service planner"
+									onclick={closeFerry}><X size={16} /></Button
+								>
+							</header>
+							<p class="ferry-origin">
+								<MapPin size={15} /><span>From <strong>{islandName}</strong> · {date}</span>
+							</p>
+							<div class="ferry-destination">
+								<Label for="ferry-island-search">Destination island</Label>
+								{#if ferryDestination && !ferryChoosingDestination}<button
+										class="ferry-selected-destination"
+										onclick={() => (ferryChoosingDestination = true)}
+										><MapPin size={15} /><strong>{ferryDestinationName}</strong><span>Change</span
+										></button
+									>{/if}
+								{#if !ferryDestination || ferryChoosingDestination}
+									<Input
+										id="ferry-island-search"
+										placeholder="Search by island or atoll"
+										bind:value={ferrySearch}
+									/>
+									<div class="ferry-island-results" aria-label="Destination islands">
+										{#each ferryIslands as island (island.island_id)}<button
+												onclick={() => chooseFerryDestination(island.island_id)}
+												><MapPin size={14} /><span>{island.name}<small>{island.atoll}</small></span
+												><ArrowRight size={13} /></button
+											>{:else}<p>
+												No matching named islands. Try another name or choose on the map.
+											</p>{/each}
+									</div>
+									<Button
+										variant="outline"
+										size="sm"
+										onclick={() => {
+											ferryChoosingDestination = false;
+											onPickFerryDestination(true);
+										}}><MapPin size={14} />Choose destination on the map</Button
+									>
+								{/if}
+							</div>
+							{#if ferryLoading}<p class="ferry-progress" role="status">
+									<RefreshCw size={14} class="spin" />Checking existing routes and landing places…
+								</p>{/if}
+							{#if connection}<div
+									class="ferry-connection"
+									class:verified={connection.status === 'dated_service'}
+									data-connection-status={connection.status}
+								>
+									<strong>{ferryConnectionLabel(connection.status)}</strong>
+									{#each connection.reasons as reason, i (i)}<p>{reason}</p>{/each}
+									<div class="ferry-terminal-evidence">
+										<span
+											>{islandName}<b
+												>{connection.terminals.origin.length
+													? `${connection.terminals.origin.length} mapped landing place${connection.terminals.origin.length === 1 ? '' : 's'}`
+													: 'Landing place needs verification'}</b
+											></span
+										><span
+											>{ferryDestinationName}<b
+												>{connection.terminals.destination.length
+													? `${connection.terminals.destination.length} mapped landing place${connection.terminals.destination.length === 1 ? '' : 's'}`
+													: 'Landing place needs verification'}</b
+											></span
+										>
+									</div>
+								</div>{/if}
+							{#if ferryDestination}<div class="ferry-service-fields">
+									<div>
+										<Label for="ferry-headway">A ferry every · minutes</Label><Input
+											id="ferry-headway"
+											type="number"
+											min="15"
+											max="720"
+											step="15"
+											bind:value={ferryHeadway}
+										/>
+									</div>
+									<div class="policy-budget-grid">
+										<div>
+											<Label for="ferry-first">First departure</Label><Input
+												id="ferry-first"
+												type="time"
+												bind:value={ferryStart}
+											/>
+										</div>
+										<div>
+											<Label for="ferry-last">Finish service by</Label><Input
+												id="ferry-last"
+												type="time"
+												bind:value={ferryEnd}
+											/>
+										</div>
+									</div>
+									<details class="policy-evidence-note">
+										<summary>Sailing assumption</summary><Label for="ferry-speed"
+											>Assumed speed · km/h</Label
+										><Input
+											id="ferry-speed"
+											type="number"
+											min="10"
+											max="60"
+											bind:value={ferrySpeed}
+										/>
+										<p>
+											Return crossings and terminal layovers must finish within this window. Sailing
+											time is an estimate; sea conditions and operational approval need review.
+										</p>
+									</details>
+									<Button
+										variant="outline"
+										disabled={ferryPreviewing ||
+											ferryLoading ||
+											checkingBudget ||
+											!ferryInput.payload ||
+											!budgetLimits.allowed}
+										onclick={() => void previewFerry()}
+										><Ship size={15} />{ferryPreviewing
+											? 'Preparing service and costs…'
+											: ferryPreview
+												? 'Update service preview'
+												: 'Preview route & costs'}</Button
+									>
+								</div>{/if}
+							{#if ferryDestination && !ferryInput.payload}<p
+									class="policy-budget-alert"
+									role="status"
+								>
+									{ferryInput.error}
+								</p>{/if}
+							{#if ferryError}<p class="policy-error" role="alert">{ferryError}</p>{/if}
+							{#if ferryPreview}<div
+									class="ferry-service-preview"
+									data-ferry-draft-status={ferryPreview.status}
+								>
+									{#if ferryPreview.summary}{@const summary = ferryPreview.summary}<strong
+											>{summary.name}</strong
+										>
+										<div class="ferry-plan-metrics">
+											<span><b>{Math.round(summary.crossing_minutes)} min</b>estimated sailing</span
+											><span><b>{summary.departures_each_direction}</b>departures each way</span
+											><span><b>MVR 0</b>new port construction</span>
+										</div>
+										<p class="ferry-landing-names">
+											{summary.origin_terminal.name}
+											<ArrowRight size={12} />
+											{summary.destination_terminal.name}
+										</p>
+										<small>{summary.qualification}</small>{/if}
+									{#each ferryPreview.reasons as reason, i (i)}<p>{reason}</p>{/each}
+									{#if ferryPreview.quote}<div class="ferry-cost-preview">
+											<span>Proposal total with this service</span>
+											<p>
+												<strong
+													>MVR {formatAmount(
+														ferryPreview.quote.economics.delta.capital_mvr,
+														true
+													)}</strong
+												> upfront
+											</p>
+											<p>
+												<strong
+													>MVR {formatAmount(
+														ferryPreview.quote.economics.delta.annual_operating_mvr,
+														true
+													)}</strong
+												> per year
+											</p>
+										</div>
+										{#if !ferryPreview.quote.budget.allowed}<p
+												class="policy-budget-alert"
+												role="alert"
+											>
+												{ferryPreview.quote.budget.reasons.join(' ')}
+											</p>{/if}{/if}
+									{#if operations.length + ferryPreview.operations.length > 100}<p
+											class="policy-budget-alert"
+											role="alert"
+										>
+											Remove a change before adding this service; the proposal has a 100-change
+											limit.
+										</p>{/if}
+									<Button disabled={!ferryAllowed} onclick={confirmFerry}
+										><Check size={15} />Add ferry service to proposal</Button
+									>
+								</div>{/if}
+							<p class="ferry-no-construction">
+								This funds a ferry service, using mapped landing places. It does not build a port.
+								Landing suitability and permissions still need confirmation.
+							</p>
+						</section>{/if}
 					{#if pending}<p class="policy-placement-hint" role="status">
 							Your {pendingDecision?.label.toLowerCase()} is on the map. Drag its pin to adjust, then
 							confirm or cancel above it.
 						</p>{/if}
 					{#if operations.length}<div class="policy-draft-heading">
-							<h3>On your map · {operations.length} changes</h3>
+							<h3>On your map · {draftItems.length} changes</h3>
 							<Button
 								variant="ghost"
 								size="icon-sm"
@@ -1534,9 +2093,20 @@
 							>
 						</div>
 						<ol class="policy-operation-list">
-							{#each operations as operation, i (i)}<li>
+							{#each draftItems as { operation, index: i }, rowNumber (i)}<li>
 									<button onclick={() => focusOperation(i)}
-										><span>{i + 1}</span><strong>{operationName(operation)}</strong></button
+										><span>{operation.metadata?.ui_ferry_summary ? '↔' : rowNumber + 1}</span
+										><strong
+											>{operation.metadata?.ui_ferry_summary
+												? String(
+														(
+															operation.metadata.ui_ferry_summary as NonNullable<
+																FerryDraft['summary']
+															>
+														).name
+													)
+												: operationName(operation)}</strong
+										></button
 									><Button
 										variant="ghost"
 										size="icon-sm"
@@ -1547,16 +2117,33 @@
 						</ol>{:else}<p class="policy-empty">
 							Your map is the canvas. Add a location or generate a draft to start comparing.
 						</p>{/if}
+					{#if draftedFerries.length}<div class="policy-ferry-outcome">
+							<Ship size={18} />
+							<div>
+								<strong
+									>{draftedFerries.length} ferry service{draftedFerries.length === 1 ? '' : 's'} in your
+									proposal</strong
+								>{#each draftedFerries as ferry, i (i)}<p>
+										{ferry.name} · {ferry.departures_each_direction} departures each way · {Math.round(
+											ferry.crossing_minutes
+										)} min estimated sailing
+									</p>{/each}<small
+									>The route is shown on the map. The forecast below measures walking to public
+									transport, healthcare or education separately from the island connection.</small
+								>
+							</div>
+						</div>{/if}
 					<div class="policy-forecast-goal">
 						<Label for="map-goal">Compare residents' access to</Label><select
 							id="map-goal"
-							bind:value={goal}
-							><option value="healthcare">Healthcare</option><option value="education"
-								>Education</option
-							></select
+							value={goal}
+							onchange={(event) => setGoal(event.currentTarget.value as typeof goal)}
+							><option value="transport">Public transport · walking access</option><option
+								value="healthcare">Healthcare</option
+							><option value="education">Education</option></select
 						><small
-							>Transport changes affect this journey. A mixed proposal can be reviewed for either
-							destination.</small
+							>Public transport measures walking to a mapped stop or ferry landing place.
+							Island-to-island service connections are reviewed separately.</small
 						>
 					</div>
 					<details class="policy-evidence-note">
@@ -1599,7 +2186,11 @@
 			{#if section === 'proposal' && operations.length}<footer>
 					<div class="policy-live-benefit" aria-live="polite">
 						<span
-							>{goal === 'healthcare' ? 'Healthcare' : 'Education'} within {targetMinutes} min</span
+							>{goal === 'transport'
+								? 'Walk to public transport'
+								: goal === 'healthcare'
+									? 'Healthcare'
+									: 'Education'} within {targetMinutes} min</span
 						><strong
 							>{calculating || stale
 								? 'Updating access…'
@@ -1626,7 +2217,7 @@
 							: null}
 						pending={calculating}
 						{stale}
-						operationCount={operations.length}
+						operationCount={draftItems.length}
 						onReview={() => {
 							review = true;
 							if (!evaluation || stale) void evaluate();
@@ -1942,6 +2533,294 @@
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 7px;
+	}
+	.policy-ferry-entry {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 13px;
+		border: 1px solid #c8dfe2;
+		border-radius: 11px;
+		background: #eff7f8;
+		color: #245c6b;
+		text-align: left;
+		transition:
+			background 150ms ease,
+			border-color 150ms ease;
+	}
+	.policy-ferry-entry:hover,
+	.policy-ferry-entry.active {
+		background: #e5f2f4;
+		border-color: #7eafb7;
+	}
+	.policy-ferry-entry:disabled {
+		opacity: 0.5;
+	}
+	.policy-ferry-entry > span {
+		flex: 1;
+		display: grid;
+		gap: 4px;
+	}
+	.policy-ferry-entry strong {
+		font-size: 12px;
+		font-weight: 650;
+	}
+	.policy-ferry-entry small {
+		font-size: 10px;
+		line-height: 1.5;
+		color: #5f7c83;
+	}
+	.policy-ferry-composer {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		padding: 15px;
+		border: 1px solid #c7dde0;
+		border-radius: 12px;
+		background: #fbfefe;
+		min-width: 0;
+	}
+	.policy-ferry-composer > header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+	}
+	.policy-ferry-composer h3 {
+		font-size: 15px;
+		font-weight: 650;
+		margin: 4px 0 0;
+		color: #254d58;
+	}
+	.policy-ferry-composer .eyebrow {
+		color: #68868b;
+		font-size: 8px;
+	}
+	.ferry-origin {
+		margin: 0;
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		font-size: 12px;
+		color: #5b747b;
+	}
+	.ferry-origin strong {
+		color: #254d58;
+	}
+	.ferry-destination,
+	.ferry-service-fields {
+		display: flex;
+		flex-direction: column;
+		gap: 9px;
+		min-width: 0;
+	}
+	.ferry-selected-destination {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		background: #fff;
+		padding: 10px;
+		border: 1px solid #c4d9dd;
+		border-radius: 8px;
+		font-size: 12px;
+		text-align: left;
+		color: #295e6c;
+	}
+	.ferry-selected-destination strong {
+		flex: 1;
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+	.ferry-selected-destination > span {
+		font-size: 10px;
+		color: #63868e;
+	}
+	.ferry-island-results {
+		border: 1px solid #dce8e9;
+		border-radius: 8px;
+		max-height: 218px;
+		overflow-y: auto;
+		background: #fff;
+	}
+	.ferry-island-results > button {
+		width: 100%;
+		display: flex;
+		gap: 8px;
+		align-items: center;
+		padding: 9px 10px;
+		font-size: 12px;
+		color: #305563;
+		text-align: left;
+		border-bottom: 1px solid #edf2f2;
+	}
+	.ferry-island-results > button:hover {
+		background: #eef7f7;
+	}
+	.ferry-island-results > button > span {
+		display: grid;
+		gap: 3px;
+		flex: 1;
+	}
+	.ferry-island-results small {
+		font-size: 9px;
+		color: #7a8f94;
+	}
+	.ferry-island-results > p {
+		font-size: 11px;
+		color: #6c8186;
+		padding: 10px;
+		margin: 0;
+		line-height: 1.6;
+	}
+	.ferry-progress {
+		display: flex;
+		gap: 7px;
+		align-items: center;
+		color: #567781;
+		font-size: 11px;
+		line-height: 1.6;
+		margin: 0;
+	}
+	.ferry-connection {
+		border-left: 3px solid #c0a76b;
+		background: #faf6ed;
+		padding: 11px;
+		border-radius: 0 8px 8px 0;
+	}
+	.ferry-connection.verified {
+		border-color: #4e9d86;
+		background: #eef7f3;
+	}
+	.ferry-connection > strong {
+		font-size: 11px;
+		font-weight: 650;
+		line-height: 1.6;
+		color: #665d44;
+	}
+	.ferry-connection p,
+	.ferry-service-preview > p {
+		font-size: 10px;
+		line-height: 1.7;
+		color: #73776b;
+		margin: 5px 0 0;
+	}
+	.ferry-terminal-evidence {
+		display: grid;
+		gap: 8px;
+		margin-top: 10px;
+		padding-top: 9px;
+		border-top: 1px solid #e2e4d7;
+	}
+	.ferry-terminal-evidence > span {
+		display: flex;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 4px 8px;
+		font-size: 10px;
+		color: #6f776d;
+	}
+	.ferry-terminal-evidence b {
+		font-size: 9px;
+		font-weight: 550;
+	}
+	.ferry-service-fields > div:first-child {
+		display: grid;
+		gap: 7px;
+	}
+	.ferry-service-preview {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding-top: 13px;
+		border-top: 1px solid #d7e5e7;
+	}
+	.ferry-service-preview > strong {
+		font-size: 12px;
+		color: #305867;
+	}
+	.ferry-plan-metrics {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 7px;
+	}
+	.ferry-plan-metrics span {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		font-size: 9px;
+		color: #71888d;
+		line-height: 1.5;
+	}
+	.ferry-plan-metrics b {
+		font-size: 17px;
+		font-weight: 650;
+		color: #285e6c;
+		letter-spacing: -0.5px;
+		font-variant-numeric: tabular-nums;
+	}
+	.ferry-service-preview .ferry-landing-names {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 5px;
+		margin: 0;
+		color: #4e717b;
+	}
+	.ferry-service-preview > small,
+	.ferry-no-construction {
+		font-size: 10px;
+		line-height: 1.7;
+		color: #788a8c;
+		margin: 0;
+	}
+	.ferry-cost-preview {
+		display: grid;
+		gap: 5px;
+		padding: 11px;
+		background: #edf5f6;
+		border-radius: 8px;
+	}
+	.ferry-cost-preview > span {
+		font-size: 9px;
+		color: #6e8389;
+	}
+	.ferry-cost-preview p {
+		margin: 0;
+		font-size: 10px;
+		color: #67808a;
+	}
+	.ferry-cost-preview strong {
+		font-size: 13px;
+		font-variant-numeric: tabular-nums;
+		color: #315e6b;
+	}
+	.policy-ferry-outcome {
+		display: flex;
+		gap: 10px;
+		align-items: flex-start;
+		padding: 12px;
+		background: #eef6f7;
+		border: 1px solid #d7e6e9;
+		border-radius: 10px;
+		color: #3a6974;
+	}
+	.policy-ferry-outcome > :global(svg) {
+		flex-shrink: 0;
+		margin-top: 2px;
+	}
+	.policy-ferry-outcome strong {
+		font-size: 11px;
+	}
+	.policy-ferry-outcome p {
+		font-size: 10px;
+		line-height: 1.7;
+		margin: 5px 0;
+	}
+	.policy-ferry-outcome small {
+		font-size: 9px;
+		line-height: 1.7;
+		color: #788e93;
+		display: block;
 	}
 	.policy-palette button {
 		display: flex;
@@ -2363,6 +3242,9 @@
 		}
 		.policy-map-panel > header {
 			padding: 10px 16px 8px;
+		}
+		.policy-map-panel.ferry-composing {
+			max-height: min(58%, 520px);
 		}
 		.policy-map-panel h2 {
 			font-size: 19px;

@@ -41,11 +41,13 @@
 		summary,
 		features,
 		onExplore,
+		onConnections,
 		onForecast
 	}: {
 		summary: NationalSummary | null;
 		features: MapFeatures | null;
 		onExplore: (islandId?: string, atoll?: string, lens?: PolicyLens) => void;
+		onConnections?: (islandId?: string) => void;
 		onForecast?: () => void;
 	} = $props();
 	let accessibility = $state<NationalAccessibility | null>(null);
@@ -686,7 +688,7 @@
 		>
 	{/if}
 
-	<PolicyOpportunityOverview atoll={selectedAtoll} {cohort} {onExplore} />
+	<PolicyOpportunityOverview atoll={selectedAtoll} {cohort} {onExplore} {onConnections} />
 
 	<details class="inventory-disclosure">
 		<summary

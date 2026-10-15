@@ -118,19 +118,54 @@ def card(drawing: Drawing, x: float, y: float, width: float, height: float, colo
     drawing.add(Rect(x, y, width, height, rx=radius, ry=radius, fillColor=color, strokeColor=None))
 
 
-def benefit_cards(summary: dict[str, Any], delta: dict[str, Any], width: float) -> Drawing:
-    """A resident outcome first, with actual cost inputs in supporting cards."""
+def benefit_cards(
+    summary: dict[str, Any],
+    delta: dict[str, Any],
+    width: float,
+    ferry_services: list[dict[str, Any]] | None = None,
+) -> Drawing:
+    """Lead with the proposal's service outcome, keeping resident access separate."""
     drawing = Drawing(width, 185)
     card(drawing, 0, 65, width, 120, INK)
-    chart_text(drawing, 20, 160, "RESIDENTS GAINING TARGET ACCESS", 8, LIME, True)
-    chart_text(drawing, 18, 101, amount(summary.get("gained_residents")), 48, colors.white, True)
-    chart_text(drawing, 20, 81, "Newly within the selected journey-time target", 9, colors.white)
+    if ferry_services:
+        service_count = len({service.get("routeId") or service["id"] for service in ferry_services})
+        departures = sum(
+            len(service.get("timing", {}).get("trips", [])) for service in ferry_services
+        )
+        chart_text(
+            drawing,
+            20,
+            160,
+            "NEW FERRY SERVICE" + ("S" if service_count != 1 else ""),
+            8,
+            LIME,
+            True,
+        )
+        chart_text(drawing, 18, 101, amount(service_count), 48, colors.white, True)
+        chart_text(
+            drawing,
+            20,
+            81,
+            f"{departures} planned departures, including return sailings, on the selected date",
+            9,
+            colors.white,
+        )
+    else:
+        chart_text(drawing, 20, 160, "RESIDENTS GAINING TARGET ACCESS", 8, LIME, True)
+        chart_text(
+            drawing, 18, 101, amount(summary.get("gained_residents")), 48, colors.white, True
+        )
+        chart_text(
+            drawing, 20, 81, "Newly within the selected journey-time target", 9, colors.white
+        )
     gap, cell_width = 10, (width - 20) / 3
     for index, (label, value) in enumerate(
         (
             ("ONE-TIME ADDED CAPITAL", f"MVR {compact_amount(delta.get('capital_mvr'))}"),
             ("ADDED ANNUAL OPERATING", f"MVR {compact_amount(delta.get('annual_operating_mvr'))}"),
-            ("SUPPORTED RESIDENTS", amount(summary.get("population"))),
+            ("RESIDENT ACCESS GAIN", amount(summary.get("gained_residents")))
+            if ferry_services
+            else ("SUPPORTED RESIDENTS", amount(summary.get("population"))),
         )
     ):
         x = index * (cell_width + gap)
@@ -314,7 +349,10 @@ def fiscal_chart(capital: Any, annual: Any, width: float) -> Drawing:
 
 
 def proposal_map(
-    payload: PlanningRequest, baseline: dict[str, Any], width: float
+    payload: PlanningRequest,
+    baseline: dict[str, Any],
+    width: float,
+    world_stops: dict[str, Any] | None = None,
 ) -> Drawing | None:
     """Local road geometry and numbered proposal sites; no fabricated basemap imagery."""
     edges = [edge.get("geometry") or [] for edge in baseline.get("graph_edges", [])]
@@ -322,8 +360,45 @@ def proposal_map(
         (index, operation.coordinates)
         for index, operation in enumerate(payload.operations, 1)
         if operation.coordinates
+        and not (
+            operation.type == "add_service" and (operation.service or {}).get("mode") == "ferry"
+        )
     ]
-    points = [point for line in edges for point in line] + [point for _, point in sites]
+    seen_terminals = set()
+    for index, operation in enumerate(payload.operations, 1):
+        if operation.type != "use_existing_ferry_terminal" or operation.target_id in seen_terminals:
+            continue
+        seen_terminals.add(operation.target_id)
+        terminal = (world_stops or {}).get(operation.target_id, {})
+        point = terminal.get("coordinate") or [terminal.get("lon"), terminal.get("lat")]
+        if not operation.coordinates and all(isinstance(value, (int, float)) for value in point):
+            sites.append((index, point))
+
+    def map_features(operation):
+        value = operation.metadata.get("ui_map_features", [])
+        if isinstance(value, dict):
+            value = value.get("features", [])
+        return value if isinstance(value, list) else []
+
+    corridors = [
+        feature["geometry"]["coordinates"]
+        for operation in payload.operations
+        for feature in map_features(operation)
+        if isinstance(feature, dict) and feature.get("geometry", {}).get("type") == "LineString"
+    ]
+    for index, operation in enumerate(payload.operations, 1):
+        if operation.type == "use_existing_ferry_terminal" or (
+            operation.type == "add_service" and (operation.service or {}).get("mode") == "ferry"
+        ):
+            continue
+        for feature in map_features(operation):
+            geometry = feature.get("geometry", {}) if isinstance(feature, dict) else {}
+            coordinates = geometry.get("coordinates", [])
+            if geometry.get("type") == "LineString" and len(coordinates) >= 2:
+                sites.extend([(index, coordinates[0]), (index, coordinates[-1])])
+    # Shared landings and outbound/return corridors must not stack numbered markers.
+    sites = list({tuple(point): (index, point) for index, point in reversed(sites)}.values())
+    points = [point for line in edges + corridors for point in line] + [point for _, point in sites]
     points = [
         point
         for point in points
@@ -369,6 +444,16 @@ def proposal_map(
                     [value for point in line for value in xy(point)],
                     strokeColor=colors.HexColor("#c5d1c7"),
                     strokeWidth=0.45,
+                )
+            )
+    for corridor in corridors:
+        if len(corridor) >= 2:
+            drawing.add(
+                PolyLine(
+                    [value for point in corridor for value in xy(point)],
+                    strokeColor=TEAL,
+                    strokeWidth=2,
+                    strokeDashArray=[5, 3],
                 )
             )
     for number, point in sites:
@@ -493,11 +578,25 @@ def build_planning_report(
     delta = economics.get("delta") or {}
     budget = economics.get("budget") or {}
     bands = evaluation.get("travel_time_bands") or {}
+    proposed_ferries = [
+        operation
+        for operation in payload.operations
+        if operation.type == "add_service" and (operation.service or {}).get("mode") == "ferry"
+    ]
+    world_stops = {stop["id"]: stop for stop in evaluation.get("world", {}).get("stops", [])}
+    terminal_sites: dict[str, str] = {}
+    for index, operation in enumerate(payload.operations, 1):
+        if operation.type == "use_existing_ferry_terminal":
+            terminal_sites.setdefault(operation.target_id, str(index))
     scoped_names = [
         island.get("name", island["id"]) for island in (baseline or {}).get("islands", [])
     ]
     scope = ", ".join(scoped_names) or payload.island_id or "National supported resident areas"
-    goal = "education" if a.goal == "education" else "healthcare"
+    goal = {
+        "education": "education",
+        "healthcare": "healthcare",
+        "transport": "mapped public transport boarding points",
+    }[a.goal]
     population = finite(summary.get("population"))
 
     def share(value: Any) -> str:
@@ -514,11 +613,16 @@ def build_planning_report(
             "Note",
         ),
         p(
-            f"What changes when your proposal brings {goal} within "
+            "Connect islands with a new ferry service using existing landing points. "
+            "Review planned sailings and investment, with resident access measured separately."
+            if proposed_ferries
+            else f"What changes when your proposal brings {goal} within "
             f"{a.target_minutes:g} minutes of more residents?"
         ),
         Spacer(1, 5),
-        benefit_cards(summary, delta, available),
+        benefit_cards(
+            summary, delta, available, [operation.service for operation in proposed_ferries]
+        ),
         p(f"Access to {goal}, before and after", "Section"),
         access_comparison(summary, available),
         Spacer(1, 5),
@@ -634,7 +738,7 @@ def build_planning_report(
             + ". Numbered sites connect the map to the change list below.",
         )
     )
-    site_map = proposal_map(payload, baseline or {}, available)
+    site_map = proposal_map(payload, baseline or {}, available, world_stops)
     if site_map:
         story.extend(
             [
@@ -642,7 +746,10 @@ def build_planning_report(
                 Spacer(1, 7),
                 p(
                     "Numbered proposed sites on the source-backed walking-road network. "
-                    "Numbers match the change list below. This overview does not certify "
+                    "Dashed ferry corridors connect existing terminals and are planning "
+                    "assumptions, not charted navigation routes. "
+                    "Numbers mark locations in the change list; ferry rows refer to those "
+                    "landing numbers. This overview does not certify "
                     "land ownership, construction feasibility or a transport route.",
                     "Note",
                 ),
@@ -665,17 +772,85 @@ def build_planning_report(
                 operation.get("name") or service.get("name") or operation["type"].replace("_", " ")
             )
             details = [name, operation["type"].replace("_", " ")]
+            site_label = str(index)
+            if operation["type"] == "use_existing_ferry_terminal":
+                site_label = terminal_sites[operation["target_id"]]
+                terminal = world_stops.get(operation.get("target_id"), {})
+                details = [
+                    terminal.get("name", "Existing ferry landing"),
+                    "Use the existing landing. New terminal construction: MVR 0.",
+                ]
+            elif operation["type"] == "add_service" and service.get("mode") == "ferry":
+                landing_numbers = [
+                    terminal_sites.get(identity) for identity in service.get("stopIds", [])
+                ]
+                site_label = (
+                    " to ".join(landing_numbers)
+                    if landing_numbers and all(landing_numbers)
+                    else "Service"
+                )
+                direction = (
+                    "Return sailings" if service["id"].endswith(":return") else "Outward sailings"
+                )
+                details = [
+                    name,
+                    direction,
+                    f"{len(service.get('timing', {}).get('trips', []))} planned departures "
+                    f"on {a.date.isoformat()}.",
+                ]
             if operation.get("coordinates"):
                 lon, lat = operation["coordinates"]
                 details.append(f"Map location: {lat:.6f} latitude, {lon:.6f} longitude")
-            if operation.get("target_id"):
+            if operation.get("target_id") and operation["type"] != "use_existing_ferry_terminal":
                 details.append(f"Target: {operation['target_id']}")
             if operation.get("opening_date"):
                 details.append(f"Opening date: {operation['opening_date']}")
-            operation_rows.append([str(index), "\n".join(details)])
+            operation_rows.append([site_label, "\n".join(details)])
         story.append(table(operation_rows, [available * 0.11, available * 0.89]))
     else:
         story.append(p("No interventions. This report describes the unchanged baseline."))
+    transport = evaluation.get("transport_connectivity", {})
+    if proposed_ferries:
+        rows = [["Ferry service", "Existing landing points", "Assumed crossing", "Departures"]]
+        for operation in proposed_ferries:
+            service = operation.service or {}
+            trips = service.get("timing", {}).get("trips", [])
+            first_trip = trips[0].get("stopTimes", []) if trips else []
+            crossing = (
+                first_trip[-1]["arrivalMinutes"] - first_trip[0]["departureMinutes"]
+                if first_trip
+                else None
+            )
+            landings = " to ".join(
+                world_stops.get(identity, {}).get("name", identity)
+                for identity in service.get("stopIds", [])
+            )
+            rows.append(
+                [
+                    service.get("name", "Proposed ferry"),
+                    landings,
+                    f"{amount(crossing)} min",
+                    str(len(trips)),
+                ]
+            )
+        story.extend(
+            [
+                p("Public transport and island connections", "Section"),
+                table(
+                    rows, [available * 0.27, available * 0.37, available * 0.19, available * 0.17]
+                ),
+                p(
+                    "New terminal / port construction: MVR 0. Existing source-mapped "
+                    "landing points are reused. Capital includes illustrative vessel "
+                    "procurement; annual operation and fleet reserve are included in the "
+                    "investment figures. Sailing times and corridor distances are "
+                    "assumptions. Confirm berth access, permissions, navigational safety, "
+                    "vessel suitability and demand before approval.",
+                    "Note",
+                ),
+                p(transport.get("after", {}).get("qualification", ""), "Note"),
+            ]
+        )
     story.extend(
         [
             p("Fleet and environmental implications", "Section"),
@@ -720,7 +895,13 @@ def build_planning_report(
                     "meaning", "Coverage information unavailable."
                 )
             ),
-            p(evaluation.get("access_method") or "Access method unavailable."),
+            p(
+                "Shortest walking time to mapped public transport boarding points on the "
+                "available walking network. This access measure excludes scheduled waits, "
+                "sailing times and transfers; service connections are reviewed separately."
+                if a.goal == "transport"
+                else evaluation.get("access_method") or "Access method unavailable."
+            ),
         ]
     )
     warnings = (evaluation.get("warnings") or []) + (economics.get("warnings") or [])
@@ -891,6 +1072,7 @@ def build_planning_report(
                 for key in (
                     "summary",
                     "travel_time_bands",
+                    "transport_connectivity",
                     "economics",
                     "island_summaries",
                     "coverage",

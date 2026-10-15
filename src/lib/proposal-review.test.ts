@@ -4,7 +4,9 @@ import {
 	finiteValue,
 	fiscalProjections,
 	formatAmount,
-	operationName
+	operationName,
+	proposedFerryServiceGroups,
+	type TransportConnectivitySummary
 } from './proposal-review.js';
 
 describe('decision brief arithmetic', () => {
@@ -39,5 +41,43 @@ describe('decision brief arithmetic', () => {
 		expect(
 			operationName({ type: 'add_service', service: { name: 'North island school bus' } })
 		).toBe('North island school bus');
+	});
+});
+
+describe('ferry connection report', () => {
+	const line = (islands: string[], departures = 8) => ({
+		id: islands.join(':'),
+		name: 'Island ferry',
+		mode: 'ferry',
+		island_ids: islands,
+		departure_count: departures,
+		proposed: true,
+		inter_island: true
+	});
+	const summary = (lines: TransportConnectivitySummary['lines']): TransportConnectivitySummary => ({
+		service_date: '2026-10-10',
+		lines,
+		inter_island_lines: lines.length,
+		ferry_lines: lines.length,
+		islands_connected: ['island:1', 'island:2'],
+		qualification: 'Modeled service'
+	});
+	it('counts one return service and its outward plus return departures', () => {
+		const routes = proposedFerryServiceGroups(
+			summary([line(['island:1', 'island:2']), line(['island:2', 'island:1'], 7)])
+		);
+		expect(routes).toHaveLength(1);
+		expect(routes[0]).toMatchObject({ departures: 15, returnService: true });
+	});
+	it('does not label repeated outward schedules or existing ferries as a proposed return service', () => {
+		const routes = proposedFerryServiceGroups(
+			summary([
+				line(['island:1', 'island:2']),
+				line(['island:1', 'island:2']),
+				{ ...line(['island:2', 'island:1']), proposed: false }
+			])
+		);
+		expect(routes).toHaveLength(1);
+		expect(routes[0]).toMatchObject({ departures: 16, returnService: false });
 	});
 });

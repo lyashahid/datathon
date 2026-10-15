@@ -288,7 +288,9 @@ def economics(
             }
         )
     new_stops = len(
-        {s["id"] for s in after["stops"]}.difference({s["id"] for s in before["stops"]})
+        {s["id"] for s in after["stops"] if not s.get("reusedInfrastructure")}.difference(
+            {s["id"] for s in before["stops"]}
+        )
     )
     capital = new_stops * costs["stop_capital_mvr"]
     old_facilities = {f["id"] for f in before["facilities"]}

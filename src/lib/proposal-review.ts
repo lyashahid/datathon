@@ -45,6 +45,10 @@ export type PlanningEvaluation = {
 		after: { label: string; residents: number | null }[];
 	};
 	economics: PlanningEconomics;
+	transport_connectivity?: {
+		before: TransportConnectivitySummary;
+		after: TransportConnectivitySummary;
+	};
 	warnings: string[];
 	coverage: { service_date?: string; bus_calendar?: string; meaning: string };
 	assumptions: unknown;
@@ -53,6 +57,60 @@ export type PlanningEvaluation = {
 	population_basis: string | null;
 	access_method: string;
 };
+
+export type TransportConnectivitySummary = {
+	service_date: string;
+	lines: {
+		id: string;
+		name: string;
+		mode: string;
+		island_ids: string[];
+		departure_count: number;
+		proposed: boolean;
+		inter_island: boolean;
+	}[];
+	inter_island_lines: number;
+	ferry_lines: number;
+	islands_connected: string[];
+	qualification: string;
+};
+
+/** Group directional schedules, without mistaking a one-way service for a return journey. */
+export function proposedFerryServiceGroups(summary: TransportConnectivitySummary | undefined) {
+	const routes = new Map<
+		string,
+		{
+			key: string;
+			name: string;
+			departures: number;
+			returnService: boolean;
+			directions: string[][];
+		}
+	>();
+	for (const line of summary?.lines ?? []) {
+		if (line.mode !== 'ferry' || !line.proposed) continue;
+		const key = `${line.name}:${[...line.island_ids].sort().join(':')}`;
+		const previous = routes.get(key);
+		if (previous) {
+			previous.departures += line.departure_count;
+			previous.returnService ||= previous.directions.some(
+				(direction) =>
+					direction.length > 1 &&
+					direction[0] === line.island_ids.at(-1) &&
+					direction.at(-1) === line.island_ids[0]
+			);
+			previous.directions.push(line.island_ids);
+		} else
+			routes.set(key, {
+				key,
+				name: line.name,
+				departures: line.departure_count,
+				returnService: false,
+				directions: [line.island_ids]
+			});
+	}
+	return [...routes.values()];
+}
 
 export function finiteValue(value: unknown): number | null {
 	return typeof value === 'number' && Number.isFinite(value) ? value : null;
@@ -92,6 +150,7 @@ const operationLabels: Record<string, string> = {
 	add_hospital: 'New hospital',
 	add_school: 'New school',
 	add_stop: 'New transport stop',
+	use_existing_ferry_terminal: 'Use existing ferry landing place',
 	move_stop: 'Move transport stop',
 	add_service: 'New transport service',
 	replace_service: 'Replace transport service',

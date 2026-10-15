@@ -37,9 +37,9 @@ def _recording_app(failures=None):
 
 @pytest.mark.parametrize(
     ("include_analysis", "include_planning", "expected_count"),
-    [(False, False, 4), (True, False, 7), (False, True, 20), (True, True, 23)],
+    [(False, False, 4), (True, False, 7), (False, True, 26), (True, True, 29)],
 )
-async def test_warmup_covers_selected_work_and_all_six_planning_baselines(
+async def test_warmup_covers_selected_work_and_all_nine_planning_baselines(
     include_analysis, include_planning, expected_count
 ):
     app, calls = _recording_app()
@@ -62,11 +62,11 @@ async def test_warmup_covers_selected_work_and_all_six_planning_baselines(
     posts = [(key, body) for key, body in calls if key[0] == "POST"]
     if include_planning:
         assert ("/api/v1/planning/opportunities", "include_geometry=false") in gets
-        assert len(posts) == 6
+        assert len(posts) == 9
         assert {(body["island_id"], body["assumptions"]["goal"]) for _, body in posts} == {
             (f"island:{island}", goal)
             for island in ("1443", "1442", "1382")
-            for goal in ("healthcare", "education")
+            for goal in ("healthcare", "education", "transport")
         }
         for key, body in posts:
             assert key[1] == "/api/v1/planning/evaluate"
@@ -74,10 +74,16 @@ async def test_warmup_covers_selected_work_and_all_six_planning_baselines(
             assert body["assumptions"]["include_origin_geometry"] is False
             assert body["assumptions"]["include_journey_geometry"] is False
             assert body["assumptions"]["include_world"] is False
+            if body["assumptions"]["goal"] == "transport":
+                assert body["assumptions"]["target_minutes"] == 10
         for island in ("1443", "1442", "1382"):
             assert ("/api/v1/planning/baseline", f"island_id=island%3A{island}") in gets
             assert (f"/api/v1/planning/opportunities/island:{island}", "") in gets
             assert (f"/api/v1/islands/island:{island}/profile", "") in gets
+            assert (
+                "/api/v1/planning/connectivity",
+                f"origin_island_id=island%3A{island}",
+            ) in gets
     else:
         assert posts == []
 
@@ -114,15 +120,15 @@ async def test_background_sweep_isolates_failures_then_retries_each_once(caplog)
         retry_delay=0,
     )
 
-    assert len(rows) == 23
-    assert len(calls) == 25
-    assert {key[1] for key, _ in calls[23:]} == {"/api/v1/forecasts/analysis", "/api/v1/datasets"}
+    assert len(rows) == 29
+    assert len(calls) == 31
+    assert {key[1] for key, _ in calls[29:]} == {"/api/v1/forecasts/analysis", "/api/v1/datasets"}
     by_name = {row["name"]: row for row in rows}
     assert by_name["data_analysis"]["status"] == "ready"
     assert by_name["data_analysis"]["attempts"] == 2
     assert by_name["datasets"]["status"] == "failed"
     assert by_name["datasets"]["attempts"] == 2
-    assert sum(row["status"] == "ready" for row in rows) == 22
+    assert sum(row["status"] == "ready" for row in rows) == 28
     assert private_detail not in json.dumps(rows)
     assert private_detail not in caplog.text
 
@@ -166,7 +172,7 @@ def _startup_app():
 async def test_automatic_precompute_enables_full_sweep_and_records_result(monkeypatch, failed_jobs):
     rows = [
         {"name": f"ready_{index}", "status": "ready", "attempts": 1}
-        for index in range(23 - len(failed_jobs))
+        for index in range(29 - len(failed_jobs))
     ]
     rows.extend({"name": name, "status": "failed", "attempts": 2} for name in failed_jobs)
     warm = AsyncMock(return_value=rows)
@@ -184,8 +190,8 @@ async def test_automatic_precompute_enables_full_sweep_and_records_result(monkey
     app.state.computed_cache.mirror_public_results.assert_awaited_once()
     assert app.state.precompute == {
         "status": "partial" if failed_jobs else "ready",
-        "completed": 23 - len(failed_jobs),
-        "total": 23,
+        "completed": 29 - len(failed_jobs),
+        "total": 29,
         "failed_jobs": failed_jobs,
     }
 

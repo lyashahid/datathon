@@ -5,7 +5,7 @@ export function apiCachePolicy(path: string) {
 	if (pathname === 'forecasts' && path.split('?')[1] === 'history_only=true')
 		return { maxAge: 60_000, persistent: true };
 	if (
-		/^(?:national\/summary|map\/features|accessibility\/(?:summary|score)|islands(?:\/[^/]+(?:\/profile)?)?|routing\/stops|planning\/(?:baseline|opportunities(?:\/[^/]+)?))$/.test(
+		/^(?:national\/summary|map\/features|accessibility\/(?:summary|score)|islands(?:\/[^/]+(?:\/profile)?)?|routing\/stops|planning\/(?:baseline|connectivity|opportunities(?:\/[^/]+)?))$/.test(
 			pathname
 		)
 	)

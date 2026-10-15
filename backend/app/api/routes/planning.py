@@ -1,12 +1,14 @@
 """Planning policy endpoints, with no mutation of national source data."""
 
 import json
+from datetime import date as ServiceDate
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
+from app.api.routes.data_updates import get_service as get_data_updates
 from app.planning.calibration import (
     FACTOR_UNITS,
     CalibrationImport,
@@ -19,6 +21,7 @@ from app.planning.models import JourneyRequest, PlanningRequest
 from app.planning.opportunities import BudgetSuggestionRequest, OpportunityService
 from app.planning.repository import PlanningRepository
 from app.planning.service import PlanningService
+from app.planning.transport import FerryServiceRequest, TransportPlanningService
 
 router = APIRouter(prefix="/api/v1/planning", tags=["policy-planning"])
 
@@ -76,6 +79,45 @@ def default_service() -> PlanningService:
 
 def get_planning(request: Request) -> PlanningService:
     return getattr(request.app.state, "planning", None) or default_service()
+
+
+def get_transport_planning(
+    request: Request, planning: PlanningService = Depends(get_planning)
+) -> TransportPlanningService:
+    existing = getattr(request.app.state, "transport_planning", None)
+    if existing is None or existing.planning is not planning:
+        existing = TransportPlanningService(
+            request.app.state.repository,
+            request.app.state.routing,
+            planning,
+            get_data_updates(request),
+        )
+        request.app.state.transport_planning = existing
+    return existing
+
+
+@router.get("/connectivity")
+def transport_connectivity(
+    origin_island_id: str,
+    destination_island_id: str | None = None,
+    date: ServiceDate = Query(default=ServiceDate(2026, 10, 10)),
+    service: TransportPlanningService = Depends(get_transport_planning),
+) -> dict[str, Any]:
+    try:
+        return service.connectivity(origin_island_id, destination_island_id, date)
+    except (ValueError, KeyError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@router.post("/ferry-service")
+def ferry_service(
+    payload: FerryServiceRequest,
+    service: TransportPlanningService = Depends(get_transport_planning),
+) -> dict[str, Any]:
+    try:
+        return service.ferry_service(payload)
+    except (ValueError, KeyError, TypeError, IndexError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
 
 
 def get_opportunities(
