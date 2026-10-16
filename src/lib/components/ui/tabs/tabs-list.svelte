@@ -20,6 +20,7 @@
 <script lang="ts">
 	import { Tabs as TabsPrimitive } from 'bits-ui';
 	import { cn } from '#lib/utils.js';
+	import { animatedSelection } from '#lib/motion.js';
 
 	let {
 		ref = $bindable(null),
@@ -29,6 +30,10 @@
 	}: TabsPrimitive.ListProps & {
 		variant?: TabsListVariant;
 	} = $props();
+
+	$effect(() => {
+		if (ref) return animatedSelection(ref).destroy;
+	});
 </script>
 
 <TabsPrimitive.List

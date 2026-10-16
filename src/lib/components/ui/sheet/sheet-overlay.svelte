@@ -13,8 +13,14 @@
 	bind:ref
 	data-slot="sheet-overlay"
 	class={cn(
-		'bg-black/10 supports-backdrop-filter:backdrop-blur-xs fixed inset-0 z-50 duration-100 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0',
+		'motion-sheet-overlay bg-black/10 supports-backdrop-filter:backdrop-blur-xs fixed inset-0 z-50 duration-150 ease-out data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 motion-reduce:duration-75',
 		className
 	)}
 	{...restProps}
 />
+
+<style>
+	:global(html[data-motion-input='keyboard'] .motion-sheet-overlay[data-state]) {
+		animation: none;
+	}
+</style>

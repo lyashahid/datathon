@@ -2,6 +2,9 @@
 	import { onMount, tick, untrack } from 'svelte';
 	import { Popover } from 'bits-ui';
 	import { goto } from '$app/navigation';
+	import { animatedSelection, workspaceReveal } from '#lib/motion.js';
+	import { resizable, resetResizable } from '#lib/resizable.js';
+	import { mapPanelLayout } from '#lib/map-panel-layout.js';
 	import {
 		Map as MapIcon,
 		FlaskConical,
@@ -1381,7 +1384,11 @@
 				></a
 			>
 		{/if}
-		<nav aria-label="Workspace" class="navigation-island">
+		<nav
+			aria-label="Workspace"
+			class="navigation-island"
+			use:animatedSelection={{ selector: '[aria-current="page"]' }}
+		>
 			{#each tabs as item (item.id)}
 				{@const active = tab === item.id || (item.id === 'map' && isMapWorkspace)}
 				<Button
@@ -1411,7 +1418,7 @@
 			</div>
 			<Button onclick={() => load()}>Retry connection</Button>
 		</div>{/if}
-	<main id="workspace-content" class="workspace-body" tabindex="-1">
+	<main id="workspace-content" class="workspace-body" tabindex="-1" use:workspaceReveal>
 		{#if tab === 'overview'}<div class="workspace-subnav">
 				<Tabs.Root value={overviewView} onValueChange={setOverviewView}
 					><Tabs.List aria-label="Analytics workspace"
@@ -1790,638 +1797,661 @@
 				class:collapsed={!panelOpen}
 				aria-label="Planning details"
 				bind:this={detailsElement}
+				use:resizable={{
+					key: 'map-details',
+					minWidth: 360,
+					minHeight: 360,
+					maxWidth: 680,
+					breakpoint: 900,
+					edges: ['left', 'bottom', 'bottom-left'],
+					anchor: 'top-right',
+					enabled: panelOpen
+				}}
+				use:mapPanelLayout={panelOpen}
 			>
-				<Card.Root class="context-card">
-					<div class="context-location">
-						<span
-							><MapPin size={14} />{selected
-								? islandName(selected.properties.name, selected.properties.id)
-								: 'Select an island'}<small>{selected?.properties.atoll ?? 'Maldives'}</small></span
-						>
-						<div class="context-window-actions">
-							<Button
-								variant="ghost"
-								size="icon-sm"
-								aria-label={panelExpanded ? 'Restore compact details' : 'Expand planning details'}
-								onclick={() => (panelExpanded = !panelExpanded)}
-								>{#if panelExpanded}<Minimize2 size={16} />{:else}<Maximize2
-										size={16}
-									/>{/if}</Button
-							><Button
-								variant="ghost"
-								size="icon-sm"
-								onclick={() => (panelOpen = false)}
-								aria-label="Collapse island details"><PanelRightClose size={17} /></Button
+				<div class="detail-scroll">
+					<Card.Root class="context-card">
+						<div class="context-location">
+							<span
+								><MapPin size={14} />{selected
+									? islandName(selected.properties.name, selected.properties.id)
+									: 'Select an island'}<small>{selected?.properties.atoll ?? 'Maldives'}</small
+								></span
 							>
+							<div class="context-window-actions">
+								<Button
+									variant="ghost"
+									size="icon-sm"
+									aria-label={panelExpanded ? 'Restore compact details' : 'Expand planning details'}
+									onclick={() => {
+										if (detailsElement) resetResizable(detailsElement);
+										panelExpanded = !panelExpanded;
+									}}
+									>{#if panelExpanded}<Minimize2 size={16} />{:else}<Maximize2
+											size={16}
+										/>{/if}</Button
+								><Button
+									variant="ghost"
+									size="icon-sm"
+									onclick={() => (panelOpen = false)}
+									aria-label="Collapse island details"><PanelRightClose size={17} /></Button
+								>
+							</div>
 						</div>
-					</div>
-					{#if error}<div class="error-banner" role="alert">
-							{error}<Button
-								variant="ghost"
-								size="icon-xs"
-								aria-label="Dismiss error"
-								onclick={() => (error = '')}><X size={14} /></Button
-							>
-						</div>{/if}
-					{#if notice}<div class="notice-banner" role="status">
-							{notice}<Button
-								variant="ghost"
-								size="icon-xs"
-								aria-label="Dismiss notice"
-								onclick={() => (notice = '')}><X size={14} /></Button
-							>
-						</div>{/if}
-					{#if tab === 'explore'}
-						<Tabs.Root bind:value={profileView} onValueChange={setProfileView}>
-							<Tabs.List class="context-tabs">
-								<Tabs.Trigger value="baseline">Island details</Tabs.Trigger>
-								<Tabs.Trigger value="route">Directions</Tabs.Trigger>
-							</Tabs.List>
-							<Tabs.Content value="baseline" class="context-tab-content">
-								{#if profileLoading}<p class="loading-text">
-										Loading island profile…
-									</p>{:else if profile}
-									<div class="panel-intro">
-										<span class="eyebrow">ISLAND PROFILE</span>
-										<h2>{islandName(profile.island.name, profile.island.id)}</h2>
-										<p>The people, services, and connections that shape this place.</p>
-									</div>
-									<div class="profile-stats">
-										<div>
-											<small>Residents · Census 2022</small><strong
-												class:no-census={profile.population.total == null}
-												>{profile.population.total == null
-													? 'No census count'
-													: fmt(profile.population.total)}</strong
-											><span
-												>{profile.population.year
-													? 'Census ' + profile.population.year
-													: 'Outside linked census coverage'}</span
-											>
+						{#if error}<div class="error-banner" role="alert">
+								{error}<Button
+									variant="ghost"
+									size="icon-xs"
+									aria-label="Dismiss error"
+									onclick={() => (error = '')}><X size={14} /></Button
+								>
+							</div>{/if}
+						{#if notice}<div class="notice-banner" role="status">
+								{notice}<Button
+									variant="ghost"
+									size="icon-xs"
+									aria-label="Dismiss notice"
+									onclick={() => (notice = '')}><X size={14} /></Button
+								>
+							</div>{/if}
+						{#if tab === 'explore'}
+							<Tabs.Root bind:value={profileView} onValueChange={setProfileView}>
+								<Tabs.List class="context-tabs">
+									<Tabs.Trigger value="baseline">Island details</Tabs.Trigger>
+									<Tabs.Trigger value="route">Directions</Tabs.Trigger>
+								</Tabs.List>
+								<Tabs.Content value="baseline" class="context-tab-content">
+									{#if profileLoading}<p class="loading-text">
+											Loading island profile…
+										</p>{:else if profile}
+										<div class="panel-intro">
+											<span class="eyebrow">ISLAND PROFILE</span>
+											<h2>{islandName(profile.island.name, profile.island.id)}</h2>
+											<p>The people, services, and connections that shape this place.</p>
 										</div>
-										<div>
-											<small>Official facilities</small><strong
-												>{fmt(profile.infrastructure.total)}</strong
-											><span>{fmt(profile.transport.total)} OSM transport features</span>
-										</div>
-									</div>
-									{#if profile.population.qualification}<p class="population-context">
-											{profile.population.qualification}
-										</p>{/if}
-									<section class="panel-section">
-										<div class="section-title">
-											<h3>Accessibility</h3>
-											<span class="soft-tag">BASELINE</span>
-										</div>
-										{#if profile.accessibility}<div class="access-score">
-												<strong>{profile.accessibility.score.toFixed(1)}<span>/100</span></strong
-												><small
-													>Confidence indicator<br /><b
-														>{Math.round(profile.accessibility.confidence * 100)}%</b
-													></small
+										<div class="profile-stats">
+											<div>
+												<small>Residents · Census 2022</small><strong
+													class:no-census={profile.population.total == null}
+													>{profile.population.total == null
+														? 'No census count'
+														: fmt(profile.population.total)}</strong
+												><span
+													>{profile.population.year
+														? 'Census ' + profile.population.year
+														: 'Outside linked census coverage'}</span
 												>
 											</div>
-											{#each Object.entries(profile.accessibility.domains) as [domain, value] (domain)}<div
-													class="score-row"
-												>
-													<span>{label(domain)}</span>
-													<div>
-														<span style={'width:' + Math.min(100, Math.max(0, value.score)) + '%'}
-														></span>
-													</div>
-													<b>{value.score.toFixed(1)}</b>
-												</div>{/each}
-											<p class="fine-print">
-												A distance and data coverage score. Zero can reflect missing evidence. This
-												score is not recalculated by scenario simulation.
-											</p>
-											<details>
-												<summary
-													>{profile.accessibility.missing_data.length} data limitations</summary
-												>
-												<ul class="plain-list">
-													{#each profile.accessibility.missing_data as item, index (index)}<li>
-															{label(item)}
-														</li>{/each}
-												</ul>
-											</details>
-										{:else}<p class="empty-state">No accessibility result for this island.</p>{/if}
-									</section>
-									<section class="panel-section">
-										<div class="section-title">
-											<h3>Services & infrastructure</h3>
-											<span>{profile.infrastructure.total}</span>
+											<div>
+												<small>Official facilities</small><strong
+													>{fmt(profile.infrastructure.total)}</strong
+												><span>{fmt(profile.transport.total)} OSM transport features</span>
+											</div>
 										</div>
-										{#each profile.infrastructure.items.slice(0, 8) as facility (facility.id)}<div
-												class="facility-row"
-											>
-												<span class="facility-symbol"
-													>{facility.category === 'school'
-														? 'E'
-														: facility.category === 'airport'
-															? 'T'
-															: 'H'}</span
-												>
-												<div>
-													<strong>{facility.name || label(facility.category)}</strong><small
-														>{label(facility.category)} · {facility.geometry
-															? label(facility.match_status ?? 'Mapped')
-															: 'Location unavailable'}</small
+										{#if profile.population.qualification}<p class="population-context">
+												{profile.population.qualification}
+											</p>{/if}
+										<section class="panel-section">
+											<div class="section-title">
+												<h3>Accessibility</h3>
+												<span class="soft-tag">BASELINE</span>
+											</div>
+											{#if profile.accessibility}<div class="access-score">
+													<strong>{profile.accessibility.score.toFixed(1)}<span>/100</span></strong
+													><small
+														>Confidence indicator<br /><b
+															>{Math.round(profile.accessibility.confidence * 100)}%</b
+														></small
 													>
 												</div>
-											</div>{/each}
-										{#if !profile.infrastructure.total}<p class="empty-state">
-												No linked official facilities in this cache.
-											</p>{/if}
-										<details>
-											<summary>Inspect source records and IDs</summary>
-											<div class="record-list">
-												{#each [...profile.infrastructure.items, ...profile.transport.items] as record, index (record.id + '-' + index)}<div
+												{#each Object.entries(profile.accessibility.domains) as [domain, value] (domain)}<div
+														class="score-row"
 													>
-														<strong>{record.name || label(record.category)}</strong><code
-															>{record.id}</code
-														><small
-															>{record.source ?? 'OSM'} · {label(
-																record.match_status ?? 'source geometry'
-															)}</small
-														>
+														<span>{label(domain)}</span>
+														<div>
+															<span style={'width:' + Math.min(100, Math.max(0, value.score)) + '%'}
+															></span>
+														</div>
+														<b>{value.score.toFixed(1)}</b>
 													</div>{/each}
+												<p class="fine-print">
+													A distance and data coverage score. Zero can reflect missing evidence.
+													This score is not recalculated by scenario simulation.
+												</p>
+												<details>
+													<summary
+														>{profile.accessibility.missing_data.length} data limitations</summary
+													>
+													<ul class="plain-list">
+														{#each profile.accessibility.missing_data as item, index (index)}<li>
+																{label(item)}
+															</li>{/each}
+													</ul>
+												</details>
+											{:else}<p class="empty-state">
+													No accessibility result for this island.
+												</p>{/if}
+										</section>
+										<section class="panel-section">
+											<div class="section-title">
+												<h3>Services & infrastructure</h3>
+												<span>{profile.infrastructure.total}</span>
 											</div>
-										</details>
-									</section>
-									{#if profile.data_quality.warnings.length}<div class="callout">
-											<strong>Know the coverage</strong>
-											<p>{profile.data_quality.warnings.join('. ')}.</p>
-											<p>
-												{fmt(profile.data_quality.unresolved_facility_count)} facilities have uncertain
-												or missing locations.
-											</p>
-										</div>{/if}
-									<Button variant="outline" class="wide" onclick={() => setProposalView('policy')}
-										>Test a proposal here<ArrowUpRight size={16} /></Button
-									>
-								{:else if !loading}<p class="empty-state">
-										Select an island to inspect its baseline.
-									</p>{/if}
-							</Tabs.Content>
-							<Tabs.Content value="route" class="context-tab-content">
-								{#if workspaces.journey}<workspaces.journey
-										start={routeStart}
-										islands={overviewFeatures}
-										bind:journeyKind
-										bind:originIslandId={connectionOriginId}
-										bind:destinationIslandId={connectionDestinationId}
-										onPickIsland={chooseConnectionIsland}
-										onConnectionPreview={(value) => (connectionFeatures = value)}
-										onConnectionFocus={focusConnection}
-										onProposeFerry={proposeFerry}
-										end={routeEnd}
-										startLabel={routeStartLabel}
-										endLabel={routeEndLabel}
-										bind:mode={routeMode}
-										bind:serviceDate={routeDate}
-										bind:departureTime={routeTime}
-										result={route}
-										busy={busy === 'route'}
-										onPick={chooseJourneyPoint}
-										onClear={clearJourneyPoint}
-										onReset={resetJourney}
-										onSwap={swapJourney}
-										onBack={closeJourney}
-										onFind={requestRoute}
-										onChange={() => {
-											cancelAction();
-											route = null;
-										}}
-									/>{:else}<p class="empty-state" role="status">Opening journey planner…</p>{/if}
-							</Tabs.Content>
-						</Tabs.Root>
-					{:else if tab === 'scenarios' || tab === 'recommendations'}
-						<div class="proposal-header">
-							<span class="eyebrow">YOUR POLICY WORKSPACE</span>
-							<h2>Build a better connection.</h2>
-							<p>Make a change. Test the network. Review what the evidence supports.</p>
-						</div>
-						<div class="journey-steps">
-							<Button variant="ghost" onclick={() => go('explore')}><span>1</span>Island</Button
-							><ChevronRight size={12} /><span
-								class:current={proposalView !== 'review'}
-								aria-current={proposalView !== 'review' ? 'step' : undefined}><b>2</b>Proposal</span
-							><ChevronRight size={12} /><span
-								class:complete={!!simulation}
-								class:current={proposalView === 'review'}
-								aria-current={proposalView === 'review' ? 'step' : undefined}><b>3</b>Review</span
-							>
-						</div>
-						<Tabs.Root bind:value={proposalView} onValueChange={setProposalView}
-							><Tabs.List class="context-tabs"
-								><Tabs.Trigger value="edit">Build option</Tabs.Trigger><Tabs.Trigger
-									value="candidates">Find candidates</Tabs.Trigger
-								><Tabs.Trigger value="review">Review results</Tabs.Trigger></Tabs.List
-							>
-							<p class="draft-scope">
-								{scenario.operations.length} proposed changes · Draft saved in this browser
-							</p>
-							<Tabs.Content value="edit" class="context-tab-content">
-								<div class="scenario-toolbar">
-									<Button
-										variant="ghost"
-										size="icon"
-										disabled={!history.length || !!busy}
-										onclick={undo}
-										aria-label="Undo operation"><Undo2 size={17} /></Button
-									><Button
-										variant="ghost"
-										size="icon"
-										disabled={!redoHistory.length || !!busy}
-										onclick={redo}
-										aria-label="Redo operation"><Redo2 size={17} /></Button
-									><span></span><Button
-										variant="ghost"
-										size="icon"
-										onclick={exportScenario}
-										aria-label="Export scenario"><Download size={17} /></Button
-									><Button
-										variant="ghost"
-										size="icon"
-										onclick={() => importInput?.click()}
-										aria-label="Import scenario"><Upload size={17} /></Button
-									><Input
-										class="hidden"
-										type="file"
-										accept="application/json,.json"
-										bind:ref={importInput}
-										onchange={importScenario}
-									/>
-								</div>
-								<Label class="field-label" for="scenario-name">Option name</Label><Input
-									id="scenario-name"
-									value={scenario.name}
-									maxlength={200}
-									oninput={(event) => {
-										scenario = { ...scenario, name: event.currentTarget.value };
-										simulation = null;
-										comparison = null;
-									}}
-								/>
-								<section class="panel-section" style="margin-top:24px">
-									<Label class="field-label" for="operation-type">Your intervention</Label
-									><NativeSelect.Root
-										id="operation-type"
-										bind:value={operationType}
-										onchange={() => (pickMode = null)}
-										>{#each Object.entries(operationLabels) as [value, text] (value)}<NativeSelect.Option
-												{value}>{text}</NativeSelect.Option
-											>{/each}</NativeSelect.Root
-									>
-									{#if needsCoordinates(operationType)}<Button
-											variant="outline"
-											class="wide"
-											onclick={() => (pickMode = 'operation')}
-											><MapPin size={16} />{longitude !== '' && latitude !== ''
-												? 'Change location on map'
-												: 'Place on map'}</Button
-										>
-										{#if longitude !== '' && latitude !== ''}<p class="coordinate-readout">
-												Location: {Number(longitude).toFixed(5)}, {Number(latitude).toFixed(5)}
-											</p>{/if}
-										<details>
-											<summary>Enter coordinates or use island centroid</summary>
-											<div class="field-pair">
-												<Label
-													>Longitude<Input
-														aria-label="Proposal longitude"
-														type="number"
-														step="any"
-														bind:value={longitude}
-													/></Label
-												><Label
-													>Latitude<Input
-														aria-label="Proposal latitude"
-														type="number"
-														step="any"
-														bind:value={latitude}
-													/></Label
+											{#each profile.infrastructure.items.slice(0, 8) as facility (facility.id)}<div
+													class="facility-row"
 												>
-											</div>
-											<Button
-												variant="ghost"
-												class="text-button"
-												disabled={!selected?.properties.centroid}
-												onclick={() => {
-													const center = selected?.properties.centroid;
-													if (center) {
-														longitude = center[0];
-														latitude = center[1];
-													}
-												}}>Use island centroid</Button
-											>
-										</details>
-									{/if}
-									{#if needsTarget(operationType)}<Label class="field-label" for="target-id"
-											>Target record or graph edge ID</Label
-										><Input id="target-id" bind:value={targetId} placeholder="Exact source ID" />
-										<p class="fine-print">
-											Select a source record or enter a graph edge/OSM way ID. Unknown targets are
-											reported as unapplied.
-										</p>
-										<details>
-											<summary>Browse island records</summary>
-											<div class="record-list">
-												{#each profile?.transport.items ?? [] as record (record.id)}<Button
-														variant="outline"
-														size="sm"
-														onclick={() => (targetId = record.id)}
-														>{record.name || label(record.category)}<small>{record.id}</small
-														></Button
-													>{/each}
-											</div>
-										</details>{/if}
-									{#if needsNodes(operationType)}<Label class="field-label" for="from-node"
-											>From graph node ID</Label
-										><Input id="from-node" bind:value={fromNode} /><Label
-											class="field-label"
-											for="to-node">To graph node ID</Label
-										><Input id="to-node" bind:value={toNode} />
-										{#if route?.path_node_ids?.length}<Button
-												variant="ghost"
-												class="text-button"
-												onclick={() => {
-													fromNode = route?.path_node_ids?.[0] ?? '';
-													toNode = route?.path_node_ids?.at(-1) ?? '';
-												}}>Use the planned route’s endpoints</Button
-											>{/if}
-										<details>
-											<summary>Connection distance and graph guidance</summary><Label
-												class="field-label"
-												for="edge-distance">Connection distance in metres (optional)</Label
-											><Input
-												id="edge-distance"
-												type="number"
-												min={0.01}
-												step="any"
-												bind:value={distance}
-											/>
-											<p class="fine-print">
-												Use existing graph nodes. Land node IDs appear in a route result. Marine and
-												airport nodes require the backend graph artifacts.
-											</p>
-										</details>
-									{/if}
-									{#if operationType === 'weather_disruption'}<Label
-											class="field-label"
-											for="disabled-mode">Mode to restrict</Label
-										><NativeSelect.Root id="disabled-mode" bind:value={disabledMode}
-											>{#each [['car', 'Car'], ['bus', 'Bus'], ['taxi', 'Taxi'], ['bicycle', 'Bicycle'], ['walk', 'Walk'], ['marine', 'Passenger ferry']] as [value, text] (value)}<NativeSelect.Option
+													<span class="facility-symbol"
+														>{facility.category === 'school'
+															? 'E'
+															: facility.category === 'airport'
+																? 'T'
+																: 'H'}</span
+													>
+													<div>
+														<strong>{facility.name || label(facility.category)}</strong><small
+															>{label(facility.category)} · {facility.geometry
+																? label(facility.match_status ?? 'Mapped')
+																: 'Location unavailable'}</small
+														>
+													</div>
+												</div>{/each}
+											{#if !profile.infrastructure.total}<p class="empty-state">
+													No linked official facilities in this cache.
+												</p>{/if}
+											<details>
+												<summary>Inspect source records and IDs</summary>
+												<div class="record-list">
+													{#each [...profile.infrastructure.items, ...profile.transport.items] as record, index (record.id + '-' + index)}<div
+														>
+															<strong>{record.name || label(record.category)}</strong><code
+																>{record.id}</code
+															><small
+																>{record.source ?? 'OSM'} · {label(
+																	record.match_status ?? 'source geometry'
+																)}</small
+															>
+														</div>{/each}
+												</div>
+											</details>
+										</section>
+										{#if profile.data_quality.warnings.length}<div class="callout">
+												<strong>Know the coverage</strong>
+												<p>{profile.data_quality.warnings.join('. ')}.</p>
+												<p>
+													{fmt(profile.data_quality.unresolved_facility_count)} facilities have uncertain
+													or missing locations.
+												</p>
+											</div>{/if}
+										<Button variant="outline" class="wide" onclick={() => setProposalView('policy')}
+											>Test a proposal here<ArrowUpRight size={16} /></Button
+										>
+									{:else if !loading}<p class="empty-state">
+											Select an island to inspect its baseline.
+										</p>{/if}
+								</Tabs.Content>
+								<Tabs.Content value="route" class="context-tab-content">
+									{#if workspaces.journey}<workspaces.journey
+											start={routeStart}
+											islands={overviewFeatures}
+											bind:journeyKind
+											bind:originIslandId={connectionOriginId}
+											bind:destinationIslandId={connectionDestinationId}
+											onPickIsland={chooseConnectionIsland}
+											onConnectionPreview={(value) => (connectionFeatures = value)}
+											onConnectionFocus={focusConnection}
+											onProposeFerry={proposeFerry}
+											end={routeEnd}
+											startLabel={routeStartLabel}
+											endLabel={routeEndLabel}
+											bind:mode={routeMode}
+											bind:serviceDate={routeDate}
+											bind:departureTime={routeTime}
+											result={route}
+											busy={busy === 'route'}
+											onPick={chooseJourneyPoint}
+											onClear={clearJourneyPoint}
+											onReset={resetJourney}
+											onSwap={swapJourney}
+											onBack={closeJourney}
+											onFind={requestRoute}
+											onChange={() => {
+												cancelAction();
+												route = null;
+											}}
+										/>{:else}<p class="empty-state" role="status">Opening journey planner…</p>{/if}
+								</Tabs.Content>
+							</Tabs.Root>
+						{:else if tab === 'scenarios' || tab === 'recommendations'}
+							<div class="proposal-header">
+								<span class="eyebrow">YOUR POLICY WORKSPACE</span>
+								<h2>Build a better connection.</h2>
+								<p>Make a change. Test the network. Review what the evidence supports.</p>
+							</div>
+							<div class="journey-steps">
+								<Button variant="ghost" onclick={() => go('explore')}><span>1</span>Island</Button
+								><ChevronRight size={12} /><span
+									class:current={proposalView !== 'review'}
+									aria-current={proposalView !== 'review' ? 'step' : undefined}
+									><b>2</b>Proposal</span
+								><ChevronRight size={12} /><span
+									class:complete={!!simulation}
+									class:current={proposalView === 'review'}
+									aria-current={proposalView === 'review' ? 'step' : undefined}><b>3</b>Review</span
+								>
+							</div>
+							<Tabs.Root bind:value={proposalView} onValueChange={setProposalView}
+								><Tabs.List class="context-tabs"
+									><Tabs.Trigger value="edit">Build option</Tabs.Trigger><Tabs.Trigger
+										value="candidates">Find candidates</Tabs.Trigger
+									><Tabs.Trigger value="review">Review results</Tabs.Trigger></Tabs.List
+								>
+								<p class="draft-scope">
+									{scenario.operations.length} proposed changes · Draft saved in this browser
+								</p>
+								<Tabs.Content value="edit" class="context-tab-content">
+									<div class="scenario-toolbar">
+										<Button
+											variant="ghost"
+											size="icon"
+											disabled={!history.length || !!busy}
+											onclick={undo}
+											aria-label="Undo operation"><Undo2 size={17} /></Button
+										><Button
+											variant="ghost"
+											size="icon"
+											disabled={!redoHistory.length || !!busy}
+											onclick={redo}
+											aria-label="Redo operation"><Redo2 size={17} /></Button
+										><span></span><Button
+											variant="ghost"
+											size="icon"
+											onclick={exportScenario}
+											aria-label="Export scenario"><Download size={17} /></Button
+										><Button
+											variant="ghost"
+											size="icon"
+											onclick={() => importInput?.click()}
+											aria-label="Import scenario"><Upload size={17} /></Button
+										><Input
+											class="hidden"
+											type="file"
+											accept="application/json,.json"
+											bind:ref={importInput}
+											onchange={importScenario}
+										/>
+									</div>
+									<Label class="field-label" for="scenario-name">Option name</Label><Input
+										id="scenario-name"
+										value={scenario.name}
+										maxlength={200}
+										oninput={(event) => {
+											scenario = { ...scenario, name: event.currentTarget.value };
+											simulation = null;
+											comparison = null;
+										}}
+									/>
+									<section class="panel-section" style="margin-top:24px">
+										<Label class="field-label" for="operation-type">Your intervention</Label
+										><NativeSelect.Root
+											id="operation-type"
+											bind:value={operationType}
+											onchange={() => (pickMode = null)}
+											>{#each Object.entries(operationLabels) as [value, text] (value)}<NativeSelect.Option
 													{value}>{text}</NativeSelect.Option
 												>{/each}</NativeSelect.Root
-										>{/if}
-									<Button
-										variant="outline"
-										class="wide"
-										disabled={!selectedId || !!busy}
-										onclick={addOperation}><Plus size={16} />Add to option</Button
-									>
-								</section>
-								<section class="panel-section">
-									<div class="section-title">
-										<h3>Proposed changes</h3>
-										<span class="count-tag">{scenario.operations.length}</span>
-									</div>
-									{#each scenario.operations as operation, index (index)}<div class="operation-row">
-											<span>{String(index + 1).padStart(2, '0')}</span>
-											<div>
-												<strong>{operationLabels[operation.type]}</strong><small
-													>{islands.find((island) => island.properties.id === operation.island_id)
-														?.properties.name ??
-														operation.island_id ??
-														'National'} · {operation.coordinates
-														?.map((n) => n.toFixed(5))
-														.join(', ') ??
-														operation.target_id ??
-														label(operation.type)}</small
-												>
-											</div>
-											<Button
-												variant="ghost"
-												size="icon-sm"
-												disabled={!!busy}
-												aria-label={'Remove operation ' + (index + 1)}
-												onclick={() =>
-													edit({
-														...scenario,
-														operations: scenario.operations.filter((_, i) => i !== index)
-													})}><Trash2 size={15} /></Button
-											>
-										</div>{/each}
-									{#if !scenario.operations.length}<p class="empty-state">
-											Start with one change. Place it on the map, then add it to your option.
-										</p>{/if}<Button
-										class="wide"
-										disabled={!!busy ||
-											!selectedId ||
-											!scenario.name.trim() ||
-											!scenario.operations.length}
-										onclick={runScenario}
-										>{busy === 'simulation' ? 'Testing option…' : 'Run simulation'}<FlaskConical
-											size={16}
-										/></Button
-									>
-									<p class="fine-print">
-										Results are scoped to {selected
-											? islandName(selected.properties.name, selected.properties.id)
-											: 'the selected island'}. Changes on other islands stay in the draft.
-									</p>
-								</section>
-								<Button variant="ghost" class="wide" onclick={() => setProposalView('candidates')}
-									>Need a starting point? Find candidates<Sparkles size={15} /></Button
-								>
-							</Tabs.Content>
-							<Tabs.Content value="candidates" class="context-tab-content">
-								<Label class="field-label" for="recommendation-type"
-									>What would you like to improve?</Label
-								><NativeSelect.Root
-									id="recommendation-type"
-									bind:value={recommendationType}
-									onchange={() => (recommendations = null)}
-									>{#each ['bus_stop', 'ferry_terminal', 'ferry_route', 'parking', 'mobility_hub', 'pedestrian', 'airport_access', 'underserved_island'] as type (type)}<NativeSelect.Option
-											value={type}>{label(type)}</NativeSelect.Option
-										>{/each}</NativeSelect.Root
-								><Button
-									class="wide"
-									disabled={!!busy || !selectedId}
-									onclick={requestRecommendations}
-									>{busy === 'recommendations'
-										? 'Screening candidates…'
-										: 'Find candidates'}<Sparkles size={16} /></Button
-								>
-								<p class="fine-print">
-									Ranks up to 20 candidates using 70% heuristic benefit and 30% confidence. Scores
-									are screening indicators.
-								</p>
-								{#if recommendations}<div class="section-title">
-										<h3>Planning candidates</h3>
-										<span>{recommendations.summary.candidate_count} considered</span>
-									</div>
-									{#each recommendations.recommendations as candidate, index (candidate.id)}<Card.Root
-											class="candidate-card"
-											><div class="section-title">
-												<span class="candidate-number">{String(index + 1).padStart(2, '0')}</span
-												><span class="soft-tag">SCORE {candidate.score.toFixed(1)}</span>
-											</div>
-											<h3>{label(candidate.type)} · {candidate.island_name}</h3>
-											<p>{candidate.reason}</p>
-											<div class="candidate-stats">
-												<span
-													>Heuristic benefit<b>{candidate.expected_benefit.toFixed(1)}/100</b></span
-												><span>Confidence<b>{Math.round(candidate.confidence * 100)}%</b></span>
-											</div>
-											<details>
-												<summary>Assumptions and trade-offs</summary>
-												<ul class="plain-list">
-													{#each [...candidate.assumptions, ...candidate.trade_offs] as item, index (index)}<li
-														>
-															{item}
-														</li>{/each}
-												</ul>
-												<p class="fine-print">{candidate.planning_screening_disclaimer}</p>
-												{#each candidate.simulation.warnings as warning, index (index)}<p
-														class="fine-print"
-													>
-														{warning}
-													</p>{/each}
-											</details>
-											<Button
+										>
+										{#if needsCoordinates(operationType)}<Button
 												variant="outline"
 												class="wide"
-												onclick={() => {
-													edit(structuredClone(candidate.scenario));
-													setProposalView('edit');
-												}}>Open this candidate as an option<ArrowUpRight size={14} /></Button
-											></Card.Root
-										>{/each}{#if !recommendations.recommendations.length}<div class="empty-card">
-											<Sparkles size={25} />
-											<h3>No candidates in this cache</h3>
-											<p>
-												Try another intervention or island. Missing source coverage can limit
-												candidate generation.
-											</p>
-										</div>{/if}{:else}<div class="empty-card">
-										<Sparkles size={26} />
-										<h3>Explore what’s possible</h3>
-										<p>
-											Choose an intervention to generate candidates for {selected?.properties
-												.name ?? 'the selected island'}.
-										</p>
-									</div>{/if}
-								<div class="callout">
-									<strong>Planning screening</strong>
-									<p>
-										Candidate benefits are heuristics, not measured improvements or forecasts.
-										Review geometry, land availability, feasibility, and evidence before using an
-										option.
-									</p>
-								</div>
-							</Tabs.Content>
-							<Tabs.Content value="review" class="context-tab-content">
-								<div class="review-heading">
-									<span class="eyebrow">DECISION REVIEW</span>
-									<h2>What changes with your option?</h2>
-									<p>
-										Compare the modeled network changes, then inspect the evidence before sharing.
-									</p>
-								</div>
-								{#if simulation}<section class="panel-section simulation-result">
-										<div class="section-title">
-											<h3>Changes from baseline</h3>
-											<Check size={17} />
-										</div>
-										<p>
-											{simulation.operations_applied.length} of {scenario.operations.length} operations
-											applied.
-										</p>
-										{#each Object.entries(simulation.delta) as [key, value] (key)}<div
-												class="metric-row"
+												onclick={() => (pickMode = 'operation')}
+												><MapPin size={16} />{longitude !== '' && latitude !== ''
+													? 'Change location on map'
+													: 'Place on map'}</Button
 											>
-												<span>{label(key)}</span><strong>{signed(value)}</strong>
-											</div>{/each}{#each simulation.warnings as warning, index (index)}<div
-												class="callout"
-											>
-												{warning}
-											</div>{/each}
-										<details>
-											<summary>Baseline and effective counts</summary>
-											<table>
-												<thead><tr><th>Metric</th><th>Before</th><th>After</th></tr></thead><tbody
-													>{#each Object.entries(simulation.baseline) as [key, value] (key)}<tr
-															><td>{label(key)}</td><td>{fmt(value)}</td><td
-																>{fmt(simulation.effective_world[key])}</td
-															></tr
-														>{/each}</tbody
+											{#if longitude !== '' && latitude !== ''}<p class="coordinate-readout">
+													Location: {Number(longitude).toFixed(5)}, {Number(latitude).toFixed(5)}
+												</p>{/if}
+											<details>
+												<summary>Enter coordinates or use island centroid</summary>
+												<div class="field-pair">
+													<Label
+														>Longitude<Input
+															aria-label="Proposal longitude"
+															type="number"
+															step="any"
+															bind:value={longitude}
+														/></Label
+													><Label
+														>Latitude<Input
+															aria-label="Proposal latitude"
+															type="number"
+															step="any"
+															bind:value={latitude}
+														/></Label
+													>
+												</div>
+												<Button
+													variant="ghost"
+													class="text-button"
+													disabled={!selected?.properties.centroid}
+													onclick={() => {
+														const center = selected?.properties.centroid;
+														if (center) {
+															longitude = center[0];
+															latitude = center[1];
+														}
+													}}>Use island centroid</Button
 												>
-											</table>
-										</details>
-									</section>
-								{:else}<div class="empty-card">
-										<FlaskConical size={28} />
-										<h3>Your results will appear here</h3>
-										<p>
-											Add a change and run the simulation to review its effect on the selected
-											island.
-										</p>
-										<Button onclick={() => setProposalView('edit')}
-											>Continue building<ArrowRight size={16} /></Button
+											</details>
+										{/if}
+										{#if needsTarget(operationType)}<Label class="field-label" for="target-id"
+												>Target record or graph edge ID</Label
+											><Input id="target-id" bind:value={targetId} placeholder="Exact source ID" />
+											<p class="fine-print">
+												Select a source record or enter a graph edge/OSM way ID. Unknown targets are
+												reported as unapplied.
+											</p>
+											<details>
+												<summary>Browse island records</summary>
+												<div class="record-list">
+													{#each profile?.transport.items ?? [] as record (record.id)}<Button
+															variant="outline"
+															size="sm"
+															onclick={() => (targetId = record.id)}
+															>{record.name || label(record.category)}<small>{record.id}</small
+															></Button
+														>{/each}
+												</div>
+											</details>{/if}
+										{#if needsNodes(operationType)}<Label class="field-label" for="from-node"
+												>From graph node ID</Label
+											><Input id="from-node" bind:value={fromNode} /><Label
+												class="field-label"
+												for="to-node">To graph node ID</Label
+											><Input id="to-node" bind:value={toNode} />
+											{#if route?.path_node_ids?.length}<Button
+													variant="ghost"
+													class="text-button"
+													onclick={() => {
+														fromNode = route?.path_node_ids?.[0] ?? '';
+														toNode = route?.path_node_ids?.at(-1) ?? '';
+													}}>Use the planned route’s endpoints</Button
+												>{/if}
+											<details>
+												<summary>Connection distance and graph guidance</summary><Label
+													class="field-label"
+													for="edge-distance">Connection distance in metres (optional)</Label
+												><Input
+													id="edge-distance"
+													type="number"
+													min={0.01}
+													step="any"
+													bind:value={distance}
+												/>
+												<p class="fine-print">
+													Use existing graph nodes. Land node IDs appear in a route result. Marine
+													and airport nodes require the backend graph artifacts.
+												</p>
+											</details>
+										{/if}
+										{#if operationType === 'weather_disruption'}<Label
+												class="field-label"
+												for="disabled-mode">Mode to restrict</Label
+											><NativeSelect.Root id="disabled-mode" bind:value={disabledMode}
+												>{#each [['car', 'Car'], ['bus', 'Bus'], ['taxi', 'Taxi'], ['bicycle', 'Bicycle'], ['walk', 'Walk'], ['marine', 'Passenger ferry']] as [value, text] (value)}<NativeSelect.Option
+														{value}>{text}</NativeSelect.Option
+													>{/each}</NativeSelect.Root
+											>{/if}
+										<Button
+											variant="outline"
+											class="wide"
+											disabled={!selectedId || !!busy}
+											onclick={addOperation}><Plus size={16} />Add to option</Button
 										>
-									</div>{/if}
-								<div class="comparison-actions">
-									<Button
-										variant="outline"
-										class="wide"
-										disabled={!!busy}
-										onclick={() => {
-											reference = structuredClone(scenario);
-											comparison = null;
-											notice = 'Reference saved: ' + scenario.name;
-										}}>Save as comparison reference</Button
-									>{#if reference}<p class="fine-print">
-											Reference: {reference.name} · {reference.operations.length} changes
+									</section>
+									<section class="panel-section">
+										<div class="section-title">
+											<h3>Proposed changes</h3>
+											<span class="count-tag">{scenario.operations.length}</span>
+										</div>
+										{#each scenario.operations as operation, index (index)}<div
+												class="operation-row"
+											>
+												<span>{String(index + 1).padStart(2, '0')}</span>
+												<div>
+													<strong>{operationLabels[operation.type]}</strong><small
+														>{islands.find((island) => island.properties.id === operation.island_id)
+															?.properties.name ??
+															operation.island_id ??
+															'National'} · {operation.coordinates
+															?.map((n) => n.toFixed(5))
+															.join(', ') ??
+															operation.target_id ??
+															label(operation.type)}</small
+													>
+												</div>
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													disabled={!!busy}
+													aria-label={'Remove operation ' + (index + 1)}
+													onclick={() =>
+														edit({
+															...scenario,
+															operations: scenario.operations.filter((_, i) => i !== index)
+														})}><Trash2 size={15} /></Button
+												>
+											</div>{/each}
+										{#if !scenario.operations.length}<p class="empty-state">
+												Start with one change. Place it on the map, then add it to your option.
+											</p>{/if}<Button
+											class="wide"
+											disabled={!!busy ||
+												!selectedId ||
+												!scenario.name.trim() ||
+												!scenario.operations.length}
+											onclick={runScenario}
+											>{busy === 'simulation' ? 'Testing option…' : 'Run simulation'}<FlaskConical
+												size={16}
+											/></Button
+										>
+										<p class="fine-print">
+											Results are scoped to {selected
+												? islandName(selected.properties.name, selected.properties.id)
+												: 'the selected island'}. Changes on other islands stay in the draft.
 										</p>
+									</section>
+									<Button variant="ghost" class="wide" onclick={() => setProposalView('candidates')}
+										>Need a starting point? Find candidates<Sparkles size={15} /></Button
+									>
+								</Tabs.Content>
+								<Tabs.Content value="candidates" class="context-tab-content">
+									<Label class="field-label" for="recommendation-type"
+										>What would you like to improve?</Label
+									><NativeSelect.Root
+										id="recommendation-type"
+										bind:value={recommendationType}
+										onchange={() => (recommendations = null)}
+										>{#each ['bus_stop', 'ferry_terminal', 'ferry_route', 'parking', 'mobility_hub', 'pedestrian', 'airport_access', 'underserved_island'] as type (type)}<NativeSelect.Option
+												value={type}>{label(type)}</NativeSelect.Option
+											>{/each}</NativeSelect.Root
+									><Button
+										class="wide"
+										disabled={!!busy || !selectedId}
+										onclick={requestRecommendations}
+										>{busy === 'recommendations'
+											? 'Screening candidates…'
+											: 'Find candidates'}<Sparkles size={16} /></Button
+									>
+									<p class="fine-print">
+										Ranks up to 20 candidates using 70% heuristic benefit and 30% confidence. Scores
+										are screening indicators.
+									</p>
+									{#if recommendations}<div class="section-title">
+											<h3>Planning candidates</h3>
+											<span>{recommendations.summary.candidate_count} considered</span>
+										</div>
+										{#each recommendations.recommendations as candidate, index (candidate.id)}<Card.Root
+												class="candidate-card"
+												><div class="section-title">
+													<span class="candidate-number">{String(index + 1).padStart(2, '0')}</span
+													><span class="soft-tag">SCORE {candidate.score.toFixed(1)}</span>
+												</div>
+												<h3>{label(candidate.type)} · {candidate.island_name}</h3>
+												<p>{candidate.reason}</p>
+												<div class="candidate-stats">
+													<span
+														>Heuristic benefit<b>{candidate.expected_benefit.toFixed(1)}/100</b
+														></span
+													><span>Confidence<b>{Math.round(candidate.confidence * 100)}%</b></span>
+												</div>
+												<details>
+													<summary>Assumptions and trade-offs</summary>
+													<ul class="plain-list">
+														{#each [...candidate.assumptions, ...candidate.trade_offs] as item, index (index)}<li
+															>
+																{item}
+															</li>{/each}
+													</ul>
+													<p class="fine-print">{candidate.planning_screening_disclaimer}</p>
+													{#each candidate.simulation.warnings as warning, index (index)}<p
+															class="fine-print"
+														>
+															{warning}
+														</p>{/each}
+												</details>
+												<Button
+													variant="outline"
+													class="wide"
+													onclick={() => {
+														edit(structuredClone(candidate.scenario));
+														setProposalView('edit');
+													}}>Open this candidate as an option<ArrowUpRight size={14} /></Button
+												></Card.Root
+											>{/each}{#if !recommendations.recommendations.length}<div class="empty-card">
+												<Sparkles size={25} />
+												<h3>No candidates in this cache</h3>
+												<p>
+													Try another intervention or island. Missing source coverage can limit
+													candidate generation.
+												</p>
+											</div>{/if}{:else}<div class="empty-card">
+											<Sparkles size={26} />
+											<h3>Explore what’s possible</h3>
+											<p>
+												Choose an intervention to generate candidates for {selected?.properties
+													.name ?? 'the selected island'}.
+											</p>
+										</div>{/if}
+									<div class="callout">
+										<strong>Planning screening</strong>
+										<p>
+											Candidate benefits are heuristics, not measured improvements or forecasts.
+											Review geometry, land availability, feasibility, and evidence before using an
+											option.
+										</p>
+									</div>
+								</Tabs.Content>
+								<Tabs.Content value="review" class="context-tab-content">
+									<div class="review-heading">
+										<span class="eyebrow">DECISION REVIEW</span>
+										<h2>What changes with your option?</h2>
+										<p>
+											Compare the modeled network changes, then inspect the evidence before sharing.
+										</p>
+									</div>
+									{#if simulation}<section class="panel-section simulation-result">
+											<div class="section-title">
+												<h3>Changes from baseline</h3>
+												<Check size={17} />
+											</div>
+											<p>
+												{simulation.operations_applied.length} of {scenario.operations.length} operations
+												applied.
+											</p>
+											{#each Object.entries(simulation.delta) as [key, value] (key)}<div
+													class="metric-row"
+												>
+													<span>{label(key)}</span><strong>{signed(value)}</strong>
+												</div>{/each}{#each simulation.warnings as warning, index (index)}<div
+													class="callout"
+												>
+													{warning}
+												</div>{/each}
+											<details>
+												<summary>Baseline and effective counts</summary>
+												<table>
+													<thead><tr><th>Metric</th><th>Before</th><th>After</th></tr></thead><tbody
+														>{#each Object.entries(simulation.baseline) as [key, value] (key)}<tr
+																><td>{label(key)}</td><td>{fmt(value)}</td><td
+																	>{fmt(simulation.effective_world[key])}</td
+																></tr
+															>{/each}</tbody
+													>
+												</table>
+											</details>
+										</section>
+									{:else}<div class="empty-card">
+											<FlaskConical size={28} />
+											<h3>Your results will appear here</h3>
+											<p>
+												Add a change and run the simulation to review its effect on the selected
+												island.
+											</p>
+											<Button onclick={() => setProposalView('edit')}
+												>Continue building<ArrowRight size={16} /></Button
+											>
+										</div>{/if}
+									<div class="comparison-actions">
 										<Button
 											variant="outline"
 											class="wide"
 											disabled={!!busy}
-											onclick={compareScenario}
-											>{busy === 'compare'
-												? 'Comparing…'
-												: 'Compare current option with reference'}</Button
-										>{/if}{#if comparison}<div class="callout">
-											<strong>Current minus reference</strong
-											>{#each Object.entries(comparison.delta) as [key, value] (key)}<div
-													class="metric-row"
-												>
-													<span>{label(key.replace('first_vs_second_', ''))}</span><b
-														>{signed(value)}</b
+											onclick={() => {
+												reference = structuredClone(scenario);
+												comparison = null;
+												notice = 'Reference saved: ' + scenario.name;
+											}}>Save as comparison reference</Button
+										>{#if reference}<p class="fine-print">
+												Reference: {reference.name} · {reference.operations.length} changes
+											</p>
+											<Button
+												variant="outline"
+												class="wide"
+												disabled={!!busy}
+												onclick={compareScenario}
+												>{busy === 'compare'
+													? 'Comparing…'
+													: 'Compare current option with reference'}</Button
+											>{/if}{#if comparison}<div class="callout">
+												<strong>Current minus reference</strong
+												>{#each Object.entries(comparison.delta) as [key, value] (key)}<div
+														class="metric-row"
 													>
-												</div>{/each}
-										</div>{/if}
-								</div>
-								<div class="callout">
-									<strong>What this simulation measures</strong>
-									<p>
-										Network edges and transport feature counts. A new stop does not establish a bus
-										service. This backend does not estimate journey-time savings, ridership, costs,
-										or changes to accessibility scores.
-									</p>
-								</div>
-								{#if simulation}<Button class="wide" onclick={exportBrief}
-										><Download size={16} />Export decision brief</Button
-									><Button variant="ghost" class="wide" onclick={() => go('evidence')}
-										>Review sources and limitations<ArrowRight size={15} /></Button
-									>{/if}
-							</Tabs.Content>
-						</Tabs.Root>
-					{/if}
-				</Card.Root>
+														<span>{label(key.replace('first_vs_second_', ''))}</span><b
+															>{signed(value)}</b
+														>
+													</div>{/each}
+											</div>{/if}
+									</div>
+									<div class="callout">
+										<strong>What this simulation measures</strong>
+										<p>
+											Network edges and transport feature counts. A new stop does not establish a
+											bus service. This backend does not estimate journey-time savings, ridership,
+											costs, or changes to accessibility scores.
+										</p>
+									</div>
+									{#if simulation}<Button class="wide" onclick={exportBrief}
+											><Download size={16} />Export decision brief</Button
+										><Button variant="ghost" class="wide" onclick={() => go('evidence')}
+											>Review sources and limitations<ArrowRight size={15} /></Button
+										>{/if}
+								</Tabs.Content>
+							</Tabs.Root>
+						{/if}
+					</Card.Root>
+				</div>
 			</aside>
 			{#if tab === 'explore' && selectedId && !showAccessExplorer && !pickMode && !panelOpen}<div
 					class="map-action-dock"

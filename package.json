@@ -32,6 +32,8 @@
 		"test:browser:proposal-experience": "node scripts/verify-proposal-experience.mjs",
 		"test:browser:map-controls": "node scripts/verify-map-floating-controls.mjs",
 		"test:browser:navigation": "node scripts/verify-restored-navigation.mjs",
+		"test:browser:motion": "node scripts/verify-motion-windows.mjs",
+		"test:browser:review-window": "node scripts/verify-review-window.mjs",
 		"test:policy-api": "node scripts/verify-policy-api.mjs",
 		"test:browser:forecasts": "node scripts/verify-forecast-data-browser.mjs",
 		"test:browser:planning": "node scripts/verify-planning-browser.mjs",

@@ -7,11 +7,16 @@
 		Download,
 		Info,
 		LoaderCircle,
+		Maximize2,
 		MapPin,
+		Minimize2,
 		Ship,
 		TrendingUp,
 		X
 	} from '@lucide/svelte';
+	import { onDestroy } from 'svelte';
+	import { shouldAnimateMotion } from '#lib/motion.js';
+	import { resizable, toggleResizableMaximized } from '#lib/resizable.js';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Badge } from '#lib/components/ui/badge/index.js';
 	import TransportImpact from './TransportImpact.svelte';
@@ -55,8 +60,13 @@
 		onFocusOperation?: (index: number) => void;
 	} = $props();
 	let dialog = $state<HTMLDialogElement | null>(null);
+	let dialogVisible = $state(false);
 	let exporting = $state(false);
 	let exportError = $state('');
+	let maximized = $state(false);
+	let dialogAnimation: Animation | null = null;
+	let dialogMotionVersion = 0;
+	let expectedCloseEvents = 0;
 	const summary = $derived(evaluation?.summary);
 	const economics = $derived(evaluation?.economics);
 	const capital = $derived(finiteValue(economics?.delta.capital_mvr));
@@ -127,9 +137,72 @@
 
 	$effect(() => {
 		if (!dialog) return;
-		if (open && !dialog.open) dialog.showModal();
-		else if (!open && dialog.open) dialog.close();
+		const element = dialog;
+		const shouldOpen = open;
+		const version = ++dialogMotionVersion;
+		const interrupted = dialogAnimation !== null;
+		const current = interrupted ? getComputedStyle(element) : null;
+		const from = current ? { opacity: current.opacity, transform: current.transform } : null;
+		dialogAnimation?.cancel();
+		dialogAnimation = null;
+		if (!shouldOpen && !element.open) {
+			dialogVisible = false;
+			return;
+		}
+		if (shouldOpen && !element.open) element.showModal();
+		dialogVisible = true;
+		if (!shouldAnimateMotion()) {
+			if (!shouldOpen) {
+				closeDialog(element);
+				dialogVisible = false;
+			}
+			return;
+		}
+		const settled = { opacity: '1', transform: 'scale(1)' };
+		const dismissed = {
+			opacity: '0',
+			transform: 'scale(0.985)'
+		};
+		const animation = element.animate(
+			[from ?? (shouldOpen ? dismissed : settled), shouldOpen ? settled : dismissed],
+			{
+				duration: shouldOpen ? 230 : 150,
+				easing: 'cubic-bezier(0.23, 1, 0.32, 1)',
+				fill: 'forwards'
+			}
+		);
+		dialogAnimation = animation;
+		void animation.finished.then(
+			() => {
+				if (version !== dialogMotionVersion) return;
+				if (!shouldOpen) {
+					closeDialog(element);
+					dialogVisible = false;
+				}
+				animation.cancel();
+				dialogAnimation = null;
+			},
+			() => {}
+		);
 	});
+	$effect(() => {
+		if (!dialog) return;
+		const element = dialog;
+		const updateMaximized = () => {
+			maximized = element.dataset.resizableMaximized === 'true';
+		};
+		element.addEventListener('resizablechange', updateMaximized);
+		return () => element.removeEventListener('resizablechange', updateMaximized);
+	});
+	onDestroy(() => {
+		++dialogMotionVersion;
+		dialogAnimation?.cancel();
+	});
+	function closeDialog(element: HTMLDialogElement) {
+		if (!element.open) return;
+		expectedCloseEvents += 1;
+		element.close();
+	}
 	function percentage(value: number | null) {
 		return value === null || population === null || population <= 0
 			? 'Unavailable'
@@ -155,14 +228,24 @@
 
 <dialog
 	bind:this={dialog}
+	use:resizable={{
+		key: 'proposal-review',
+		enabled: dialogVisible,
+		minWidth: 720,
+		minHeight: 440,
+		anchor: 'center',
+		viewportMargin: 16
+	}}
 	class="forecast-review"
+	data-motion={open ? 'open' : 'closing'}
 	aria-labelledby="proposal-forecast-title"
 	oncancel={(event) => {
 		event.preventDefault();
 		onClose();
 	}}
 	onclose={() => {
-		if (open) onClose();
+		if (expectedCloseEvents > 0) expectedCloseEvents -= 1;
+		else if (open) onClose();
 	}}
 >
 	<div class="forecast-shell" aria-busy={pending}>
@@ -171,10 +254,18 @@
 				><ArrowLeft size={16} /> Back to map</Button
 			>
 			<div class="header-actions">
-				<Badge variant="outline">Draft proposal</Badge><Button
-					variant="outline"
-					onclick={exportPdf}
-					disabled={!ready || exporting}
+				<Badge variant="outline">Draft proposal</Badge>
+				<Button
+					variant="ghost"
+					size="icon"
+					class="review-size-control"
+					aria-label={maximized ? 'Restore review size' : 'Maximize review'}
+					title={maximized ? 'Restore review size' : 'Maximize review'}
+					onclick={() => {
+						if (dialog) maximized = toggleResizableMaximized(dialog);
+					}}
+					>{#if maximized}<Minimize2 size={17} />{:else}<Maximize2 size={17} />{/if}</Button
+				><Button variant="outline" onclick={exportPdf} disabled={!ready || exporting}
 					><Download size={15} />{exporting ? 'Preparing PDF…' : 'Save as PDF'}</Button
 				><Button variant="ghost" size="icon" aria-label="Close proposal review" onclick={onClose}
 					><X size={18} /></Button
@@ -592,20 +683,40 @@
 
 <style>
 	.forecast-review {
-		width: 100vw;
-		max-width: none;
-		height: 100dvh;
-		max-height: none;
+		width: min(1280px, calc(100vw - 32px));
+		max-width: calc(100vw - 32px);
+		height: calc(100dvh - 32px);
+		max-height: calc(100dvh - 32px);
 		inset: 0;
-		margin: 0;
-		border: 0;
+		margin: auto;
+		border: 1px solid color-mix(in srgb, var(--border), transparent 20%);
+		border-radius: 22px;
 		padding: 0;
 		background: var(--background);
 		color: var(--foreground);
 		overflow: hidden;
+		box-shadow:
+			0 28px 90px #14282029,
+			0 2px 10px #14282012;
+		transform-origin: center;
+		container-type: inline-size;
+		container-name: proposal-review;
 	}
 	.forecast-review::backdrop {
-		background: #17251f55;
+		background: #17251f66;
+		opacity: 1;
+		transition: opacity 150ms ease-out;
+	}
+	.forecast-review[data-motion='closing']::backdrop {
+		opacity: 0;
+	}
+	:global(html[data-motion-input='keyboard']) .forecast-review::backdrop {
+		transition: none;
+	}
+	@starting-style {
+		.forecast-review::backdrop {
+			opacity: 0;
+		}
 	}
 	.forecast-review:not([open]) {
 		display: none;
@@ -633,7 +744,7 @@
 	.forecast-content {
 		overflow: auto;
 		flex: 1;
-		padding: 36px max(28px, calc((100vw - 1180px) / 2));
+		padding: 36px max(28px, calc((100cqw - 1180px) / 2));
 		overscroll-behavior: contain;
 	}
 	.report-heading {
@@ -727,7 +838,7 @@
 	}
 	.metric strong {
 		display: block;
-		font-size: clamp(22px, 2.2vw, 30px);
+		font-size: clamp(22px, 2.2cqw, 30px);
 		font-weight: 580;
 		letter-spacing: -1px;
 		margin: 12px 0;
@@ -741,7 +852,7 @@
 		display: block;
 	}
 	.metric strong.service-headline {
-		font-size: clamp(20px, 2.1vw, 29px);
+		font-size: clamp(20px, 2.1cqw, 29px);
 		line-height: 1.25;
 		letter-spacing: -0.6px;
 		overflow-wrap: anywhere;
@@ -1136,7 +1247,7 @@
 		color: #52743f;
 		border-radius: 20px;
 	}
-	@media (max-width: 1000px) {
+	@container proposal-review (max-width: 1000px) {
 		.headline-metrics {
 			grid-template-columns: 1fr 1fr;
 		}
@@ -1148,7 +1259,7 @@
 			padding: 22px;
 		}
 	}
-	@media (max-width: 700px) {
+	@container proposal-review (max-width: 760px) {
 		.transport-cost-note {
 			flex-direction: column;
 			align-items: flex-start;
@@ -1236,7 +1347,23 @@
 			margin-left: 0;
 		}
 	}
+	@media (max-width: 759px) {
+		.forecast-review {
+			width: 100vw;
+			max-width: none;
+			height: 100dvh;
+			max-height: none;
+			border: 0;
+			border-radius: 0;
+		}
+		.header-actions :global(.review-size-control) {
+			display: none;
+		}
+	}
 	@media (prefers-reduced-motion: reduce) {
+		.forecast-review::backdrop {
+			transition-duration: 80ms;
+		}
 		.report-alert :global(.report-spinner) {
 			animation: none;
 		}

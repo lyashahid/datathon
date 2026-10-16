@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { onDestroy, untrack } from 'svelte';
+	import { resizable } from '#lib/resizable.js';
+	import { surfaceMotion } from '#lib/surface-motion.js';
+	import { mapPanelLayout } from '#lib/map-panel-layout.js';
 	import { CloudSun, Wind, Waves, Route, RefreshCw, X } from '@lucide/svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { api } from '#lib/api.js';
@@ -145,7 +148,21 @@
 		seconds == null ? 'Unavailable' : `${Math.round(seconds / 60)} min`;
 </script>
 
-<section class="map-conditions-panel" aria-label="Weather and traffic on this map">
+<section
+	class="map-conditions-panel"
+	aria-label="Weather and traffic on this map"
+	use:resizable={{
+		key: 'map-conditions',
+		minWidth: 360,
+		minHeight: 360,
+		maxWidth: 640,
+		edges: ['left', 'bottom', 'bottom-left'],
+		anchor: 'top-right'
+	}}
+	use:mapPanelLayout
+	in:surfaceMotion
+	out:surfaceMotion={{ direction: 'out' }}
+>
 	<header>
 		<div>
 			<span class="eyebrow">ON THIS MAP</span>
@@ -279,6 +296,8 @@
 		margin: 0;
 	}
 	.conditions-scroll {
+		min-height: 0;
+		flex: 1;
 		display: flex;
 		flex-direction: column;
 		gap: 14px;

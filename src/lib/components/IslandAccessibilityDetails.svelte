@@ -29,140 +29,161 @@
 	];
 	const assessment = $derived(island.assessment);
 	let titleElement = $state<HTMLElement | null>(null);
+	let sheetOpen = $state(true);
 </script>
 
 <Sheet.Root
-	open={true}
+	open={sheetOpen}
 	onOpenChange={(open) => {
+		sheetOpen = open;
+	}}
+	onOpenChangeComplete={(open) => {
 		if (!open) onclose();
 	}}
 >
 	<Sheet.Content
 		class="island-accessibility-details"
+		resizeKey="island-accessibility"
 		aria-label={`${island.name} accessibility`}
 		onOpenAutoFocus={(event) => {
 			event.preventDefault();
 			titleElement?.focus({ preventScroll: true });
 		}}
 	>
-		<Sheet.Header>
-			<p class="eyebrow">ISLAND ACCESSIBILITY</p>
-			<Sheet.Title class="accessibility-title" bind:ref={titleElement} tabindex={-1}
-				>{island.name}<span class="sr-only"> accessibility</span></Sheet.Title
-			>
-			<Sheet.Description
-				>{island.atoll} · {island.category.replace(' Island', '')}</Sheet.Description
-			>
-		</Sheet.Header>
-		<div class="score-overview">
-			<div class="score-number" data-testid="island-accessibility-score">
-				<strong>{island.score === null ? '—' : decimal.format(island.score)}</strong><span
-					>/100</span
+		<div class="accessibility-content">
+			<Sheet.Header>
+				<p class="eyebrow">ISLAND ACCESSIBILITY</p>
+				<Sheet.Title class="accessibility-title" bind:ref={titleElement} tabindex={-1}
+					>{island.name}<span class="sr-only"> accessibility</span></Sheet.Title
+				>
+				<Sheet.Description
+					>{island.atoll} · {island.category.replace(' Island', '')}</Sheet.Description
+				>
+			</Sheet.Header>
+			<div class="score-overview">
+				<div class="score-number" data-testid="island-accessibility-score">
+					<strong>{island.score === null ? '—' : decimal.format(island.score)}</strong><span
+						>/100</span
+					>
+				</div>
+				<Badge variant="secondary">{assessment?.label ?? 'Assessment unavailable'}</Badge>
+				<p>{assessment?.summary ?? 'The accessibility assessment is not available yet.'}</p>
+			</div>
+			<div class="population-row">
+				<span
+					>Recorded residents {#if island.population?.year}<small>· {island.population.year}</small
+						>{/if}</span
+				>
+				<strong
+					>{island.population?.total == null
+						? 'Not available'
+						: number.format(island.population.total)}</strong
 				>
 			</div>
-			<Badge variant="secondary">{assessment?.label ?? 'Assessment unavailable'}</Badge>
-			<p>{assessment?.summary ?? 'The accessibility assessment is not available yet.'}</p>
-		</div>
-		<div class="population-row">
-			<span
-				>Recorded residents {#if island.population?.year}<small>· {island.population.year}</small
-					>{/if}</span
+			<section
+				class="score-reasons"
+				aria-label="Reasons for this accessibility score"
+				aria-busy={loading}
 			>
-			<strong
-				>{island.population?.total == null
-					? 'Not available'
-					: number.format(island.population.total)}</strong
-			>
-		</div>
-		<section
-			class="score-reasons"
-			aria-label="Reasons for this accessibility score"
-			aria-busy={loading}
-		>
-			<h2>Why this score?</h2>
-			{#if loading}<p class="explanation-status" role="status">
-					Loading the island's score explanation…
-				</p>
-			{:else if error}<div class="explanation-status" role="alert">
-					<p>{error}</p>
-					{#if onRetry}<Button variant="outline" size="sm" onclick={onRetry}>Try again</Button>{/if}
-				</div>{/if}
-			<div data-testid="island-accessibility-reasons">
-				{#each domains as domain (domain.id)}
-					{@const reason = assessment?.reasons?.find((item) => item.domain === domain.id)}
-					{@const component = assessment?.components[domain.id]}
-					<div class="domain-reason" style:--domain-color={domain.color}>
-						<div class="domain-heading">
-							<span><domain.icon size={17} />{domain.name}</span><strong
-								>{component ? decimal.format(component.score) : '—'}<small>/100</small></strong
-							>
+				<h2>Why this score?</h2>
+				{#if loading}<p class="explanation-status" role="status">
+						Loading the island's score explanation…
+					</p>
+				{:else if error}<div class="explanation-status" role="alert">
+						<p>{error}</p>
+						{#if onRetry}<Button variant="outline" size="sm" onclick={onRetry}>Try again</Button
+							>{/if}
+					</div>{/if}
+				<div data-testid="island-accessibility-reasons">
+					{#each domains as domain (domain.id)}
+						{@const reason = assessment?.reasons?.find((item) => item.domain === domain.id)}
+						{@const component = assessment?.components[domain.id]}
+						<div class="domain-reason" style:--domain-color={domain.color}>
+							<div class="domain-heading">
+								<span><domain.icon size={17} />{domain.name}</span><strong
+									>{component ? decimal.format(component.score) : '—'}<small>/100</small></strong
+								>
+							</div>
+							<div class="domain-track" aria-hidden="true">
+								<span style:width={`${Math.min(100, Math.max(0, component?.score ?? 0))}%`}></span>
+							</div>
+							{#if !loading && !error}<p>
+									{reason?.text ??
+										'There is not enough information to explain this part of the score.'}
+								</p>{/if}
 						</div>
-						<div class="domain-track" aria-hidden="true">
-							<span style:width={`${Math.min(100, Math.max(0, component?.score ?? 0))}%`}></span>
-						</div>
-						{#if !loading && !error}<p>
-								{reason?.text ??
-									'There is not enough information to explain this part of the score.'}
-							</p>{/if}
+					{/each}
+				</div>
+			</section>
+			{#if assessment}
+				<div class="coverage-notice">
+					<strong>{assessment.coverage.label}</strong>
+					<p>{assessment.coverage.note}</p>
+				</div>
+			{/if}
+			<p class="score-qualification">
+				A planning score based on available data, not the percentage of residents served.
+			</p>
+			<details class="score-data-details">
+				<summary>Data details</summary>
+				{#if assessment}<ul>
+						{#each assessment.limitations ?? [] as limitation (limitation)}<li>
+								{limitation}
+							</li>{/each}
+					</ul>{/if}
+				<dl>
+					<div>
+						<dt>Island reference</dt>
+						<dd>{island.id}</dd>
 					</div>
-				{/each}
+					<div>
+						<dt>Model confidence</dt>
+						<dd>
+							{island.confidence === null ? 'Not available' : decimal.format(island.confidence)}
+						</dd>
+					</div>
+				</dl>
+				{#if island.missingData?.length}<p class="technical-flags">
+						Model notes: {island.missingData.join(', ')}
+					</p>{/if}
+			</details>
+			<div class="score-actions">
+				<Button variant="outline" onclick={() => (sheetOpen = false)}>Back to scores</Button><Button
+					aria-label={`Explore ${island.name} on map`}
+					onclick={() => {
+						const { id, atoll } = island;
+						const explore = onExplore;
+						onclose();
+						explore(id, atoll);
+					}}>Explore on map <ArrowRight size={15} /></Button
+				>
 			</div>
-		</section>
-		{#if assessment}
-			<div class="coverage-notice">
-				<strong>{assessment.coverage.label}</strong>
-				<p>{assessment.coverage.note}</p>
-			</div>
-		{/if}
-		<p class="score-qualification">
-			A planning score based on available data, not the percentage of residents served.
-		</p>
-		<details class="score-data-details">
-			<summary>Data details</summary>
-			{#if assessment}<ul>
-					{#each assessment.limitations ?? [] as limitation (limitation)}<li>
-							{limitation}
-						</li>{/each}
-				</ul>{/if}
-			<dl>
-				<div>
-					<dt>Island reference</dt>
-					<dd>{island.id}</dd>
-				</div>
-				<div>
-					<dt>Model confidence</dt>
-					<dd>
-						{island.confidence === null ? 'Not available' : decimal.format(island.confidence)}
-					</dd>
-				</div>
-			</dl>
-			{#if island.missingData?.length}<p class="technical-flags">
-					Model notes: {island.missingData.join(', ')}
-				</p>{/if}
-		</details>
-		<div class="score-actions">
-			<Button variant="outline" onclick={onclose}>Back to scores</Button><Button
-				aria-label={`Explore ${island.name} on map`}
-				onclick={() => {
-					const { id, atoll } = island;
-					const explore = onExplore;
-					onclose();
-					explore(id, atoll);
-				}}>Explore on map <ArrowRight size={15} /></Button
-			>
 		</div>
 	</Sheet.Content>
 </Sheet.Root>
 
 <style>
 	:global(.island-accessibility-details) {
-		width: min(100%, 530px) !important;
-		max-width: 530px !important;
-		padding: 30px;
-		gap: 22px;
-		overflow-y: auto;
+		width: var(--resizable-width, min(100%, 530px)) !important;
+		max-width: min(100vw, 900px) !important;
+		padding: 0;
+		gap: 0;
+		overflow: hidden;
 		color: #292535;
 		font-variant-numeric: tabular-nums;
+	}
+	.accessibility-content {
+		min-height: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 22px;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		padding: 30px;
+	}
+	.accessibility-content > :global(*) {
+		flex-shrink: 0;
 	}
 	.eyebrow {
 		color: #88709d;
@@ -320,7 +341,7 @@
 		padding-top: 6px;
 	}
 	@media (max-width: 480px) {
-		:global(.island-accessibility-details) {
+		.accessibility-content {
 			padding: 26px 20px;
 			gap: 20px;
 		}

@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { onMount, tick, untrack } from 'svelte';
+	import { resizable } from '#lib/resizable.js';
+	import { surfaceMotion } from '#lib/surface-motion.js';
+	import { mapPanelLayout } from '#lib/map-panel-layout.js';
+	import { animatedSelection } from '#lib/motion.js';
 	import type { BusConnectionDraft } from '#lib/bus-planning.js';
 	import {
 		ArrowRight,
@@ -3064,6 +3068,17 @@
 {#if active}
 	{#if opened}<section
 			class="policy-map-panel"
+			use:resizable={{
+				key: 'map-proposal',
+				minWidth: 360,
+				minHeight: 460,
+				maxWidth: 640,
+				edges: ['left', 'bottom', 'bottom-left'],
+				anchor: 'top-right'
+			}}
+			use:mapPanelLayout
+			in:surfaceMotion
+			out:surfaceMotion={{ direction: 'out' }}
 			class:placing={(!!pending || !!armedKind) && !budgetEditing}
 			aria-label="Island needs and proposal"
 			data-policy-section={section}
@@ -3082,7 +3097,11 @@
 					onclick={close}><X size={18} /></Button
 				>
 			</header>
-			<div class="policy-panel-tabs">
+			<div
+				class="policy-panel-tabs"
+				data-variant="line"
+				use:animatedSelection={{ selector: 'button.active' }}
+			>
 				<button
 					class:active={section === 'needs'}
 					onclick={() => {
@@ -4185,7 +4204,6 @@
 		background: #fffffff9;
 		box-shadow: 0 12px 38px #1c3e3722;
 		overflow: hidden;
-		animation: panel-in 180ms ease-out;
 	}
 	.policy-map-panel > header {
 		flex-shrink: 0;
@@ -4207,6 +4225,7 @@
 		letter-spacing: 1.3px;
 	}
 	.policy-panel-tabs {
+		--foreground: #245b40;
 		flex-shrink: 0;
 		display: flex;
 		border-bottom: 1px solid #e3e9e4;
@@ -4214,6 +4233,8 @@
 		gap: 20px;
 	}
 	.policy-panel-tabs button {
+		position: relative;
+		z-index: 1;
 		font-size: 13px;
 		padding: 10px 0;
 		color: #78847a;
@@ -4221,10 +4242,9 @@
 	}
 	.policy-panel-tabs button.active {
 		color: #245b40;
-		border-color: #477d55;
 		font-weight: 650;
 	}
-	.policy-panel-tabs span {
+	.policy-panel-tabs button span {
 		border-radius: 5px;
 		background: #e8eee6;
 		padding: 1px 5px;
@@ -4762,16 +4782,6 @@
 	@keyframes spin {
 		to {
 			transform: rotate(360deg);
-		}
-	}
-	@keyframes panel-in {
-		from {
-			opacity: 0;
-			translate: 8px 0;
-		}
-		to {
-			opacity: 1;
-			translate: 0 0;
 		}
 	}
 	button:focus-visible {
