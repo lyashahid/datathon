@@ -17,6 +17,18 @@ The confirmed SSH target is `yoosuf@169.58.6.224` on port `22`. Datathon has its
 
 The dedicated Actions private key is already stored as repository secret `DATATHON_SSH_PRIVATE_KEY`. The steps below document installation and recovery; do not treat a successful image build as proof of a live release. The final Actions job checks both the public page and its real backend health endpoint. Keep `DATATHON_DEPLOY_ENABLED=false` until the one-time installation, verified SSH host key and HTTPS route are ready.
 
+## Current manual deployment mode · 17 October 2026
+
+Deployment is currently manual at the owner's request. `DATATHON_DEPLOY_ENABLED` is `false`; the run triggered by the national-data commit was cancelled before deployment. The Actions instructions below describe the optional automated path, rather than the current release process.
+
+The administrator-owned checkout is `/srv/apps/datathon/source`. Use the existing trusted administrator SSH connection, run `git pull --ff-only` there, verify a clean checkout and its commit, then build the Dockerfile's `frontend` and `backend` targets on the server. The frontend requires `--build-arg PUBLIC_BASE_PATH=/apps/datathon`. Label both images with `org.opencontainers.image.revision` and the verified commit. No registry credentials or database connection string are needed for these builds.
+
+Before replacing the public containers, test the backend candidate in an isolated temporary container with no published ports, no network and no production state mounts. Keep the production memory/CPU limits and use temporary writable runtime storage. Check health, national datasets, capital and Hithadhoo baselines, heatmap geometry and a computation-only evaluation. Remove only that temporary container after recording its result.
+
+Manual releases use the protected `/srv/apps/datathon/control/manual-release.env`, containing the two immutable local image IDs and `DATATHON_REVISION`. Preserve the previous manifest as `manual-rollback-<UTC timestamp>.env` and serialize releases with `control/deploy.lock`. Validate Compose configuration before replacing the manual manifest, then run the existing fixed Compose file with `up -d --wait --wait-timeout 240 --no-build --pull never`. If health fails, restore the previous manifest and repeat that command. The Actions gateway's separate `release.env` remains intact; use **`manual-release.env`** when inspecting or maintaining the manual release.
+
+After switching, check the public HTTPS health endpoint, application correctness and bounded request timings. A successful image build alone does not complete deployment. This process changes only Datathon's two containers and preserves its persistent runtime volume, other state, reverse proxy and unrelated applications.
+
 ## Deployment boundary
 
 - The frontend publishes only `127.0.0.1:18730`. FastAPI has no host port. Existing HTTPS infrastructure forwards only `/apps/datathon` to this listener and preserves the path prefix.
@@ -97,15 +109,15 @@ After setup, every push to `main` follows the same sequence automatically. Deplo
 
 ## Inspection, rollback and maintenance
 
-Use your normal administrator login, not the Actions key, to inspect the app:
+Use your normal administrator login, not the Actions key, to inspect the current manual release:
 
 ```sh
-sudo docker compose --project-name datathon --project-directory /srv/apps/datathon/control --env-file /srv/apps/datathon/control/release.env -f /srv/apps/datathon/control/compose.yaml ps
-sudo docker compose --project-name datathon --project-directory /srv/apps/datathon/control --env-file /srv/apps/datathon/control/release.env -f /srv/apps/datathon/control/compose.yaml logs --tail 100
+sudo docker compose --project-name datathon --project-directory /srv/apps/datathon/control --env-file /srv/apps/datathon/control/manual-release.env -f /srv/apps/datathon/control/compose.yaml ps
+sudo docker compose --project-name datathon --project-directory /srv/apps/datathon/control --env-file /srv/apps/datathon/control/manual-release.env -f /srv/apps/datathon/control/compose.yaml logs --tail 100
 curl --fail http://127.0.0.1:18730/apps/datathon/api/backend/health
 ```
 
-Logs may contain upstream data, so inspect them privately before sharing. Securely back up `/srv/apps/datathon/state`, the protected control files and only the two `/etc/server-apps/datathon.*.env` files. Preserve symlinks and ownership when restoring. Never run a global `docker system prune` as part of this deployment. If you need to reverse an already healthy release, revert the relevant Git commit and push to `main`; the usual workflow rebuilds and deploys that reviewed state. Re-running an older successful workflow is another option while its images remain available.
+Logs may contain upstream data, so inspect them privately before sharing. Securely back up `/srv/apps/datathon/state`, the protected control files and only the two `/etc/server-apps/datathon.*.env` files. Preserve symlinks and ownership when restoring. Never run a global `docker system prune` as part of this deployment. To reverse a manual release, restore its timestamped rollback manifest to `manual-release.env`, run the same scoped Compose health-wait command and verify both actual image IDs and health. The Actions `release.env` still identifies the older Actions-managed image pair; using it with `compose up` can switch back to that pair. While deployment is manual, pushing a revert alone does not change the server. If Actions is deliberately enabled later, a reviewed revert or an available older workflow release can use that separate automated process.
 
 Changes to the protected Compose file, resource limits, app folder or helper require a deliberate administrator installation; a push cannot alter these protections. Read/review installer changes before rerunning it. This is intentional: repository automation can update app images, not server administration policy.
 

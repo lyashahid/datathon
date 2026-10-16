@@ -1,15 +1,16 @@
 import assert from 'node:assert/strict';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const origin = process.env.MOBILITY_API_QA_URL ?? 'http://127.0.0.1:8000';
-/** @type {{origin:string, startedAt:string, finishedAt?:string, checks:Array<{name:string,status:string,milliseconds:number,details:unknown}>,failure?:{message:string,stack?:string}}} */
-const report = { origin, startedAt: new Date().toISOString(), checks: [] };
-const output = path.resolve('artifacts/qa/policy-expansion');
+const apiBase = (process.env.MOBILITY_API_QA_BASE ?? origin + '/api/v1').replace(/\/$/, '');
+/** @type {{origin:string, apiBase:string, startedAt:string, finishedAt?:string, checks:Array<{name:string,status:string,milliseconds:number,details:unknown}>,failure?:{message:string,stack?:string}}} */
+const report = { origin, apiBase, startedAt: new Date().toISOString(), checks: [] };
+const output = path.resolve(process.env.MOBILITY_API_QA_OUTPUT ?? 'artifacts/qa/policy-expansion');
 await mkdir(output, { recursive: true });
 /** @param {string} endpoint @param {unknown} [body] @returns {Promise<any>} */
 async function request(endpoint, body) {
-	const response = await fetch(origin + '/api/v1/' + endpoint, {
+	const response = await fetch(apiBase + '/' + endpoint, {
 		method: body === undefined ? 'GET' : 'POST',
 		headers: { 'content-type': 'application/json' },
 		body: body === undefined ? undefined : JSON.stringify(body),
@@ -52,7 +53,28 @@ try {
 	});
 	await check('Complete dataset catalogue and compatible comparison', async () => {
 		const catalogue = await request('datasets');
-		assert.equal(catalogue.total, 38);
+		assert.equal(catalogue.total, catalogue.items.length);
+		assert.equal(
+			new Set(catalogue.items.map((/** @type {any} */ item) => item.id)).size,
+			catalogue.total
+		);
+		for (const id of [
+			'resident-origins',
+			'national-planning-islands',
+			'national-resident-origins',
+			'national-planning-destinations',
+			'national-planning-stops',
+			'island-census-demographics',
+			'island-employment-indicators',
+			'island-population-projections'
+		]) {
+			assert(
+				catalogue.items.some(
+					(/** @type {any} */ item) => item.id === id && item.status === 'available'
+				),
+				`${id} is available`
+			);
+		}
 		const chart = await request('datasets/resident-origins/chart', {
 			group_by: 'islandId',
 			measure: 'population2026',
@@ -74,6 +96,88 @@ try {
 			key_domain: 'island-id'
 		});
 		return { datasets: catalogue.total, chart_rows: chart.items.length, comparison: result };
+	});
+	await check('National resident charts consume every prepared island allocation', async () => {
+		const model = JSON.parse(
+			await readFile('data/public/national-population-origins.json', 'utf8')
+		);
+		/** @type {Map<string, number>} */
+		const expected = new Map();
+		for (const origin of model.origins) {
+			expected.set(origin.islandId, (expected.get(origin.islandId) ?? 0) + origin.population2026);
+		}
+		assert(expected.has('island:1152'), 'Addu Hithadhoo has resident origins');
+		assert(expected.has('island:697'), 'Laamu Hithadhoo has resident origins');
+		const chart = await request('datasets/national-resident-origins/chart', {
+			group_by: 'islandId',
+			measure: 'population2026',
+			aggregation: 'sum',
+			limit: 500
+		});
+		assert.equal(chart.truncated, false);
+		assert.equal(chart.items.length, expected.size);
+		assert.equal(chart.matched_rows, model.origins.length);
+		for (const item of chart.items) {
+			assert(expected.has(item.group), `Expected national island ${item.group}`);
+			assert(Math.abs(item.value - (expected.get(item.group) ?? 0)) < 0.02);
+		}
+		return {
+			islands: expected.size,
+			origins: model.origins.length,
+			hithadhooResidents2026: expected.get('island:1152')
+		};
+	});
+	await check('Capital and national islands expose resident-backed heatmap meshes', async () => {
+		/** @type {Array<unknown>} */
+		const results = [];
+		for (const [id, expectedHexagons] of /** @type {Array<[string, number]>} */ ([
+			['island:1443', 298],
+			['island:1442', 591],
+			['island:1152', 152],
+			['island:697', 83]
+		])) {
+			const detail = await request(`planning/opportunities/${id}`);
+			assert.equal(detail.planning_supported, true);
+			assert(detail.coverage.resident_origins > 0);
+			assert.equal(detail.hex_grid.features.length, expectedHexagons);
+			/** @type {Map<string, number>} */
+			const shares = new Map();
+			for (const cell of detail.hex_grid.features) {
+				assert(['Polygon', 'MultiPolygon'].includes(cell.geometry.type));
+				assert.equal(cell.properties.island_id, id);
+				assert(cell.properties.contributions.length > 0);
+				for (const contribution of cell.properties.contributions) {
+					assert(contribution.share > 0 && contribution.share <= 1 + 1e-12);
+					shares.set(
+						contribution.origin_id,
+						(shares.get(contribution.origin_id) ?? 0) + contribution.share
+					);
+				}
+			}
+			assert.equal(shares.size, detail.coverage.resident_origins);
+			assert([...shares.values()].every((share) => Math.abs(share - 1) < 1e-7));
+			if (id === 'island:1152') {
+				assert.equal(detail.coverage.transport_stops, 53);
+				assert.equal(detail.coverage.scheduled_patterns, 0);
+				assert.equal(detail.coverage.timetable_status, 'unavailable');
+			}
+			results.push({ id, hexagons: expectedHexagons, origins: shares.size });
+		}
+		const profile = await request('islands/island:1152/profile');
+		const context = profile.official_island_context;
+		assert.equal(context.status, 'available');
+		assert.equal(context.census_demographics.residents_total, 13759);
+		assert(
+			context.projections.some(
+				(/** @type {any} */ row) => row.year === 2026 && row.residents_total > 14000
+			)
+		);
+		assert.equal(profile.accessibility.domains.transport.mapped_counts.bus_stop_count, 53);
+		return {
+			islands: results,
+			hithadhooOfficialCensusResidents: context.census_demographics.residents_total,
+			hithadhooBusStops: 53
+		};
 	});
 	const baseline = await request('planning/baseline?island_id=island:1443');
 	const assumptions = {
