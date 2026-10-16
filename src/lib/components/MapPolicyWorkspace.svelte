@@ -28,6 +28,7 @@
 	import { Input } from '#lib/components/ui/input/index.js';
 	import { Label } from '#lib/components/ui/label/index.js';
 	import { api, subscribeApiInvalidation } from '#lib/api.js';
+	import { capitalIslandIds, isCapitalIsland } from '#lib/capital-region.js';
 	import type { PlanningOperation } from '#lib/planning-map.js';
 	import {
 		displayGapHexes,
@@ -124,7 +125,10 @@
 		features?: FeatureCollection;
 		hex_grid?: FeatureCollection;
 	};
-	const capitalIslandIds = ['island:1442', 'island:1443'];
+	const preparedGapDetails = new WeakMap<
+		LocalGapDetail,
+		{ grid: FeatureCollection; gaps: FeatureCollection }
+	>();
 	let {
 		islandId,
 		islandName,
@@ -329,9 +333,7 @@
 			: 'Loading the island evidence before placing local construction…'
 	);
 	const scopedKey = $derived(islandId ?? '');
-	const nearbyIslandId = $derived(
-		capitalIslandIds.includes(scopedKey) ? capitalIslandIds.find((id) => id !== scopedKey)! : null
-	);
+	const inCapitalRegion = $derived(isCapitalIsland(scopedKey));
 	const costDefaults = $derived({
 		...(baseline?.cost_defaults ?? {}),
 		...(extraAssumptions.cost_overrides &&
@@ -1161,9 +1163,10 @@
 		}
 	}
 	$effect(() => {
-		const scope = nearbyIslandId;
+		const capital = inCapitalRegion;
 		void nearbyGapVersion;
-		if (!mounted || !active || !scope || untrack(() => !!capitalGapMaps[scope])) {
+		const scopes = untrack(() => capitalIslandIds.filter((id) => !capitalGapMaps[id]));
+		if (!mounted || !active || !capital || !scopes.length) {
 			untrack(() => {
 				nearbyGapLoading = false;
 				nearbyGapError = '';
@@ -1175,26 +1178,25 @@
 			nearbyGapLoading = true;
 			nearbyGapError = '';
 		});
-		// Only the small, cached local map is needed for the neighbouring island.
-		// Its baseline and proposal lifecycle remain exclusive to the selected island.
-		void api<LocalGapDetail>(
-			`planning/opportunities/${encodeURIComponent(scope)}`,
-			undefined,
-			controller.signal
-		)
-			.then((detail) => {
+		// Warm both map evidence and planning baselines together. The API shares the
+		// selected island's in-flight reads and retains each result in its normal cache.
+		// Depending on the region, rather than the selected ID, keeps sibling loads alive
+		// when moving between these three islands. Empty airport evidence is ready too.
+		void Promise.allSettled(scopes.map((scope) => loadIslandEvidence(scope, controller.signal)))
+			.then((results) => {
 				if (controller.signal.aborted) return;
-				const grid = detail.hex_grid ?? emptyFeatures();
-				const source = detail.gap_cells ?? detail.features ?? emptyFeatures();
-				capitalGapMaps = {
-					...capitalGapMaps,
-					[scope]: grid.features.length ? displayGapHexes(source, grid) : emptyFeatures()
-				};
-			})
-			.catch((cause) => {
-				if (!controller.signal.aborted)
-					nearbyGapError =
-						cause instanceof Error ? cause.message : 'Nearby neighborhood journeys could not load.';
+				const failed = results.flatMap((result, index) =>
+					result.status === 'rejected'
+						? [
+								scopes[index] === 'island:1442'
+									? 'Hulhumalé'
+									: scopes[index] === 'island:1443'
+										? 'Malé'
+										: 'Hulhulé'
+							]
+						: []
+				);
+				if (failed.length) nearbyGapError = `${failed.join(', ')} could not finish loading.`;
 			})
 			.finally(() => {
 				if (!controller.signal.aborted) nearbyGapLoading = false;
@@ -1206,6 +1208,30 @@
 			});
 		};
 	});
+	async function loadIslandEvidence(scope: string, signal: AbortSignal) {
+		const [detail, data] = await Promise.all([
+			api<LocalGapDetail>(`planning/opportunities/${encodeURIComponent(scope)}`, undefined, signal),
+			api<MapBaseline>(
+				`planning/baseline?island_id=${encodeURIComponent(scope)}`,
+				undefined,
+				signal
+			)
+		]);
+		signal.throwIfAborted();
+		let prepared = preparedGapDetails.get(detail);
+		if (!prepared) {
+			const grid = detail.hex_grid ?? emptyFeatures();
+			const source = detail.gap_cells ?? detail.features ?? emptyFeatures();
+			prepared = {
+				grid,
+				gaps: grid.features.length ? displayGapHexes(source, grid) : emptyFeatures()
+			};
+			preparedGapDetails.set(detail, prepared);
+		}
+		if (capitalIslandIds.includes(scope) && capitalGapMaps[scope] !== prepared.gaps)
+			capitalGapMaps = { ...capitalGapMaps, [scope]: prepared.gaps };
+		return { ...prepared, baseline: data };
+	}
 	$effect(() => {
 		const scope = scopedKey;
 		if (!mounted || !scope || !active || (restoredScope === scope && !scopeDirty)) return;
@@ -1323,27 +1349,11 @@
 			}
 		}
 		try {
-			const [detail, data] = await Promise.all([
-				api<LocalGapDetail>(
-					`planning/opportunities/${encodeURIComponent(scope)}`,
-					undefined,
-					controller.signal
-				),
-				api<MapBaseline>(
-					`planning/baseline?island_id=${encodeURIComponent(scope)}`,
-					undefined,
-					controller.signal
-				)
-			]);
+			const evidence = await loadIslandEvidence(scope, controller.signal);
 			if (controller.signal.aborted) return;
-			displayGrid = detail.hex_grid ?? emptyFeatures();
-			const sourceCells = detail.gap_cells ?? detail.features ?? emptyFeatures();
-			gapCells = displayGrid.features.length
-				? displayGapHexes(sourceCells, displayGrid)
-				: emptyFeatures();
-			if (capitalIslandIds.includes(scope))
-				capitalGapMaps = { ...capitalGapMaps, [scope]: gapCells };
-			if (!controller.signal.aborted) baseline = data;
+			displayGrid = evidence.grid;
+			gapCells = evidence.gaps;
+			baseline = evidence.baseline;
 		} catch (cause) {
 			if (!controller.signal.aborted) {
 				scopeError = true;
@@ -3159,8 +3169,9 @@
 				>
 			</p>
 		{:else if loading || nearbyGapLoading}<p class="local-map-status" role="status">
-				<RefreshCw size={12} class="spin" />Loading neighborhood journeys · unshaded areas are
-				pending
+				<RefreshCw size={12} class="spin" />{nearbyGapLoading
+					? 'Preparing capital-area map and analysis…'
+					: 'Loading neighborhood journeys…'}
 			</p>{/if}
 		{#if impact.features.length && (previewCalculating || (!comparisonPreview && stale))}
 			<p class="proposal-map-result" role="status">Updating access · previous result shown</p>
@@ -3254,7 +3265,7 @@
 						<RefreshCw size={15} class="spin" />Loading island evidence…
 					</p>{/if}
 				{#if nearbyGapLoading}<p class="policy-working" role="status">
-						<RefreshCw size={15} class="spin" />Loading nearby neighborhood journeys…
+						<RefreshCw size={15} class="spin" />Preparing Malé, Hulhumalé and Hulhulé…
 					</p>{/if}
 				{#if nearbyGapError}<p class="policy-error" role="alert">
 						Nearby neighborhood journeys are unavailable. {nearbyGapError}<Button

@@ -46,7 +46,7 @@ def _jobs(*, include_planning: bool, include_analysis: bool) -> list[WarmupJob]:
         jobs.append(
             WarmupJob("opportunities", "/api/v1/planning/opportunities?include_geometry=false")
         )
-        for island in ("1443", "1442", "1382"):
+        for island in ("1443", "1442", "1483", "1382"):
             jobs.extend(
                 [
                     WarmupJob(
@@ -63,6 +63,9 @@ def _jobs(*, include_planning: bool, include_analysis: bool) -> list[WarmupJob]:
                     ),
                 ]
             )
+        # Hulhulé has mapped roads, services and facilities, but no separate
+        # projected resident allocation. Warm its evidence without inventing
+        # resident accessibility evaluations.
         for island in ("1443", "1442", "1382"):
             for goal in ("healthcare", "education", "transport"):
                 jobs.append(

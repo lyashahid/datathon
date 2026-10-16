@@ -8,6 +8,8 @@ The initial country view requests island geometry simplified at 25 metres and a 
 
 The map becomes usable independently of national totals and live provider status. Directions, proposal design and weather panels load on demand. Map geometry, styling and movement markers have separate update paths, so a changing budget or quote does not rebuild unrelated map sources.
 
+Malé, Hulhumalé and Hulhulé share a loading region. Opening any of them prepares all three islands' detailed map evidence, local access maps and planning baselines. Shared in-flight requests and the normal browser cache avoid downloading the selected island twice; moving between these islands does not cancel sibling preparation. Successful islands remain usable if a sibling fails, and retry requests only missing analysis. Reviewed source updates clear retained evidence. Proposals still evaluate the selected island; neighbouring baseline shading remains visible during comparison. Hulhulé has transport and road evidence but no separate resident projection, so it receives no fabricated resident heatmap.
+
 Analytics reuses the compact score list. Opening a score fetches its full explanation with loading, retry and cancellation states. Published passenger charts request history without fitting prediction models. Proposal screening reuses the already loaded map rather than downloading national geometry again; screening metadata and local baseline calculations load concurrently.
 
 ## Cache hierarchy and freshness
@@ -24,7 +26,7 @@ The Node proxy streams fast gzip for JSON responses, forwards source validators 
 
 `npm start` is the only normal startup command. Once the backend starts, it prepares the common analytics and supported island planning views automatically, while continuing to serve requests. It does not delay application readiness until the heavier work completes. Country geography, scores, summary and passenger history are prepared first; forecasts, data analysis, the dataset catalogue and planning views follow sequentially.
 
-The full preparation covers 23 views: four country/history snapshots, three analytics views, planning opportunities, a profile/baseline/gap view for each of the three supported islands, and six default health/education baseline impact calculations. The same source-versioned cache paths serve real requests, so valid memory, local-disk and optional PostgreSQL results are reused rather than recalculated. Public results can also be mirrored to the shared database.
+The full preparation covers 33 views: four country/history snapshots, three analytics views, planning opportunities, baseline/gap/profile/connectivity reads for Malé, Hulhumalé, Hulhulé and Vilimalé, and nine default healthcare/education/transport impact calculations for the three islands with resident models. Hulhulé has no separate resident projection and receives no resident impact calculation. The same source-versioned cache paths serve real requests, so valid memory, local-disk and optional PostgreSQL results are reused rather than recalculated. Public results can also be mirrored to the shared database.
 
 Each failed job is retried once in the background; a failure does not prevent the remaining jobs from running. Shutdown cancels remaining work. Set `MOBILITY_COMPUTED_CACHE_PREWARM=false` in an ignored backend environment file to disable the entire startup warmup. A reused, already running backend retains its existing settings until restarted.
 

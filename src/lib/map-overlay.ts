@@ -1,3 +1,5 @@
+import type { Feature, FeatureCollection } from 'geojson';
+
 /** Shared colours for the rendered gap scale, its legend and neighbourhood details. */
 export const GAP_PALETTE = {
 	shorter: '#16866e',
@@ -18,4 +20,24 @@ export function overlayOpacityPreference(value: unknown): number {
 	return Number.isFinite(number)
 		? Math.max(0, Math.min(100, Math.round(number)))
 		: DEFAULT_OVERLAY_OPACITY;
+}
+/** Keep neighbouring evidence visible; a proposal replaces only its own display cells. */
+export function backgroundAccessGaps(
+	gaps: FeatureCollection,
+	comparison: FeatureCollection
+): FeatureCollection {
+	if (!comparison.features.length) return gaps;
+	const key = (feature: Feature) => {
+		const island = feature.properties?.island_id;
+		const id = feature.properties?.id ?? feature.id;
+		return island != null && id != null ? JSON.stringify([island, id]) : null;
+	};
+	const replaced = new Set(comparison.features.map(key).filter((id) => id !== null));
+	return {
+		...gaps,
+		features: gaps.features.filter((feature) => {
+			const id = key(feature);
+			return id === null || !replaced.has(id);
+		})
+	};
 }

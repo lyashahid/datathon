@@ -101,9 +101,12 @@ async function opacity(value) {
 	await expect(atlas).toHaveAttribute('data-policy-overlay-opacity', String(value));
 	await expect(page.locator('.overlay-opacity-control output')).toHaveText(`${value}%`);
 	const impactActive = Number(await atlas.getAttribute('data-policy-impact-cells')) > 0;
+	const backgroundActive = Object.values(
+		JSON.parse((await atlas.getAttribute('data-policy-background-cells')) ?? '{}')
+	).some((count) => Number(count) > 0);
 	await expect(atlas).toHaveAttribute(
 		'data-policy-gap-opacity',
-		impactActive ? '0' : String(value / 100)
+		backgroundActive ? String(value / 100) : '0'
 	);
 	await expect(atlas).toHaveAttribute(
 		'data-policy-impact-opacity',

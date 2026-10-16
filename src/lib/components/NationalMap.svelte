@@ -57,6 +57,7 @@
 		GAP_GRADIENT,
 		GAP_PALETTE,
 		OVERLAY_OPACITY_KEY,
+		backgroundAccessGaps,
 		overlayOpacityPreference
 	} from '#lib/map-overlay.js';
 	import { exploreJourneyFeatures, journeyClock } from '#lib/explore-journey.js';
@@ -341,7 +342,16 @@
 	let overlayPreferenceLoaded = $state(false);
 	const mapKeyId = $props.id();
 	const overlayControlId = `${mapKeyId}-overlay-opacity`;
-	const gapOpacity = $derived(impactFeatures.features.length ? 0 : overlayOpacity / 100);
+	const backgroundGaps = $derived(backgroundAccessGaps(gapFeatures, impactFeatures));
+	const backgroundCells = $derived.by(() => {
+		const cells: Record<string, number> = {};
+		for (const feature of backgroundGaps.features) {
+			const id = String(feature.properties?.island_id ?? '');
+			if (id) cells[id] = (cells[id] ?? 0) + 1;
+		}
+		return cells;
+	});
+	const gapOpacity = $derived(backgroundGaps.features.length ? overlayOpacity / 100 : 0);
 	const impactOpacity = $derived(impactFeatures.features.length ? overlayOpacity / 100 : 0);
 	const currentAccessOpacity = $derived(
 		impactFeatures.features[0]?.properties?.view === 'comparison' &&
@@ -420,7 +430,7 @@
 	});
 	const policyHitLayers = $derived(
 		impactFeatures.features.length
-			? ['policy-current-fill', 'policy-impact-fill']
+			? ['policy-current-fill', 'policy-impact-fill', 'policy-gaps-fill', 'policy-gaps-points']
 			: ['policy-gaps-fill', 'policy-gaps-points']
 	);
 	let labelsVisible = $state(true);
@@ -3986,7 +3996,7 @@
 
 	$effect(() => {
 		if (!ready || !active || !map) return;
-		setData('policy-gaps', gapFeatures);
+		setData('policy-gaps', backgroundGaps);
 	});
 	$effect(() => {
 		if (!ready || !active || !map) return;
@@ -4599,6 +4609,7 @@
 	data-policy-gap-cells={gapFeatures.features.length}
 	data-policy-local-islands={JSON.stringify(Object.keys(localAccessDiagnostics.cells))}
 	data-policy-local-cells={JSON.stringify(localAccessDiagnostics.cells)}
+	data-policy-background-cells={JSON.stringify(backgroundCells)}
 	data-policy-screening-islands={JSON.stringify(localAccessDiagnostics.screening)}
 	data-policy-gap-ranges={JSON.stringify(localAccessDiagnostics.ranges)}
 	data-policy-hex-grid={gapFeatures.features.filter((feature) => feature.properties?.display_grid)
@@ -5480,6 +5491,8 @@
 	.map-service-editor {
 		overflow: auto;
 		overscroll-behavior: contain;
+		/* Keep focused/scrolled controls above the sticky confirmation footer. */
+		scroll-padding-block-end: 80px;
 		border: 1px solid #cbdcd6;
 		border-radius: 16px;
 		background: #fffefa;

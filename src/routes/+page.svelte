@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { onMount, tick, untrack } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { Popover } from 'bits-ui';
 	import { goto } from '$app/navigation';
 	import { animatedSelection, workspaceReveal } from '#lib/motion.js';
 	import { resizable, resetResizable } from '#lib/resizable.js';
 	import { mapPanelLayout } from '#lib/map-panel-layout.js';
+	import { capitalIslandIds, isCapitalIsland } from '#lib/capital-region.js';
 	import {
 		Map as MapIcon,
 		FlaskConical,
@@ -270,15 +272,19 @@
 	let detailsElement = $state<HTMLElement>();
 	let selectedId = $state<string | null>(null);
 	let overviewFeatures = $state.raw<MapFeatures | null>(null);
-	let detailedFeatures = $state.raw<{ islandId: string; data: MapFeatures } | null>(null);
-	let detailError = $state('');
+	let detailedFeatures = $state.raw<Record<string, MapFeatures>>({});
+	let detailErrors = $state.raw<Record<string, string>>({});
 	let detailVersion = $state(0);
 	let sourceRevision = $state(0);
+	// The capital is one loading region: choosing a neighbouring island must not
+	// cancel its siblings' canonical geometry and facility downloads.
+	const detailRegionKey = $derived(isCapitalIsland(selectedId) ? 'capital' : selectedId);
+	const detailError = $derived((selectedId && detailErrors[selectedId]) || '');
 	const selectedBoundaryFeatures = $derived<MapFeatures | null>(
-		detailedFeatures?.islandId === selectedId
+		selectedId && detailedFeatures[selectedId]
 			? {
 					type: 'FeatureCollection',
-					features: detailedFeatures.data.features.filter(
+					features: detailedFeatures[selectedId].features.filter(
 						(feature) => feature.properties?.id === selectedId && !feature.properties?.island_id
 					)
 				}
@@ -286,13 +292,29 @@
 	);
 	const features = $derived.by(() => {
 		if (!overviewFeatures) return null;
-		if (!selectedId || detailedFeatures?.islandId !== selectedId) return overviewFeatures;
+		if (!detailRegionKey) return overviewFeatures;
+		const regionIds = detailRegionKey === 'capital' ? capitalIslandIds : [detailRegionKey];
+		const details = regionIds.flatMap((id) => detailedFeatures[id]?.features ?? []);
+		if (!details.length) return overviewFeatures;
+		const regionIslandIds = new Set<string>(regionIds);
+		const canonicalIds = new Set(
+			details
+				.filter((feature) => regionIslandIds.has(feature.properties?.id))
+				.map((feature) => feature.properties?.id)
+		);
+		const seen = new SvelteSet<string | number>();
 		return {
 			...overviewFeatures,
 			features: [
-				...overviewFeatures.features.filter((feature) => feature.properties?.id !== selectedId),
-				...detailedFeatures.data.features
-			]
+				...overviewFeatures.features.filter((feature) => !canonicalIds.has(feature.properties?.id)),
+				...details
+			].filter((feature) => {
+				const id = feature.id ?? feature.properties?.id;
+				if (id == null) return true;
+				if (seen.has(id)) return false;
+				seen.add(id);
+				return true;
+			})
 		};
 	});
 	let summary = $state.raw<NationalSummary | null>(null);
@@ -432,26 +454,49 @@
 		if (profileView === 'route') untrack(() => void loadWorkspace('journey'));
 		if (exploreView === 'conditions') untrack(() => void loadWorkspace('mapConditions'));
 	});
+	let lastDetailVersion = 0;
 	$effect(() => {
-		const id = selectedId;
-		void detailVersion;
-		if (!initialized || !overviewFeatures || !isMapWorkspace || !id) return;
+		const region = detailRegionKey;
+		const version = detailVersion;
+		void sourceRevision;
+		if (!initialized || !overviewFeatures || !isMapWorkspace || !region) return;
+		const regionIds = region === 'capital' ? capitalIslandIds : [region];
+		const retry = version !== lastDetailVersion;
+		lastDetailVersion = version;
+		const pending = untrack(() => regionIds.filter((id) => retry || !detailedFeatures[id]));
+		if (!pending.length) return;
 		const active = new AbortController();
 		detailController?.abort();
 		detailController = active;
-		detailError = '';
-		void api<MapFeatures>(
-			`map/features?layer=all&island_id=${encodeURIComponent(id)}`,
-			undefined,
-			active.signal
-		)
-			.then((data) => {
-				if (!active.signal.aborted) detailedFeatures = { islandId: id, data };
-			})
-			.catch(() => {
-				if (!active.signal.aborted)
-					detailError = 'Detailed map evidence could not load. Retry before placing a proposal.';
-			});
+		untrack(() => {
+			detailErrors = {
+				...detailErrors,
+				...Object.fromEntries(pending.map((id) => [id, '']))
+			};
+		});
+		for (const id of pending) {
+			void api<MapFeatures>(
+				`map/features?layer=all&island_id=${encodeURIComponent(id)}`,
+				undefined,
+				active.signal
+			)
+				.then((data) => {
+					if (!active.signal.aborted)
+						detailedFeatures = {
+							...Object.fromEntries(
+								Object.entries(detailedFeatures).filter(([islandId]) => isCapitalIsland(islandId))
+							),
+							[id]: data
+						};
+				})
+				.catch(() => {
+					if (!active.signal.aborted)
+						detailErrors = {
+							...detailErrors,
+							[id]: 'Detailed map evidence could not load. Retry before placing a proposal.'
+						};
+				});
+		}
 		return () => active.abort();
 	});
 	let importInput = $state<HTMLInputElement | null>(null);
@@ -685,7 +730,8 @@
 		summary = null;
 		accessScores = null;
 		detailController?.abort();
-		detailedFeatures = null;
+		detailedFeatures = {};
+		detailErrors = {};
 		transitStopController?.abort();
 		transitStops = [];
 		sourceRevision += 1;

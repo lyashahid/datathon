@@ -1,4 +1,5 @@
 import { browserBaseURL } from './browser-config.mjs';
+import { projectMapPoint } from './browser-map.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -12,6 +13,13 @@ await mkdir(output, { recursive: true });
 const expect = playwrightExpect.configure({ timeout: 60000 });
 const maleId = 'island:1443';
 const hulhumaleId = 'island:1442';
+const hulhuleId = 'island:1483';
+const capitalIds = [hulhumaleId, maleId, hulhuleId];
+/** @typedef {{island_id:string,gap_cells:{features:Array<{properties:Record<string,unknown>}>},hex_grid:{features:unknown[]},assumptions:{date:string,departure_minutes:number,target_minutes:number},planning_supported:boolean}} Opportunity */
+/** @typedef {import('../src/lib/map-policy.js').MapBaseline & {island_id:string}} Baseline */
+/** @typedef {import('../src/lib/map-policy.js').MapEvaluation} Evaluation */
+/** @type {Map<string,{detail:Opportunity,baseline:Baseline}>} */
+const sources = new Map();
 /** @type {{baseURL:string,startedAt:string,finishedAt?:string,checks:Array<{name:string,status:string,detail?:unknown}>,pageErrors:string[],failure?:string}} */
 const report = { baseURL, startedAt: new Date().toISOString(), checks: [], pageErrors: [] };
 const browser = await chromium.launch({ headless: true, args: ['--enable-unsafe-swiftshader'] });
@@ -22,6 +30,76 @@ const context = await browser.newContext({
 const page = await context.newPage();
 page.setDefaultTimeout(60000);
 page.on('pageerror', (error) => report.pageErrors.push(error.message));
+/** @type {Map<string,number>} */
+const requestCounts = new Map();
+/** @type {Map<string,number>} */
+const downloadCounts = new Map();
+/** @type {Array<{key:string,status:number,conditional:boolean}>} */
+const revalidations = [];
+/** @type {Map<string,{status:number,island:string,origins:number,stops:number,roads:number,hexagons:number,features:number,islandGeometryIds:string[]}>} */
+const receipts = new Map();
+/** @type {Array<{request:import('../src/lib/proposal-review.js').PlanningReviewRequest,body:Evaluation}>} */
+const evaluations = [];
+/** @param {string} url */
+function planningRequestKey(url) {
+	const parsed = new URL(url);
+	const endpoint = parsed.pathname.endsWith('/planning/baseline')
+		? 'baseline'
+		: parsed.pathname.includes('/planning/opportunities/')
+			? 'opportunities'
+			: parsed.pathname.endsWith('/map/features') && parsed.searchParams.get('layer') === 'all'
+				? 'features'
+				: null;
+	const island =
+		endpoint === 'opportunities'
+			? decodeURIComponent(parsed.pathname.split('/').at(-1) ?? '')
+			: parsed.searchParams.get('island_id');
+	return endpoint && island && capitalIds.includes(island) ? `${endpoint}:${island}` : null;
+}
+page.on('request', (request) => {
+	const key = planningRequestKey(request.url());
+	if (key) requestCounts.set(key, (requestCounts.get(key) ?? 0) + 1);
+});
+page.on('response', async (response) => {
+	const key = planningRequestKey(response.url());
+	if (!key && !new URL(response.url()).pathname.endsWith('/planning/evaluate')) return;
+	if (key && response.status() === 304) {
+		revalidations.push({
+			key,
+			status: response.status(),
+			conditional: !!response.request().headers()['if-none-match']
+		});
+		return;
+	}
+	if (key && response.status() === 200) downloadCounts.set(key, (downloadCounts.get(key) ?? 0) + 1);
+	try {
+		const body = await response.json();
+		if (key)
+			receipts.set(key, {
+				status: response.status(),
+				island: body.island_id ?? key.slice(key.indexOf(':') + 1),
+				origins: body.origins?.length ?? body.gap_cells?.features.length ?? 0,
+				stops: body.stops?.length ?? 0,
+				roads: body.graph_edges?.length ?? 0,
+				hexagons: body.hex_grid?.features.length ?? 0,
+				features: body.features?.length ?? 0,
+				islandGeometryIds:
+					body.features
+						?.filter(
+							(/** @type {import('geojson').Feature} */ feature) =>
+								['Polygon', 'MultiPolygon'].includes(feature.geometry.type) &&
+								String(feature.properties?.id ?? '').startsWith('island:')
+						)
+						.map((/** @type {import('geojson').Feature} */ feature) =>
+							String(feature.properties?.id)
+						) ?? []
+			});
+		else if (response.ok() && response.request().method() === 'POST')
+			evaluations.push({ request: response.request().postDataJSON(), body });
+	} catch {
+		// A superseded placement preview can be cancelled before its body is available.
+	}
+});
 const atlas = page.locator('.national-map');
 const panel = page.getByRole('region', { name: 'Island needs and proposal', exact: true });
 const proposalTitle = panel.getByRole('textbox', { name: 'Proposal name', exact: true });
@@ -54,8 +132,38 @@ async function mapEvidence() {
 		),
 		gapRanges: /** @type {Record<string,{min:number|null,max:number|null}>} */ (
 			JSON.parse(element.getAttribute('data-policy-gap-ranges') ?? '{}')
+		),
+		backgroundCells: /** @type {Record<string,number>} */ (
+			JSON.parse(element.getAttribute('data-policy-background-cells') ?? '{}')
 		)
 	}));
+}
+
+/** @param {string} id */
+function sourceFor(id) {
+	const source = sources.get(id);
+	assert.ok(source, `Real source evidence is required for ${id}.`);
+	return source;
+}
+
+async function visibleHulhumaleRoad() {
+	for (const road of sourceFor(hulhumaleId).baseline.graph_edges)
+		for (const coordinates of road.geometry ?? []) {
+			const point = await projectMapPoint(atlas, coordinates);
+			if (
+				await page.evaluate(
+					({ x, y }) =>
+						x > 35 &&
+						x < innerWidth - 35 &&
+						y > 150 &&
+						y < innerHeight - 100 &&
+						!!document.elementFromPoint(x, y)?.matches('.maplibregl-canvas'),
+					point
+				)
+			)
+				return { coordinates, point };
+		}
+	throw new Error('A source-backed Hulhumalé road must be visible outside the proposal controls.');
 }
 
 async function openProposal() {
@@ -164,16 +272,36 @@ await page.route('**/api/backend/planning/opportunities/**', async (route) => {
 
 try {
 	await check(
-		'Malé has complete local journey analysis rather than uniformly poor access',
+		'Capital source evidence includes all three islands without inventing Hulhulé residents',
 		async () => {
-			const response = await page.request.get(
-				`${baseURL}/api/backend/planning/opportunities/${encodeURIComponent(maleId)}`
+			await Promise.all(
+				capitalIds.map(async (island) => {
+					const [opportunityResponse, baselineResponse] = await Promise.all([
+						page.request.get(
+							`${baseURL}/api/backend/planning/opportunities/${encodeURIComponent(island)}`
+						),
+						page.request.get(
+							`${baseURL}/api/backend/planning/baseline?island_id=${encodeURIComponent(island)}`
+						)
+					]);
+					assert.equal(opportunityResponse.status(), 200);
+					assert.equal(baselineResponse.status(), 200);
+					const detail = /** @type {Opportunity} */ (await opportunityResponse.json());
+					const baseline = /** @type {Baseline} */ (await baselineResponse.json());
+					assert.equal(detail.island_id, island);
+					assert.equal(baseline.island_id, island);
+					assert.ok(baseline.stops?.length, `${island} has real mapped transport stops.`);
+					assert.ok(baseline.graph_edges.length, `${island} has source-backed roads.`);
+					sources.set(island, { detail, baseline });
+				})
 			);
-			assert.equal(response.status(), 200);
-			/** @type {{gap_cells:{features:Array<{properties:Record<string,unknown>}>},hex_grid:{features:unknown[]},assumptions:{date:string,departure_minutes:number,target_minutes:number},priority_score:number}} */
-			const detail = await response.json();
+			const { detail } = sourceFor(maleId);
 			const origins = detail.gap_cells.features.map((feature) => feature.properties);
 			assert.ok(origins.length > 0 && detail.hex_grid.features.length > 0);
+			const airport = sourceFor(hulhuleId);
+			assert.equal(airport.detail.planning_supported, false);
+			assert.equal(airport.detail.hex_grid.features.length, 0);
+			assert.equal(airport.baseline.origins.length, 0);
 			/** @type {Record<string,{minimum:number,maximum:number}>} */
 			const journeys = {};
 			for (const [domain, target] of [
@@ -189,6 +317,16 @@ try {
 			}
 			return {
 				queriedAt: new Date().toISOString(),
+				capitalSources: capitalIds.map((island) => {
+					const source = sourceFor(island);
+					return {
+						island,
+						origins: source.baseline.origins.length,
+						displayHexagons: source.detail.hex_grid.features.length,
+						stops: source.baseline.stops?.length,
+						roads: source.baseline.graph_edges.length
+					};
+				}),
 				island: maleId,
 				sourceSnapshot: detail.assumptions.date,
 				departureMinutes: detail.assumptions.departure_minutes,
@@ -229,13 +367,51 @@ try {
 		}
 	);
 	await check(
-		'Both capital islands show local journey evidence and selecting Malé preserves its actual values',
+		'All three capital analyses preload together and Malé retains its actual local evidence',
 		async () => {
 			releaseMale();
-			await expect.poll(async () => (await mapEvidence()).localIslands.includes(maleId)).toBe(true);
+			await expect
+				.poll(() =>
+					capitalIds.every((island) =>
+						['baseline', 'opportunities', 'features'].every((endpoint) =>
+							receipts.has(`${endpoint}:${island}`)
+						)
+					)
+				)
+				.toBe(true);
+			await expect
+				.poll(async () => (await mapEvidence()).localCells[maleId])
+				.toBe(sourceFor(maleId).detail.hex_grid.features.length);
 			const evidence = await mapEvidence();
-			assert.ok(evidence.localIslands.includes(hulhumaleId));
-			assert.ok(evidence.localCells[maleId] > 0 && evidence.localCells[hulhumaleId] > 0);
+			for (const island of capitalIds) {
+				const source = sourceFor(island);
+				assert.equal(evidence.localCells[island] ?? 0, source.detail.hex_grid.features.length);
+				assert.equal(evidence.backgroundCells[island] ?? 0, source.detail.hex_grid.features.length);
+				for (const endpoint of ['baseline', 'opportunities', 'features']) {
+					const receipt = receipts.get(`${endpoint}:${island}`);
+					assert.ok(receipt);
+					assert.equal(receipt.status, 200);
+					assert.equal(receipt.island, island);
+					if (endpoint === 'features') {
+						assert.deepEqual(receipt.islandGeometryIds, [island]);
+						assert.ok(
+							receipt.features > 1,
+							'Canonical island geometry includes local source records.'
+						);
+					} else
+						assert.equal(
+							receipt.origins,
+							endpoint === 'baseline'
+								? source.baseline.origins.length
+								: source.detail.gap_cells.features.length
+						);
+					if (endpoint === 'baseline') {
+						assert.equal(receipt.stops, source.baseline.stops?.length);
+						assert.equal(receipt.roads, source.baseline.graph_edges.length);
+					}
+				}
+			}
+			assert.equal(evidence.localIslands.includes(hulhuleId), false);
 			assert.deepEqual(evidence.screeningIslands, []);
 			const maleRange = evidence.gapRanges[maleId];
 			assert.ok(maleRange && maleRange.min !== null && maleRange.max !== null);
@@ -259,6 +435,7 @@ try {
 			await page.waitForTimeout(800);
 			await expect(page).toHaveURL((url) => url.searchParams.get('island') === hulhumaleId);
 			await page.screenshot({ path: path.join(output, 'male-local-with-hulhumale-selected.png') });
+			const downloadsBeforeSelection = Object.fromEntries(downloadCounts);
 			await chooseIsland(maleId, 'Malé');
 			await expect.poll(async () => (await mapEvidence()).localIslands.includes(maleId)).toBe(true);
 			await openProposal();
@@ -271,8 +448,98 @@ try {
 			assert.deepEqual(selectedMaleEvidence.gapRanges[maleId], maleRange);
 			assert.equal(selectedMaleEvidence.localCells[maleId], evidence.localCells[maleId]);
 			assert.deepEqual(selectedMaleEvidence.screeningIslands, []);
+			assert.deepEqual(
+				Object.fromEntries(downloadCounts),
+				downloadsBeforeSelection,
+				'Switching capital islands reuses loaded bodies; conditional 304 freshness checks are allowed.'
+			);
+			assert.ok(revalidations.every((response) => response.conditional));
 			await page.screenshot({ path: path.join(output, 'male-local-access.png') });
-			return { capitalEvidence: evidence, selectedIsland: maleId, selectedMaleEvidence };
+			return {
+				preloaded: Object.fromEntries(receipts),
+				capitalEvidence: evidence,
+				selectedIsland: maleId,
+				selectedMaleEvidence,
+				selectionReusedLoadedData: true,
+				requests: Object.fromEntries(requestCounts),
+				downloads: Object.fromEntries(downloadCounts),
+				revalidations
+			};
+		}
+	);
+	await check(
+		'A Hulhumalé proposal preserves neighboring baseline colours and keeps resident impact scoped',
+		async () => {
+			await chooseIsland(hulhumaleId, 'Hulhumalé');
+			await openProposal();
+			await expect(proposalTitle).toHaveValue('Hulhumalé service improvement');
+			await expect(panel.getByRole('button', { name: 'Hospital', exact: true })).toBeEnabled();
+			await panel.getByRole('button', { name: 'Edit budget limits', exact: true }).click();
+			await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('1000000000');
+			await panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('1000000000');
+			await panel.getByRole('button', { name: 'Done', exact: true }).click();
+			const before = await mapEvidence();
+			const target = await visibleHulhumaleRoad();
+			await panel.getByRole('button', { name: 'Hospital', exact: true }).click();
+			await page.mouse.click(target.point.x, target.point.y);
+			const confirmation = page.getByTestId('map-placement-confirmation');
+			await expect(confirmation).toHaveAttribute('aria-busy', 'false');
+			await expect(confirmation).toHaveAttribute('data-placement-allowed', 'true');
+			await confirmation.getByRole('button', { name: 'Add to proposal', exact: true }).click();
+			await expect(confirmation).toHaveCount(0);
+			await expect(atlas).toHaveAttribute('data-policy-calculating', 'false');
+			await expect(atlas).toHaveAttribute('data-policy-proposal-points', '1');
+			await expect
+				.poll(async () => Number(await atlas.getAttribute('data-policy-impact-cells')))
+				.toBe(sourceFor(hulhumaleId).detail.hex_grid.features.length);
+			await expect.poll(() => evaluations.length).toBeGreaterThan(0);
+			const evaluated = evaluations.at(-1);
+			assert.ok(evaluated);
+			assert.equal(evaluated.request.island_id, hulhumaleId);
+			assert.equal(evaluated.request.operations.length, 1);
+			assert.equal(evaluated.request.operations[0].type, 'add_hospital');
+			assert.deepEqual(
+				evaluated.body.origins.map((origin) => origin.origin_id).sort(),
+				sourceFor(hulhumaleId)
+					.baseline.origins.map((origin) => origin.id)
+					.sort(),
+				'Loading neighboring maps must not add their residents to the selected proposal.'
+			);
+			/** @type {Array<{view:string,evidence:Awaited<ReturnType<typeof mapEvidence>>}>} */
+			const comparisons = [];
+			for (const [label, view] of [
+				['Without proposal', 'before'],
+				['With proposal', 'after']
+			]) {
+				await page.getByRole('button', { name: label, exact: true }).click();
+				await expect(atlas).toHaveAttribute('data-policy-impact-view', view);
+				const evidence = await mapEvidence();
+				assert.deepEqual(evidence.localCells, before.localCells);
+				assert.deepEqual(evidence.gapRanges, before.gapRanges);
+				assert.deepEqual(evidence.screeningIslands, []);
+				for (const island of [maleId, hulhuleId])
+					assert.equal(
+						evidence.backgroundCells[island] ?? 0,
+						sourceFor(island).detail.hex_grid.features.length,
+						`${island} keeps its complete baseline when ${label.toLowerCase()} is shown.`
+					);
+				assert.equal(evidence.backgroundCells[hulhumaleId] ?? 0, 0);
+				comparisons.push({ view, evidence });
+			}
+			await panTo([73.514746, 4.17001]);
+			await expect(page).toHaveURL((url) => url.searchParams.get('island') === hulhumaleId);
+			await expect
+				.poll(async () => Number(await atlas.getAttribute('data-rendered-roads')))
+				.toBeGreaterThan(0);
+			await page.screenshot({
+				path: path.join(output, 'hulhumale-proposal-neighboring-baseline.png')
+			});
+			return {
+				coordinates: target.coordinates,
+				evaluationIsland: evaluated.request.island_id,
+				evaluatedOrigins: evaluated.body.origins.length,
+				comparisons
+			};
 		}
 	);
 	assert.deepEqual(report.pageErrors, []);

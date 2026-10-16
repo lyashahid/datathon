@@ -37,7 +37,7 @@ def _recording_app(failures=None):
 
 @pytest.mark.parametrize(
     ("include_analysis", "include_planning", "expected_count"),
-    [(False, False, 4), (True, False, 7), (False, True, 26), (True, True, 29)],
+    [(False, False, 4), (True, False, 7), (False, True, 30), (True, True, 33)],
 )
 async def test_warmup_covers_selected_work_and_all_nine_planning_baselines(
     include_analysis, include_planning, expected_count
@@ -63,6 +63,7 @@ async def test_warmup_covers_selected_work_and_all_nine_planning_baselines(
     if include_planning:
         assert ("/api/v1/planning/opportunities", "include_geometry=false") in gets
         assert len(posts) == 9
+        assert all(body["island_id"] != "island:1483" for _, body in posts)
         assert {(body["island_id"], body["assumptions"]["goal"]) for _, body in posts} == {
             (f"island:{island}", goal)
             for island in ("1443", "1442", "1382")
@@ -76,7 +77,7 @@ async def test_warmup_covers_selected_work_and_all_nine_planning_baselines(
             assert body["assumptions"]["include_world"] is False
             if body["assumptions"]["goal"] == "transport":
                 assert body["assumptions"]["target_minutes"] == 10
-        for island in ("1443", "1442", "1382"):
+        for island in ("1443", "1442", "1483", "1382"):
             assert ("/api/v1/planning/baseline", f"island_id=island%3A{island}") in gets
             assert (f"/api/v1/planning/opportunities/island:{island}", "") in gets
             assert (f"/api/v1/islands/island:{island}/profile", "") in gets
@@ -120,15 +121,15 @@ async def test_background_sweep_isolates_failures_then_retries_each_once(caplog)
         retry_delay=0,
     )
 
-    assert len(rows) == 29
-    assert len(calls) == 31
-    assert {key[1] for key, _ in calls[29:]} == {"/api/v1/forecasts/analysis", "/api/v1/datasets"}
+    assert len(rows) == 33
+    assert len(calls) == 35
+    assert {key[1] for key, _ in calls[33:]} == {"/api/v1/forecasts/analysis", "/api/v1/datasets"}
     by_name = {row["name"]: row for row in rows}
     assert by_name["data_analysis"]["status"] == "ready"
     assert by_name["data_analysis"]["attempts"] == 2
     assert by_name["datasets"]["status"] == "failed"
     assert by_name["datasets"]["attempts"] == 2
-    assert sum(row["status"] == "ready" for row in rows) == 28
+    assert sum(row["status"] == "ready" for row in rows) == 32
     assert private_detail not in json.dumps(rows)
     assert private_detail not in caplog.text
 
@@ -172,7 +173,7 @@ def _startup_app():
 async def test_automatic_precompute_enables_full_sweep_and_records_result(monkeypatch, failed_jobs):
     rows = [
         {"name": f"ready_{index}", "status": "ready", "attempts": 1}
-        for index in range(29 - len(failed_jobs))
+        for index in range(33 - len(failed_jobs))
     ]
     rows.extend({"name": name, "status": "failed", "attempts": 2} for name in failed_jobs)
     warm = AsyncMock(return_value=rows)
@@ -190,8 +191,8 @@ async def test_automatic_precompute_enables_full_sweep_and_records_result(monkey
     app.state.computed_cache.mirror_public_results.assert_awaited_once()
     assert app.state.precompute == {
         "status": "partial" if failed_jobs else "ready",
-        "completed": 29 - len(failed_jobs),
-        "total": 29,
+        "completed": 33 - len(failed_jobs),
+        "total": 33,
         "failed_jobs": failed_jobs,
     }
 
@@ -221,7 +222,7 @@ async def test_background_progress_tracks_unique_ready_views_and_retry_recovery(
     app = _startup_app()
 
     async def warm(_app, **options):
-        assert app.state.precompute["total"] == 29
+        assert app.state.precompute["total"] == 33
         progress = options["on_progress"]
         progress({"name": "country_map", "status": "ready"})
         assert app.state.precompute["completed"] == 1
