@@ -125,6 +125,7 @@ def test_api_exposes_scoped_stop_points_and_validates_departure(repository, tmp_
     assert catalogue["earliest_departure_minutes"] == 920
     assert catalogue["stops"]
     assert all(stop["island_id"] == "hulhumale" for stop in catalogue["stops"])
+    assert all(stop["national_island_id"] == "island:1442" for stop in catalogue["stops"])
     assert all(len(stop["coordinates"]) == 2 for stop in catalogue["stops"])
     assert all(stop["mode"] == "bus" for stop in catalogue["stops"])
     assert all(stop["route_names"] for stop in catalogue["stops"])
@@ -132,6 +133,13 @@ def test_api_exposes_scoped_stop_points_and_validates_departure(repository, tmp_
         not name.startswith("rtl:") for stop in catalogue["stops"] for name in stop["route_names"]
     )
     assert "graph_edges" not in catalogue
+    all_stops = client.get("/api/v1/routing/stops").json()["stops"]
+    assert {"male", "hulhumale"}.issubset({stop["island_id"] for stop in all_stops})
+    assert all(
+        stop["national_island_id"] == "island:1443"
+        for stop in all_stops
+        if stop["island_id"] == "male"
+    )
     assert client.get("/api/v1/routing/stops?island_id=island:unknown").json()["stops"] == []
     start, end = endpoints(repository)
     response = client.post(

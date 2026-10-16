@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from app.api.routes.planning import get_planning
 from app.models.coordinates import Coordinates
+from app.planning.repository import IDENTITY_BRIDGE
 from app.planning.service import PlanningService
 from app.routing.engine import RoutingRepository
 from app.routing.journeys import route_journey
@@ -104,6 +105,7 @@ def transit_stops(
                 "name": stop.get("name") or "Bus stop",
                 "coordinates": [stop["lon"], stop["lat"]],
                 "island_id": stop.get("islandId"),
+                "national_island_id": IDENTITY_BRIDGE.get(stop.get("islandId")),
                 "operator_code": stop.get("operatorCode"),
                 "route_ids": stop.get("routeIds", []),
                 "route_names": list(

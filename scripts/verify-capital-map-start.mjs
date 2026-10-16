@@ -85,7 +85,7 @@ async function visibleMapPoint(coordinates, targetAtlas = atlas) {
 	}, coordinates);
 }
 
-async function readyCapital() {
+async function readyHulhumale() {
 	await expect(atlas).toHaveAttribute('aria-busy', 'false');
 	await expect(atlas).toHaveAttribute('data-accessibility-overview', 'false');
 	await expect(explorer).not.toBeVisible();
@@ -94,7 +94,7 @@ async function readyCapital() {
 		(url) =>
 			url.searchParams.get('view') === 'map' &&
 			url.searchParams.get('island') === 'island:1442' &&
-			url.searchParams.get('scope') === 'capital'
+			!url.searchParams.has('scope')
 	);
 	await expect(page.getByLabel('Service coverage map', { exact: true })).toBeVisible();
 	await expect(page.getByLabel('Explore supporting tools', { exact: true })).toBeVisible();
@@ -154,28 +154,56 @@ try {
 		return { view, points };
 	}
 
-	for (const entry of ['', '/?view=map']) {
-		await check(
-			`Opening ${entry || '/'} shows Malé and Hulhumalé with island tools ready`,
-			async () => {
-				await page.goto(`${baseURL}${entry}`, { waitUntil: 'domcontentloaded' });
-				await readyCapital();
-				const camera = await bothCitiesVisible();
-				await page.screenshot({
-					path: path.join(output, entry ? 'map-default.png' : 'app-default.png')
-				});
-				return { url: page.url(), ...camera };
-			}
-		);
+	const hulhumale = capital.find((island) => island.id === 'island:1442');
+	assert.ok(hulhumale);
+	const { centroid: hulhumaleCentroid, name: hulhumaleName } = hulhumale;
+	async function hulhumaleVisible() {
+		await expect
+			.poll(async () => (await visibleMapPoint(hulhumaleCentroid)).visible, {
+				message: 'Hulhumalé remains visible outside floating controls'
+			})
+			.toBe(true);
+		await expect.poll(async () => (await mapView()).zoom).toBeGreaterThan(12);
+		await expect(page.locator('.policy-inspect-trigger')).toContainText(hulhumaleName);
+		return { view: await mapView(), point: await visibleMapPoint(hulhumaleCentroid) };
 	}
-	await check(
-		'The capital opening survives a reload without reintroducing national onboarding',
-		async () => {
-			await page.reload({ waitUntil: 'domcontentloaded' });
-			await readyCapital();
-			return bothCitiesVisible();
-		}
-	);
+	await check('A fresh home page opens Analytics rather than Map & planning', async () => {
+		await page.goto(baseURL, { waitUntil: 'domcontentloaded' });
+		const analytics = page.getByRole('region', { name: 'National analytics', exact: true });
+		await expect(analytics).toBeVisible();
+		await expect(analytics).toHaveAttribute('aria-busy', 'false');
+		await expect(
+			navigation.getByRole('button', { name: 'Analytics', exact: true })
+		).toHaveAttribute('aria-current', 'page');
+		await expect(atlas).not.toBeVisible();
+		await expect(page.locator('.app-header')).not.toHaveClass(/floating-map-header/);
+		assert.notEqual(new URL(page.url()).searchParams.get('view'), 'map');
+		await page.screenshot({ path: path.join(output, 'app-default.png') });
+		await page.reload({ waitUntil: 'domcontentloaded' });
+		await expect(analytics).toBeVisible();
+		return { url: page.url() };
+	});
+	await check('A bare map link focuses Hulhumalé with detailed island tools ready', async () => {
+		await page.goto(`${baseURL}/?view=map`, { waitUntil: 'domcontentloaded' });
+		await readyHulhumale();
+		const camera = await hulhumaleVisible();
+		await page.screenshot({ path: path.join(output, 'map-default.png') });
+		return { url: page.url(), ...camera };
+	});
+	await check('The Hulhumalé opening survives reload without national onboarding', async () => {
+		await page.reload({ waitUntil: 'domcontentloaded' });
+		await readyHulhumale();
+		return hulhumaleVisible();
+	});
+	await check('Explicit capital-region deep links still frame both islands', async () => {
+		await page.goto(`${baseURL}/?view=map&island=island%3A1442&scope=capital`, {
+			waitUntil: 'domcontentloaded'
+		});
+		await expect(atlas).toHaveAttribute('aria-busy', 'false');
+		await expect(page).toHaveURL((url) => url.searchParams.get('scope') === 'capital');
+		await expect(explorer).not.toBeVisible();
+		return bothCitiesVisible();
+	});
 	await check(
 		'Explicit Malé island links retain their selected island and detailed camera',
 		async () => {
@@ -193,15 +221,15 @@ try {
 		}
 	);
 	await check(
-		'Map & planning navigation opens the capital region directly from analytics',
+		'Map & planning resets to Hulhumalé after viewing Malé and returning through Analytics',
 		async () => {
 			await navigation.getByRole('button', { name: 'Analytics', exact: true }).click();
 			await expect(
 				page.getByRole('region', { name: 'National analytics', exact: true })
 			).toBeVisible();
 			await navigation.getByRole('button', { name: 'Map & planning', exact: true }).click();
-			await readyCapital();
-			return bothCitiesVisible();
+			await readyHulhumale();
+			return hulhumaleVisible();
 		}
 	);
 	await check(
@@ -220,32 +248,32 @@ try {
 			await expect(atlas).toHaveAttribute('data-accessibility-overview', 'true');
 			await expect.poll(async () => (await mapView()).zoom).toBeLessThan(8);
 			await navigation.getByRole('button', { name: 'Map & planning', exact: true }).click();
-			await readyCapital();
-			return bothCitiesVisible();
+			await readyHulhumale();
+			return hulhumaleVisible();
 		}
 	);
 	await check(
-		'Browser back and forward preserve capital and optional country camera scopes',
+		'Browser back and forward preserve Hulhumalé and optional country camera scopes',
 		async () => {
 			await atlas.getByRole('button', { name: 'Show all Maldives islands', exact: true }).click();
 			await expect(explorer).toHaveAttribute('data-scope', 'country');
 			await expect(atlas).toHaveAttribute('data-accessibility-overview', 'true');
 			await navigation.getByRole('button', { name: 'Map & planning', exact: true }).click();
-			await readyCapital();
-			await bothCitiesVisible();
+			await readyHulhumale();
+			await hulhumaleVisible();
 			await page.goBack();
 			await expect(explorer).toHaveAttribute('data-scope', 'country');
 			await expect(page).toHaveURL((url) => url.searchParams.get('scope') === 'country');
 			await expect.poll(async () => (await mapView()).zoom).toBeLessThan(8);
 			await page.goBack();
-			await readyCapital();
-			await bothCitiesVisible();
+			await readyHulhumale();
+			await hulhumaleVisible();
 			await page.goForward();
 			await expect(explorer).toHaveAttribute('data-scope', 'country');
 			await expect.poll(async () => (await mapView()).zoom).toBeLessThan(8);
 			await page.goForward();
-			await readyCapital();
-			return bothCitiesVisible();
+			await readyHulhumale();
+			return hulhumaleVisible();
 		}
 	);
 	await check(
@@ -263,25 +291,22 @@ try {
 			await expect.poll(async () => (await mapView()).zoom).toBeGreaterThan(13);
 			assert.equal(new URL(page.url()).searchParams.has('scope'), false);
 			await navigation.getByRole('button', { name: 'Map & planning', exact: true }).click();
-			await readyCapital();
-			return bothCitiesVisible();
+			await readyHulhumale();
+			return hulhumaleVisible();
 		}
 	);
 	for (const viewport of [
 		{ width: 820, height: 1180, name: 'tablet' },
 		{ width: 390, height: 844, name: 'mobile' }
 	]) {
-		await check(
-			`${viewport.name} opens both capital islands without hiding the map tools`,
-			async () => {
-				await page.setViewportSize({ width: viewport.width, height: viewport.height });
-				await page.goto(`${baseURL}/?view=map`, { waitUntil: 'domcontentloaded' });
-				await readyCapital();
-				const camera = await bothCitiesVisible();
-				await page.screenshot({ path: path.join(output, `capital-${viewport.name}.png`) });
-				return camera;
-			}
-		);
+		await check(`${viewport.name} focuses Hulhumalé without hiding the map tools`, async () => {
+			await page.setViewportSize({ width: viewport.width, height: viewport.height });
+			await page.goto(`${baseURL}/?view=map`, { waitUntil: 'domcontentloaded' });
+			await readyHulhumale();
+			const camera = await hulhumaleVisible();
+			await page.screenshot({ path: path.join(output, `hulhumale-${viewport.name}.png`) });
+			return camera;
+		});
 	}
 	await check(
 		'A fresh tablet session keeps the complete Malé shoreline above the map key',
@@ -293,7 +318,9 @@ try {
 			const coldPage = await coldContext.newPage();
 			coldPage.on('pageerror', (error) => report.pageErrors.push(error.message));
 			try {
-				await coldPage.goto(`${baseURL}/?view=map`, { waitUntil: 'domcontentloaded' });
+				await coldPage.goto(`${baseURL}/?view=map&island=island%3A1442&scope=capital`, {
+					waitUntil: 'domcontentloaded'
+				});
 				const coldAtlas = coldPage.locator('.national-map');
 				await expect(coldAtlas).toHaveAttribute('aria-busy', 'false');
 				await expect(coldAtlas).toHaveAttribute('data-accessibility-overview', 'false');

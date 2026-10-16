@@ -7,6 +7,7 @@ const suites = [
 	'verify-forecast-data-browser.mjs',
 	'verify-capital-map-start.mjs',
 	'verify-restored-navigation.mjs',
+	'verify-nearby-bus-stops.mjs',
 	'verify-map-floating-controls.mjs',
 	'verify-proposal-experience.mjs',
 	'verify-island-connections.mjs'

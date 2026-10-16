@@ -92,6 +92,7 @@
 			name: string;
 			coordinates: Coordinates;
 			island_id?: string | null;
+			national_island_id?: string | null;
 			route_ids?: string[];
 			route_names?: string[];
 			timetable_status?: string;
@@ -991,7 +992,8 @@
 			properties: {
 				record_id: stop.id,
 				name: stop.name,
-				island_id: stop.island_id,
+				island_id: stop.national_island_id,
+				planning_island_id: stop.island_id,
 				category: 'bus_stop',
 				record_source: 'transport',
 				source: 'Reviewed planning stop catalogue',
@@ -1788,7 +1790,12 @@
 			.addTo(map);
 		inspectionPopup = popup;
 		inspectedSource = recordSource;
-		inspectedIslandId = props.island_id ? String(props.island_id) : null;
+		inspectedIslandId =
+			feature.source === 'bus-stops'
+				? selectedId
+				: props.island_id
+					? String(props.island_id)
+					: null;
 		popup.on('close', () => {
 			if (inspectionPopup === popup) {
 				inspectionPopup = null;
@@ -2656,7 +2663,9 @@
 		);
 		if (record) {
 			inspectFeature(record, event);
-			if (['facilities', 'transport', 'pois', 'bus-stops'].includes(record.source)) {
+			// Inspecting a nearby bus stop keeps the current camera and planning island.
+			// Catalogue planning IDs are distinct from the national boundary identities.
+			if (['facilities', 'transport', 'pois'].includes(record.source)) {
 				const id = record.properties.island_id;
 				if (id && String(id) !== selectedId) onselect(String(id));
 			}

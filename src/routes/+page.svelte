@@ -118,7 +118,7 @@
 		{ id: 'map', label: 'Map & planning', icon: MapIcon },
 		{ id: 'evidence', label: 'Evidence', icon: BookOpen }
 	];
-	const capitalIslandId = 'island:1442';
+	const defaultMapIslandId = 'island:1442';
 	const capitalBounds: [Coordinates, Coordinates] = [
 		[73.497, 4.165],
 		[73.555, 4.245]
@@ -190,7 +190,7 @@
 		go('explore', false);
 		exploreView = 'map';
 		journeyKind = 'islands';
-		connectionOriginId = selectedId ?? capitalIslandId;
+		connectionOriginId = selectedId ?? defaultMapIslandId;
 		profileView = 'route';
 		panelOpen = true;
 		policyAction('close');
@@ -219,7 +219,7 @@
 		focusBounds = null;
 		focusPoint = { id: ++policySequence, coordinates };
 	}
-	let tab = $state('explore');
+	let tab = $state('overview');
 	let countryAtoll = $state<string | null>(null);
 	let accessExplorerOpen = $state(false);
 	let accessScores = $state.raw<NationalAccessibility | null>(null);
@@ -596,18 +596,13 @@
 		});
 	});
 	$effect(() => {
-		const id = selectedId;
 		void sourceRevision;
-		if (!initialized || activeWorkspace !== 'atlas' || !id) return;
+		if (!initialized || activeWorkspace !== 'atlas') return;
 		const active = new AbortController();
 		transitStopController?.abort();
 		transitStopController = active;
-		transitStops = [];
-		void api<{ stops: typeof transitStops }>(
-			`routing/stops?island_id=${encodeURIComponent(id)}`,
-			undefined,
-			active.signal
-		)
+		// Stops are map context: panning to a neighbouring island must keep its stops visible.
+		void api<{ stops: typeof transitStops }>('routing/stops', undefined, active.signal)
 			.then((result) => {
 				if (!active.signal.aborted) transitStops = result.stops;
 			})
@@ -741,13 +736,12 @@
 		focusVersion += 1;
 		writeLocation(true);
 	}
-	function showCapitalRegion() {
+	function showDefaultMap() {
 		resetIslandSelection();
 		policyLens = 'overall';
 		atoll = '';
 		search = '';
-		selectIsland(capitalIslandId, false);
-		capitalRegion = true;
+		selectIsland(defaultMapIslandId, false);
 		go('map', false);
 		focusVersion += 1;
 		writeLocation(true);
@@ -927,7 +921,7 @@
 	}
 	function resetJourney() {
 		connectionDestinationId = '';
-		connectionOriginId = selectedId ?? capitalIslandId;
+		connectionOriginId = selectedId ?? defaultMapIslandId;
 		connectionFeatures = emptyFeatures();
 		clearJourneyPoint('start');
 		clearJourneyPoint('end');
@@ -1117,16 +1111,14 @@
 		}
 		const restoreView = () => {
 			const params = new URL(location.href).searchParams;
-			const requested = params.get('view') ?? 'map';
+			const requested = params.get('view') ?? 'overview';
 			const isMapView = !['overview', 'evidence'].includes(requested);
 			const explicitIsland = params.get('island');
+			const useDefaultIsland =
+				isMapView && params.get('scope') !== 'country' && !params.has('atoll') && !explicitIsland;
+			const id = explicitIsland ?? (useDefaultIsland ? defaultMapIslandId : null);
 			const isCapitalView =
-				isMapView &&
-				params.get('scope') !== 'country' &&
-				!params.has('atoll') &&
-				(!explicitIsland ||
-					(explicitIsland === capitalIslandId && params.get('scope') === 'capital'));
-			const id = explicitIsland ?? (isCapitalView ? capitalIslandId : null);
+				isMapView && params.get('scope') === 'capital' && id === defaultMapIslandId;
 			if (id && id !== selectedId) {
 				if (features) selectIsland(id, false);
 				else selectedId = id;
@@ -1304,7 +1296,7 @@
 	}
 	function setProfileView(value: string) {
 		if (value === 'route' && !connectionDestinationId)
-			connectionOriginId = selectedId ?? capitalIslandId;
+			connectionOriginId = selectedId ?? defaultMapIslandId;
 		policyAction('close');
 		profileView = value;
 		panelOpen = true;
@@ -1397,7 +1389,7 @@
 					class={active ? 'nav-item active' : 'nav-item'}
 					aria-current={active ? 'page' : undefined}
 					onclick={() => {
-						if (item.id === 'map') showCapitalRegion();
+						if (item.id === 'map') showDefaultMap();
 						else go(item.id);
 					}}><item.icon size={16} /><span>{item.label}</span></Button
 				>

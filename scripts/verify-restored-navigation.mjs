@@ -3,7 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
-// Exercise the shared navigation, capital opening, and optional country-to-planning journey.
+// Exercise the shared navigation, Hulhumalé opening, and optional country-to-planning journey.
 const baseURL = process.env.BASE_URL || process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
 const output = path.resolve('artifacts/qa/restored-navigation');
 await mkdir(output, { recursive: true });
@@ -108,14 +108,12 @@ async function floatingNavigation() {
 	}
 }
 
-async function capitalReady() {
+async function hulhumaleReady() {
 	await expect(explorer).not.toBeVisible();
 	await expect(atlas).toHaveAttribute('aria-busy', 'false');
 	await expect(atlas).toHaveAttribute('data-accessibility-overview', 'false');
 	await expect(page).toHaveURL(
-		(url) =>
-			url.searchParams.get('island') === 'island:1442' &&
-			url.searchParams.get('scope') === 'capital'
+		(url) => url.searchParams.get('island') === 'island:1442' && !url.searchParams.has('scope')
 	);
 	await expect(page.getByLabel('Service coverage map', { exact: true })).toBeVisible();
 	await expect(page.getByRole('button', { name: 'Create proposal', exact: true })).toBeVisible();
@@ -124,7 +122,7 @@ async function capitalReady() {
 }
 
 async function openOptionalCountry() {
-	await capitalReady();
+	await hulhumaleReady();
 	await atlas.getByRole('button', { name: 'Show all Maldives islands', exact: true }).click();
 	await countryReady();
 }
@@ -195,8 +193,8 @@ try {
 	assert.ok(island, 'The real planning island is available');
 	const target = island.properties;
 
-	await page.goto(`${baseURL}/?view=overview`, { waitUntil: 'domcontentloaded' });
-	await check('Analytics restores the dynamic island navigation', async () => {
+	await page.goto(baseURL, { waitUntil: 'domcontentloaded' });
+	await check('The fresh home page opens Analytics with dynamic island navigation', async () => {
 		await expect(header).toBeVisible();
 		const navigation = header.getByRole('navigation', { name: 'Workspace', exact: true });
 		await expect(navigation).toHaveClass(/navigation-island/);
