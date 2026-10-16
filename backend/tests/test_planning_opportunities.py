@@ -194,6 +194,78 @@ def test_detail_uses_real_walk_distances_and_unknown_facilities(opportunities):
     assert sum(c["population"] for c in cells.values()) == 150
 
 
+def test_detail_keeps_census_headline_distinct_from_projected_journey_population(opportunities):
+    opportunities.accessibility = SimpleNamespace(
+        islands={
+            "island:1443": {
+                "type": "Feature",
+                "geometry": opportunities._island("male")["geometry"],
+                "properties": {"id": "island:1443", "name": "Malé"},
+            }
+        },
+        facilities=[],
+        transport=[],
+        source_fingerprint={"fixture": "sha256"},
+        default_artifact=lambda: {
+            "scores": [
+                {
+                    "island_id": "island:1443",
+                    "population": {
+                        "total": 90,
+                        "status": "census",
+                        "qualification": "Census 2022 resident count",
+                    },
+                }
+            ]
+        },
+    )
+    detail = opportunities.detail("island:1443")
+    assert detail["population"] == 90
+    assert detail["population_status"] == "census"
+    assert detail["population_basis"] == "Census 2022 resident count"
+    assert detail["journey_population_basis"] == "Fixture allocations, not observed blocks"
+    assert sum(cell["properties"]["population"] for cell in detail["gap_cells"]["features"]) == 150
+
+
+def test_transport_detail_uses_same_ferry_boarding_points_as_evaluation(opportunities):
+    opportunities.repository.ferry_terminals = {
+        "terminal:a": {
+            "id": "terminal:a",
+            "name": "Mapped passenger landing",
+            "island_id": "island:1443",
+            "coordinates": [73.5, 4.17],
+        }
+    }
+    detail = opportunities.detail("island:1443")
+    cells = {f["properties"]["origin_id"]: f["properties"] for f in detail["gap_cells"]["features"]}
+    evaluation = opportunities.planning.evaluate(
+        PlanningRequest(
+            island_id="island:1443", assumptions={"goal": "transport", "target_minutes": 10}
+        )
+    )
+    assert cells["origin:a"]["transport_minutes"] == 0
+    assert all(
+        cells[row["origin_id"]]["transport_minutes"] == row["before"]["minutes"]
+        for row in evaluation["origins"]
+    )
+    assert evaluation["summary"]["gained_residents"] == 0
+    assert evaluation["transport_connectivity"]["before"]["lines"] == []
+
+
+def test_bus_suggestions_do_not_claim_gains_for_existing_ferry_walk_access(opportunities):
+    opportunities.repository.ferry_terminals = {
+        "terminal:a": {
+            "id": "terminal:a",
+            "name": "Mapped passenger landing",
+            "island_id": "island:1443",
+            "coordinates": [73.5, 4.17],
+        }
+    }
+    result = opportunities.suggest(request(priorities=["transport"]))
+    assert result["selected"] == []
+    assert result["estimated_gained_residents"] == 0
+
+
 def test_candidates_preserve_sources_and_union_residents_across_sectors(opportunities):
     original = copy.deepcopy(opportunities.repository.baseline)
     result = opportunities.suggest(request(priorities=["health", "education"]))

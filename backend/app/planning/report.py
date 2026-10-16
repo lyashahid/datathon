@@ -25,6 +25,7 @@ from reportlab.platypus import (
 )
 
 from app.planning.models import PlanningRequest
+from app.planning.routing import service_day_trips
 
 INK = colors.HexColor("#183e33")
 MUTED = colors.HexColor("#62736c")
@@ -123,15 +124,13 @@ def benefit_cards(
     delta: dict[str, Any],
     width: float,
     ferry_services: list[dict[str, Any]] | None = None,
+    ferry_departures: int = 0,
 ) -> Drawing:
     """Lead with the proposal's service outcome, keeping resident access separate."""
     drawing = Drawing(width, 185)
     card(drawing, 0, 65, width, 120, INK)
     if ferry_services:
         service_count = len({service.get("routeId") or service["id"] for service in ferry_services})
-        departures = sum(
-            len(service.get("timing", {}).get("trips", [])) for service in ferry_services
-        )
         chart_text(
             drawing,
             20,
@@ -146,7 +145,8 @@ def benefit_cards(
             drawing,
             20,
             81,
-            f"{departures} planned departures, including return sailings, on the selected date",
+            f"{ferry_departures} planned departures, including return sailings, "
+            "on the selected date",
             9,
             colors.white,
         )
@@ -626,7 +626,13 @@ def build_planning_report(
         ),
         Spacer(1, 5),
         benefit_cards(
-            summary, delta, available, [operation.service for operation in proposed_ferries]
+            summary,
+            delta,
+            available,
+            [operation.service for operation in proposed_ferries],
+            sum(
+                len(service_day_trips(operation.service, a.date)) for operation in proposed_ferries
+            ),
         ),
         p(f"Access to {goal}, before and after", "Section"),
         access_comparison(summary, available),
@@ -794,13 +800,15 @@ def build_planning_report(
                     if landing_numbers and all(landing_numbers)
                     else "Service"
                 )
-                direction = (
-                    "Return service" if service["id"].endswith(":return") else "Outward service"
+                stops = service.get("stopIds", [])
+                direction = " to ".join(
+                    world_stops.get(identity, {}).get("name", identity)
+                    for identity in (stops[:1] + stops[-1:] if len(stops) > 1 else stops)
                 )
                 details = [
                     name,
                     direction,
-                    f"{len(service.get('timing', {}).get('trips', []))} planned departures "
+                    f"{len(service_day_trips(service, a.date))} planned departures "
                     f"on {a.date.isoformat()}.",
                 ]
             if operation.get("coordinates"):
@@ -835,7 +843,7 @@ def build_planning_report(
                         for identity in service.get("stopIds", [])
                     ),
                     f"{amount(duration)} min",
-                    str(len(trips)) if trips else "Frequency service",
+                    str(len(service_day_trips(service, a.date))),
                 ]
             )
         story.extend(
@@ -877,7 +885,7 @@ def build_planning_report(
                     service.get("name", "Proposed ferry"),
                     landings,
                     f"{amount(crossing)} min",
-                    str(len(trips)),
+                    str(len(service_day_trips(service, a.date))),
                 ]
             )
         story.extend(

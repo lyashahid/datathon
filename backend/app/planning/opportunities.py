@@ -357,7 +357,23 @@ class OpportunityService:
         snap = network.snap(origin, assumptions.max_snap_m)
         if not snap or snap[0] not in distances:
             return None
-        return (snap[1] + distances[snap[0]]) / assumptions.walk_m_per_minute
+        minutes = (snap[1] + distances[snap[0]]) / assumptions.walk_m_per_minute
+        return round(minutes, 3) if minutes <= assumptions.max_journey_minutes else None
+
+    def _transport_distances(
+        self, world: dict[str, Any], assumptions: PlanningAssumptions
+    ) -> dict[str, float]:
+        # Use the evaluator's exact boarding-point inventory. A mapped ferry
+        # terminal counts as walking access before a ferry proposal reuses it;
+        # neither its presence nor a nearby stop verifies a departing service.
+        transport = self.planning._world_for_goal(
+            world, assumptions.model_copy(update={"goal": "transport"})
+        )
+        return self._nearest_distances(
+            transport["transport_destinations"],
+            assumptions.max_snap_m,
+            assumptions.require_audited_wheelchair,
+        )
 
     def detail(self, island_id: str) -> dict[str, Any] | None:
         overview = self.overview()
@@ -368,10 +384,7 @@ class OpportunityService:
         assumptions = PlanningAssumptions()
         routes = {domain: self._baseline_routes(island_id, assumptions, domain) for domain in GOALS}
         scope = self.repository.planning_id(island_id)
-        stops = [
-            s for s in self.world["stops"] if s.get("islandId") == scope and not s.get("disabled")
-        ]
-        distances = self._nearest_distances(stops, assumptions.max_snap_m)
+        distances = self._transport_distances(self.world, assumptions)
         origins = self._origins(island_id, assumptions)
         if scope not in self._hex_grids:
             self._hex_grids[scope] = build_display_grid(origins, scope=scope, island_id=canonical)
@@ -421,10 +434,11 @@ class OpportunityService:
             "gap_cells": {"type": "FeatureCollection", "features": cells},
             "hex_grid": deepcopy(self._hex_grids[scope]),
             "assumptions": assumptions.model_dump(mode="json"),
-            "population_basis": self._population_basis() if cells else entry["population_basis"],
+            "journey_population_basis": self._population_basis() if cells else None,
             "method": (
                 "Health/education use scheduled journey routing to eligible facilities. "
-                "Transport uses walking-network minutes to the nearest mapped stop, "
+                "Transport uses walking-network minutes to the nearest mapped stop or "
+                "passenger ferry terminal, "
                 "not verified departure frequency. Grid weights are spatial allocations, "
                 "not block census counts."
             ),
@@ -538,9 +552,7 @@ class OpportunityService:
         ]
         if not bus_stops:
             return None
-        baseline_distances = self._nearest_distances(
-            bus_stops, assumptions.max_snap_m, assumptions.require_audited_wheelchair
-        )
+        baseline_distances = self._transport_distances(self.world, assumptions)
         lacking = [
             o
             for o in origins
@@ -615,10 +627,7 @@ class OpportunityService:
                     island_id=island_id, assumptions=assumptions, operations=operations
                 ),
             )
-            after_stops = [s for s in after["stops"] if s.get("islandId") == scope]
-            new_distances = self._nearest_distances(
-                after_stops, assumptions.max_snap_m, assumptions.require_audited_wheelchair
-            )
+            new_distances = self._transport_distances(after, assumptions)
             gained = {
                 o["id"]
                 for o in lacking

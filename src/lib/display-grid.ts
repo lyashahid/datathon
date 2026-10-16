@@ -1,6 +1,7 @@
 import type { Feature, FeatureCollection } from 'geojson';
 import { impactClass, impactColors } from './planning-map.js';
 import type { PlanningComparison, PlanningPlace } from './planning-map.js';
+import { GAP_PALETTE } from './map-overlay.js';
 
 type Contribution = { origin_id: string; share: number };
 type Evidence = { weight: number | null; values: Record<string, number | null> };
@@ -197,8 +198,25 @@ export const accessColors: Record<string, string> = {
 	beyond_target: '#dd806b',
 	mixed: '#d9ad54',
 	unavailable: '#a6a5b5',
-	unknown: '#b7c3c4'
+	unknown: GAP_PALETTE.unknown
 };
+
+/** Match the map's linear journey-ratio scale; meeting a target is not itself an improvement. */
+function journeyGapColor(gap: number): string {
+	const stops =
+		gap <= 0.5
+			? [GAP_PALETTE.shorter, GAP_PALETTE.middle]
+			: [GAP_PALETTE.middle, GAP_PALETTE.longer];
+	const fraction = gap <= 0.5 ? gap * 2 : (gap - 0.5) * 2;
+	const channels = [1, 3, 5].map((offset) => {
+		const start = Number.parseInt(stops[0].slice(offset, offset + 2), 16);
+		const end = Number.parseInt(stops[1].slice(offset, offset + 2), 16);
+		return Math.round(start + (end - start) * fraction)
+			.toString(16)
+			.padStart(2, '0');
+	});
+	return `#${channels.join('')}`;
+}
 
 type AccessCounts = {
 	within_target: number;
@@ -223,6 +241,7 @@ function phaseAccess(
 	};
 	let missingPopulation = false;
 	let unknownEvidence = false;
+	let weightedGap = 0;
 	for (const { origin_id, share } of parts) {
 		const row = byComparison.get(origin_id);
 		const count = residents(row?.population ?? byOrigin.get(origin_id)?.population2026);
@@ -245,9 +264,11 @@ function phaseAccess(
 						: 'beyond_target';
 		if (key === 'unknown') unknownEvidence = true;
 		counts[key] += count * share;
+		if (key === 'within_target' || key === 'beyond_target')
+			weightedGap += count * share * Math.min(1, minutes! / targetMinutes);
 	}
 	const access =
-		missingPopulation || unknownEvidence || !population
+		missingPopulation || unknownEvidence || !residents(population)
 			? 'unknown'
 			: counts.unavailable > 0
 				? 'unavailable'
@@ -256,9 +277,14 @@ function phaseAccess(
 					: counts.beyond_target > 0
 						? 'beyond_target'
 						: 'within_target';
+	const gap =
+		access === 'unknown' || access === 'unavailable'
+			? null
+			: Math.min(1, Math.max(0, weightedGap / (population as number)));
 	return {
 		access,
-		color: accessColors[access],
+		gap,
+		color: gap === null ? accessColors[access] : journeyGapColor(gap),
 		residents_within_target: counts.within_target,
 		residents_beyond_target: counts.beyond_target,
 		residents_unavailable: counts.unavailable,
@@ -316,6 +342,7 @@ export function comparisonCellProperties(
 		view: phase,
 		access: properties[`${phase}_access`],
 		color: properties[`${phase}_color`],
+		selected_gap: properties[`${phase}_gap`] ?? null,
 		selected_minutes: properties[phase] ?? null,
 		residents_within_target: properties[`${phase}_residents_within_target`],
 		residents_beyond_target: properties[`${phase}_residents_beyond_target`],

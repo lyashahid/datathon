@@ -3,6 +3,7 @@
 import json
 from io import BytesIO
 
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pypdf import PdfReader
@@ -208,3 +209,60 @@ def test_chart_unknowns_remain_visible_and_bar_geometry_has_no_inverted_corners(
         if hasattr(item, "rx"):
             assert item.rx <= item.width / 2
             assert item.ry <= item.height / 2
+
+
+@pytest.mark.parametrize("service_date, expected", [("2026-10-10", 4), ("2026-10-11", 0)])
+@pytest.mark.parametrize("mode", ["bus", "ferry"])
+def test_report_counts_dated_frequency_departures_and_names_actual_direction(
+    service_date, expected, mode
+):
+    operations = []
+    for origin, destination in [("north", "south"), ("south", "north")]:
+        operations.append(
+            {
+                "type": "add_service",
+                "service": {
+                    "id": f"shuttle:{origin}-to-{destination}",
+                    "name": "Neighborhood shuttle",
+                    "mode": mode,
+                    "stopIds": [origin, destination],
+                    "calendar": {
+                        "weekdays": list(range(7)),
+                        "excludedDates": ["2026-10-11"],
+                    },
+                    "timing": {
+                        "kind": "frequency",
+                        "windows": [{"startMinutes": 480, "endMinutes": 540, "headwayMinutes": 15}],
+                        "segmentMinutes": [3],
+                    },
+                },
+            }
+        )
+    payload = PlanningRequest.model_validate(
+        {"operations": operations, "assumptions": {"date": service_date}}
+    )
+    result = evaluation()
+    result["world"] = {
+        "stops": [{"id": "north", "name": "North stop"}, {"id": "south", "name": "South stop"}]
+    }
+    reader = PdfReader(BytesIO(build_planning_report(payload, result, "Dated service review")))
+    pages = [" ".join(page.extract_text().split()) for page in reader.pages]
+    changes = next(page for page in pages if "Proposed change and location" in page)
+    assert changes.count(f"{expected} planned departures on {service_date}.") == 2
+    assert "North stop to South stop" in changes
+    assert "South stop to North stop" in changes
+    assert "Outward service" not in changes
+    heading = (
+        "Bus routes and return journeys"
+        if mode == "bus"
+        else "Public transport and island connections"
+    )
+    routes = next(page for page in pages if heading in page)
+    assert "North stop to South stop" in routes
+    assert "South stop to North stop" in routes
+    if mode == "bus":
+        assert f"North stop to South stop 3 min {expected}" in routes
+        assert f"South stop to North stop 3 min {expected}" in routes
+    else:
+        assert f"{expected * 2} planned departures" in pages[0]
+    assert "Frequency service" not in routes

@@ -9,6 +9,7 @@ import {
 	displayImpactHexes
 } from './display-grid.js';
 import { impactColors } from './planning-map.js';
+import { GAP_PALETTE } from './map-overlay.js';
 import type { PlanningComparison, PlanningJourney, PlanningPlace } from './planning-map.js';
 
 const geometry: MultiPolygon = {
@@ -266,6 +267,109 @@ describe('display impact grid', () => {
 });
 
 describe('current and proposed access views', () => {
+	it.each([
+		['health', 30],
+		['education', 30],
+		['transport', 10]
+	] as const)('preserves the %s baseline scale on entering comparison', (domain, target) => {
+		const source = gapSource();
+		const rows = comparisons();
+		for (const [index, ratio] of [0.15, 0.9].entries()) {
+			const time = ratio * target;
+			source.features[index].properties![`${domain}_minutes`] = time;
+			source.features[index].properties![`${domain}_gap`] = ratio;
+			rows[index].before = journey(time);
+			rows[index].after = journey(time);
+			rows[index].delta_minutes = 0;
+		}
+		const baseline = displayGapHexes(source, mesh());
+		const comparison = displayComparisonHexes(origins, rows, mesh(), target);
+		for (const [index, feature] of comparison.features.entries()) {
+			const properties = feature.properties!;
+			expect(properties.before_gap).toBeCloseTo(
+				baseline.features[index].properties![`${domain}_gap`]
+			);
+			expect(properties.after_gap).toBe(properties.before_gap);
+			expect(properties.after_color).toBe(properties.before_color);
+		}
+	});
+
+	it('does not turn unchanged near-target journeys green when a proposal is added', () => {
+		const source = gapSource();
+		const rows = comparisons();
+		for (let index = 0; index < rows.length; index++) {
+			rows[index].before = journey(9.8);
+			rows[index].after = journey(9.8);
+			rows[index].delta_minutes = 0;
+			source.features[index].properties!.transport_minutes = 9.8;
+			source.features[index].properties!.transport_gap = 0.98;
+		}
+		const baseline = displayGapHexes(source, mesh());
+		const comparison = displayComparisonHexes(origins, rows, mesh(), 10);
+		for (let index = 0; index < comparison.features.length; index++) {
+			const properties = comparison.features[index].properties!;
+			expect(properties.before_gap).toBeCloseTo(baseline.features[index].properties!.transport_gap);
+			expect(properties.after_gap).toBe(properties.before_gap);
+			expect(properties.before_color).toBe('#d75c41');
+			expect(properties.after_color).toBe(properties.before_color);
+			expect(properties.before_access).toBe('within_target');
+			expect(properties.after_access).toBe('within_target');
+			expect(properties.impact).toBe('unchanged');
+		}
+	});
+
+	it('matches baseline weighting of each capped journey rather than capping a cell average', () => {
+		const source = gapSource();
+		const rows = comparisons();
+		for (const [index, value] of [2, 20].entries()) {
+			rows[index].before = journey(value);
+			rows[index].after = journey(value);
+			rows[index].delta_minutes = 0;
+			source.features[index].properties!.transport_minutes = value;
+			source.features[index].properties!.transport_gap = Math.min(1, value / 10);
+		}
+		const baseline = displayGapHexes(source, mesh());
+		const comparison = displayComparisonHexes(origins, rows, mesh(), 10);
+		for (let index = 0; index < comparison.features.length; index++) {
+			const properties = comparison.features[index].properties!;
+			expect(properties.before_gap).toBeCloseTo(baseline.features[index].properties!.transport_gap);
+			expect(properties.after_gap).toBe(properties.before_gap);
+			expect(properties.after_color).toBe(properties.before_color);
+			expect(properties.before_access).toBe('mixed');
+		}
+		expect(comparison.features[0].properties!.before_gap).toBeCloseTo(0.6);
+		expect(comparison.features[0].properties!.before_gap).not.toBe(
+			Math.min(1, Number(comparison.features[0].properties!.before) / 10)
+		);
+	});
+
+	it('only recolors cells whose evaluated journeys change and preserves unrelated cells', () => {
+		const rows = comparisons();
+		const grid = mesh();
+		grid.features[0].properties!.contributions = [{ origin_id: 'origin:1', share: 1 }];
+		grid.features[1].properties!.contributions = [{ origin_id: 'origin:2', share: 1 }];
+		rows[0].before = journey(12);
+		rows[0].after = journey(1);
+		rows[0].delta_minutes = 11;
+		rows[0].gained_access = true;
+		rows[1].before = journey(9.8);
+		rows[1].after = journey(9.8);
+		rows[1].delta_minutes = 0;
+		const comparison = displayComparisonHexes(origins, rows, grid, 10);
+		const changed = comparison.features[0].properties!;
+		const unchanged = comparison.features[1].properties!;
+		expect(changed.before_gap).toBe(1);
+		expect(changed.after_gap).toBe(0.1);
+		expect(changed.before_color).toBe(GAP_PALETTE.longer);
+		expect(changed.after_color).not.toBe(changed.before_color);
+		expect(changed.before_residents_within_target).toBe(0);
+		expect(changed.after_residents_within_target).toBe(100);
+		expect(unchanged.before_color).toBe(unchanged.after_color);
+		expect(unchanged.before_gap).toBe(unchanged.after_gap);
+		expect(unchanged.before_residents_within_target).toBe(50);
+		expect(unchanged.after_residents_within_target).toBe(50);
+	});
+
 	it('prepares both access colors on one immutable mesh without rebuilding it to switch views', () => {
 		const rows = comparisons();
 		const grid = mesh();
@@ -278,9 +382,9 @@ describe('current and proposed access views', () => {
 		expect(feature.properties).toMatchObject({
 			view: 'comparison',
 			before_access: 'mixed',
-			before_color: accessColors.mixed,
+			before_color: '#db6d43',
 			after_access: 'mixed',
-			after_color: accessColors.mixed,
+			after_color: '#e4964a',
 			before_residents_within_target: 25,
 			after_residents_within_target: 25
 		});
@@ -299,8 +403,9 @@ describe('current and proposed access views', () => {
 		rows[1].after = journey(15);
 		const properties = displayComparisonHexes(origins, rows, mesh(), 30).features[0].properties!;
 		expect(properties).toMatchObject({
-			before_color: accessColors.beyond_target,
-			after_color: accessColors.within_target,
+			before_color: GAP_PALETTE.longer,
+			before_access: 'beyond_target',
+			after_access: 'within_target',
 			before_residents_beyond_target: 50,
 			after_residents_within_target: 50
 		});
@@ -328,7 +433,7 @@ describe('current and proposed access views', () => {
 			after: 20,
 			selected_minutes: 30,
 			access: 'mixed',
-			color: accessColors.mixed,
+			color: '#de7a45',
 			population: 50,
 			residents_within_target: 25,
 			residents_beyond_target: 25
@@ -338,7 +443,7 @@ describe('current and proposed access views', () => {
 			view: 'after',
 			selected_minutes: 20,
 			access: 'within_target',
-			color: accessColors.within_target,
+			color: '#e59d4b',
 			residents_within_target: 50,
 			residents_beyond_target: 0
 		});

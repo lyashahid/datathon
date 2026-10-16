@@ -317,9 +317,6 @@
 	const policyOverlayLegend = $derived(
 		policyOverlayView === 'before' || policyOverlayView === 'after'
 			? [
-					{ label: 'Within target', color: accessColors.within_target },
-					{ label: 'Beyond target', color: accessColors.beyond_target },
-					{ label: 'Mixed', color: accessColors.mixed },
 					{ label: 'No route', color: accessColors.unavailable },
 					{ label: 'Unknown', color: accessColors.unknown }
 				]
@@ -4862,6 +4859,13 @@
 										? 'With proposal'
 										: 'Proposed access change'}</strong
 							>
+							{#if policyOverlayView === 'before' || policyOverlayView === 'after'}
+								<span
+									><i class="policy-gap-gradient" style:background={GAP_GRADIENT}></i>Shorter → at /
+									beyond target</span
+								>
+								<small>Same journey-time scale in both views</small>
+							{/if}
 							<div class="policy-overlay-swatches">
 								{#each policyOverlayLegend as item (item.label)}<span
 										><i style:background={item.color}></i>{item.label}</span

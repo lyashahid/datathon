@@ -11,6 +11,7 @@ const suites = [
 	'verify-nearby-access-analysis.mjs',
 	'verify-map-floating-controls.mjs',
 	'verify-proposal-experience.mjs',
+	'verify-proposal-map-comparison.mjs',
 	'verify-island-connections.mjs'
 ];
 const runner = processRunner();

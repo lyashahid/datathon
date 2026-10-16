@@ -621,15 +621,17 @@
 													: placementError || quotedPlacement?.budget.reasons.join(' '),
 					remaining: quotedPlacement?.budget.capital.remaining_mvr,
 					note:
-						roadDistance !== null
-							? roadDistance <= 35
-								? 'Beside a mapped street. Review the access estimate before confirming.'
-								: roadDistance <= 100
-									? `${Math.round(roadDistance)} m from a mapped street; within the model’s connection range.`
-									: 'More than 100 m from a mapped street. This site may have no modeled access.'
-							: pendingWithin === null
-								? 'Land boundary unavailable; verify this site before proceeding.'
-								: undefined,
+						pending.kind === 'add_stop' && busStopOnly
+							? 'Stop only: no access gain until a connected bus service is added.'
+							: roadDistance !== null
+								? roadDistance <= 35
+									? 'Beside a mapped street. Review the access estimate before confirming.'
+									: roadDistance <= 100
+										? `${Math.round(roadDistance)} m from a mapped street; within the model’s connection range.`
+										: 'More than 100 m from a mapped street. This site may have no modeled access.'
+								: pendingWithin === null
+									? 'Land boundary unavailable; verify this site before proceeding.'
+									: undefined,
 					checking:
 						loading ||
 						(!boundaryFeatures && !boundaryError) ||
@@ -762,6 +764,22 @@
 		comparisonEvaluation?.assumptions as Record<string, unknown> | undefined
 	);
 	const comparisonTarget = $derived(Number(comparisonAssumptions?.target_minutes ?? targetMinutes));
+	const comparisonUnchanged = $derived(
+		!!comparisonEvaluation?.origins.length &&
+			comparisonEvaluation.origins.every(
+				(row) =>
+					row.before.status === row.after.status &&
+					(row.before.minutes === row.after.minutes ||
+						(row.before.minutes !== null &&
+							row.after.minutes !== null &&
+							Math.abs(row.before.minutes - row.after.minutes) < 0.001))
+			)
+	);
+	const comparisonHasJourneys = $derived(
+		comparisonEvaluation?.origins.some(
+			(row) => row.before.status === 'reachable' && row.after.status === 'reachable'
+		) ?? false
+	);
 	const comparisonGoalLabel = $derived(
 		comparisonAssumptions?.goal === 'transport'
 			? 'walking access to public transport'
@@ -1903,7 +1921,7 @@
 		impactView = 'proposal';
 		armedKind = kind;
 		pendingId = `proposal:${kind}:${crypto.randomUUID()}`;
-		actionMessage = `Click the map to place a ${placementLabel(kind).toLowerCase()}`;
+		actionMessage = `Click the map to place a ${placementLabel(kind).toLowerCase()}. Comparing ${kind === 'add_stop' ? 'walking access to public transport' : kind === 'add_school' ? 'education journeys' : 'healthcare journeys'}.`;
 		setGoal(kind === 'add_stop' ? 'transport' : kind === 'add_school' ? 'education' : 'healthcare');
 		suggested = null;
 		closeFerry();
@@ -2206,6 +2224,7 @@
 		const acceptedEvaluation = pendingEvaluation;
 		const acceptedSignature = placementEvaluationKey;
 		const wasMoving = editingIndex !== null;
+		const stopWithoutService = pending.kind === 'add_stop' && !busConnectionMode;
 		financialQuote = {
 			key: planningFinancialKey({ ...request, operations: next }),
 			capital: quotedPlacement.economics.delta.capital_mvr ?? null,
@@ -2217,9 +2236,14 @@
 			evaluatedSignature = acceptedSignature;
 		}
 		cancelPending();
-		actionMessage = wasMoving ? 'Location updated' : 'Added to your proposal';
+		actionMessage = wasMoving
+			? 'Location updated'
+			: stopWithoutService
+				? 'Stop saved. Add a connected service to improve transport access.'
+				: 'Added to your proposal';
 	}
 	function setGoal(value: 'healthcare' | 'education' | 'transport') {
+		onLensChange(value === 'healthcare' ? 'health' : value);
 		if (goal === value) return;
 		goal = value;
 		targetMinutes = value === 'transport' ? 10 : 30;
@@ -2644,8 +2668,8 @@
 					>
 				</footer>
 				<small
-					>Only confirmed changes enter your proposal. A stop alone creates no scheduled bus
-					service.</small
+					>Only confirmed changes enter your proposal. A stop alone creates no scheduled bus service
+					and earns no transport access gain.</small
 				>
 			{:else if busOpen}
 				<header>
@@ -3004,7 +3028,16 @@
 					Access gain needs more evidence
 				{:else if comparisonEvaluation.summary.gained_residents > 0}
 					+{formatAmount(comparisonEvaluation.summary.gained_residents)} residents within target
+				{:else if comparisonUnchanged}
+					{!comparisonHasJourneys
+						? 'Access change unavailable · no paired journeys'
+						: comparisonAssumptions?.goal === 'transport'
+							? 'Walking access unchanged · review onward trips for service benefits'
+							: 'Journey times unchanged · no access gain'}
 				{:else}No additional residents within target{/if}
+				{#if Number(comparisonEvaluation.summary.unknown_residents) > 0}
+					<span> · Some areas lack routing evidence</span>
+				{/if}
 			</p>
 		{/if}
 	</div>
@@ -3081,9 +3114,8 @@
 					</p>
 					<div class="policy-map-key">
 						{#if impact.features.length}
-							<span><i style:background={accessColors.within_target}></i>Within target</span>
-							<span><i style:background={accessColors.beyond_target}></i>Beyond target</span>
-							<span><i style:background={accessColors.mixed}></i>Mixed access</span>
+							<span><i style:background={GAP_PALETTE.shorter}></i>Shorter journey</span>
+							<span><i style:background={GAP_PALETTE.longer}></i>At / beyond target</span>
 							<span><i style:background={accessColors.unavailable}></i>No routed access</span>
 							<span><i style:background={accessColors.unknown}></i>Unknown</span>
 						{:else}
@@ -3115,14 +3147,16 @@
 						</p>{/if}
 					{#if impact.features.length}
 						<p class="policy-evidence-note">
-							Green means residents meet the {comparisonTarget}-minute target. Red means longer
-							journeys. Unshaded land has no resident estimate.
+							Both views use the same journey-time scale. Green means shorter journeys; red marks
+							times at or beyond {comparisonTarget} minutes. Unchanged journeys keep their color. Unshaded
+							land has no resident estimate.
 						</p>
 						{#if comparisonAssumptions?.goal === 'transport'}
 							<p class="policy-evidence-note">
-								This view measures the walk to a stop. More frequent buses or a new ferry can
-								improve service without changing that walk. Choose healthcare or education above the
-								comparison to see onward journey access.
+								This view measures the walk to a stop or ferry landing place. A new stop needs a
+								connected, active bus service to improve access. More frequent buses or a new ferry
+								can improve service without changing that walk. Choose healthcare or education above
+								the comparison to see onward journey access.
 							</p>
 						{/if}
 					{/if}
@@ -3228,7 +3262,13 @@
 								</ul>{/if}
 						{/each}
 						<div class="policy-population">
-							<span>Linked resident population</span><strong
+							<span
+								>{current.population_status === 'census'
+									? 'Census 2022 residents'
+									: current.population_status === 'projected_spatial_allocation'
+										? 'Projected 2026 residents'
+										: 'Linked resident population'}</span
+							><strong
 								>{current.population == null
 									? 'Not linked'
 									: formatAmount(current.population)}</strong

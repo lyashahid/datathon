@@ -14,6 +14,7 @@ from pypdf import PdfReader
 
 from app.api.routes.planning import get_transport_planning, router
 from app.api.routes.planning_reports import report_pdf
+from app.planning.bus_connection import BusConnectionPlanner, BusConnectionRequest
 from app.planning.models import PlanningRequest
 from app.planning.report import build_planning_report, proposal_map
 from app.planning.repository import PlanningRepository
@@ -349,6 +350,19 @@ def test_transport_forecast_is_walking_access_not_ferry_ridership(transport):
     )
     result = transport.planning.evaluate(request)
     assert result["summary"]["baseline_reachable_residents"] == 0
+    assert result["summary"]["scenario_reachable_residents"] == 0
+    assert result["summary"]["gained_residents"] == 0
+    assert result["origins"][0]["before"] == result["origins"][0]["after"]
+    connection = BusConnectionPlanner(transport.planning).preview(
+        BusConnectionRequest(
+            island_id="island:1442", coordinates=[73.54, 4.22], assumptions=request.assumptions
+        )
+    )
+    assert connection["status"] == "ready"
+    connected = PlanningRequest.model_validate(
+        {**request.model_dump(), "operations": connection["operations"]}
+    )
+    result = transport.planning.evaluate(connected)
     assert result["summary"]["scenario_reachable_residents"] == 100
     assert result["summary"]["gained_residents"] == 100
     assert all(leg["mode"] == "walk" for leg in result["origins"][0]["after"]["path"])

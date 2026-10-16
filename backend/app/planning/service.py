@@ -92,7 +92,16 @@ class PlanningService:
     ) -> dict[str, Any]:
         if assumptions.goal != "transport":
             return world
-        destinations = {stop["id"]: stop for stop in world["stops"] if not stop.get("disabled")}
+        proposed_ids = {
+            stop["id"] for stop in world["stops"] if stop["id"].startswith("proposal:add_stop:")
+        }
+        served_proposed = self._served_proposed_stops(world, proposed_ids, assumptions)
+        destinations = {
+            stop["id"]: stop
+            for stop in world["stops"]
+            if not stop.get("disabled")
+            and (stop["id"] not in proposed_ids or stop["id"] in served_proposed)
+        }
         disabled = {stop["id"] for stop in world["stops"] if stop.get("disabled")}
         for terminal in self.repository.ferry_terminals.values():
             if terminal["id"] in destinations or terminal["id"] in disabled:
@@ -107,6 +116,46 @@ class PlanningService:
                 "mode": "ferry",
             }
         return {**world, "transport_destinations": list(destinations.values())}
+
+    @staticmethod
+    def _served_proposed_stops(
+        world: dict[str, Any], proposed_ids: set[str], assumptions: PlanningAssumptions
+    ) -> set[str]:
+        """New infrastructure needs a dated, boardable service before claiming access."""
+        if not proposed_ids:
+            return set()
+        stops = {stop["id"]: stop for stop in world["stops"] if not stop.get("disabled")}
+        served = set()
+        for pattern in world["patterns"]:
+            if pattern.get("mode") != "bus" or pattern.get("enabled") is False:
+                continue
+            stop_ids = pattern["stopIds"]
+            for index, stop_id in enumerate(stop_ids[:-1]):
+                if (
+                    stop_id not in proposed_ids
+                    or stop_id not in stops
+                    or stops[stop_id].get("pickupAllowed") is False
+                    or not any(
+                        identity in stops and stops[identity].get("dropoffAllowed") is not False
+                        for identity in stop_ids[index + 1 :]
+                    )
+                ):
+                    continue
+                departures = [
+                    trip["stopTimes"][index]["departureMinutes"]
+                    for trip in service_day_trips(pattern, assumptions.date, stop_index=index)
+                ]
+                departure = assumptions.departure_minutes
+                if (
+                    departures
+                    and min(departures) <= departure <= max(departures)
+                    and any(
+                        departure <= minute <= departure + assumptions.max_journey_minutes
+                        for minute in departures
+                    )
+                ):
+                    served.add(stop_id)
+        return served
 
     def quote(self, request: PlanningRequest) -> dict[str, Any]:
         """Authoritative project cost gate without any resident access searches."""
@@ -342,7 +391,10 @@ class PlanningService:
         if request.assumptions.goal == "transport":
             warnings.append(
                 "Transport access measures walking to mapped boarding points. "
-                "It does not verify a departing service, frequency, capacity, "
+                "Existing mapped locations are inventory evidence, not verified service "
+                "availability. New proposed stops receive credit only with an enabled "
+                "bus service operating at the selected date/time and an upcoming departure "
+                "within the journey horizon. Walking access does not establish capacity, "
                 "passenger demand or an inter-island arrival time."
             )
         coverage = self.coverage(request)
@@ -412,10 +464,18 @@ class PlanningService:
             "population_basis": self.repository.baseline.get("assumptions", {}).get(
                 "populationSpatialDistribution"
             ),
-            "access_method": "Shortest elapsed time including walking, scheduled waits, "
-            "boarding buffers, directed transit trips and bounded transfers. Gained access means "
-            "a new modeled journey within the target; loss requires a known journey moving "
-            "outside the target. Unavailable evidence is separate from measured loss.",
+            "access_method": (
+                "Shortest walking time to mapped boarding points. Proposed new stops "
+                "require an enabled, dated bus service operating at the selected time. "
+                "Existing mapped locations retain their unverified inventory status. "
+                "Gained access means a new modeled walk within the target, not ridership "
+                "or a verified end-to-end transport journey."
+                if request.assumptions.goal == "transport"
+                else "Shortest elapsed time including walking, scheduled waits, "
+                "boarding buffers, directed transit trips and bounded transfers. Gained access "
+                "means a new modeled journey within the target; loss requires a known journey "
+                "moving outside the target. Unavailable evidence is separate from measured loss."
+            ),
         }
 
     def journey(self, request: JourneyRequest) -> dict[str, Any]:

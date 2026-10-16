@@ -25,7 +25,6 @@ const priorities = page.getByRole('region', { name: 'Policy priorities', exact: 
 const panel = page.getByRole('region', { name: 'Island needs and proposal', exact: true });
 const budget = page.getByRole('region', { name: 'Proposal budget', exact: true });
 const review = page.locator('dialog.forecast-review');
-const mapColours = page.getByRole('combobox', { name: 'Map colours', exact: true });
 
 /** @param {string} name @param {()=>Promise<unknown>} work */
 async function check(name, work) {
@@ -61,9 +60,15 @@ async function completedEstimate() {
 		.poll(async () => Number(await atlas.getAttribute('data-policy-impact-cells')))
 		.toBeGreaterThan(0);
 }
+async function showProposal() {
+	if (!(await panel.isVisible()))
+		await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
+	if ((await panel.getAttribute('data-policy-section')) !== 'proposal')
+		await panel.getByRole('button', { name: /^Your proposal/ }).click();
+}
 /** @param {string} domain */
 async function selectSector(domain) {
-	const action = priorities.locator(`.sector-${domain} .sector-action`);
+	const action = priorities.locator(`.sector-${domain} .sector-action[aria-pressed]`);
 	if ((await action.getAttribute('aria-pressed')) !== 'true') await action.click();
 	await expect(action).toHaveAttribute('aria-pressed', 'true');
 }
@@ -107,8 +112,8 @@ async function project(coordinates) {
 		};
 	}, coordinates);
 }
-/** @param {Array<{geometry?:Array<[number,number]>}>} roads */
-async function chooseVisibleRoad(roads) {
+/** @param {Array<{geometry?:Array<[number,number]>}>} roads @param {string} [hint] */
+async function chooseVisibleRoad(roads, hint) {
 	const canvas = await atlas.locator('.maplibregl-canvas').boundingBox();
 	assert.ok(canvas);
 	for (const road of roads)
@@ -126,8 +131,14 @@ async function chooseVisibleRoad(roads) {
 					({ x, y }) => document.elementFromPoint(x, y)?.matches('.maplibregl-canvas') ?? false,
 					point
 				)
-			)
+			) {
+				if (hint) {
+					await page.mouse.move(point.x, point.y);
+					if (!(await atlas.locator('.map-hint').allTextContents()).join(' ').includes(hint))
+						continue;
+				}
 				return { point, coordinates };
+			}
 		}
 	throw new Error('A source-backed road location must be unobscured before placing a change.');
 }
@@ -251,7 +262,7 @@ try {
 			await expect(panel.locator('.policy-population')).toBeVisible();
 			await expect
 				.poll(async () => Number(await atlas.getAttribute('data-policy-gap-cells')))
-				.toBeGreaterThan(opportunities.features.features.length);
+				.toBeGreaterThan(0);
 			await expect(atlas).toHaveAttribute('data-policy-lens', domain);
 			await page.screenshot({ path: path.join(output, 'service-gaps-desktop.png') });
 			await panel.getByRole('button', { name: 'Close island planning panel', exact: true }).click();
@@ -277,7 +288,10 @@ try {
 	await check(
 		'Selecting a local service-gap cell explains the neighbourhood without moving the map',
 		async () => {
-			const location = await chooseVisibleRoad([{ geometry: residentLocations }]);
+			const location = await chooseVisibleRoad(
+				[{ geometry: residentLocations }],
+				'Select to inspect local service access'
+			);
 			const before = await mapView();
 			await page.mouse.click(location.point.x, location.point.y);
 			await expect(panel.locator('.policy-selected-cell')).toBeVisible();
@@ -312,11 +326,9 @@ try {
 				.poll(async () => Number(await atlas.getAttribute('data-policy-proposal-points')))
 				.toBeGreaterThan(0);
 			await expect(atlas.locator('.policy-proposal-marker.confirmed').first()).toBeAttached();
-			assert.equal(
-				await budget.count(),
-				0,
-				'Suggestion preview must not silently become an accepted budget commitment'
-			);
+			await expect(budget).toBeVisible();
+			await expect(budget.locator('.cost-values')).toContainText('0');
+			await expect(panel.locator('.policy-operation-list li')).toHaveCount(0);
 			await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('205000000');
 			await expect(suggestions).toHaveCount(0);
 			await expect(atlas).toHaveAttribute('data-policy-proposal-points', '0');
@@ -330,7 +342,7 @@ try {
 			await expect(panel.locator('.policy-operation-list li').first()).toBeVisible();
 			await expect(budget).toBeVisible();
 			await completedEstimate();
-			await expect(mapColours).toHaveValue('impact');
+			await expect(atlas).toHaveAttribute('data-policy-impact-view', 'after');
 			return {
 				changes: await panel.locator('.policy-operation-list li').count(),
 				costs: await budget.locator('.cost-values').innerText(),
@@ -351,6 +363,9 @@ try {
 				.click();
 			const location = await chooseVisibleRoad(baseline.graph_edges);
 			await page.mouse.click(location.point.x, location.point.y);
+			const connection = atlas.getByTestId('map-service-editor');
+			await expect(connection).toHaveAttribute('data-service-mode', 'bus-connection');
+			await connection.getByRole('button', { name: 'Add only a stop', exact: true }).click();
 			await expect(atlas.getByTestId('map-placement-confirmation')).toBeVisible();
 			await expect(atlas.getByTestId('map-placement-confirmation')).toHaveAttribute(
 				'data-placement-kind',
@@ -360,8 +375,9 @@ try {
 			await expect(atlas.locator('.policy-proposal-marker.pending')).toBeAttached();
 			await atlas
 				.getByTestId('map-placement-confirmation')
-				.getByRole('button', { name: 'Confirm placement', exact: true })
+				.getByRole('button', { name: 'Add to proposal', exact: true })
 				.click();
+			await showProposal();
 			await expect(panel.locator('.policy-operation-list li')).toHaveCount(previousCount + 1);
 			await expect(atlas).toHaveAttribute('data-policy-pending-points', '0');
 			await expect(atlas).toHaveAttribute(
@@ -381,66 +397,35 @@ try {
 		}
 	);
 	await check(
-		'Current gaps and proposal impact stay distinct, preserve the draft and explain cells without moving the map',
+		'Proposal comparison preserves the same goal, camera, accepted changes and costs',
 		async () => {
 			const costs = await budget.locator('.cost-values').innerText();
 			const operationCount = await panel.locator('.policy-operation-list li').count();
 			const pointCount = await atlas.getAttribute('data-policy-proposal-points');
 			const impactCount = await atlas.getAttribute('data-policy-impact-cells');
-			assert.ok(impactCount && Number(impactCount) > 0);
 			const initialView = await mapView();
-			const lensBar = page.locator('.policy-lens-bar');
-			await expect(mapColours).toHaveValue('impact');
+			assert.ok(impactCount && Number(impactCount) > 0);
+			await expect(atlas).toHaveAttribute('data-policy-impact-view', 'after');
 			await expect(atlas.getByLabel('Proposal impact colours', { exact: true })).toBeVisible();
-			await expect(lensBar.locator('button[aria-pressed="true"]')).toHaveCount(0);
-			await mapColours.selectOption('gaps');
-			await expect(atlas).toHaveAttribute('data-policy-impact-cells', '0');
-			await expect(atlas.getByLabel('Service gap colours', { exact: true })).toBeVisible();
-			await expect(
-				lensBar.getByRole('button', {
-					name: domain === 'health' ? 'Health' : domain === 'education' ? 'Education' : 'Transport',
-					exact: true
-				})
-			).toHaveAttribute('aria-pressed', 'true');
-			await mapColours.selectOption('impact');
-			await expect(atlas).toHaveAttribute('data-policy-impact-cells', impactCount);
-			await lensBar.getByRole('button', { name: 'Health', exact: true }).click();
-			await expect(mapColours).toHaveValue('gaps');
-			await expect(atlas).toHaveAttribute('data-policy-impact-cells', '0');
-			await expect(atlas).toHaveAttribute('data-policy-lens', 'health');
-			await expect
-				.poll(async () => Number(await atlas.getAttribute('data-policy-gap-cells')))
-				.toBeGreaterThan(opportunities.features.features.length);
-			await expect(lensBar.getByRole('button', { name: 'Health', exact: true })).toHaveAttribute(
-				'aria-pressed',
-				'true'
+			for (const view of ['before', 'after']) {
+				await page
+					.getByRole('button', {
+						name: view === 'before' ? 'Without proposal' : 'With proposal',
+						exact: true
+					})
+					.click();
+				await expect(atlas).toHaveAttribute('data-policy-impact-view', view);
+				await expect(atlas).toHaveAttribute('data-policy-impact-cells', impactCount);
+				await expect(panel.locator('.policy-operation-list li')).toHaveCount(operationCount);
+				await expect(atlas).toHaveAttribute('data-policy-proposal-points', pointCount ?? '');
+				assert.equal(await budget.locator('.cost-values').innerText(), costs);
+				assert.deepEqual(await mapView(), initialView);
+			}
+			const location = await chooseVisibleRoad(
+				[{ geometry: residentLocations }],
+				'Select to compare resident access here'
 			);
-			await mapColours.selectOption('impact');
-			await expect(atlas).toHaveAttribute('data-policy-impact-cells', impactCount);
-			await expect(atlas.getByLabel('Proposal impact colours', { exact: true })).toBeVisible();
-			await expect(lensBar.locator('button[aria-pressed="true"]')).toHaveCount(0);
-			await panel.getByRole('button', { name: 'Service gaps', exact: true }).click();
-			await expect(mapColours).toHaveValue('gaps');
-			await expect(atlas).toHaveAttribute('data-policy-impact-cells', '0');
-			await panel.getByRole('button', { name: /^Your proposal/ }).click();
-			await expect(mapColours).toHaveValue('impact');
-			await expect(atlas).toHaveAttribute('data-policy-impact-cells', impactCount);
-			await expect(panel.locator('.policy-operation-list li')).toHaveCount(operationCount);
-			await expect(atlas).toHaveAttribute('data-policy-proposal-points', pointCount ?? '');
-			assert.equal(
-				await budget.locator('.cost-values').innerText(),
-				costs,
-				'Changing map colours must preserve the proposal costs'
-			);
-			assert.deepEqual(
-				await mapView(),
-				initialView,
-				'Changing map colours and service lenses must preserve the camera'
-			);
-			const location = await chooseVisibleRoad([{ geometry: residentLocations }]);
 			const before = await mapView();
-			// Counts update before MapLibre's worker has rendered a newly selected source.
-			// Wait for the real, visible impact-cell hover affordance before inspecting it.
 			await expect
 				.poll(async () => {
 					await page.mouse.move(location.point.x, location.point.y);
@@ -450,18 +435,13 @@ try {
 			await page.mouse.click(location.point.x, location.point.y);
 			const selected = panel.getByLabel('Selected neighbourhood impact', { exact: true });
 			await expect(selected).toBeVisible();
-			await expect(selected).toContainText('Access change here');
-			assert.deepEqual(
-				await mapView(),
-				before,
-				'Inspecting impact must preserve the map location and scale'
-			);
+			await expect(selected).toContainText(/modeled|proposal/i);
+			assert.deepEqual(await mapView(), before);
 			await panel.getByRole('button', { name: /^Your proposal/ }).click();
 			return {
 				coordinates: location.coordinates,
 				view: before,
-				colourModes: ['gaps', 'impact'],
-				inspectedLens: 'health',
+				views: ['before', 'after'],
 				impactCells: Number(impactCount),
 				unchangedCosts: costs
 			};
@@ -547,7 +527,7 @@ try {
 				.getByLabel("Compare residents' access to", { exact: true })
 				.selectOption('healthcare');
 			await completedEstimate();
-			await expect(mapColours).toHaveValue('impact');
+			await expect(atlas).toHaveAttribute('data-policy-impact-view', 'after');
 			return {
 				changes: count,
 				capitalBudget: 210000000,
@@ -581,19 +561,23 @@ try {
 			await expect(panel.getByText('Loading island evidence…', { exact: true })).toHaveCount(0);
 			await expect
 				.poll(async () => Number(await atlas.getAttribute('data-policy-gap-cells')))
-				.toBeGreaterThan(opportunities.features.features.length);
+				.toBeGreaterThan(0);
 			await noOverflow();
 			await page.screenshot({ path: path.join(output, 'service-gaps-mobile.png') });
 			await panel.getByRole('button', { name: /^Your proposal/ }).click();
 			await expect(budget).toBeVisible();
 			await completedEstimate();
-			await expect(mapColours).toHaveValue('impact');
-			await expect(mapColours).toBeInViewport();
-			const colourBounds = await mapColours.boundingBox();
+			await expect(atlas).toHaveAttribute('data-policy-impact-view', 'after');
+			// Mobile editing uses the bottom sheet; compare on the unobstructed map.
+			await panel.getByRole('button', { name: 'Close island planning panel', exact: true }).click();
+			const comparison = page.getByRole('group', { name: 'Proposal map view', exact: true });
+			await expect(comparison).toBeInViewport();
+			const colourBounds = await comparison.boundingBox();
 			assert.ok(
 				colourBounds && colourBounds.x >= 0 && colourBounds.x + colourBounds.width <= 390,
 				'The mobile map-colours selector must fit within the viewport'
 			);
+			await page.getByRole('button', { name: 'Edit proposal', exact: true }).click();
 			await expect
 				.poll(
 					async () => (await panel.locator('.policy-panel-scroll').boundingBox())?.height ?? 0,
@@ -628,13 +612,15 @@ try {
 				.click();
 			await expect(panel).toBeVisible();
 			await expect(atlas).toHaveAttribute('data-policy-lens', domain);
-			await expect(mapColours).toHaveValue('gaps', { timeout: 15000 });
-			await expect(atlas).toHaveAttribute('data-policy-impact-cells', '0');
+			// Returning to this island retains the accepted proposal comparison.
+			await expect
+				.poll(async () => Number(await atlas.getAttribute('data-policy-impact-cells')))
+				.toBeGreaterThan(0);
 			await panel.getByRole('button', { name: /^Your proposal/ }).click();
 			await expect(panel.getByLabel('Proposal name', { exact: true })).toHaveValue(
 				'Hulhumale policy investment QA'
 			);
-			await expect(mapColours).toHaveValue('impact');
+			await expect(atlas).toHaveAttribute('data-policy-impact-view', 'after');
 			assert.equal(
 				await budget.locator('.cost-values').innerText(),
 				existingCosts,

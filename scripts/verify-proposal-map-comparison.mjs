@@ -253,7 +253,7 @@ function screenshotColours(png) {
 	const packed = inflateSync(Buffer.concat(chunks));
 	const stride = width * bytesPerPixel;
 	const pixels = new Uint8Array(stride * height);
-	const counts = { red: 0, green: 0, pixels: width * height };
+	const counts = { red: 0, green: 0, pixels: width * height, meanRedMinusGreen: 0 };
 	for (let y = 0; y < height; y++) {
 		const filter = packed[y * (stride + 1)];
 		for (let x = 0; x < stride; x++) {
@@ -276,8 +276,10 @@ function screenshotColours(png) {
 			const [red, green, blue] = pixels.subarray(y * stride + x, y * stride + x + 3);
 			if (red > green * 1.12 && red > blue * 1.12) counts.red++;
 			if (green > red * 1.12 && green > blue * 1.03) counts.green++;
+			counts.meanRedMinusGreen += red - green;
 		}
 	}
+	counts.meanRedMinusGreen /= counts.pixels;
 	return counts;
 }
 /** @param {number[]} coordinates @param {string} name */
@@ -294,6 +296,16 @@ function latestEvaluation() {
 	assert.ok(value, 'The real resident evaluation must have completed.');
 	return value;
 }
+/** @param {Evaluation} value */
+function changedJourneys(value) {
+	return value.origins.filter(
+		(row) =>
+			row.before.status !== row.after.status ||
+			(row.before.minutes !== null &&
+				row.after.minutes !== null &&
+				Math.abs(row.before.minutes - row.after.minutes) > 0.001)
+	);
+}
 
 try {
 	const source = await page.request.get(
@@ -309,6 +321,29 @@ try {
 	await expect(panel.getByRole('button', { name: 'Hospital', exact: true })).toBeEnabled();
 	await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('1000000000');
 	await panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('1000000000');
+	await check('No proposal leaves every real transport journey unchanged', async () => {
+		const response = await page.request.post(`${baseURL}/api/backend/planning/evaluate`, {
+			data: {
+				island_id: 'island:1442',
+				operations: [],
+				assumptions: {
+					goal: 'transport',
+					target_minutes: 10,
+					include_world: false,
+					include_origin_geometry: false,
+					include_journey_geometry: false
+				}
+			}
+		});
+		assert.equal(response.status(), 200);
+		const value = /** @type {Evaluation} */ (await response.json());
+		assert.equal(changedJourneys(value).length, 0);
+		assert.equal(value.summary.gained_residents, 0);
+		assert.equal(value.summary.lost_residents, 0);
+		assert.equal(value.summary.weighted_minutes_saved, 0);
+		await page.screenshot({ path: path.join(output, 'no-proposal-baseline.png') });
+		return { origins: value.origins.length, summary: value.summary, changedJourneys: 0 };
+	});
 	await check(
 		'A valid placement recolours real access before confirmation and Cancel restores the map',
 		async () => {
@@ -407,7 +442,7 @@ try {
 		};
 	});
 	await check(
-		'One real gaining neighbourhood changes from longer journeys to within reach',
+		'One real gaining neighbourhood gets a cooler colour as its modeled journey shortens',
 		async () => {
 			const gains = latestEvaluation().origins.filter(
 				(origin) =>
@@ -459,8 +494,10 @@ try {
 				'cell-with-proposal.png'
 			);
 			assert.ok(
-				beforeColours.red > 0 && afterColours.green > 0 && afterColours.red < beforeColours.red,
-				'The same neighbourhood must visibly change from red to green in rendered map pixels.'
+				beforeColours.red > 0 &&
+					afterColours.red < beforeColours.red &&
+					afterColours.meanRedMinusGreen < beforeColours.meanRedMinusGreen - 4,
+				'The same shorter journey must visibly cool on the continuous scale; being within target alone must not paint it green.'
 			);
 			assert.equal(await atlas.getAttribute('data-policy-impact-source-updates'), sourceUpdates);
 			await page.screenshot({ path: path.join(output, 'same-cell-with-proposal.png') });
@@ -508,6 +545,7 @@ try {
 		await expect.poll(() => evaluationResponses.at(-1)?.assumptions?.goal).toBe('healthcare');
 		await impactReady();
 		assert.equal(latestEvaluation().summary.gained_residents, 0);
+		assert.equal(changedJourneys(latestEvaluation()).length, 0);
 		assert.equal(Number(await atlas.getAttribute('data-policy-comparison-changed-cells')), 0);
 		const without = await toggle('Without proposal', 'before');
 		const withProposal = await toggle('With proposal', 'after');
@@ -520,9 +558,90 @@ try {
 		};
 	});
 	await check(
-		'A pending bus connection can compare real access inside its map tooltip',
+		'A frequency-only proposal preserves walking times and rendered neighbourhood colours',
 		async () => {
 			await budget.getByRole('button', { name: 'Undo proposal change', exact: true }).click();
+			await expect(atlas).toHaveAttribute('data-policy-proposal-points', '0');
+			await showProposal();
+			await panel.getByRole('button', { name: /^Bus service/ }).click();
+			const editor = page.getByTestId('map-service-editor');
+			await expect(editor).toHaveAttribute('data-service-mode', 'bus');
+			const route = baseline.patterns?.find(
+				(pattern) => pattern.mode === 'bus' && pattern.name.startsWith('R1 ')
+			);
+			assert.ok(
+				route,
+				'The captured R1 service must be available to test a real frequency change.'
+			);
+			await editor.getByLabel('Bus route and direction', { exact: true }).selectOption(route.id);
+			await editor.getByLabel('A bus every · min', { exact: true }).fill('15');
+			await editor.getByRole('button', { name: 'Accept service', exact: true }).click();
+			await impactReady();
+			await page.getByLabel('Access shown on map', { exact: true }).selectOption('transport');
+			await expect.poll(() => evaluationResponses.at(-1)?.assumptions?.goal).toBe('transport');
+			await impactReady();
+			// A real reload restores the saved draft and the full-island camera after route editing.
+			await page.reload({ waitUntil: 'domcontentloaded' });
+			await expect(atlas).toHaveAttribute('aria-busy', 'false');
+			await impactReady();
+			const value = latestEvaluation();
+			assert.equal(changedJourneys(value).length, 0);
+			assert.equal(value.summary.gained_residents, 0);
+			assert.equal(value.summary.weighted_minutes_saved, 0);
+			assert.ok(
+				Number(value.economics.delta.annual_operating_mvr) > 0,
+				'Changing the real timetable must still affect running costs.'
+			);
+			let sample;
+			for (const row of value.origins) {
+				if (row.before.minutes === null || row.before.minutes < 5 || !row.coordinates) continue;
+				const point = await project(row.coordinates);
+				if (await isClear(point)) {
+					sample = row;
+					break;
+				}
+			}
+			assert.ok(
+				sample,
+				'An unchanged longer walk must be visible for independent screenshot comparison.'
+			);
+			await toggle('Without proposal', 'before');
+			const beforeColours = await neighbourhoodColours(
+				sample.coordinates,
+				'frequency-cell-without-proposal.png'
+			);
+			await page.screenshot({ path: path.join(output, 'frequency-without-proposal.png') });
+			await toggle('With proposal', 'after');
+			const afterColours = await neighbourhoodColours(
+				sample.coordinates,
+				'frequency-cell-with-proposal.png'
+			);
+			assert.ok(
+				Math.abs(beforeColours.meanRedMinusGreen - afterColours.meanRedMinusGreen) < 1,
+				'An unchanged walk must keep its rendered colour after adding a frequency-only service.'
+			);
+			await page.screenshot({ path: path.join(output, 'frequency-with-proposal.png') });
+			// A restored draft has no in-memory undo history; remove its saved item through the UI.
+			await showProposal();
+			await panel.getByRole('button', { name: /^Remove / }).click();
+			await expect(atlas).toHaveAttribute('data-policy-impact-cells', '0');
+			return {
+				originId: sample.origin_id,
+				walkMinutesBefore: sample.before.minutes,
+				walkMinutesAfter: sample.after.minutes,
+				changedJourneys: 0,
+				beforeColours,
+				afterColours,
+				summary: value.summary,
+				runningCostMvr: value.economics.delta.annual_operating_mvr
+			};
+		}
+	);
+	await check(
+		'A pending bus connection can compare real access inside its map tooltip',
+		async () => {
+			await page.reload({ waitUntil: 'domcontentloaded' });
+			await expect(atlas).toHaveAttribute('aria-busy', 'false');
 			await expect(atlas).toHaveAttribute('data-policy-proposal-points', '0');
 			await showProposal();
 			const coordinates = [73.5379734, 4.2329967];
@@ -535,6 +654,20 @@ try {
 			await expect(editor.locator('.service-access')).toBeVisible();
 			await impactReady();
 			assert.ok((latestEvaluation().summary.gained_residents ?? 0) > 0);
+			const value = latestEvaluation();
+			assert.equal(value.assumptions.goal, 'transport');
+			const changed = changedJourneys(value);
+			assert.ok(changed.length > 0 && changed.length < value.origins.length / 10);
+			assert.ok(changed.every((row) => row.coordinates[1] > 4.23));
+			assert.ok(
+				value.origins
+					.filter((row) => row.coordinates[1] < 4.22)
+					.every(
+						(row) =>
+							row.before.minutes === row.after.minutes && row.before.status === row.after.status
+					),
+				'The new northern stop must preserve walking access in southern Hulhumalé.'
+			);
 			const sourceUpdates = await atlas.getAttribute('data-policy-impact-source-updates');
 			for (const [name, view] of [
 				['Without proposal', 'before'],
@@ -544,6 +677,10 @@ try {
 				await action.scrollIntoViewIfNeeded();
 				await assertFullyVisible(action);
 				await toggle(name, view);
+				if (view === 'before')
+					await page.screenshot({
+						path: path.join(output, 'bus-preview-without-proposal-desktop.png')
+					});
 			}
 			await page.screenshot({ path: path.join(output, 'bus-preview-comparison-desktop.png') });
 			await page.setViewportSize({ width: 390, height: 844 });
@@ -563,7 +700,13 @@ try {
 			await expect(atlas).toHaveAttribute('data-policy-impact-cells', '0');
 			return {
 				coordinates,
-				gainingResidents: latestEvaluation().summary.gained_residents,
+				gainingResidents: value.summary.gained_residents,
+				changedJourneys: changed.length,
+				totalOrigins: value.origins.length,
+				affectedLatitudeRange: [
+					Math.min(...changed.map((row) => row.coordinates[1])),
+					Math.max(...changed.map((row) => row.coordinates[1]))
+				],
 				comparedWithoutCommitting: true,
 				tooltipControlsFitDesktopAndMobile: true,
 				sourceGeometryUnchanged: true
