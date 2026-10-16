@@ -21,6 +21,7 @@
 		MapPin,
 		Hospital,
 		BusFront,
+		Signpost,
 		Radio,
 		Eye,
 		Check,
@@ -2660,7 +2661,7 @@
 					? '<path d="M8 3h8v5h5v13H3V8h5V3Zm2 3v3H7v3h3v3h3v-3h3V9h-3V6h-3Z"/>'
 					: entry.kind === 'add_school'
 						? '<path d="m2 9 10-5 10 5-10 5L2 9Zm4 4v5c4 3 8 3 12 0v-5l-6 3-6-3Zm15-2v7h1v-7h-1Z"/>'
-						: '<path d="M6 3h12c2 0 3 2 3 4v11h-2v3h-3v-3H8v3H5v-3H3V7c0-2 1-4 3-4Zm0 3v6h12V6H6Zm1 8a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm10 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/>';
+						: '<path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 13v8M12 3v3M2.354 10.354a1.207 1.207 0 0 1 0-1.708l2.06-2.06A2 2 0 0 1 5.828 6h12.344a2 2 0 0 1 1.414.586l2.06 2.06a1.207 1.207 0 0 1 0 1.708l-2.06 2.06a2 2 0 0 1-1.414.586H5.828a2 2 0 0 1-1.414-.586z"/>';
 			const symbolKey = `${entry.kind}:${entry.index}`;
 			if (element.dataset.symbol !== symbolKey) {
 				element.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${symbol}</svg><span aria-hidden="true">${entry.index === -1 ? '+' : entry.index + 1}</span>`;
@@ -4664,7 +4665,7 @@
 				<span class="placement-preview-icon">
 					{#if placementKind === 'add_hospital'}<Hospital size={22} />
 					{:else if placementKind === 'add_school'}<GraduationCap size={22} />
-					{:else}<BusFront size={22} />{/if}
+					{:else}<Signpost size={22} />{/if}
 				</span>
 				<span class="placement-preview-label">
 					<strong>{placementAdvice?.title}</strong>
@@ -4768,7 +4769,7 @@
 					<span class="placement-card-symbol" aria-hidden="true">
 						{#if pendingProposal.kind === 'add_hospital'}<Hospital size={21} />
 						{:else if pendingProposal.kind === 'add_school'}<GraduationCap size={21} />
-						{:else}<BusFront size={21} />{/if}
+						{:else}<Signpost size={21} />{/if}
 					</span>
 					<div><span>Review placement</span><strong>{placementTitle}</strong></div>
 				</div>

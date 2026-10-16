@@ -79,8 +79,8 @@ try {
 					assert.equal(island.domains[domain].status, 'review');
 					assert.ok(island.domains[domain].mapped_count > 0);
 					assert.ok(Number.isFinite(island.domains[domain].score));
-					await expect(card).toContainText('not a confirmed service failure');
-				} else await expect(card).toContainText('do not prove a service is missing');
+					await expect(card).toContainText('Confirm this screening signal locally');
+				} else await expect(card).toContainText('Missing records do not confirm a service gap');
 			}
 			await noOverflow();
 			await page.screenshot({ path: path.join(output, 'analytics-decisions-desktop.png') });

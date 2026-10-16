@@ -221,7 +221,7 @@ try {
 			assert.equal(evidence.screeningIslands.includes(hulhumaleId), false);
 			await openProposal();
 			await expect(
-				panel.locator('.policy-palette').getByRole('button', { name: 'Bus stop', exact: true })
+				panel.locator('.policy-palette').getByRole('button', { name: 'Add bus stop', exact: true })
 			).toBeEnabled();
 			await panel.getByRole('button', { name: 'Close island planning panel', exact: true }).click();
 			await page.screenshot({ path: path.join(output, 'male-analysis-loading.png') });
@@ -264,7 +264,7 @@ try {
 			await openProposal();
 			await expect(proposalTitle).toHaveValue('Malé service improvement');
 			await expect(
-				panel.locator('.policy-palette').getByRole('button', { name: 'Bus stop', exact: true })
+				panel.locator('.policy-palette').getByRole('button', { name: 'Add bus stop', exact: true })
 			).toBeEnabled();
 			await panel.getByRole('button', { name: 'Close island planning panel', exact: true }).click();
 			const selectedMaleEvidence = await mapEvidence();

@@ -3,7 +3,7 @@ import type { FeatureCollection, Geometry, Position } from 'geojson';
 import type { Coordinates } from './types.js';
 import type { PlanningComparison, PlanningOperation, PlanningPlace } from './planning-map.js';
 import type { PlanningEvaluation } from './proposal-review.js';
-import type { ServiceCalendar } from './proposal-experience.js';
+import type { TransportServicePattern } from './transport-service.js';
 import { validPoint } from './planning-map.js';
 
 const operationTypes = new Set([
@@ -175,15 +175,7 @@ export type MapBaseline = {
 	graph_edges: { geometry?: number[][] }[];
 	warnings: string[];
 	stops?: PlanningPlace[];
-	patterns?: {
-		id: string;
-		name: string;
-		mode: string;
-		stopIds: string[];
-		geometry?: number[][];
-		segmentGeometries?: number[][][];
-		calendar?: ServiceCalendar;
-	}[];
+	patterns?: TransportServicePattern[];
 };
 export const emptyFeatures = (): FeatureCollection => ({ type: 'FeatureCollection', features: [] });
 

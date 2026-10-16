@@ -604,7 +604,7 @@ try {
 		await expect(atlas).toHaveAttribute('data-policy-proposal-points', '0');
 		await showProposal();
 		const target = await site();
-		await panel.getByRole('button', { name: 'Bus stop', exact: true }).click();
+		await panel.getByRole('button', { name: 'Add bus stop', exact: true }).click();
 		await page.mouse.move(target.point.x, target.point.y);
 		await expect(atlas).toHaveAttribute('data-focus-context', 'bus');
 		await expect
@@ -648,7 +648,7 @@ try {
 			await budget.getByRole('button', { name: 'Undo proposal change', exact: true }).click();
 			await expect(atlas).toHaveAttribute('data-policy-proposal-points', '0');
 			await showProposal();
-			await panel.getByRole('button', { name: /^Bus service/ }).click();
+			await panel.getByRole('button', { name: 'Improve bus line', exact: true }).click();
 			const editor = page.getByTestId('map-service-editor');
 			await expect(editor).toHaveAttribute('data-service-mode', 'bus');
 			const route = baseline.patterns?.find(
@@ -732,7 +732,7 @@ try {
 			const coordinates = [73.5379734, 4.2329967];
 			const point = await project(coordinates);
 			assert.ok(await isClear(point), 'The source-backed northern road must be visible.');
-			await panel.getByRole('button', { name: 'Bus stop', exact: true }).click();
+			await panel.getByRole('button', { name: 'Add bus stop', exact: true }).click();
 			await page.mouse.click(point.x, point.y);
 			const editor = page.getByTestId('map-service-editor');
 			await expect(editor).toHaveAttribute('data-service-mode', 'bus-connection');

@@ -9,7 +9,6 @@
 		ArrowRight,
 		BusFront,
 		Check,
-		ChevronDown,
 		GraduationCap,
 		Hospital,
 		Layers,
@@ -17,9 +16,12 @@
 		MousePointer2,
 		Plus,
 		RefreshCw,
+		Route,
 		Ship,
+		Signpost,
 		Sparkles,
 		Trash2,
+		Waypoints,
 		X
 	} from '@lucide/svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
@@ -30,12 +32,10 @@
 	import {
 		displayGapHexes,
 		displayComparisonHexes,
-		comparisonCellProperties,
-		accessColors
+		comparisonCellProperties
 	} from '#lib/display-grid.js';
 	import { explainImpactCell, serviceCalendarRuns } from '#lib/proposal-experience.js';
 	import { nearestPlacementRoad } from '#lib/map-placement-preview.js';
-	import { GAP_PALETTE } from '#lib/map-overlay.js';
 	import {
 		assessDraftBudget,
 		draftCosts,
@@ -57,12 +57,7 @@
 		type PlanningEconomics,
 		type PlanningReviewRequest
 	} from '#lib/proposal-review.js';
-	import type {
-		OpportunityIsland,
-		PolicyLens,
-		PolicyOpportunities,
-		PolicyDomain
-	} from '#lib/policy-opportunities.js';
+	import type { PolicyLens, PolicyOpportunities, PolicyDomain } from '#lib/policy-opportunities.js';
 	import type { Coordinates, MapFeatures } from '#lib/types.js';
 	import {
 		canConfirmFerry,
@@ -77,6 +72,7 @@
 	import ProposalForecastReview from './ProposalForecastReview.svelte';
 	import TransportImpact from './TransportImpact.svelte';
 	import { transportImpactHeadline, type TransportImpactData } from '#lib/transport-impact.js';
+	import { serviceTimingSummary, transportServiceOperations } from '#lib/transport-service.js';
 
 	type Suggestion = {
 		id: string;
@@ -197,7 +193,7 @@
 	} = $props();
 	let mounted = $state(false);
 	let opened = $state(false);
-	let section = $state<'needs' | 'proposal'>('needs');
+	let section = $state<'needs' | 'proposal'>('proposal');
 	let national = $state.raw<PolicyOpportunities | null>(null);
 	let baseline = $state.raw<MapBaseline | null>(null);
 	let gapCells = $state.raw<FeatureCollection>(emptyFeatures());
@@ -227,6 +223,9 @@
 	let previewCalculating = $state(false);
 	let previewController: AbortController | undefined;
 	let busOpen = $state(false);
+	let serviceMode = $state<'bus' | 'ferry'>('bus');
+	let serviceIntent = $state<'add' | 'improve'>('improve');
+	let serviceProposalId = $state('');
 	let serviceAnchor = $state<Coordinates | null>(null);
 	let serviceEditorCompact = $state(false);
 	let ferryOriginTerminal = $state('');
@@ -826,14 +825,47 @@
 	const busPatterns = $derived(
 		(baseline?.patterns ?? []).filter((pattern) => pattern.mode === 'bus')
 	);
-	const busPattern = $derived(busPatterns.find((pattern) => pattern.id === busPatternId));
+	const ferryPatterns = $derived(
+		(baseline?.patterns ?? []).filter((pattern) => pattern.mode === 'ferry')
+	);
+	const servicePatterns = $derived(serviceMode === 'bus' ? busPatterns : ferryPatterns);
+	const serviceTitle = $derived(
+		serviceIntent === 'add' ? 'Add bus' : `Improve ${serviceMode} line`
+	);
+	const busPattern = $derived(servicePatterns.find((pattern) => pattern.id === busPatternId));
+	const serviceTiming = $derived(
+		busOpen && busPattern ? serviceTimingSummary(busPattern, date) : null
+	);
 	const busPatternActive = $derived(serviceCalendarRuns(busPattern?.calendar, date));
 	const busRecordedDate = $derived(
 		busPattern?.calendar?.includedDates
 			?.filter((recorded) => serviceCalendarRuns(busPattern?.calendar, recorded))
 			.sort()[0] ?? null
 	);
-	const busSignature = $derived(JSON.stringify({ request, busPatternId, busHeadway }));
+	const busSignature = $derived(
+		JSON.stringify({
+			request,
+			busPatternId,
+			busHeadway,
+			serviceMode,
+			serviceIntent,
+			serviceProposalId
+		})
+	);
+	const serviceChange = $derived(
+		busOpen
+			? transportServiceOperations({
+					pattern: busPattern,
+					intent: serviceIntent,
+					headway: Number(busHeadway),
+					date,
+					proposalId: serviceProposalId,
+					islandId: islandId ?? undefined,
+					operations,
+					mapFeatures: busMapFeatures()
+				})
+			: { operations: null, error: null, addedDepartures: 0 }
+	);
 	const busPreview = $derived(busQuote?.key === busSignature ? busQuote.value : null);
 	const visibleTransportImpact = $derived(
 		pending
@@ -890,8 +922,8 @@
 						? {
 								id: 'bus-service',
 								coordinates: serviceAnchor,
-								mode: 'bus',
-								title: 'Improve a bus service'
+								mode: serviceMode,
+								title: serviceTitle
 							}
 						: null
 			: null
@@ -944,7 +976,7 @@
 		untrack(() => {
 			consumedServicePlacement = servicePlacement!.id;
 			if (servicePlacement!.kind === 'ferry') beginFerry(servicePlacement!.coordinates);
-			else beginBusService(servicePlacement!.coordinates);
+			else beginBusService(servicePlacement!.coordinates, 'add');
 		});
 	});
 	$effect(() => {
@@ -1033,7 +1065,15 @@
 		const timer = setTimeout(() => {
 			if (key === busSignature) untrack(() => void previewBusService());
 		}, 300);
-		return () => clearTimeout(timer);
+		return () => {
+			clearTimeout(timer);
+			untrack(() => {
+				if (busRequestedSignature === key) {
+					busController?.abort();
+					busQuoting = false;
+				}
+			});
+		};
 	});
 	$effect(() => {
 		const key = ferrySignature;
@@ -1358,7 +1398,7 @@
 			}
 			opened = command!.kind !== 'close';
 			if (opened) {
-				section = command!.kind === 'compose' ? 'proposal' : 'needs';
+				section = command!.kind === 'compose' || !cell ? 'proposal' : 'needs';
 				onCloseOthers();
 			} else close();
 		});
@@ -1927,7 +1967,7 @@
 	}
 	function open(mode: 'needs' | 'proposal') {
 		opened = true;
-		section = mode;
+		section = mode === 'needs' && !cell ? 'proposal' : mode;
 		onCloseOthers();
 	}
 	function close() {
@@ -1979,34 +2019,57 @@
 		onLensChange('transport');
 		setGoal('transport');
 	}
-	function beginBusService(point?: Coordinates) {
+	function beginBusService(
+		point?: Coordinates,
+		intent: 'add' | 'improve' = 'improve',
+		mode: 'bus' | 'ferry' = 'bus'
+	) {
 		serviceEditorCompact = false;
 		cancelPending();
 		cancelSuggestions();
 		closeFerry();
 		closeBusService();
+		serviceMode = mode;
+		serviceIntent = intent;
+		serviceProposalId = crypto.randomUUID();
 		opened = false;
 		section = 'proposal';
 		onCloseOthers();
 		serviceAnchor = point ?? current?.coordinates ?? null;
 		busOpen = true;
 		busError = '';
-		if (!busPatterns.some((pattern) => pattern.id === busPatternId))
-			busPatternId = busPatterns[0]?.id ?? '';
+		if (!servicePatterns.some((pattern) => pattern.id === busPatternId))
+			busPatternId = servicePatterns[0]?.id ?? '';
 		if (point && baseline?.stops) {
 			const nearest = [...baseline.stops]
-				.filter((stop) => busPatterns.some((pattern) => pattern.stopIds.includes(stop.id)))
+				.filter((stop) => servicePatterns.some((pattern) => pattern.stopIds.includes(stop.id)))
 				.sort(
 					(a, b) =>
 						Math.hypot(a.lon - point[0], a.lat - point[1]) -
 						Math.hypot(b.lon - point[0], b.lat - point[1])
 				)[0];
-			const route = busPatterns.find((pattern) => nearest && pattern.stopIds.includes(nearest.id));
+			const route = servicePatterns.find(
+				(pattern) => nearest && pattern.stopIds.includes(nearest.id)
+			);
 			if (route) busPatternId = route.id;
 		}
+		prefillServiceHeadway();
 		serviceAnchor = routeAnchor();
 		focusFerryFeatures(busMapFeatures());
 		onLensChange('transport');
+		setGoal('transport');
+	}
+	function prefillServiceHeadway() {
+		const currentHeadway = busPattern
+			? serviceTimingSummary(busPattern, date).headwayMinutes
+			: null;
+		const accepted = operations.find(
+			(operation) => operation.type === 'set_frequency' && operation.target_id === busPatternId
+		);
+		busHeadway =
+			serviceIntent === 'improve'
+				? (accepted?.headway_minutes ?? Math.max(1, Math.floor((currentHeadway ?? 30) / 2)))
+				: (currentHeadway ?? 30);
 	}
 	function closeBusService() {
 		busOpen = false;
@@ -2014,22 +2077,6 @@
 		busRequestedSignature = '';
 		busQuoting = false;
 		busError = '';
-	}
-	function busOperations(): PlanningOperation[] {
-		if (!busPattern) return [];
-		return [
-			...operations.filter(
-				(operation) => !(operation.type === 'set_frequency' && operation.target_id === busPatternId)
-			),
-			{
-				type: 'set_frequency',
-				target_id: busPatternId,
-				island_id: islandId ?? undefined,
-				headway_minutes: Number(busHeadway),
-				name: `${busPattern.name} · every ${busHeadway} min`,
-				metadata: { ui_map_features: busMapFeatures() }
-			}
-		];
 	}
 	function busMapFeatures(): FeatureCollection {
 		const lines =
@@ -2040,14 +2087,14 @@
 			features: [
 				...lines.map((coordinates) => ({
 					type: 'Feature' as const,
-					properties: { name: busPattern?.name, mode: 'bus' },
+					properties: { name: busPattern?.name, mode: serviceMode },
 					geometry: { type: 'LineString' as const, coordinates }
 				})),
 				...(baseline?.stops ?? [])
 					.filter((stop) => busPattern?.stopIds.includes(stop.id))
 					.map((stop) => ({
 						type: 'Feature' as const,
-						properties: { id: stop.id, name: stop.name, mode: 'bus', role: 'stop' },
+						properties: { id: stop.id, name: stop.name, mode: serviceMode, role: 'stop' },
 						geometry: { type: 'Point' as const, coordinates: [stop.lon, stop.lat] }
 					}))
 			]
@@ -2055,6 +2102,10 @@
 	}
 	async function previewBusService() {
 		if (!busOpen) return;
+		if (!budgetLimits.allowed) {
+			busError = budgetLimits.reason ?? 'Set valid proposal budget limits first.';
+			return;
+		}
 		if (
 			!busPattern ||
 			!Number.isFinite(Number(busHeadway)) ||
@@ -2069,9 +2120,8 @@
 				'No published departures start on the selected service date. Choose a recorded service date before changing this route.';
 			return;
 		}
-		if (busOperations().length > 100) {
-			busError =
-				'This proposal has reached the 100-change limit. Remove a change before adding a bus service adjustment.';
+		if (!serviceChange.operations || serviceChange.error) {
+			busError = serviceChange.error ?? 'Choose a route with a recorded timetable.';
 			return;
 		}
 		busController?.abort();
@@ -2084,7 +2134,7 @@
 		try {
 			const value = await api<BudgetQuote>(
 				'planning/quote',
-				{ ...request, operations: busOperations() },
+				{ ...request, operations: serviceChange.operations },
 				controller.signal
 			);
 			if (!controller.signal.aborted && busOpen && key === busSignature) {
@@ -2102,20 +2152,26 @@
 		if (
 			!busOpen ||
 			!busPatternActive ||
+			!budgetLimits.allowed ||
 			!busPreview?.budget.allowed ||
 			busQuoting ||
-			checkingBudget
+			checkingBudget ||
+			!serviceChange.operations ||
+			serviceChange.error
 		)
 			return;
-		const next = busOperations();
+		const next = serviceChange.operations;
 		financialQuote = {
 			key: planningFinancialKey({ ...request, operations: next }),
 			capital: busPreview.economics.delta.capital_mvr ?? null,
 			annual: busPreview.economics.delta.annual_operating_mvr ?? null
 		};
 		commitChange(next);
+		actionMessage =
+			serviceIntent === 'add'
+				? 'Additional bus departures added'
+				: `${serviceMode === 'bus' ? 'Bus' : 'Ferry'} line frequency updated`;
 		closeBusService();
-		actionMessage = 'Bus service frequency updated';
 	}
 	function closeFerry() {
 		ferryOpen = false;
@@ -2446,12 +2502,6 @@
 			onFocus(coordinates as Coordinates);
 		}
 	}
-	function needsLabel(row: OpportunityIsland | undefined) {
-		if (!row) return 'Loading island evidence…';
-		return row?.planning_supported
-			? 'Inspect local service gaps, then test a funded option.'
-			: 'National evidence screening. Detailed journey modeling is not available for this island.';
-	}
 	const coverageLenses: { id: PolicyLens; label: string }[] = [
 		{ id: 'overall', label: 'All services' },
 		{ id: 'transport', label: 'Transport' },
@@ -2499,13 +2549,17 @@
 {/snippet}
 
 {#snippet serviceEditorContent()}
-	<div class="policy-service-popover" class:compact-preview={serviceEditorCompact}>
+	<div
+		class="policy-service-popover"
+		class:compact-preview={serviceEditorCompact}
+		data-service-intent={busOpen ? serviceIntent : 'add'}
+	>
 		{#if serviceEditorCompact}
 			<header>
 				<div>
 					<span class="eyebrow">ROUTE PREVIEW</span>
 					<h3>
-						{ferryOpen ? 'Ferry service' : busConnectionMode ? 'New bus connection' : 'Bus service'}
+						{ferryOpen ? 'Add ferry' : busConnectionMode ? 'Stop + connecting bus' : serviceTitle}
 					</h3>
 				</div>
 				<Button
@@ -2560,7 +2614,11 @@
 						? !pendingDecision?.allowed || busConnectionChecking
 						: ferryOpen
 							? !ferryAllowed
-							: !busPreview?.budget.allowed || busQuoting || !busPatternActive}
+							: !busPreview?.budget.allowed ||
+								busQuoting ||
+								!busPatternActive ||
+								!budgetLimits.allowed ||
+								!!serviceChange.error}
 					onclick={() => {
 						if (busConnectionMode) confirm();
 						else if (ferryOpen) confirmFerry();
@@ -2589,6 +2647,17 @@
 						onclick={cancelPending}><X size={16} /></Button
 					>
 				</header>
+				<div class="service-stop-choice">
+					<span>Adding a stop? Choose whether it also needs a bus connection.</span>
+					<Button
+						size="sm"
+						variant="outline"
+						onclick={() => {
+							busStopOnly = true;
+							busConnectionController?.abort();
+						}}>Add only a stop</Button
+					>
+				</div>
 				{@render serviceMapPreviewAction()}
 				{#if comparisonPreview}<div class="service-comparison-controls">
 						<small>Preview · {comparisonGoalLabel} within {comparisonTarget} min</small>
@@ -2709,12 +2778,6 @@
 				<footer>
 					<Button disabled={!pendingDecision?.allowed || busConnectionChecking} onclick={confirm}
 						><Check size={15} />Accept stop & route</Button
-					><Button
-						variant="outline"
-						onclick={() => {
-							busStopOnly = true;
-							busConnectionController?.abort();
-						}}>Add only a stop</Button
 					>
 				</footer>
 				<small
@@ -2724,36 +2787,50 @@
 			{:else if busOpen}
 				<header>
 					<div>
-						<span class="eyebrow">EXISTING BUS ROUTE</span>
-						<h3>Improve a bus service</h3>
+						<span class="eyebrow"
+							>{serviceIntent === 'add' ? 'ADDITIONAL DEPARTURES' : 'EXISTING LINE'}</span
+						>
+						<h3>{serviceTitle}</h3>
 					</div>
 					<Button
 						variant="ghost"
 						size="icon-sm"
-						aria-label="Close bus service planner"
+						aria-label={`Close ${serviceMode} service planner`}
 						onclick={closeBusService}><X size={16} /></Button
 					>
 				</header>
 				{@render serviceMapPreviewAction()}
-				<Label for="proposal-bus-route">Bus route and direction</Label><select
+				<Label for="proposal-bus-route"
+					>{serviceMode === 'bus' ? 'Bus' : 'Ferry'} route and direction</Label
+				><select
 					id="proposal-bus-route"
 					bind:value={busPatternId}
 					onchange={(event) => {
 						busPatternId = event.currentTarget.value;
+						prefillServiceHeadway();
 						serviceAnchor = routeAnchor();
 						focusFerryFeatures(busMapFeatures());
 					}}
-					>{#each busPatterns as pattern (pattern.id)}<option value={pattern.id}
+					>{#each servicePatterns as pattern (pattern.id)}<option value={pattern.id}
 							>{pattern.name}</option
 						>{/each}</select
 				>
 				<p>
-					{busPattern?.stopIds.length ?? 0} boarding points · highlighted on the map. The reverse direction
-					is unchanged.
+					{busPattern?.stopIds.length ?? 0} boarding points · {serviceTiming?.windowLabel ||
+						'Select a dated timetable'}.
+					{serviceIntent === 'add'
+						? 'Keeps existing departures and adds buses in this direction.'
+						: 'Changes departures in this direction; the return line stays as it is.'}
 				</p>
 				<div class="service-field-row">
 					<div>
-						<Label for="proposal-bus-frequency">A bus every · min</Label><Input
+						<Label for="proposal-bus-frequency"
+							>{serviceIntent === 'add'
+								? 'Additional bus'
+								: serviceMode === 'bus'
+									? 'A bus'
+									: 'A ferry'} every · min</Label
+						><Input
 							id="proposal-bus-frequency"
 							type="number"
 							min="1"
@@ -2769,13 +2846,21 @@
 						/>
 					</div>
 				</div>
+				{#if serviceTiming?.headwayMinutes}<small class="service-current-frequency">
+						{serviceTiming.headwayVaries ? 'Current intervals vary; typically' : 'Currently'} every {formatAmount(
+							serviceTiming.headwayMinutes
+						)} min · {serviceTiming.departureCount} recorded departures.
+					</small>{/if}
 				{#if busPattern && !busPatternActive}<div class="policy-budget-alert" role="alert">
 						<p>No recorded departures on this date.</p>
 						{#if busRecordedDate}<Button
 								size="sm"
 								variant="outline"
 								aria-label="Use recorded service date"
-								onclick={() => (date = busRecordedDate!)}>Use {busRecordedDate}</Button
+								onclick={() => {
+									date = busRecordedDate!;
+									prefillServiceHeadway();
+								}}>Use {busRecordedDate}</Button
 							>{/if}
 					</div>{/if}
 				<details class="service-options">
@@ -2790,7 +2875,11 @@
 						<RefreshCw size={14} class="spin" />Updating service costs…
 					</p>{/if}
 				{#if busPreview}<div class="service-costs">
-						<span>Proposal total with this frequency</span><strong
+						<span
+							>Proposal total · {serviceIntent === 'add'
+								? `${serviceChange.addedDepartures} additional departures`
+								: 'updated frequency'}</span
+						><strong
 							>MVR {formatAmount(busPreview.economics.delta.capital_mvr, true)} upfront</strong
 						><small
 							>MVR {formatAmount(busPreview.economics.delta.annual_operating_mvr, true)} per year</small
@@ -2802,18 +2891,28 @@
 						>
 							{reason}
 						</p>{/each}{/if}
-				{#if busError}<p class="policy-error" role="alert">{busError}</p>
+				{#if serviceChange.error && busPatternActive}<p class="policy-error" role="alert">
+						{serviceChange.error}
+					</p>{/if}
+				{#if !budgetLimits.allowed}<p class="policy-budget-alert" role="alert">
+						{budgetLimits.reason}
+					</p>{/if}
+				{#if busError && !serviceChange.error}<p class="policy-error" role="alert">{busError}</p>
 					<Button size="sm" variant="outline" onclick={() => void previewBusService()}
 						>Retry cost check</Button
 					>{/if}
 				<p class="service-note">
-					Changes scheduled departures, waiting times, fleet and running costs. Walking distance to
-					a stop stays the same.
+					{serviceIntent === 'add'
+						? 'Adds departures on this date using the selected route. Required fleet and running costs are calculated with the existing timetable.'
+						: 'Updates waiting times, required fleet and running costs.'}
+					Walking distance to a stop stays the same.
 				</p>
 				<TransportImpact impact={visibleTransportImpact} compact preview />
 				<footer>
 					<Button
 						disabled={!busPatternActive ||
+							!budgetLimits.allowed ||
+							!!serviceChange.error ||
 							!busPreview?.budget.allowed ||
 							busQuoting ||
 							checkingBudget}
@@ -2824,7 +2923,7 @@
 				<header>
 					<div>
 						<span class="eyebrow">CONNECT ISLANDS</span>
-						<h3>Plan a ferry service</h3>
+						<h3>Add ferry</h3>
 					</div>
 					<Button
 						variant="ghost"
@@ -3008,10 +3107,9 @@
 		{#if !opened}<Button
 				variant="ghost"
 				class="policy-inspect-trigger"
-				title={`${islandName} · ${impact.features.length ? 'proposal impact' : 'service gaps'}`}
+				title={`${islandName} · ${cell ? 'selected area' : 'your proposal'}`}
 				onclick={() => open('needs')}
-				><MapPin size={15} /><span
-					>{islandName} · {impact.features.length ? 'proposal impact' : 'service gaps'}</span
+				><MapPin size={15} /><span>{islandName} · {cell ? 'selected area' : 'your proposal'}</span
 				></Button
 			>{/if}
 		{#if operations.length || comparisonPreview}<div class="proposal-map-metric">
@@ -3050,13 +3148,6 @@
 							>{option.label}</option
 						>{/each}
 				</select>{/if}
-			<button
-				class="lens-info"
-				aria-label={impact.features.length
-					? 'Explain proposal impact colours'
-					: 'Explain service gap colours'}
-				onclick={() => open('needs')}><ChevronDown size={16} /></button
-			>
 		</div>
 		{#if scopeError || nearbyGapError}<p class="local-map-status" role="alert">
 				{scopeError ? 'Island journeys unavailable.' : 'Nearby journeys unavailable.'}
@@ -3116,12 +3207,12 @@
 			out:surfaceMotion={{ direction: 'out' }}
 			class:placing={(!!pending || !!armedKind) && !budgetEditing}
 			aria-label="Island needs and proposal"
-			data-policy-section={section}
+			data-policy-section={section === 'needs' && cell ? 'needs' : 'proposal'}
 		>
 			<header>
 				<div>
 					<span class="eyebrow"
-						>{section === 'needs' ? 'UNDERSTAND THIS ISLAND' : 'BUILD YOUR PROPOSAL'}</span
+						>{section === 'needs' && cell ? 'SELECTED AREA' : 'BUILD YOUR PROPOSAL'}</span
 					>
 					<h2>{islandName}</h2>
 				</div>
@@ -3132,24 +3223,26 @@
 					onclick={close}><X size={18} /></Button
 				>
 			</header>
-			<div
-				class="policy-panel-tabs"
-				data-variant="line"
-				use:animatedSelection={{ selector: 'button.active' }}
-			>
-				<button
-					class:active={section === 'needs'}
-					onclick={() => {
-						section = 'needs';
-					}}>Service gaps</button
-				><button
-					class:active={section === 'proposal'}
-					onclick={() => {
-						section = 'proposal';
-					}}
-					>Your proposal {#if operations.length}<span>{draftItems.length}</span>{/if}</button
+			{#if cell}<div
+					class="policy-panel-tabs"
+					data-variant="line"
+					use:animatedSelection={{ selector: 'button.active' }}
 				>
-			</div>
+					<button
+						class:active={section === 'needs'}
+						aria-pressed={section === 'needs'}
+						onclick={() => {
+							section = 'needs';
+						}}>Selected area</button
+					><button
+						class:active={section === 'proposal'}
+						aria-pressed={section === 'proposal'}
+						onclick={() => {
+							section = 'proposal';
+						}}
+						>Your proposal {#if operations.length}<span>{draftItems.length}</span>{/if}</button
+					>
+				</div>{/if}
 			<div class="policy-panel-scroll">
 				{#if restorationWarning}<p class="policy-error" role="alert">{restorationWarning}</p>{/if}
 				{#if dataError}<p class="policy-error" role="alert">
@@ -3179,84 +3272,30 @@
 								>Retry island evidence</Button
 							>{/if}
 					</p>{/if}
-				{#if section === 'needs'}
-					<p class="policy-intro">
-						{impact.features.length
-							? `Compare modeled ${comparisonGoalLabel}, with and without your proposal. Select a hexagon to inspect its journeys.`
-							: needsLabel(current)}
-					</p>
-					<div class="policy-map-key">
-						{#if impact.features.length}
-							<span><i style:background={GAP_PALETTE.shorter}></i>Shorter journey</span>
-							<span><i style:background={GAP_PALETTE.longer}></i>At / beyond target</span>
-							<span><i style:background={accessColors.unavailable}></i>No routed access</span>
-							<span><i style:background={accessColors.unknown}></i>Unknown</span>
-						{:else}
-							<span
-								><i style:background={GAP_PALETTE.longer}></i>{gapCells.features.length
-									? 'At / beyond target'
-									: 'Review need'}</span
-							>
-							<span
-								><i style:background={GAP_PALETTE.shorter}></i>{gapCells.features.length
-									? 'Shorter journey'
-									: 'More evidence'}</span
-							>
-							<span><i style:background={GAP_PALETTE.unknown}></i>Unknown</span>
-						{/if}
-					</div>
-					{#if !impact.features.length}<p class="policy-evidence-note">
-							{#if !islandId}
-								Country colors screen mapped service availability and population pressure. Select an
-								island to inspect local journeys. Service frequency and capacity need verification.
-							{:else}
-								{capitalIslandIds.includes(islandId)
-									? 'Malé and Hulhumalé show'
-									: 'Where available, colors show'}
-								modeled neighborhood journeys: walking to public transport, or scheduled trips to healthcare
-								and schools. Red marks times at or beyond the target; grey means incomplete routing evidence.
-								Islands without local journey analysis stay unshaded.
-							{/if}
-						</p>{/if}
-					{#if impact.features.length}
-						<p class="policy-evidence-note">
-							Both views use the same journey-time scale. Green means shorter journeys; red marks
-							times at or beyond {comparisonTarget} minutes. Unchanged journeys keep their color. Unshaded
-							land has no resident estimate.
-						</p>
-						{#if comparisonAssumptions?.goal === 'transport'}
-							<p class="policy-evidence-note">
-								This view measures the walk to a stop or ferry landing place. A new stop needs a
-								connected, active bus service to improve access. More frequent buses or a new ferry
-								can improve service without changing that walk. Choose healthcare or education above
-								the comparison to see onward journey access.
-							</p>
-						{/if}
-					{/if}
-					<Button
-						class="policy-primary"
-						onclick={() => {
-							section = 'proposal';
-						}}
-						><Sparkles size={16} />{operations.length
-							? 'Edit your proposal'
-							: 'Build a funded proposal'}<ArrowRight size={16} /></Button
-					>
-					<button class="policy-ferry-entry" onclick={() => beginFerry()}>
-						<Ship size={22} /><span
-							><strong>Island-to-island travel</strong><small
-								>Check a connection and plan a ferry service.</small
-							></span
-						><ArrowRight size={16} />
-					</button>
+				{#if section === 'needs' && cell}
 					{#if selectedExplanation && impact.features.length}<div
 							class="policy-selected-cell"
 							aria-label="Selected neighbourhood impact"
 							data-cell-id={String(cell?.id ?? '')}
 						>
 							<strong>{selectedExplanation.title}</strong><span>{selectedExplanation.summary}</span>
-							{#each selectedExplanation.reasons as reason, i (i)}<p>{reason}</p>{/each}
-							<small>{selectedExplanation.qualification}</small>
+							{#each [{ key: 'before', label: 'Without proposal' }, { key: 'after', label: 'With proposal' }] as journey (journey.key)}
+								<p>
+									{journey.label}<b
+										>{typeof selectedImpactCell?.[journey.key] === 'number' &&
+										Number.isFinite(selectedImpactCell[journey.key])
+											? `${Math.round(Number(selectedImpactCell[journey.key]))} min`
+											: selectedImpactCell?.display_grid
+												? 'Incomplete evidence'
+												: 'No routed access'}</b
+									>
+								</p>
+							{/each}
+							<details class="policy-cell-evidence">
+								<summary>Journey evidence</summary>
+								{#each selectedExplanation.reasons as reason, i (i)}<p>{reason}</p>{/each}
+								<p>{selectedExplanation.qualification}</p>
+							</details>
 						</div>{:else if cell?.origin_id && !impact.features.length}<div
 							class="policy-selected-cell"
 							data-cell-id={String(cell.origin_id)}
@@ -3271,9 +3310,10 @@
 											: 'No routed evidence'}</b
 									>
 								</p>{/each}
-							{#if cell.display_grid}<small
-									>Journey times are resident-weighted averages for this tile.</small
-								>{/if}
+							{#if cell.display_grid}<details class="policy-cell-evidence">
+									<summary>Journey evidence</summary>
+									<p>Journey times are resident-weighted averages for this tile.</p>
+								</details>{/if}
 						</div>{:else if cell?.impact && impact.features.length}<div
 							class="policy-selected-cell"
 							aria-label="Selected neighbourhood impact"
@@ -3300,78 +3340,27 @@
 										: `${Math.round(Number(cell.after))} min`}</b
 								>
 							</p>
-							<small
-								>{String(cell.impact).replaceAll('_', ' ')} · {cell.display_grid
-									? 'resident-weighted tile; overall totals use the original model'
-									: 'illustrative cell at a modeled origin'}</small
-							>
-						</div>{/if}
-					{#if current}
-						{#each ['transport', 'health', 'education'] as domain (domain)}
-							{@const item = current.domains[domain as PolicyDomain]}
-							<button class="policy-need-row" onclick={() => onLensChange(domain as PolicyLens)}
-								><span
-									>{#if domain === 'transport'}<BusFront
-											size={18}
-										/>{:else if domain === 'health'}<Hospital size={18} />{:else}<GraduationCap
-											size={18}
-										/>{/if}<strong
-										>{domain === 'health'
-											? 'Healthcare'
-											: domain === 'education'
-												? 'Education'
-												: 'Transport'}</strong
-									><small>{item.mapped_count} mapped records</small></span
-								><b class:unknown={item.status === 'unknown'}
-									>{item.status === 'review'
-										? 'Review need'
-										: item.status === 'unknown'
-											? 'Unknown'
-											: 'Mapped evidence'}</b
-								></button
-							>
-							{#if lens === domain}<ul class="policy-reasons">
-									{#each item.reasons as reason, i (i)}<li>{reason}</li>{/each}
-								</ul>{/if}
-						{/each}
-						<div class="policy-population">
-							<span
-								>{current.population_status === 'census'
-									? 'Census 2022 residents'
-									: current.population_status === 'projected_spatial_allocation'
-										? 'Projected 2026 residents'
-										: 'Linked resident population'}</span
-							><strong
-								>{current.population == null
-									? 'Not linked'
-									: formatAmount(current.population)}</strong
-							>
-							<details>
-								<summary>Population source</summary><small>{current.population_basis}</small>
+							<details class="policy-cell-evidence">
+								<summary>Journey evidence</summary>
+								<p>
+									{String(cell.impact).replaceAll('_', ' ')} · {cell.display_grid
+										? 'resident-weighted tile; overall totals use the original model'
+										: 'illustrative cell at a modeled origin'}
+								</p>
 							</details>
-						</div>
-						{#if current.missing_data.length}<details class="policy-evidence-note">
-								<summary>What still needs verification</summary>
-								<ul>
-									{#each current.missing_data as item, i (i)}<li>{item}</li>{/each}
-								</ul>
-							</details>{/if}
-					{/if}
-					<details class="policy-evidence-note">
-						<summary>How to read this map</summary>
-						<p>
-							{gapCells.features.length
-								? 'Local tiles compare journeys to a 30-minute healthcare / school target or a 10-minute walk to a stop. Journey times are resident-weighted averages. Tiles stop where resident data ends; grey means journey evidence is incomplete. Select a tile for details.'
-								: 'Colours screen mapped records. Missing records need verification and do not prove there is no service.'}
-						</p>
-					</details>
+						</div>{/if}
+					<Button class="policy-primary" onclick={() => (section = 'proposal')}
+						><Sparkles size={16} />{operations.length
+							? 'Edit proposal'
+							: 'Build proposal'}<ArrowRight size={16} /></Button
+					>
 					<Button
 						variant="ghost"
 						class="policy-secondary"
 						onclick={() => {
 							close();
 							onDetails();
-						}}>Island details & directions</Button
+						}}>Island details</Button
 					>
 				{:else}
 					<div
@@ -3540,7 +3529,7 @@
 							>
 						</div>
 						<div class="policy-palette">
-							{#each [{ kind: 'add_stop', label: 'Bus stop', icon: BusFront }, { kind: 'add_school', label: 'School', icon: GraduationCap }, { kind: 'add_hospital', label: 'Hospital', icon: Hospital }] as item (item.kind)}<button
+							{#each [{ kind: 'add_stop', label: 'Add bus stop', icon: Signpost }, { kind: 'add_school', label: 'School', icon: GraduationCap }, { kind: 'add_hospital', label: 'Hospital', icon: Hospital }] as item (item.kind)}<button
 									draggable={!!baseline &&
 										supported &&
 										!loading &&
@@ -3583,31 +3572,82 @@
 									><span>{item.label}</span><Plus size={12} /></button
 								>{/each}
 						</div>
-						<div class="policy-service-palette" aria-label="Transport services">
+						<h3 class="policy-palette-heading">Add transport</h3>
+						<div class="policy-service-palette" aria-label="Add transport services">
 							<button
 								class="policy-service-tile"
-								draggable="true"
+								draggable={supported &&
+									!!busPatterns.length &&
+									!loading &&
+									!checkingBudget &&
+									operations.length < 100}
 								ondragstart={(event) => serviceDrag(event, 'bus')}
-								onclick={() => beginBusService()}
-								disabled={!supported || !busPatterns.length || loading || checkingBudget}
+								aria-label="Add bus"
+								onclick={() => beginBusService(undefined, 'add')}
+								disabled={!supported ||
+									!busPatterns.length ||
+									loading ||
+									checkingBudget ||
+									operations.length >= 100}
 							>
 								<span data-service-icon><BusFront size={24} /></span><span
-									><strong>Bus service</strong><small>Choose a route on the map</small></span
-								><Plus size={15} /></button
+									><strong>Add bus</strong><small>Extra departures on a route</small></span
+								></button
 							>
 							<button
 								class="policy-service-tile"
-								draggable="true"
+								draggable={!loading && !checkingBudget && operations.length < 97}
 								ondragstart={(event) => serviceDrag(event, 'ferry')}
+								aria-label="Add ferry"
 								onclick={() => beginFerry()}
 								disabled={loading || checkingBudget || operations.length >= 97}
 							>
 								<span data-service-icon><Ship size={24} /></span><span
-									><strong>Ferry service</strong><small>Connect existing landing places</small
-									></span
-								><Plus size={15} /></button
+									><strong>Add ferry</strong><small>New island connection</small></span
+								></button
 							>
 						</div>
+						<h3 class="policy-palette-heading">Improve existing lines</h3>
+						<div
+							class="policy-service-palette improve-lines"
+							aria-label="Improve existing transport lines"
+						>
+							<button
+								class="policy-service-tile"
+								onclick={() => beginBusService()}
+								aria-label="Improve bus line"
+								disabled={!supported ||
+									!busPatterns.length ||
+									loading ||
+									checkingBudget ||
+									operations.length >= 100}
+							>
+								<span data-service-icon><Route size={24} /></span><span
+									><strong>Improve bus line</strong><small>Change its frequency</small></span
+								>
+							</button>
+							<button
+								class="policy-service-tile"
+								onclick={() => beginBusService(undefined, 'improve', 'ferry')}
+								aria-label="Improve ferry line"
+								aria-describedby={!ferryPatterns.length ? 'ferry-line-evidence' : undefined}
+								disabled={!ferryPatterns.length ||
+									loading ||
+									checkingBudget ||
+									operations.length >= 100}
+							>
+								<span data-service-icon><Waypoints size={24} /></span><span
+									><strong>Improve ferry line</strong><small>Change its frequency</small></span
+								>
+							</button>
+						</div>
+						{#if !ferryPatterns.length && baseline}<p
+								id="ferry-line-evidence"
+								class="policy-evidence-note transport-unavailable"
+							>
+								No existing ferry timetable is available here. Use Add ferry to plan a new
+								connection.
+							</p>{/if}
 						{#if pending}<p class="policy-placement-hint" role="status">
 								Your {pendingDecision?.label.toLowerCase()} is on the map. Drag its pin to adjust, then
 								confirm or cancel above it.
@@ -4052,20 +4092,47 @@
 	}
 	.policy-service-palette {
 		display: grid;
-		grid-template-columns: 1fr;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 8px;
+	}
+	.policy-palette-heading {
+		margin: 0 0 -8px;
+		font-size: 11px;
+		font-weight: 600;
+		color: #52695b;
 	}
 	.policy-service-tile {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: 8px;
 		width: 100%;
-		padding: 12px;
+		min-width: 0;
+		min-height: 82px;
+		padding: 10px;
 		border: 1px dashed #bfd2c5;
 		border-radius: 12px;
 		background: #f3f8f5;
 		text-align: left;
 		cursor: grab;
+	}
+	.improve-lines .policy-service-tile {
+		cursor: pointer;
+		border-style: solid;
+		background: #fafbf7;
+	}
+	.improve-lines [data-service-icon] {
+		background: #e5ede6;
+		color: #476c55;
+		box-shadow: none;
+		border-color: transparent;
+	}
+	.policy-service-tile:focus-visible {
+		outline: 2px solid #176c61;
+		outline-offset: 3px;
+	}
+	.transport-unavailable {
+		margin: -8px 0 0;
+		font-size: 10px;
 	}
 	.policy-service-tile:disabled {
 		opacity: 0.45;
@@ -4076,6 +4143,7 @@
 		flex: 1;
 		flex-direction: column;
 		gap: 3px;
+		min-width: 0;
 	}
 	.policy-service-tile strong {
 		font-size: 12px;
@@ -4087,13 +4155,29 @@
 	.policy-service-tile [data-service-icon] {
 		display: grid;
 		place-items: center;
-		width: 44px;
-		height: 44px;
+		width: 36px;
+		height: 36px;
+		flex-shrink: 0;
 		border-radius: 14px;
 		background: #14776b;
 		color: white;
 		border: 2px solid white;
 		box-shadow: 0 2px 7px #174c3320;
+	}
+	.service-stop-choice {
+		display: grid;
+		gap: 8px;
+		padding: 10px;
+		border: 1px solid #dce6de;
+		border-radius: 10px;
+		font-size: 11px;
+		line-height: 1.5;
+		color: #53695c;
+	}
+	.service-current-frequency {
+		font-size: 11px;
+		line-height: 1.5;
+		color: #617568;
 	}
 
 	.proposal-floating-budget {
@@ -4296,9 +4380,6 @@
 		color: #185943;
 		font-weight: 650;
 	}
-	.policy-lens-bar .lens-info {
-		padding: 6px;
-	}
 	.policy-lens-bar select {
 		width: 74px;
 		padding: 6px;
@@ -4385,103 +4466,11 @@
 	.policy-panel-scroll > * {
 		flex-shrink: 0;
 	}
-	.policy-intro {
-		font-size: 13px;
-		line-height: 1.6;
-		color: #526257;
-		margin: 0;
-	}
-	.policy-map-key {
-		display: flex;
-		gap: 12px;
-		flex-wrap: wrap;
-		font-size: 10px;
-		color: #69786d;
-	}
-	.policy-map-key span {
-		display: flex;
-		align-items: center;
-		gap: 4px;
-	}
-	.policy-map-key i {
-		width: 9px;
-		height: 9px;
-		border-radius: 3px;
-	}
 	.policy-qualification {
 		font-size: 11px;
 		line-height: 1.65;
 		color: #7b8276;
 		margin: 0;
-	}
-	.policy-population {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		padding: 12px;
-		background: #f1f5ee;
-		border-radius: 10px;
-		gap: 5px;
-	}
-	.policy-population span {
-		font-size: 12px;
-		color: #64705f;
-	}
-	.policy-population strong {
-		font-variant-numeric: tabular-nums;
-		font-size: 15px;
-	}
-	.policy-population small {
-		grid-column: 1/-1;
-		font-size: 10px;
-		color: #78816d;
-		line-height: 1.5;
-	}
-	.policy-need-row {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		border-bottom: 1px solid #e9ede6;
-		padding: 8px 0 13px;
-		text-align: left;
-		gap: 8px;
-	}
-	.policy-need-row > span {
-		display: grid;
-		grid-template-columns: 22px 1fr;
-		align-items: center;
-		gap: 5px 8px;
-	}
-	.policy-need-row :global(svg) {
-		grid-row: 1/3;
-		color: #51735a;
-	}
-	.policy-need-row strong {
-		font-size: 13px;
-		font-weight: 600;
-	}
-	.policy-need-row small {
-		font-size: 10px;
-		color: #798476;
-	}
-	.policy-need-row b {
-		font-size: 9px;
-		font-weight: 500;
-		padding: 4px 6px;
-		background: #f5e9dd;
-		color: #996744;
-		border-radius: 5px;
-		white-space: nowrap;
-	}
-	.policy-need-row b.unknown {
-		background: #edeef2;
-		color: #777b8b;
-	}
-	.policy-reasons {
-		margin: -4px 0 3px;
-		padding-left: 16px;
-		font-size: 11px;
-		color: #66745f;
-		line-height: 1.7;
 	}
 	.policy-map-panel :global(.policy-primary) {
 		width: 100%;
@@ -4635,41 +4624,6 @@
 		grid-template-columns: repeat(3, 1fr);
 		gap: 7px;
 	}
-	.policy-ferry-entry {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		padding: 13px;
-		border: 1px solid #c8dfe2;
-		border-radius: 11px;
-		background: #eff7f8;
-		color: #245c6b;
-		text-align: left;
-		transition:
-			background 150ms ease,
-			border-color 150ms ease;
-	}
-	.policy-ferry-entry:hover {
-		background: #e5f2f4;
-		border-color: #7eafb7;
-	}
-	.policy-ferry-entry:disabled {
-		opacity: 0.5;
-	}
-	.policy-ferry-entry > span {
-		flex: 1;
-		display: grid;
-		gap: 4px;
-	}
-	.policy-ferry-entry strong {
-		font-size: 12px;
-		font-weight: 650;
-	}
-	.policy-ferry-entry small {
-		font-size: 10px;
-		line-height: 1.5;
-		color: #5f7c83;
-	}
 	.policy-palette button {
 		display: flex;
 		align-items: center;
@@ -4795,10 +4749,6 @@
 		flex-direction: column;
 		gap: 10px;
 	}
-	.policy-evidence-note ul {
-		padding-left: 16px;
-		line-height: 1.7;
-	}
 	.policy-evidence-note p {
 		font-size: 10px;
 		line-height: 1.5;
@@ -4903,13 +4853,12 @@
 	.policy-selected-cell strong {
 		font-size: 12px;
 	}
-	.policy-selected-cell > span,
-	.policy-selected-cell small {
+	.policy-selected-cell > span {
 		color: #687d60;
 		font-size: 10px;
 		line-height: 1.5;
 	}
-	.policy-selected-cell p {
+	.policy-selected-cell > p {
 		display: flex;
 		justify-content: space-between;
 		gap: 8px;
@@ -4920,14 +4869,22 @@
 		font-variant-numeric: tabular-nums;
 		font-weight: 550;
 	}
-	.policy-population details {
-		grid-column: 1/-1;
-		font-size: 10px;
-		color: #78816d;
-		line-height: 1.5;
-	}
-	.policy-population summary {
+	.policy-cell-evidence summary {
 		cursor: pointer;
+		font-size: 11px;
+		font-weight: 550;
+		color: #526347;
+	}
+	.policy-cell-evidence summary:focus-visible {
+		outline: 2px solid #4d7655;
+		outline-offset: 3px;
+		border-radius: 3px;
+	}
+	.policy-cell-evidence p {
+		margin: 8px 0 0;
+		font-size: 11px;
+		line-height: 1.55;
+		color: #687d60;
 	}
 	.policy-forecast-goal {
 		display: grid;

@@ -11,6 +11,9 @@ await mkdir(output, { recursive: true });
 const expect = playwrightExpect.configure({ timeout: 90000 });
 /** @typedef {import('../src/lib/proposal-review.js').PlanningEvaluation} Evaluation */
 /** @typedef {import('../src/lib/transport-impact.js').TransportImpactData} Impact */
+/** @typedef {import('../src/lib/planning-map.js').PlanningOperation} Operation */
+/** @typedef {NonNullable<import('../src/lib/map-policy.js').MapBaseline['patterns']>[number]} Pattern */
+/** @typedef {{patterns:Array<{id:string,mode:string,trips:unknown[]}>}} Timetable */
 /** @type {{baseURL:string,startedAt:string,finishedAt?:string,checks:Array<{name:string,status:string,detail?:unknown}>,pageErrors:string[],failure?:string}} */
 const report = { baseURL, startedAt: new Date().toISOString(), checks: [], pageErrors: [] };
 const browser = await chromium.launch({ headless: true, args: ['--enable-unsafe-swiftshader'] });
@@ -135,6 +138,7 @@ try {
 		`${baseURL}/api/backend/planning/baseline?island_id=island%3A1442`
 	);
 	assert.equal(source.status(), 200);
+	/** @type {{patterns:Pattern[]}} */
 	const baseline = await source.json();
 	const route = baseline.patterns.find(
 		(/** @type {{mode:string,name:string}} */ pattern) =>
@@ -145,9 +149,128 @@ try {
 	await bus.panel.getByRole('button', { name: 'Edit budget limits', exact: true }).click();
 	await bus.panel.getByLabel('Capital budget · MVR', { exact: true }).fill('1000000000');
 	await bus.panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('1000000000');
-	await bus.panel.getByRole('button', { name: /^Bus service/ }).click();
+	await check(
+		'Proposal transport actions distinguish new service from line improvements',
+		async () => {
+			await expect(bus.panel).toHaveAttribute('data-policy-section', 'proposal');
+			await expect(
+				bus.panel.getByRole('button', { name: 'Service gaps', exact: true })
+			).toHaveCount(0);
+			for (const name of ['Add bus stop', 'Add bus', 'Add ferry', 'Improve bus line'])
+				await expect(bus.panel.getByRole('button', { name, exact: true })).toBeEnabled();
+			const improveFerry = bus.panel.getByRole('button', {
+				name: 'Improve ferry line',
+				exact: true
+			});
+			assert.equal(baseline.patterns.filter((pattern) => pattern.mode === 'ferry').length, 0);
+			await expect(improveFerry).toBeDisabled();
+			await expect(improveFerry).toHaveAccessibleDescription(
+				/No existing ferry timetable is available here.*Use Add ferry/s
+			);
+			return {
+				explicitTransportActions: 5,
+				missingFerryTimetableDoesNotInventEditableService: true
+			};
+		}
+	);
+	await check(
+		'Adding a bus preserves the captured timetable and adds costed dated departures',
+		async () => {
+			await bus.panel.getByRole('button', { name: 'Add bus', exact: true }).click();
+			const editor = bus.page.getByTestId('map-service-editor');
+			await expect(editor).toHaveAttribute('data-service-mode', 'bus');
+			await expect(editor.getByRole('heading', { name: 'Add bus', exact: true })).toBeVisible();
+			await editor.getByLabel('Bus route and direction', { exact: true }).selectOption(route.id);
+			await editor.getByLabel('Service date', { exact: true }).fill('2026-10-10');
+			await editor.getByLabel('Additional bus every · min', { exact: true }).fill('15');
+			const matchingQuote = () =>
+				bus.responses.findLast(
+					(row) =>
+						row.endpoint === 'quote' &&
+						row.request.assumptions?.date === '2026-10-10' &&
+						row.request.operations?.length === 1 &&
+						row.request.operations[0].type === 'add_service' &&
+						row.request.operations[0].metadata?.ui_source_pattern_id === route.id &&
+						row.request.operations[0].service?.name.endsWith('additional buses every 15 min')
+				);
+			await expect.poll(() => matchingQuote()?.body.budget?.allowed).toBe(true);
+			const quote = matchingQuote();
+			assert.ok(quote);
+			const added = quote.request.operations[0];
+			assert.notEqual(added.service.id, route.id);
+			assert.deepEqual(added.service.stopIds, route.stopIds);
+			assert.ok(quote.body.economics.delta.annual_operating_mvr > 0);
+			/** @param {Operation[]} operations @returns {Promise<Timetable>} */
+			const timetable = async (operations) => {
+				const response = await bus.page.request.post(`${baseURL}/api/backend/planning/timetable`, {
+					data: { ...quote.request, operations }
+				});
+				assert.equal(response.status(), 200, await response.text());
+				return response.json();
+			};
+			const before = await timetable([]);
+			const after = await timetable(quote.request.operations);
+			const original = before.patterns.find((pattern) => pattern.id === route.id);
+			assert.ok(original?.trips.length, 'The source line has actual dated departures.');
+			assert.deepEqual(
+				after.patterns.find((pattern) => pattern.id === route.id),
+				original
+			);
+			const extra = after.patterns.find((pattern) => pattern.id === added.service.id);
+			assert.ok(extra?.trips.length, 'The additional bus has dated departures of its own.');
+			assert.equal(extra.mode, 'bus');
+			/** @param {Timetable} value */
+			const departures = (value) =>
+				value.patterns.reduce((total, pattern) => total + pattern.trips.length, 0);
+			assert.equal(departures(after) - departures(before), extra.trips.length);
+			await editor.getByRole('button', { name: 'Accept service', exact: true }).click();
+			await expect(editor).not.toBeVisible();
+			await expect
+				.poll(
+					() =>
+						bus.responses.findLast((row) => row.endpoint === 'evaluate')?.request.operations?.[0]
+							?.service?.id
+				)
+				.toBe(added.service.id);
+			const value = await evaluated(bus);
+			assertWalkingUnchanged(value);
+			await showProposal(bus);
+			/** @type {{operations:Operation[]}} */
+			const saved = await bus.page.evaluate(() =>
+				JSON.parse(localStorage.getItem('policy-map-v2:island:1442') ?? '{}')
+			);
+			assert.deepEqual(
+				saved.operations.map((operation) => operation.type),
+				['add_service']
+			);
+			assert.equal(saved.operations[0].service?.id, added.service.id);
+			await bus.page.screenshot({ path: path.join(output, 'additional-bus-confirmed.png') });
+			await bus.panel.getByRole('button', { name: 'Undo proposal change', exact: true }).click();
+			await expect
+				.poll(() =>
+					bus.page.evaluate(
+						() => JSON.parse(localStorage.getItem('policy-map-v2:island:1442') ?? '{}').operations
+					)
+				)
+				.toEqual([]);
+			await expect(bus.atlas).toHaveAttribute('data-policy-service-features', '0');
+			return {
+				capturedPattern: route.id,
+				additionalPattern: added.service.id,
+				capturedDeparturesPreserved: original.trips.length,
+				additionalDepartures: extra.trips.length,
+				annualCostMvr: quote.body.economics.delta.annual_operating_mvr,
+				walkingAccessUnchanged: true,
+				undoRemovesOnlyAdditionalService: true
+			};
+		}
+	);
+	await bus.panel.getByRole('button', { name: 'Improve bus line', exact: true }).click();
 	const busEditor = bus.page.getByTestId('map-service-editor');
 	await expect(busEditor).toHaveAttribute('data-service-mode', 'bus');
+	await expect(
+		busEditor.getByRole('heading', { name: 'Improve bus line', exact: true })
+	).toBeVisible();
 	await busEditor.getByLabel('Bus route and direction', { exact: true }).selectOption(route.id);
 	await busEditor.getByLabel('Service date', { exact: true }).fill('2026-10-10');
 	await busEditor.getByLabel('A bus every · min', { exact: true }).fill('15');
@@ -174,6 +297,9 @@ try {
 			await expect.poll(() => selectedQuote()?.body.transport_connectivity?.impact).toBeTruthy();
 			const quote = selectedQuote();
 			assert.ok(quote, 'The exact bus frequency quote completed.');
+			assert.equal(quote.request.operations.length, 1);
+			assert.equal(quote.request.operations[0].type, 'set_frequency');
+			assert.equal(quote.request.operations[0].target_id, route.id);
 			assert.ok(quote.body.transport_connectivity?.impact);
 			busPreview = quote.body.transport_connectivity.impact;
 			const line = busPreview.lines?.find((row) => row.id === route.id);

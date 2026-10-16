@@ -143,7 +143,7 @@ try {
 	await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
 	await expect(panel.locator('.policy-palette')).toBeVisible();
 	await expect(
-		panel.locator('.policy-palette').getByRole('button', { name: 'Bus stop', exact: true })
+		panel.locator('.policy-palette').getByRole('button', { name: 'Add bus stop', exact: true })
 	).toBeEnabled();
 	await expect(operations).toHaveCount(0);
 	const site = await roadSite(baseline.graph_edges);
@@ -154,7 +154,7 @@ try {
 			await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('1');
 			await panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('50000000');
 			const before = requests.length;
-			await paletteDrag('Bus stop', site, false);
+			await paletteDrag('Add bus stop', site, false);
 			await expect(confirmation).toHaveAttribute('data-placement-kind', 'add_stop');
 			await expect(confirmation.getByRole('alert')).toContainText(/capital|budget/i);
 			await expect(operations).toHaveCount(0);
@@ -339,10 +339,10 @@ try {
 			await expect(atlas).toHaveAttribute('aria-busy', 'false');
 			await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
 			await expect(
-				panel.locator('.policy-palette').getByRole('button', { name: 'Bus stop', exact: true })
+				panel.locator('.policy-palette').getByRole('button', { name: 'Add bus stop', exact: true })
 			).toBeEnabled();
 			const visibleSite = await roadSite(baseline.graph_edges);
-			await paletteDrag('Bus stop', visibleSite);
+			await paletteDrag('Add bus stop', visibleSite);
 			await expect(panel).toHaveClass(/placing/);
 			const tooltip = await confirmation.boundingBox();
 			const compactPanel = await panel.boundingBox();
@@ -393,7 +393,7 @@ try {
 				},
 				{ times: 1 }
 			);
-			const placement = paletteDrag('Bus stop', visibleSite);
+			const placement = paletteDrag('Add bus stop', visibleSite);
 			try {
 				await expect.poll(() => quoteHeld).toBe(true);
 				await expect(confirmation).toHaveAttribute('aria-busy', 'true');

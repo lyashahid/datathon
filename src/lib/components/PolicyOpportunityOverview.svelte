@@ -217,8 +217,7 @@
 				<span class="section-eyebrow">Your next decision</span>
 				<h2>Where action would help most</h2>
 				<p>
-					Three starting points for {scopeLabel}. Investigate the evidence before choosing an
-					investment.
+					Three starting points for {scopeLabel}. Check the evidence, then explore on the map.
 				</p>
 			</div>
 			<div class="priority-refresh" role="status" aria-live="polite">
@@ -261,15 +260,13 @@
 							<span>{island.atoll}</span><span
 								>{number(priority.islandCount)}
 								{priority.islandCount === 1 ? 'island' : 'islands'}
-								{priority.kind === 'evidence' ? 'to verify' : 'to review'} in this selection</span
+								{priority.kind === 'evidence' ? 'to verify' : 'to review'}</span
 							>
 						</div>
 						<p class="focus-qualification">
-							{priority.tied
-								? 'One of several islands with the same screening result. '
-								: ''}{priority.kind === 'evidence'
-								? 'Unknown records do not prove a service is missing.'
-								: 'A screening signal, not a confirmed service failure.'}
+							{priority.tied ? 'Shared screening result. ' : ''}{priority.kind === 'evidence'
+								? 'Missing records do not confirm a service gap.'
+								: 'Confirm this screening signal locally.'}
 						</p>
 						<Button
 							variant="outline"
@@ -301,8 +298,8 @@
 			{/each}
 		</div>
 		<p class="focus-source">
-			Based on the supplied data snapshot. These are service-level starting points; they are not a
-			ranking of residents affected or confirmed investment benefits.
+			Screening from the supplied data snapshot. Island counts do not measure residents affected or
+			investment benefits.
 		</p>
 		<details class="service-comparison-disclosure">
 			<summary><span>Compare all services and islands</span><ChevronRight size={15} /></summary>
@@ -653,14 +650,14 @@
 		align-items: flex-start;
 		justify-content: space-between;
 		gap: 16px;
-		margin-bottom: 18px;
+		margin-bottom: 14px;
 	}
 	.focus-heading h2 {
-		font-size: 25px;
-		letter-spacing: -0.8px;
+		font-size: 23px;
+		letter-spacing: -0.7px;
 	}
 	.focus-heading p {
-		margin: 7px 0 0;
+		margin: 5px 0 0;
 		max-width: 650px;
 		font-size: 12px;
 		line-height: 1.6;
@@ -686,35 +683,35 @@
 	.focus-grid {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 18px;
+		gap: 12px;
 	}
 	.focus-card {
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
 		min-width: 0;
-		min-height: 300px;
-		padding: 22px;
+		min-height: 248px;
+		padding: 16px;
 		border: 1px solid #e4dfed;
-		border-radius: 20px;
+		border-radius: 16px;
 		background: linear-gradient(145deg, #fff 65%, #faf8fd);
 		box-shadow: 0 6px 24px #392b5905;
 	}
 	.focus-service {
 		display: flex;
 		align-items: center;
-		gap: 9px;
-		font-size: 12px;
+		gap: 8px;
+		font-size: 11px;
 		font-weight: 550;
 		color: #655875;
-		margin-bottom: 17px;
+		margin-bottom: 10px;
 	}
 	.focus-icon {
 		display: grid;
 		place-items: center;
-		width: 34px;
-		height: 34px;
-		border-radius: 11px;
+		width: 28px;
+		height: 28px;
+		border-radius: 9px;
 		background: #fff1e5;
 		color: #b77b3c;
 	}
@@ -728,10 +725,10 @@
 	}
 	.focus-evidence {
 		display: block;
-		font-size: 9px;
+		font-size: 10px;
 		font-weight: 550;
 		color: #8b683b;
-		margin-bottom: 8px;
+		margin-bottom: 5px;
 	}
 	.focus-evidence.needs-evidence {
 		color: #81778c;
@@ -740,28 +737,28 @@
 		color: #39836c;
 	}
 	.focus-card h3 {
-		font-size: 20px;
+		font-size: 18px;
 		line-height: 1.3;
 		letter-spacing: -0.5px;
 	}
 	.focus-reason {
-		margin: 9px 0 13px;
+		margin: 6px 0 9px;
 		font-size: 11px;
-		line-height: 1.65;
+		line-height: 1.5;
 		color: #756d80;
 	}
 	.focus-context {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 5px 12px;
+		gap: 3px 10px;
 		font-size: 10px;
 		color: #62596e;
 	}
 	.focus-qualification {
-		font-size: 9px;
-		line-height: 1.6;
+		font-size: 10px;
+		line-height: 1.5;
 		color: #8a8194;
-		margin: 10px 0 17px;
+		margin: 7px 0 11px;
 	}
 	.focus-card :global(button) {
 		margin-top: auto;
@@ -773,9 +770,9 @@
 	}
 	.focus-source {
 		font-size: 10px;
-		line-height: 1.6;
+		line-height: 1.5;
 		color: #81798e;
-		margin: 12px 0 15px;
+		margin: 10px 0 12px;
 	}
 	.focus-skeleton {
 		width: 100%;
@@ -786,11 +783,11 @@
 		border-radius: 6px;
 		background: #f0edf5;
 		height: 12px;
-		margin-bottom: 16px;
+		margin-bottom: 12px;
 	}
 	.focus-skeleton span:first-child {
 		width: 68%;
-		height: 24px;
+		height: 22px;
 	}
 	.focus-skeleton span:last-child {
 		width: 85%;
@@ -831,17 +828,17 @@
 		}
 		.focus-card {
 			min-height: 0;
-			padding: 20px;
+			padding: 16px;
 		}
 		.focus-heading {
 			flex-direction: column;
 			gap: 5px;
 		}
 		.focus-heading h2 {
-			font-size: 23px;
+			font-size: 22px;
 		}
-		.focus-service {
-			margin-bottom: 12px;
+		.focus-card :global(button) {
+			min-height: 40px;
 		}
 	}
 	@media (prefers-reduced-motion: reduce) {

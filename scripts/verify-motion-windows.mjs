@@ -76,7 +76,7 @@ async function openProposal() {
 	await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
 	await expect(proposal).toBeVisible();
 	await expect(
-		proposal.locator('.policy-palette').getByRole('button', { name: 'Bus stop', exact: true })
+		proposal.locator('.policy-palette').getByRole('button', { name: 'Add bus stop', exact: true })
 	).toBeEnabled();
 	await expect
 		.poll(() => proposal.evaluate((element) => getComputedStyle(element).opacity))

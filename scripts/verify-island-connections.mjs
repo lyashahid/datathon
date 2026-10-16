@@ -707,12 +707,12 @@ try {
 					exact: true
 				});
 				await expect(nationalPlanning).toHaveAttribute('data-policy-section', 'proposal');
-				for (const name of ['Bus stop', 'School', 'Hospital']) {
+				for (const name of ['Add bus stop', 'School', 'Hospital']) {
 					const button = nationalPlanning.getByRole('button', { name, exact: true });
 					await expect(button).toBeDisabled();
 					await expect(button).toHaveAttribute('draggable', 'false');
 				}
-				const newService = nationalPlanning.getByRole('button', { name: /Ferry service/ });
+				const newService = nationalPlanning.getByRole('button', { name: 'Add ferry', exact: true });
 				await expect(newService).toBeEnabled();
 				await newService.click();
 				await expect(

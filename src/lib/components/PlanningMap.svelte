@@ -12,7 +12,7 @@
 		ArrowRight,
 		Hospital,
 		GraduationCap,
-		BusFront,
+		Signpost,
 		X,
 		Undo2,
 		Trash2,
@@ -1182,7 +1182,7 @@
 					variant="outline"
 					draggable="true"
 					ondragstart={(event) => dragPlacement(event, 'add_stop')}
-					onclick={() => choosePlacement('add_stop')}><BusFront size={15} /> Bus stop</Button
+					onclick={() => choosePlacement('add_stop')}><Signpost size={15} /> Bus stop</Button
 				>
 			</div>{/if}
 		{#if pendingKind || picking}<div class="placement-picking-hint" role="status">
@@ -1255,7 +1255,7 @@
 						><Button size="sm" variant="outline" onclick={() => createAtClick('add_hospital')}
 							><Hospital size={16} /> Hospital</Button
 						><Button size="sm" variant="outline" onclick={() => createAtClick('add_stop')}
-							><BusFront size={16} /> Bus stop</Button
+							><Signpost size={16} /> Bus stop</Button
 						>
 					</div>
 					<small>Choose a type, adjust the pin, then confirm.</small>
@@ -1304,7 +1304,7 @@
 		<summary>Map key and source evidence</summary>
 		<div class="planning-map-key-content">
 			<div class="planning-place-key">
-				<span><BusFront size={16} /> Bus stop</span><span><GraduationCap size={16} /> School</span
+				<span><Signpost size={16} /> Bus stop</span><span><GraduationCap size={16} /> School</span
 				><span><Hospital size={16} /> Health facility</span><span
 					>Grey hexagons · resident areas awaiting impact calculation</span
 				>

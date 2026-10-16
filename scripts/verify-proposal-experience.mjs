@@ -177,7 +177,7 @@ async function openProposal() {
 	});
 	await expect(atlas).toHaveAttribute('aria-busy', 'false');
 	await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
-	await expect(palette.getByRole('button', { name: 'Bus stop', exact: true })).toBeEnabled();
+	await expect(palette.getByRole('button', { name: 'Add bus stop', exact: true })).toBeEnabled();
 }
 
 async function showProposal() {
@@ -299,7 +299,7 @@ try {
 	await check(
 		'Click-to-place previews a bus icon and suggests a road path in an anchored editor',
 		async () => {
-			await choosePlacement('Bus stop');
+			await choosePlacement('Add bus stop');
 			const site = await connectionSite();
 			await page.mouse.move(site.point.x, site.point.y);
 			await expect(preview).toBeVisible();
@@ -573,8 +573,10 @@ try {
 		'An existing bus route is edited on the map with automatic costs and an active service date',
 		async () => {
 			await showProposal();
-			await expect(palette.getByRole('button', { name: 'Bus stop', exact: true })).toBeEnabled();
-			await panel.getByRole('button', { name: /^Bus service/ }).click();
+			await expect(
+				palette.getByRole('button', { name: 'Add bus stop', exact: true })
+			).toBeEnabled();
+			await panel.getByRole('button', { name: 'Improve bus line', exact: true }).click();
 			const composer = serviceEditor;
 			await expect(composer).toHaveAttribute('data-service-mode', 'bus');
 			await fullyOnScreen(composer);
@@ -597,7 +599,7 @@ try {
 			await expect(serviceDate).toHaveValue('2026-10-10');
 			await composer.locator('#proposal-bus-frequency').fill('10');
 			await expect(acceptService).toBeEnabled();
-			await expect(composer).toContainText('The reverse direction is unchanged');
+			await expect(composer).toContainText('the return line stays as it is');
 			await expect
 				.poll(async () => Number(await atlas.getAttribute('data-policy-service-features')))
 				.toBeGreaterThan(0);
@@ -632,7 +634,7 @@ try {
 	await check(
 		'A suggested bus connection commits its stop and return route together and appears in the impact review',
 		async () => {
-			await choosePlacement('Bus stop');
+			await choosePlacement('Add bus stop');
 			const site = await connectionSite();
 			await page.mouse.click(site.point.x, site.point.y);
 			await expect(serviceEditor).toHaveAttribute('data-service-mode', 'bus-connection');
@@ -736,7 +738,7 @@ try {
 				)
 			];
 			await showProposal();
-			await panel.getByRole('button', { name: /^Ferry service/ }).click();
+			await panel.getByRole('button', { name: 'Add ferry', exact: true }).click();
 			const composer = serviceEditor;
 			await expect(composer).toHaveAttribute('data-service-mode', 'ferry');
 			await expect(composer.locator('#ferry-origin-terminal')).not.toHaveValue('');
@@ -785,7 +787,7 @@ try {
 			await page.setViewportSize({ width: 390, height: 844 });
 			await openProposal();
 			await acceptedPoints(2);
-			await choosePlacement('Bus stop');
+			await choosePlacement('Add bus stop');
 			const site = await roadSite();
 			await page.mouse.click(site.point.x, site.point.y);
 			await expect(serviceEditor).toHaveAttribute('data-service-mode', 'bus-connection');

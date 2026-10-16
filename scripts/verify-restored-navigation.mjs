@@ -254,11 +254,17 @@ try {
 			await floatingNavigation();
 			await page.locator('.policy-inspect-trigger').click();
 			await expect(planning).toBeVisible();
-			await expect(planning).toHaveAttribute('data-policy-section', 'needs');
+			await expect(planning).toHaveAttribute('data-policy-section', 'proposal');
 			await expect(planning.getByRole('heading', { name: target.name, exact: true })).toBeVisible();
 			await expect(
-				planning.getByRole('button', { name: 'Island details & directions', exact: true })
+				planning.getByRole('button', { name: 'Add bus stop', exact: true })
 			).toBeVisible();
+			await expect(planning.getByRole('button', { name: 'Service gaps', exact: true })).toHaveCount(
+				0
+			);
+			await expect(
+				planning.getByRole('button', { name: 'Selected area', exact: true })
+			).toHaveCount(0);
 			await noOverflow();
 			await page.screenshot({ path: path.join(output, 'island-desktop.png') });
 			return { island: target.id, cameraZoom: await atlas.getAttribute('data-zoom') };

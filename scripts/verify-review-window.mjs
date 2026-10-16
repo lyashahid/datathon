@@ -93,7 +93,7 @@ async function createRealFrequencyProposal() {
 	);
 	assert.ok(route);
 	console.log('SETUP open bus editor');
-	await panel.getByRole('button', { name: /^Bus service/ }).click();
+	await panel.getByRole('button', { name: 'Improve bus line', exact: true }).click();
 	const editor = page.getByTestId('map-service-editor');
 	await editor.getByLabel('Bus route and direction', { exact: true }).selectOption(route.id);
 	await editor.getByLabel('Service date', { exact: true }).fill('2026-10-10');

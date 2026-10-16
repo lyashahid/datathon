@@ -143,7 +143,7 @@ async function drag(from, to) {
 async function placeStop() {
 	await showProposal();
 	const site = await connectionSite();
-	const tile = panel.getByRole('button', { name: 'Bus stop', exact: true });
+	const tile = panel.getByRole('button', { name: 'Add bus stop', exact: true });
 	await tile.scrollIntoViewIfNeeded();
 	const box = await tile.locator('[data-placement-icon]').boundingBox();
 	assert.ok(box);
@@ -388,7 +388,7 @@ try {
 		'Existing bus frequency planning opens over the route and uses a recorded service date',
 		async () => {
 			await showProposal();
-			await panel.getByRole('button', { name: /^Bus service/ }).click();
+			await panel.getByRole('button', { name: 'Improve bus line', exact: true }).click();
 			await expect(editor).toHaveAttribute('data-service-mode', 'bus');
 			await expect(panel).toBeHidden();
 			const useDate = editor.getByRole('button', { name: 'Use recorded service date' });
@@ -412,7 +412,7 @@ try {
 		'Ferry planning focuses a verified landing and draws a costed return service',
 		async () => {
 			await showProposal();
-			await panel.getByRole('button', { name: /^Ferry service/ }).click();
+			await panel.getByRole('button', { name: 'Add ferry', exact: true }).click();
 			await expect(editor).toHaveAttribute('data-service-mode', 'ferry');
 			await expect(panel).toBeHidden();
 			await expect(editor.locator('#ferry-origin-terminal')).toBeVisible();
@@ -548,7 +548,7 @@ try {
 	await check('Escape cancels without committing and the editor fits mobile', async () => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await showProposal();
-		const tile = panel.getByRole('button', { name: /^Bus service/ });
+		const tile = panel.getByRole('button', { name: 'Improve bus line', exact: true });
 		await tile.scrollIntoViewIfNeeded();
 		await tile.click();
 		await expect(editor).toHaveAttribute('data-service-mode', 'bus');
@@ -560,7 +560,7 @@ try {
 	});
 	await check('Mobile ferry editing preserves a reachable map confirmation', async () => {
 		await showProposal();
-		const tile = panel.getByRole('button', { name: /^Ferry service/ });
+		const tile = panel.getByRole('button', { name: 'Add ferry', exact: true });
 		await tile.scrollIntoViewIfNeeded();
 		await tile.click();
 		await expect(editor).toHaveAttribute('data-service-mode', 'ferry');

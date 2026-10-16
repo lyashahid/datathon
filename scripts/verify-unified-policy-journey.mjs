@@ -339,7 +339,7 @@ try {
 			await panel.getByRole('button', { name: /^Add an improvement/ }).click();
 			await panel
 				.locator('.policy-palette')
-				.getByRole('button', { name: 'Bus stop', exact: true })
+				.getByRole('button', { name: 'Add bus stop', exact: true })
 				.click();
 			const location = await chooseVisibleRoad(baseline.graph_edges);
 			await page.mouse.click(location.point.x, location.point.y);
