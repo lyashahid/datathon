@@ -4,6 +4,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
+from app.api.maintenance import require_local_source_maintenance, source_mutations_allowed
 from app.data_updates.models import NationalJourney, ScheduleAccept, ScheduleSnapshot
 from app.data_updates.service import DataUpdateService
 
@@ -29,8 +30,8 @@ def invoke(method: Any, *args: Any) -> Any:
 
 
 @router.get("")
-def status(service: DataUpdateService = Depends(get_service)) -> dict[str, Any]:
-    return invoke(service.status)
+def status(request: Request, service: DataUpdateService = Depends(get_service)) -> dict[str, Any]:
+    return {**invoke(service.status), "source_mutations_allowed": source_mutations_allowed(request)}
 
 
 @router.post("/check")
@@ -43,14 +44,16 @@ def catalogue(service: DataUpdateService = Depends(get_service)) -> dict[str, An
     return invoke(service.catalogue)
 
 
-@router.post("/schedules/stage")
+@router.post("/schedules/stage", dependencies=[Depends(require_local_source_maintenance)])
 def stage(
     body: ScheduleSnapshot, service: DataUpdateService = Depends(get_service)
 ) -> dict[str, Any]:
     return invoke(service.stage, body)
 
 
-@router.post("/schedules/{snapshot_id}/accept")
+@router.post(
+    "/schedules/{snapshot_id}/accept", dependencies=[Depends(require_local_source_maintenance)]
+)
 def accept(
     snapshot_id: str, body: ScheduleAccept, service: DataUpdateService = Depends(get_service)
 ) -> dict[str, Any]:

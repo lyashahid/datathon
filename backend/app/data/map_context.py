@@ -11,10 +11,10 @@ from shapely.strtree import STRtree
 
 
 class MapContext:
-    def __init__(self, data_dir: Path) -> None:
+    def __init__(self, data_dir: Path, *, allow_build: bool = True) -> None:
         path = data_dir / "cache" / "derived" / "map-context.geojson"
         source = data_dir / "cache" / "raw" / "osm" / "maldives-latest.osm.pbf"
-        if not path.exists() and source.exists():
+        if allow_build and not path.exists() and source.exists():
             build_context(data_dir)
         self.data: dict[str, Any] = {"type": "FeatureCollection", "features": [], "metadata": {}}
         if path.exists():

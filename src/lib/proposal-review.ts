@@ -1,4 +1,5 @@
 import type { PlanningComparison, PlanningOperation } from './planning-map.js';
+import { backendUrl } from './app-paths.js';
 import type { TransportImpactData } from './transport-impact.js';
 
 /** The report uses the same request and canonical evaluation as the map. */
@@ -219,7 +220,7 @@ export function operationName(operation: PlanningOperation): string {
 
 export async function downloadProposalPdf(request: PlanningReviewRequest, title: string) {
 	const response = await fetch(
-		`/api/backend/planning/report.pdf?title=${encodeURIComponent(title.slice(0, 160))}`,
+		backendUrl(`planning/report.pdf?title=${encodeURIComponent(title.slice(0, 160))}`),
 		{
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json', Accept: 'application/pdf' },

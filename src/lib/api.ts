@@ -1,4 +1,6 @@
 import { apiCachePolicy, canonicalApiPath, changesPublicSources } from './api-cache-policy.js';
+import { PUBLIC_BASE_PATH } from '$app/env/public';
+import { backendUrl } from './app-paths.js';
 
 export class ApiError extends Error {
 	constructor(
@@ -23,12 +25,15 @@ type Storage = Pick<CacheStorage, 'open' | 'delete'>;
 export function createApiClient({
 	fetcher = (...args) => fetch(...args),
 	now = Date.now,
-	storage = () => (typeof window !== 'undefined' && 'caches' in globalThis ? caches : null)
+	storage = () => (typeof window !== 'undefined' && 'caches' in globalThis ? caches : null),
+	basePath = PUBLIC_BASE_PATH
 }: {
 	fetcher?: typeof fetch;
 	now?: () => number;
 	storage?: () => Storage | null;
+	basePath?: string;
 } = {}) {
+	const cacheName = `${CACHE_NAME}${basePath ? `:${basePath}` : ''}`;
 	const memory = new Map<string, CachedValue>();
 	const flights = new Map<string, Flight>();
 	const invalidationListeners = new Set<() => void>();
@@ -56,7 +61,7 @@ export function createApiClient({
 		memoryBytes = 0;
 		clearing = clearing.then(async () => {
 			try {
-				await storage()?.delete(CACHE_NAME);
+				await storage()?.delete(cacheName);
 			} catch {
 				// Storage can be disabled or full; correctness never depends on a cache write.
 			}
@@ -81,8 +86,8 @@ export function createApiClient({
 
 	async function persisted(path: string): Promise<CachedValue | null> {
 		try {
-			const cache = await storage()?.open(CACHE_NAME);
-			const response = await cache?.match(`/api/backend/${path}`);
+			const cache = await storage()?.open(cacheName);
+			const response = await cache?.match(backendUrl(path, basePath));
 			if (!response?.headers.get('etag')) return null;
 			const expires = Number(response.headers.get('x-mobility-cache-expires'));
 			if (!Number.isFinite(expires) || expires <= 0) return null;
@@ -107,7 +112,7 @@ export function createApiClient({
 	) {
 		if (epoch !== generation) return;
 		try {
-			const cache = await storage()?.open(CACHE_NAME);
+			const cache = await storage()?.open(cacheName);
 			if (!cache || epoch !== generation) return;
 			const savedHeaders = new Headers({
 				'content-type': 'application/json',
@@ -115,9 +120,9 @@ export function createApiClient({
 				'cache-control': headers.get('cache-control') ?? 'private, max-age=60',
 				'x-mobility-cache-expires': String(expires)
 			});
-			await cache.put(`/api/backend/${path}`, new Response(text, { headers: savedHeaders }));
+			await cache.put(backendUrl(path, basePath), new Response(text, { headers: savedHeaders }));
 			if (epoch !== generation) {
-				await cache.delete(`/api/backend/${path}`);
+				await cache.delete(backendUrl(path, basePath));
 				return;
 			}
 			const keys = await cache.keys();
@@ -172,7 +177,7 @@ export function createApiClient({
 				}
 			}
 		}
-		const response = await fetcher(`/api/backend/${path}`, {
+		const response = await fetcher(backendUrl(path, basePath), {
 			signal: controller.signal,
 			headers: previous?.etag ? { 'If-None-Match': previous.etag } : {}
 		});
@@ -258,7 +263,7 @@ export function createApiClient({
 	async function request<T>(path: string, payload?: unknown, signal?: AbortSignal): Promise<T> {
 		signal?.throwIfAborted();
 		if (payload !== undefined) {
-			const response = await fetcher(`/api/backend/${path}`, {
+			const response = await fetcher(backendUrl(path, basePath), {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload),

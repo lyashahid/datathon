@@ -15,7 +15,7 @@ from app.data.population import attach_population, population_summary
 
 
 class NormalizedRepository:
-    def __init__(self, data_dir: Path) -> None:
+    def __init__(self, data_dir: Path, *, allow_context_build: bool = True) -> None:
         self.cache = FileCache(data_dir / "cache")
         self.islands: list[dict[str, Any]] = []
         self.islands_by_id: dict[str, dict[str, Any]] = {}
@@ -25,7 +25,7 @@ class NormalizedRepository:
         self.transport: dict[str, Any] = {"features": [], "summary": {}}
         self.summary: dict[str, Any] = {}
         self.facility_review: dict[str, Any] = {"records": [], "summary": {}}
-        self.map_context = MapContext(data_dir)
+        self.map_context = MapContext(data_dir, allow_build=allow_context_build)
 
     def reload(self) -> None:
         self.islands = self._read_feature_collection("normalized/islands.geojson")

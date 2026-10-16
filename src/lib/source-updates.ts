@@ -76,6 +76,7 @@ export interface ScheduleCatalogue {
 	published_calendars: DepartureCalendar[];
 }
 export interface UpdateStatus {
+	source_mutations_allowed?: boolean;
 	sources: UpdateSource[];
 	latest_check?: SourceCheck | null;
 	schedules: ScheduleCatalogue;

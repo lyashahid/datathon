@@ -106,7 +106,7 @@ def postgres_connection_options(url: str) -> tuple[str, dict[str, Any]]:
 
 
 class PostgresStore:
-    """One reusable bounded-time connection, bounded write queue, failure cooldown."""
+    """Use a pre-existing cache table; runtime never creates database schema."""
 
     def __init__(self, url: str) -> None:
         self._url = url
@@ -126,17 +126,7 @@ class PostgresStore:
 
         if self._connection is None or self._connection.closed:
             url, options = postgres_connection_options(self._url)
-            connection = psycopg.connect(url, **options)
-            try:
-                connection.execute(
-                    "CREATE TABLE IF NOT EXISTS mobility_computed_cache ("
-                    "cache_key text PRIMARY KEY, payload bytea NOT NULL, "
-                    "created_at timestamptz NOT NULL DEFAULT now())"
-                )
-            except Exception:
-                connection.close()
-                raise
-            self._connection = connection
+            self._connection = psycopg.connect(url, **options)
             self._failed = False
         return self._connection
 

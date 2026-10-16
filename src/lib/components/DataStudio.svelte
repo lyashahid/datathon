@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { backendUrl } from '#lib/app-paths.js';
 	import { downloadText as download } from '#lib/download.js';
 	import {
 		datasetFilter,
@@ -528,7 +529,7 @@
 				query.set('descending', String(descending));
 			}
 			if (selectedColumns.length) query.set('columns', selectedColumns.join(','));
-			const response = await fetch(`/api/backend/datasets/${requestedDataset}/export.csv?${query}`);
+			const response = await fetch(backendUrl(`datasets/${requestedDataset}/export.csv?${query}`));
 			if (!response.ok) throw new Error('The dataset export could not be prepared.');
 			download(await response.text(), `${requestedDataset}-filtered.csv`, 'text/csv;charset=utf-8');
 			message = 'All filtered records exported, with spreadsheet formula strings neutralized.';

@@ -41,6 +41,31 @@ function browserStorage() {
 const settleStorage = () => new Promise<void>((resolve) => setImmediate(resolve));
 
 describe('shared browser API reads', () => {
+	it('keeps requests, saved responses and invalidation inside the deployed app mount', async () => {
+		const fetcher = vi
+			.fn<typeof fetch>()
+			.mockImplementation(async () => snapshot({ features: [] }));
+		const storage = browserStorage();
+		const client = createApiClient({
+			fetcher,
+			storage: () => storage,
+			basePath: '/apps/datathon'
+		});
+		await client.request('map/features?layer=islands');
+		await client.request('planning/quote', { operations: [] });
+		await settleStorage();
+		expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
+			'/apps/datathon/api/backend/map/features?layer=islands',
+			'/apps/datathon/api/backend/planning/quote'
+		]);
+		expect([...storage.entries.keys()]).toEqual([
+			'/apps/datathon/api/backend/map/features?layer=islands'
+		]);
+		expect(storage.open).toHaveBeenCalledWith('mobility-public-api-v1:/apps/datathon');
+		await client.invalidate();
+		expect(storage.delete).toHaveBeenCalledWith('mobility-public-api-v1:/apps/datathon');
+	});
+
 	it('shares one GET and isolates each subscriber cancellation', async () => {
 		const pending = deferred<Response>();
 		const fetcher = vi.fn<typeof fetch>().mockReturnValue(pending.promise);

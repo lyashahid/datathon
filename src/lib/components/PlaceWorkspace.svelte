@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { backendUrl } from '#lib/app-paths.js';
 	import { downloadJson as exportJson } from '#lib/download.js';
 	import { onMount, tick, untrack } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -257,7 +258,7 @@
 	const number = (value: number) => numberFormatter.format(value);
 	const minutes = (seconds: number | null | undefined) =>
 		seconds === null || seconds === undefined ? 'Unavailable' : `${number(seconds / 60)} min`;
-	const imageUrl = (url: string) => `/api/backend/places/image?${placesQuery({ url })}`;
+	const imageUrl = (url: string) => backendUrl(`places/image?${placesQuery({ url })}`);
 	const safeWebsite = (url: string | null | undefined) => {
 		if (!url) return null;
 		try {
@@ -316,7 +317,7 @@
 		busy[key] = true;
 		errors[key] = '';
 		try {
-			const response = await fetch(`/api/backend/places/${path}`, {
+			const response = await fetch(backendUrl(`places/${path}`), {
 				method: payload === undefined ? 'GET' : 'POST',
 				headers: payload === undefined ? {} : { 'Content-Type': 'application/json' },
 				body: payload === undefined ? undefined : JSON.stringify(payload),
@@ -559,7 +560,9 @@
 		const requestedTile = { zoom: tileZoom, x: tileX, y: tileY };
 		try {
 			const response = await fetch(
-				`/api/backend/places/streetview/tile?${placesQuery({ pano_id: panorama.data.pano_id, ...requestedTile })}`,
+				backendUrl(
+					`places/streetview/tile?${placesQuery({ pano_id: panorama.data.pano_id, ...requestedTile })}`
+				),
 				{ signal: controller.signal }
 			);
 			if (!response.ok) {
@@ -1832,7 +1835,7 @@
 					<Button
 						variant="outline"
 						size="sm"
-						href="/api/backend/places/docs"
+						href={backendUrl('places/docs')}
 						target="_blank"
 						rel="noreferrer"><ExternalLink /> Full API</Button
 					>
@@ -1841,7 +1844,7 @@
 					<span
 						>Vela-derived consumer adapters · calibration 26 · source records remain distinct from
 						verified public facility data.</span
-					><a href="/api/backend/places/openapi.json" target="_blank" rel="noreferrer"
+					><a href={backendUrl('places/openapi.json')} target="_blank" rel="noreferrer"
 						>Endpoint schema <ArrowUpRight size={12} /></a
 					>
 				</footer>

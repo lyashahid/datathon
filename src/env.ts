@@ -1,6 +1,11 @@
 import { defineEnvVars } from '@sveltejs/kit/env';
 
 export const variables = defineEnvVars({
+	PUBLIC_BASE_PATH: {
+		public: true,
+		static: true,
+		schema: (value) => value || ''
+	},
 	VELA_API_KEY: { schema: (value) => value || '' },
 	MOBILITY_BACKEND_URL: {
 		schema: (value) => {

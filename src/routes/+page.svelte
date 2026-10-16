@@ -3,6 +3,7 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { Popover } from 'bits-ui';
 	import { goto } from '$app/navigation';
+	import { PUBLIC_BASE_PATH } from '$app/env/public';
 	import { animatedSelection, workspaceReveal } from '#lib/motion.js';
 	import { resizable, resetResizable } from '#lib/resizable.js';
 	import { mapPanelLayout } from '#lib/map-panel-layout.js';
@@ -1425,7 +1426,7 @@
 		{#if !isMapWorkspace}
 			<a
 				class="brand"
-				href="/?view=overview"
+				href={`${PUBLIC_BASE_PATH}/?view=overview`}
 				aria-label="Mobility Sandbox home"
 				onclick={(event) => {
 					event.preventDefault();

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { backendUrl } from '#lib/app-paths.js';
 	import { onMount, tick, untrack } from 'svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import type { FeatureCollection, Feature, Geometry } from 'geojson';
@@ -364,7 +365,7 @@
 		contextController?.abort();
 		contextController = new AbortController();
 		try {
-			const response = await fetch(`/api/backend/map/context?bbox=${bbox.join(',')}`, {
+			const response = await fetch(backendUrl(`map/context?bbox=${bbox.join(',')}`), {
 				signal: contextController.signal
 			});
 			if (!response.ok) throw new Error('Street snapshot unavailable');

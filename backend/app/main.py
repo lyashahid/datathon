@@ -111,9 +111,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         memory_bytes=app_settings.computed_cache_memory_mb * 1024 * 1024,
         disk_bytes=app_settings.computed_cache_disk_mb * 1024 * 1024,
         max_entries=app_settings.computed_cache_max_entries,
-        database_url=app_settings.database_url.get_secret_value()
-        if app_settings.environment != "test"
-        else "",
+        database_url=app_settings.shared_cache_database_url,
     )
     app.state.source_version = SourceVersion(
         app_settings.data_dir,
@@ -134,7 +132,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.conditions = ConditionsService()
     app.state.notices = NoticeStore(app_settings.data_dir / "runtime", app_settings.public_data_dir)
-    app.state.repository = NormalizedRepository(app_settings.data_dir)
+    app.state.repository = NormalizedRepository(
+        app_settings.data_dir, allow_context_build=app_settings.environment != "production"
+    )
     # Construct shared mutable services before concurrent request dependencies run.
     # Forecast acceptance and dataset cache readers must use the same instances.
     app.state.forecasts = ForecastService(

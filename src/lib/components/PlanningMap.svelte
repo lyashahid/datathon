@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { backendUrl } from '#lib/app-paths.js';
 	import { onMount, untrack } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import {
@@ -533,7 +534,7 @@
 		const controller = new AbortController();
 		contextController = controller;
 		try {
-			const response = await fetch(`/api/backend/map/context?bbox=${bbox.join(',')}`, {
+			const response = await fetch(backendUrl(`map/context?bbox=${bbox.join(',')}`), {
 				signal: controller.signal
 			});
 			if (!response.ok) throw new Error('Street context unavailable');

@@ -25,6 +25,8 @@ On a minimal Linux installation, Chromium may also need operating-system librari
 
 See [the complete setup, configuration and troubleshooting guide](docs/clone-and-run.md) for Windows/macOS/Linux prerequisites, first-start behavior, optional overrides, data coverage, tests and production-preview commands.
 
+For **https://yoosufsayyid.com/apps/datathon**, see the [Docker deployment and GitHub Actions guide](docs/deployment.md). Production uses packaged snapshots and local caches, with no PostgreSQL connection or automatic migrations. The dedicated deploy key can update only this app through a fixed server helper.
+
 For separate terminals:
 
 ```sh

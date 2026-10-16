@@ -50,6 +50,7 @@
 	let loadController: AbortController | undefined;
 	let journeyController: AbortController | undefined;
 	const catalogue = $derived(sourceData?.schedules);
+	const sourceMutationsAllowed = $derived(sourceData?.source_mutations_allowed !== false);
 	const receipts = $derived(sourceData?.latest_check?.items ?? []);
 	const receiptsById = $derived(new Map(receipts.map((receipt) => [receipt.id, receipt])));
 	const services = $derived(catalogue?.services ?? []);
@@ -157,6 +158,7 @@
 		}
 	}
 	async function upload(event: Event) {
+		if (!sourceMutationsAllowed) return;
 		const file = (event.target as HTMLInputElement).files?.[0];
 		if (!file) return;
 		busy = 'stage';
@@ -178,7 +180,7 @@
 		}
 	}
 	async function accept() {
-		if (!staged || !reviewed) return;
+		if (!sourceMutationsAllowed || !staged || !reviewed) return;
 		busy = 'accept';
 		error = '';
 		try {
@@ -413,18 +415,22 @@
 					<h3>Bring an operator timetable</h3>
 				</div>
 				<p>
-					Import departures, arrivals, weekdays and validity dates linked to OneMap island IDs.
-					Review the source and assumptions before accepting it.
+					{sourceMutationsAllowed
+						? 'Import departures, arrivals, weekdays and validity dates linked to OneMap island IDs. Review the source and assumptions before accepting it.'
+						: 'Prepare source updates locally, then deploy the reviewed snapshot.'}
 				</p>
 				<div class="actions">
-					<Button variant="outline" disabled={!!busy} onclick={() => fileInput?.click()}
-						><FileUp size={15} />Review timetable JSON</Button
+					<Button
+						variant="outline"
+						disabled={!!busy || !sourceMutationsAllowed}
+						onclick={() => fileInput?.click()}><FileUp size={15} />Review timetable JSON</Button
 					><Button variant="ghost" onclick={template}><Download size={15} />Blank template</Button>
 				</div>
 				<input
 					class="file-input"
 					type="file"
 					accept=".json,application/json"
+					disabled={!sourceMutationsAllowed}
 					bind:this={fileInput}
 					onchange={upload}
 				/>
@@ -450,7 +456,11 @@
 							><input type="checkbox" bind:checked={reviewed} /> I checked the source, dates and timing
 							assumptions.</label
 						><Button
-							disabled={!!busy || !reviewed || reviewNote.trim().length < 10 || staged.accepted}
+							disabled={!sourceMutationsAllowed ||
+								!!busy ||
+								!reviewed ||
+								reviewNote.trim().length < 10 ||
+								staged.accepted}
 							onclick={accept}
 							><Check size={15} />{staged.accepted
 								? 'Already accepted'

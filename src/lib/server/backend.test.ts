@@ -3,6 +3,35 @@ import { forwardBackend } from './backend';
 import { gunzipSync } from 'node:zlib';
 
 describe('backend integration boundary', () => {
+	it('keeps embedded API documentation and its schema inside the public app mount', async () => {
+		const fetcher = vi
+			.fn<typeof fetch>()
+			.mockResolvedValueOnce(new Response('url: "/api/v1/places/openapi.json"'))
+			.mockResolvedValueOnce(Response.json({ servers: [{ url: '/api/v1/places' }] }));
+		const documentation = await forwardBackend(
+			new Request('https://example.com/apps/datathon/api/backend/places/docs'),
+			'places/docs',
+			'http://backend:8000',
+			fetcher,
+			'',
+			'/apps/datathon'
+		);
+		expect(await documentation.text()).toContain('/apps/datathon/api/backend/places/openapi.json');
+		const schema = await forwardBackend(
+			new Request('https://example.com/apps/datathon/api/backend/places/openapi.json'),
+			'places/openapi.json',
+			'http://backend:8000',
+			fetcher,
+			'',
+			'/apps/datathon'
+		);
+		expect((await schema.json()).servers).toEqual([{ url: '/apps/datathon/api/backend/places' }]);
+		expect(fetcher.mock.calls.map(([url]) => String(url))).toEqual([
+			'http://backend:8000/api/v1/places/docs',
+			'http://backend:8000/api/v1/places/openapi.json'
+		]);
+	});
+
 	it('forwards a scenario body and preserves backend validation responses', async () => {
 		const fetcher = vi
 			.fn<typeof fetch>()

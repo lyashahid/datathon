@@ -1,0 +1,27 @@
+.git
+.github
+node_modules
+.svelte-kit
+build
+artifacts
+tmp
+output
+legacy
+Research and Development
+product-ad
+**/.env
+**/.env.*
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/*.pyc
+backend/data/runtime
+backend/data/cache/raw
+backend/data/cache/live
+backend/data/metadata/forecast-issues
+backend/data/metadata/passenger-sources
+data/raw
+data/local
+data/public/archive
+

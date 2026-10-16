@@ -11,7 +11,8 @@ export async function forwardBackend(
 	path: string,
 	origin: string,
 	fetcher: typeof fetch = fetch,
-	placesApiKey = ''
+	placesApiKey = '',
+	basePath = ''
 ): Promise<Response> {
 	if (
 		!allowed.test(path) ||
@@ -47,7 +48,10 @@ export async function forwardBackend(
 			signal: AbortSignal.any([request.signal, AbortSignal.timeout(90000)])
 		});
 		if (path === 'places/docs' && response.ok) {
-			const html = (await response.text()).replaceAll('/api/v1/places', '/api/backend/places');
+			const html = (await response.text()).replaceAll(
+				'/api/v1/places',
+				`${basePath}/api/backend/places`
+			);
 			return new Response(html, {
 				status: response.status,
 				headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }
@@ -55,7 +59,7 @@ export async function forwardBackend(
 		}
 		if (path === 'places/openapi.json' && response.ok) {
 			const schema = await response.json();
-			schema.servers = [{ url: '/api/backend/places' }];
+			schema.servers = [{ url: `${basePath}/api/backend/places` }];
 			return Response.json(schema, { headers: { 'cache-control': 'no-store' } });
 		}
 		const headers = new Headers({

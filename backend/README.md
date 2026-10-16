@@ -72,6 +72,7 @@ MOBILITY_LOG_LEVEL=DEBUG|INFO|WARNING|ERROR|CRITICAL
 MOBILITY_DATA_DIR=path/to/data
 MOBILITY_PUBLIC_DATA_DIR=path/to/project/data/public
 MOBILITY_DATABASE_URL=optional-server-only-postgresql-connection-string
+MOBILITY_COMPUTED_CACHE_POSTGRES_ENABLED=true|false
 MOBILITY_COMPUTED_CACHE_MEMORY_MB=64
 MOBILITY_COMPUTED_CACHE_DISK_MB=512
 MOBILITY_COMPUTED_CACHE_MAX_ENTRIES=256
@@ -101,12 +102,14 @@ ignored `backend/data/runtime/computed-json-v1/`. A fresh clone works with those
 local caches automatically. Startup prepares country snapshots first, followed by
 heavier analytics and the three supported island planning views in the background.
 The API serves requests without waiting for this preparation. Jobs run sequentially
-and reuse valid memory, local-disk and optional PostgreSQL results.
+and reuse valid memory/local-disk results. Development can also opt into the
+shared PostgreSQL cache; production never connects to it.
 
-The automatic preparation covers 23 views: country geometry, scores, summary and
+The automatic preparation covers 33 views: country geometry, scores, summary and
 passenger history; fitted forecasts, data analysis and the dataset catalogue;
-planning opportunities; profiles, baselines and gap views for each supported
-island; and six default health/education baseline impact calculations. Each failed
+planning opportunities; profiles, baselines, gap views and connectivity for Malé,
+Hulhumalé, Hulhulé and Vilimalé; and nine default health/education/transport
+baseline impact calculations where resident projections exist. Each failed
 job is retried once without blocking the other jobs. Shutdown cancels remaining
 work. `MOBILITY_COMPUTED_CACHE_PREWARM=false` disables all startup preparation;
 the default is `true`. Restart an already running backend to apply changed
@@ -132,13 +135,33 @@ explicit preparation precomputes arbitrary user scenarios: new proposals still
 calculate their actual operations and assumptions. Requests arriving before a view
 is prepared calculate normally and can share an identical in-flight calculation.
 
-For cross-machine reuse, optionally set `MOBILITY_DATABASE_URL` in ignored
-`backend/.env`. The example file intentionally contains no connection string.
+For development cross-machine reuse, optionally set `MOBILITY_DATABASE_URL` in
+ignored `backend/.env`. The example file intentionally contains no connection string.
 The optional `psycopg` dependency is installed by normal setup. A Prisma-style
 `schema` option becomes a validated PostgreSQL search path; connections require
-TLS and have connection/query time limits. The API creates only its own
-`mobility_computed_cache` table in that schema and does not require a new
-database. Only public snapshot/model results and unchanged baseline impacts
+TLS and have connection/query time limits. Prepare the `mobility_computed_cache`
+table explicitly **from your local development checkout** before enabling reuse:
+
+```powershell
+uv run --directory backend python -m app.cli.database_setup
+```
+
+This command uses the existing configured schema; it does not create a database
+or change source-data tables. It refuses production/test mode and must never run
+in deployment workflows. The runtime never creates or migrates PostgreSQL tables.
+`MOBILITY_COMPUTED_CACHE_POSTGRES_ENABLED=false` disables development DB caching.
+Production and tests always use memory/local disk, even if a database URL is
+inherited. Production needs no database credentials or database setup.
+
+Production also rejects passenger-source and timetable stage/accept maintenance
+with HTTP 403. Their status responses expose `source_mutations_allowed=false`,
+and the interface explains that reviewed source updates must be prepared locally.
+Read-only exploration, proposal evaluation/PDFs, live source checks, notices and
+frozen forecast reports remain available. Missing cartographic artifacts are not
+rebuilt from raw OSM inputs on production startup; prepare and ship the bundled
+`cache/derived/map-context.geojson` locally.
+
+Only public snapshot/model results and unchanged baseline impacts
 are mirrored. User proposal operations, scenario content, names, budgets and
 custom assumptions stay in local caches. Authenticated or cookie-bearing HTTP
 requests bypass the public snapshot cache.
@@ -148,8 +171,8 @@ entries. Each item is at most 32 MiB before compression. Shared storage retains
 at most 512 MiB/4,096 entries with a seven-day age limit. Interactive remote
 lookups wait at most 10 ms; background mirroring handles slower connections.
 A failed database uses local calculations and a 60-second retry cooldown.
-Database exceptions and connection strings are not logged. Tests disable the
-shared database even when a developer has a local `.env`.
+Database exceptions and connection strings are not logged. Production and tests
+disable the shared database even when a developer has a local `.env`.
 
 Keys include source content, model implementation, scoring configuration and
 all calculation inputs; exact source receipts participate in planning keys.

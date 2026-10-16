@@ -1,0 +1,155 @@
+name: Test and deploy Datathon
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: datathon-production
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          version: '0.12.19'
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: Check frontend
+        run: |
+          npm ci
+          npm run check
+          npm run lint
+          npm test
+          npm run test:startup
+      - name: Check backend and deployment boundary
+        env:
+          MOBILITY_ENVIRONMENT: test
+          MOBILITY_COMPUTED_CACHE_POSTGRES_ENABLED: 'false'
+        run: |
+          uv sync --directory backend --frozen --python 3.14
+          uv run --directory backend --no-sync ruff check app tests
+          uv run --directory backend --no-sync pytest -m 'not browser'
+          python3 -I -m unittest discover -s deploy/server -p test_deploy.py -v
+
+  build:
+    if: github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      frontend_digest: ${{ steps.frontend.outputs.digest }}
+      backend_digest: ${{ steps.backend.outputs.digest }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build frontend image
+        id: frontend
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          target: frontend
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/lyashahid/datathon-frontend:${{ github.sha }}
+          build-args: PUBLIC_BASE_PATH=/apps/datathon
+          labels: org.opencontainers.image.source=https://github.com/lyashahid/datathon
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,scope=frontend,mode=max
+      - name: Build backend image
+        id: backend
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          target: backend
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/lyashahid/datathon-backend:${{ github.sha }}
+          labels: org.opencontainers.image.source=https://github.com/lyashahid/datathon
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
+      - name: Verify built production containers and installer
+        env:
+          DATATHON_FRONTEND_IMAGE: ghcr.io/lyashahid/datathon-frontend@${{ steps.frontend.outputs.digest }}
+          DATATHON_BACKEND_IMAGE: ghcr.io/lyashahid/datathon-backend@${{ steps.backend.outputs.digest }}
+        run: |
+          docker pull "$DATATHON_FRONTEND_IMAGE"
+          docker pull "$DATATHON_BACKEND_IMAGE"
+          docker run --rm --network none --user 0 --mount "type=bind,src=$GITHUB_WORKSPACE/deploy,dst=/source,readonly" --entrypoint /bin/bash "$DATATHON_BACKEND_IMAGE" /source/test-install-server.sh
+          bash deploy/test-containers.sh
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && vars.DATATHON_DEPLOY_ENABLED == 'true'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      packages: read
+    environment:
+      name: production
+      url: https://yoosufsayyid.com/apps/datathon
+    steps:
+      - name: Deploy immutable images through restricted SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DATATHON_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.DATATHON_SSH_KNOWN_HOSTS }}
+          SSH_HOST: ${{ vars.DATATHON_SSH_HOST }}
+          SSH_USER: ${{ vars.DATATHON_SSH_USER }}
+          SSH_PORT: ${{ vars.DATATHON_SSH_PORT || '22' }}
+          FRONTEND_DIGEST: ${{ needs.build.outputs.frontend_digest }}
+          BACKEND_DIGEST: ${{ needs.build.outputs.backend_digest }}
+          REVISION: ${{ github.sha }}
+          REGISTRY_USER: ${{ github.repository_owner }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$SSH_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ]] || { echo 'Set DATATHON_SSH_HOST.'; exit 1; }
+          [[ "$SSH_USER" =~ ^[a-zA-Z_][a-zA-Z0-9_-]*$ ]] || { echo 'Set DATATHON_SSH_USER.'; exit 1; }
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] && (( SSH_PORT >= 1 && SSH_PORT <= 65535 )) || exit 1
+          [[ -n "$SSH_PRIVATE_KEY" && -n "$SSH_KNOWN_HOSTS" ]] || { echo 'Configure the two DATATHON SSH secrets.'; exit 1; }
+          work=$(mktemp -d)
+          trap 'rm -rf -- "$work"' EXIT
+          chmod 700 "$work"
+          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > "$work/key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" | tr -d '\r' > "$work/known_hosts"
+          chmod 600 "$work/key" "$work/known_hosts"
+          python3 - <<'PY' | ssh -F /dev/null -T -i "$work/key" -p "$SSH_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$work/known_hosts" -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -- "$SSH_USER@$SSH_HOST" deploy
+          import json, os
+          print(json.dumps({
+              'frontend_digest': os.environ['FRONTEND_DIGEST'],
+              'backend_digest': os.environ['BACKEND_DIGEST'],
+              'revision': os.environ['REVISION'],
+              'registry_user': os.environ['REGISTRY_USER'],
+              'registry_token': os.environ['REGISTRY_TOKEN'],
+          }))
+          PY
+      - name: Verify the public application and API
+        run: |
+          curl --fail --silent --show-error --retry 6 --retry-delay 5 --retry-all-errors --max-time 30 --location https://yoosufsayyid.com/apps/datathon > /dev/null
+          curl --fail --silent --show-error --retry 6 --retry-delay 5 --retry-all-errors --max-time 30 https://yoosufsayyid.com/apps/datathon/api/backend/health | python3 -c "import json,sys; data=json.load(sys.stdin); assert data.get('status') == 'ok'"

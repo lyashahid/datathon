@@ -5,6 +5,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from app.analytics.sources import public_data_directory
+from app.api.maintenance import require_local_source_maintenance, source_mutations_allowed
 from app.forecasting.models import (
     ForecastIssueRequest,
     ForecastSourceAcceptRequest,
@@ -60,8 +61,13 @@ def source_analysis(service: ForecastService = Depends(get_service)) -> dict[str
 
 
 @router.get("/sources")
-def source_history(service: ForecastService = Depends(get_service)) -> dict[str, Any]:
-    return _invoke(service.source_history)
+def source_history(
+    request: Request, service: ForecastService = Depends(get_service)
+) -> dict[str, Any]:
+    return {
+        **_invoke(service.source_history),
+        "source_mutations_allowed": source_mutations_allowed(request),
+    }
 
 
 @router.get("/sources/template")
@@ -70,14 +76,16 @@ def source_contract(service: ForecastService = Depends(get_service)) -> dict[str
     return {key: value for key, value in source.items() if key != "receipt"}
 
 
-@router.post("/sources/stage")
+@router.post("/sources/stage", dependencies=[Depends(require_local_source_maintenance)])
 def stage_source(
     body: ForecastSourceStageRequest, service: ForecastService = Depends(get_service)
 ) -> dict[str, Any]:
     return _invoke(service.stage_source, body.source)
 
 
-@router.post("/sources/{version_id}/accept")
+@router.post(
+    "/sources/{version_id}/accept", dependencies=[Depends(require_local_source_maintenance)]
+)
 def accept_source(
     version_id: str,
     body: ForecastSourceAcceptRequest,

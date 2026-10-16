@@ -88,9 +88,11 @@
 	let reviewNote = $state('');
 	let acceptRevisions = $state(false);
 	let history = $state.raw<{
+		source_mutations_allowed?: boolean;
 		activeReceipt: { data_status: string; sha256: string };
 		versions: SourceVersion[];
 	} | null>(null);
+	const sourceMutationsAllowed = $derived(history?.source_mutations_allowed !== false);
 	let controller: AbortController | undefined;
 	const selectedHorizons = $derived(
 		analysis?.horizonDiagnostics.filter((item) => item.seriesId === selectedSeries) ?? []
@@ -136,7 +138,7 @@
 		}
 	}
 	async function stage() {
-		if (!sourceFile || importing) return;
+		if (!sourceMutationsAllowed || !sourceFile || importing) return;
 		importing = true;
 		error = '';
 		message = '';
@@ -157,7 +159,7 @@
 		}
 	}
 	async function accept() {
-		if (!staged || importing || reviewNote.trim().length < 20) return;
+		if (!sourceMutationsAllowed || !staged || importing || reviewNote.trim().length < 20) return;
 		importing = true;
 		error = '';
 		try {
@@ -382,8 +384,9 @@
 				<span class="eyebrow">REFRESH WITHOUT REWRITING HISTORY</span>
 				<h2>Review a new passenger publication</h2>
 				<p>
-					Stage a source snapshot, inspect its differences, then accept the version with a review
-					note.
+					{sourceMutationsAllowed
+						? 'Stage a source snapshot, inspect its differences, then accept the version with a review note.'
+						: 'Prepare source updates locally, then deploy the reviewed snapshot.'}
 				</p>
 			</div>
 			<Button variant="outline" size="sm" onclick={template}
@@ -402,12 +405,12 @@
 				id="passenger-source-file"
 				type="file"
 				accept="application/json,.json"
-				disabled={importing}
+				disabled={importing || !sourceMutationsAllowed}
 				onchange={(event) => {
 					sourceFile = event.currentTarget.files?.[0] ?? null;
 					staged = null;
 				}}
-			/><Button disabled={!sourceFile || importing} onclick={stage}
+			/><Button disabled={!sourceMutationsAllowed || !sourceFile || importing} onclick={stage}
 				><FileUp size={14} /> {importing ? 'Working…' : 'Validate and stage'}</Button
 			>
 		</div>
@@ -456,7 +459,8 @@
 					><input type="checkbox" bind:checked={acceptRevisions} /> I reviewed and accept any historical
 					revisions listed above.</label
 				><Button
-					disabled={importing ||
+					disabled={!sourceMutationsAllowed ||
+						importing ||
 						reviewNote.trim().length < 20 ||
 						(staged.differences.some((item) => item.revisionCount > 0) && !acceptRevisions)}
 					onclick={accept}>Accept reviewed source version</Button

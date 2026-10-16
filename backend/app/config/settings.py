@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     data_dir: Path = BACKEND_ROOT / "data"
     public_data_dir: Path = BACKEND_ROOT.parent / "data" / "public"
     database_url: SecretStr = Field(default=SecretStr(""), repr=False)
+    computed_cache_postgres_enabled: bool = True
     computed_cache_memory_mb: int = Field(default=64, ge=0, le=1024)
     computed_cache_disk_mb: int = Field(default=512, ge=0, le=8192)
     computed_cache_max_entries: int = Field(default=256, ge=1, le=10000)
@@ -71,6 +72,18 @@ class Settings(BaseSettings):
     @classmethod
     def resolve_data_path(cls, value: Path) -> Path:
         return backend_path(value)
+
+    @property
+    def shared_cache_database_url(self) -> str:
+        """Production and tests never connect to the optional shared cache DB.
+
+        Bundled source files remain authoritative. Production computations use
+        memory/local disk, including the automatic background warmup, so an
+        inherited development DSN cannot trigger remote reads or writes.
+        """
+        if self.environment != "development" or not self.computed_cache_postgres_enabled:
+            return ""
+        return self.database_url.get_secret_value()
 
     def ensure_data_directories(self) -> None:
         """Create only the backend-owned runtime cache directories."""

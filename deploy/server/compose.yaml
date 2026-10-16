@@ -1,0 +1,65 @@
+name: datathon
+services:
+  frontend:
+    image: ${DATATHON_FRONTEND_IMAGE:?Deploy an immutable frontend image}
+    user: '10001:10001'
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    env_file: [./frontend.env]
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: '3000'
+      BODY_SIZE_LIMIT: 16M
+      ORIGIN: https://yoosufsayyid.com
+      MOBILITY_BACKEND_URL: http://backend:8000
+    ports: ['127.0.0.1:18730:3000']
+    depends_on:
+      backend:
+        condition: service_healthy
+    tmpfs: ['/tmp:size=64m,mode=1777']
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 128
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+    networks: [datathon]
+  backend:
+    image: ${DATATHON_BACKEND_IMAGE:?Deploy an immutable backend image}
+    user: '10001:10001'
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    env_file: [./backend.env]
+    # These cannot be overridden by an inherited development environment file.
+    environment:
+      MOBILITY_ENVIRONMENT: production
+      MOBILITY_DATABASE_URL: ''
+      MOBILITY_COMPUTED_CACHE_POSTGRES_ENABLED: 'false'
+      MOBILITY_COMPUTED_CACHE_PREWARM: 'true'
+      MOBILITY_DATA_DIR: /app/backend/data
+      MOBILITY_PUBLIC_DATA_DIR: /app/data/public
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      HOME: /tmp
+    volumes:
+      - ../state/runtime:/app/backend/data/runtime
+      - ../state/live-cache:/app/backend/data/cache/live
+      - ../state/live-raw:/app/backend/data/cache/raw/live
+      - ../state/forecast-issues:/app/backend/data/metadata/forecast-issues
+    tmpfs: ['/tmp:size=512m,mode=1777']
+    shm_size: 256m
+    mem_limit: 3g
+    cpus: 2.0
+    pids_limit: 512
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+    networks: [datathon]
+networks:
+  datathon:
+    driver: bridge
+

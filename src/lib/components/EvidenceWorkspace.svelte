@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { backendUrl } from '#lib/app-paths.js';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Badge } from '#lib/components/ui/badge/index.js';
 	import * as Card from '#lib/components/ui/card/index.js';
@@ -376,7 +377,7 @@
 			<Button
 				variant="outline"
 				size="sm"
-				href="/api/backend/national/summary"
+				href={backendUrl('national/summary')}
 				target="_blank"
 				rel="noopener noreferrer">Inspect returned summary <ExternalLink size={14} /></Button
 			>
