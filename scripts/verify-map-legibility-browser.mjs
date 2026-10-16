@@ -1,14 +1,16 @@
+import { projectMapPoint } from './browser-map.mjs';
+import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect as playwrightExpect } from '@playwright/test';
 
-expect.configure({ timeout: 45000 });
+const expect = playwrightExpect.configure({ timeout: 45000 });
 
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
+const baseURL = browserBaseURL();
 const output = path.resolve('artifacts/qa/map-legibility');
 await mkdir(output, { recursive: true });
-/** @type {{baseURL:string,fixtureQualification:string,checks:Array<{name:string,status:string,detail?:unknown}>,errors:string[]}} */
+/** @type {{baseURL:string,fixtureQualification:string,checks:Array<{name:string,status:string,detail?:unknown}>,errors:string[],failure?:string}} */
 const report = {
 	baseURL,
 	fixtureQualification:
@@ -22,6 +24,7 @@ const context = await browser.newContext({
 	reducedMotion: 'reduce'
 });
 const page = await context.newPage();
+page.setDefaultTimeout(60000);
 page.on('pageerror', (error) => report.errors.push(error.message));
 let fixtureVersion = 0;
 const receivedAt = new Date().toISOString();
@@ -89,35 +92,42 @@ async function check(name, work) {
 		throw error;
 	}
 }
-/** @param {string} name @param {number} x @param {number} y */
-async function pick(name, x, y) {
-	await page.getByRole('button', { name, exact: true }).click();
-	await expect(page.locator('.national-map')).toHaveClass(/is-picking/);
-	const box = await page.locator('.maplibregl-canvas').boundingBox();
-	assert.ok(box);
-	await page.mouse.click(box.x + box.width * x, box.y + box.height * y);
-	await expect(page.locator('.national-map')).not.toHaveClass(/is-picking/);
+/** @param {'start'|'end'} endpoint @param {[number,number]} coordinates */
+async function pick(endpoint, coordinates) {
+	const map = page.locator('.national-map');
+	const endpointsBefore = Number(await map.getAttribute('data-journey-endpoints'));
+	// Choosing A automatically arms B; its panel is intentionally closed until B is placed.
+	const autoChoosingEnd =
+		endpoint === 'end' &&
+		endpointsBefore === 1 &&
+		(await map.getAttribute('class'))?.includes('is-picking');
+	if (!autoChoosingEnd)
+		await page
+			.locator(
+				`.explore-journey .journey-endpoint${endpoint === 'end' ? '.destination' : ':not(.destination)'} .endpoint-choice`
+			)
+			.click();
+	await expect(map).toHaveClass(/is-picking/);
+	const point = await project(coordinates);
+	assert.ok(
+		await page.evaluate(
+			({ x, y }) => document.elementFromPoint(x, y)?.matches('.maplibregl-canvas') ?? false,
+			point
+		),
+		'The selected real street must be unobscured'
+	);
+	await page.mouse.click(point.x, point.y);
+	if (endpoint === 'start' && endpointsBefore === 0) await expect(map).toHaveClass(/is-picking/);
+	else await expect(map).not.toHaveClass(/is-picking/);
 }
 /** @param {[number,number]} position @param {import('@playwright/test').Page} [targetPage] */
 async function project(position, targetPage = page) {
-	return targetPage.locator('.national-map').evaluate((element, coordinates) => {
-		const canvas = element.querySelector('.map-canvas');
-		if (!canvas) throw new Error('Map canvas missing');
-		const box = canvas.getBoundingClientRect();
-		const zoom = Number(element.getAttribute('data-zoom'));
-		const center = [
-			Number(element.getAttribute('data-center-longitude')),
-			Number(element.getAttribute('data-center-latitude'))
-		];
-		const worldSize = 512 * 2 ** zoom;
-		/** @param {number} latitude */
-		const mercatorY = (latitude) =>
-			(1 - Math.log(Math.tan(Math.PI / 4 + (latitude * Math.PI) / 360)) / Math.PI) / 2;
-		return {
-			x: box.x + box.width / 2 + ((coordinates[0] - center[0]) * worldSize) / 360,
-			y: box.y + box.height / 2 + (mercatorY(coordinates[1]) - mercatorY(center[1])) * worldSize
-		};
-	}, position);
+	return projectMapPoint(targetPage.locator('.national-map'), position);
+}
+async function openMovementSettings() {
+	const settings = page.locator('.movement-settings');
+	if (!(await settings.evaluate((element) => element.hasAttribute('open'))))
+		await settings.locator(':scope > summary').click();
 }
 try {
 	await page.goto(`${baseURL}/?view=map&tool=explore&island=island%3A1443`, {
@@ -152,25 +162,44 @@ try {
 					feature.properties?.island_id === 'island:1443' &&
 					feature.geometry?.type === 'Point'
 			);
+			const card = page.getByRole('region', { name: 'Map source record', exact: true });
+			let inspectedStop;
 			for (const stop of stops) {
 				if (stop.geometry?.type !== 'Point') continue;
 				const point = await project([stop.geometry.coordinates[0], stop.geometry.coordinates[1]]);
-				if (point.x < 350 || point.x > 990 || point.y < 370 || point.y > 630) continue;
-				await page.mouse.click(point.x, point.y);
-				if (!(await page.locator('.map-record-card').count())) continue;
 				if (
-					(await page.locator('.map-record-card').textContent())?.includes(
-						'Transport infrastructure'
-					)
+					!(await page.evaluate(
+						({ x, y }) =>
+							x > 100 &&
+							y > 180 &&
+							x < innerWidth - 100 &&
+							y < innerHeight - 180 &&
+							document.elementFromPoint(x, y)?.matches('.maplibregl-canvas'),
+						point
+					))
 				)
+					continue;
+				await page.mouse.click(point.x, point.y);
+				try {
+					await expect(card).toBeVisible({ timeout: 1500 });
+					await expect(card.locator('.map-record-kind')).toHaveText('bus stop · stationary place', {
+						timeout: 1000
+					});
+					await expect(card.locator('h3')).toHaveText(String(stop.properties?.name), {
+						timeout: 1000
+					});
+					inspectedStop = stop;
 					break;
-				await page.getByRole('button', { name: 'Close popup', exact: true }).click();
+				} catch {
+					const close = page.getByRole('button', { name: 'Close popup', exact: true });
+					if (await close.isVisible()) await close.click();
+				}
 			}
-			await expect(page.locator('.map-record-card')).toContainText(
-				'Transport infrastructure · stationary'
-			);
-			await expect(page.locator('.map-record-card')).toContainText('OpenStreetMap');
-			const record = await page.locator('.map-record-card').textContent();
+			assert.ok(inspectedStop, 'A real visible Malé bus stop opens its stationary-place record');
+			await card.getByText('Source details', { exact: true }).click();
+			await expect(card).toContainText('OpenStreetMap');
+			await expect(card).toContainText(String(inspectedStop.id));
+			const record = await card.textContent();
 			await page.screenshot({ path: path.join(output, 'stationary-infrastructure-popup.png') });
 			await page.getByRole('button', { name: 'Close popup', exact: true }).click();
 			return { record };
@@ -214,6 +243,7 @@ try {
 	await check(
 		'Reduced motion updates samples directly and paused positions remain qualified',
 		async () => {
+			await openMovementSettings();
 			fixtureVersion++;
 			await page.getByRole('button', { name: 'Refresh nearby', exact: true }).click();
 			await expect(page.locator('.national-map')).toHaveAttribute(
@@ -228,11 +258,22 @@ try {
 	);
 	await check('Infrastructure clusters show grouped counts while zooming out', async () => {
 		await page.getByRole('button', { name: 'Focus selected island', exact: true }).first().click();
+		await expect
+			.poll(async () => Number(await page.locator('.national-map').getAttribute('data-zoom')))
+			.toBeGreaterThan(13);
 		const zoomOut = page.getByRole('button', { name: 'Zoom out', exact: true });
-		while (Number(await page.locator('.national-map').getAttribute('data-zoom')) > 11.9) {
+		for (let attempts = 0; attempts < 8; attempts++) {
+			const zoom = Number(await page.locator('.national-map').getAttribute('data-zoom'));
+			if (zoom <= 11.9) break;
 			await zoomOut.click();
-			await page.waitForTimeout(350);
+			await expect
+				.poll(async () => Number(await page.locator('.national-map').getAttribute('data-zoom')))
+				.toBeLessThan(zoom - 0.5);
 		}
+		assert.ok(
+			Number(await page.locator('.national-map').getAttribute('data-zoom')) <= 11.9,
+			'Zoom controls must reach the infrastructure-cluster range'
+		);
 		await expect
 			.poll(async () =>
 				Number(await page.locator('.national-map').getAttribute('data-rendered-place-clusters'))
@@ -240,10 +281,14 @@ try {
 			.toBeGreaterThan(0);
 		await page.screenshot({ path: path.join(output, 'infrastructure-clusters.png') });
 		await page.getByRole('button', { name: 'Focus selected island', exact: true }).first().click();
+		await expect
+			.poll(async () => Number(await page.locator('.national-map').getAttribute('data-zoom')))
+			.toBeGreaterThan(13);
 		return { zoom: await page.locator('.national-map').getAttribute('data-zoom') };
 	});
 	await check('Normal motion smoothly connects newer observed samples and then stops', async () => {
 		await page.emulateMedia({ reducedMotion: 'no-preference' });
+		await openMovementSettings();
 		await page.locator('.national-map').evaluate((element) => {
 			document.documentElement.dataset.qaTransitionSeen = 'false';
 			const observer = new MutationObserver(() => {
@@ -267,10 +312,71 @@ try {
 	await check(
 		'Start and destination pins appear before calculation, real route appears and clears on edited input',
 		async () => {
-			await page.getByRole('tab', { name: 'Plan a route', exact: true }).click();
-			await pick('Choose start', 0.43, 0.57);
+			await page.getByRole('button', { name: 'Directions', exact: true }).click();
+			const streetsResponse = await page.request.get(
+				`${baseURL}/api/backend/map/context?bbox=73.48,4.15,73.54,4.21`
+			);
+			assert.equal(streetsResponse.status(), 200);
+			/** @type {import('geojson').FeatureCollection<import('geojson').Geometry, {kind:string}>} */
+			const streets = await streetsResponse.json();
+			/** @type {Array<[number,number]>} */
+			let endpoints = [];
+			/** @type {[number,number]|undefined} */
+			let editedEnd;
+			for (const road of streets.features) {
+				if (road.properties?.kind !== 'road' || road.geometry.type !== 'LineString') continue;
+				const coordinates = road.geometry.coordinates;
+				const pair = /** @type {Array<[number,number]>} */ ([coordinates[0], coordinates.at(-1)]);
+				if (pair.some((point) => !point)) continue;
+				const projected = await Promise.all(pair.map((point) => project(point)));
+				if (Math.hypot(projected[0].x - projected[1].x, projected[0].y - projected[1].y) < 40)
+					continue;
+				if (
+					!(await page.evaluate(
+						(points) =>
+							points.every(
+								({ x, y }) =>
+									x > 100 &&
+									y > 180 &&
+									x < innerWidth - 100 &&
+									y < innerHeight - 180 &&
+									document.elementFromPoint(x, y)?.matches('.maplibregl-canvas')
+							),
+						projected
+					))
+				)
+					continue;
+				// A third point on this same real road avoids clicking the existing A pin when editing B.
+				for (let index = 1; index < coordinates.length; index++) {
+					const candidate = /** @type {[number,number]} */ ([
+						(coordinates[index - 1][0] + coordinates[index][0]) / 2,
+						(coordinates[index - 1][1] + coordinates[index][1]) / 2
+					]);
+					const point = await project(candidate);
+					if (
+						projected.every((end) => Math.hypot(point.x - end.x, point.y - end.y) > 30) &&
+						(await page.evaluate(
+							({ x, y }) => document.elementFromPoint(x, y)?.matches('.maplibregl-canvas'),
+							point
+						))
+					) {
+						editedEnd = candidate;
+						break;
+					}
+				}
+				if (!editedEnd) continue;
+				endpoints = pair;
+				break;
+			}
+			assert.equal(
+				endpoints.length,
+				2,
+				'Two visible points on the same real mapped road are available'
+			);
+			assert.ok(editedEnd, 'A distinct point on the same real road is available for editing B');
+			await pick('start', endpoints[0]);
 			await expect(page.locator('.national-map')).toHaveAttribute('data-journey-endpoints', '1');
-			await pick('Choose end', 0.67, 0.61);
+			await pick('end', endpoints[1]);
 			await expect(page.locator('.national-map')).toHaveAttribute('data-journey-endpoints', '2');
 			await expect(page.locator('.national-map')).toHaveAttribute(
 				'data-journey-route-segments',
@@ -279,7 +385,7 @@ try {
 			const response = page.waitForResponse((response) =>
 				response.url().includes('/api/backend/routing/land')
 			);
-			await page.getByRole('button', { name: 'Find shortest path', exact: true }).click();
+			await page.getByRole('button', { name: 'Find directions', exact: true }).click();
 			const routeResponse = await response;
 			const route = await routeResponse.json();
 			await writeFile(
@@ -294,12 +400,14 @@ try {
 				'1'
 			);
 			await page.screenshot({ path: path.join(output, 'actual-land-route-endpoints.png') });
-			await pick('Change end', 0.6, 0.64);
+			await pick('end', editedEnd);
 			await expect(page.locator('.national-map')).toHaveAttribute(
 				'data-journey-route-segments',
 				'0'
 			);
 			return {
+				endpoints,
+				editedEnd,
 				distance_m: route.distance_m,
 				snap_distance_m: route.snap_distance_m,
 				points: route.geometry.length
@@ -307,10 +415,12 @@ try {
 		}
 	);
 	await check('Mobile map key stays compact, opens its full meanings and closes', async () => {
+		await page.getByRole('button', { name: 'Back to map', exact: true }).click();
+		await expect(page.locator('.explore-journey')).toBeHidden();
 		await page.setViewportSize({ width: 390, height: 844 });
 		const toggle = page
 			.locator('.mobile-key-toggle')
-			.getByRole('button', { name: 'Map key', exact: true });
+			.getByRole('button', { name: 'Map key & live coverage', exact: true });
 		await expect(toggle).toBeVisible();
 		await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 		await expect(page.getByLabel('Map key', { exact: true })).toBeHidden();
@@ -369,8 +479,8 @@ try {
 			await page.getByRole('button', { name: 'Add to option', exact: true }).click();
 			await expect(map).toHaveAttribute('data-proposal-points', '1');
 			await expect(map).toHaveAttribute('data-proposal-unlocated-edits', '0');
-			const stopPoint = await project(stop.geometry.coordinates);
 			await expect(async () => {
+				const stopPoint = await project(stop.geometry.coordinates);
 				await page.mouse.click(stopPoint.x, stopPoint.y);
 				await expect(page.locator('.map-record-card')).toContainText('remove bus stop', {
 					timeout: 1000
@@ -386,8 +496,8 @@ try {
 			await page.getByRole('button', { name: 'Add to option', exact: true }).click();
 			await expect(map).toHaveAttribute('data-proposal-points', '2');
 			await expect(map).toHaveAttribute('data-proposal-closed-lines', '1');
-			const roadPoint = await project(road.geometry.coordinates[5]);
 			await expect(async () => {
+				const roadPoint = await project(road.geometry.coordinates[5]);
 				await page.mouse.click(roadPoint.x, roadPoint.y);
 				await expect(page.locator('.map-record-card')).toContainText('road closure', {
 					timeout: 1000
@@ -439,8 +549,8 @@ try {
 					'data-proposal-unlocated-edits',
 					'0'
 				);
-				const ferryPoint = await project(ferry.geometry.coordinates, ferryPage);
 				await expect(async () => {
+					const ferryPoint = await project(ferry.geometry.coordinates, ferryPage);
 					await ferryPage.mouse.click(ferryPoint.x, ferryPoint.y);
 					await expect(ferryPage.locator('.map-record-card')).toContainText(
 						'disable ferry terminal',
@@ -460,6 +570,10 @@ try {
 		}
 	);
 	assert.deepEqual(report.errors, []);
+} catch (error) {
+	report.failure = error instanceof Error ? (error.stack ?? error.message) : String(error);
+	await page.screenshot({ path: path.join(output, 'failure.png'), fullPage: true }).catch(() => {});
+	throw error;
 } finally {
 	await writeFile(path.join(output, 'report.json'), JSON.stringify(report, null, 2) + '\n');
 	await browser.close();

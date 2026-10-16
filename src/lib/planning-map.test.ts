@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-	impactClass,
-	impactHexes,
-	createPlaybackSampler,
-	playbackPosition,
-	pointOnLine,
-	routeFeatures
-} from './planning-map.js';
+import { impactClass, impactHexes, createPlaybackSampler, routeFeatures } from './planning-map.js';
 import type { PlanningComparison, PlanningJourney } from './planning-map.js';
 
 const journey = (minutes: number | null): PlanningJourney => ({
@@ -87,36 +80,23 @@ describe('calculated journey playback', () => {
 			}
 		]
 	};
-	it('holds the resident at the boarding point throughout the actual wait', () => {
-		expect(playbackPosition(timed, 7)).toMatchObject({
-			point: [73.51, 4.1],
-			phase: 'Waiting to board',
-			mode: 'ferry'
-		});
-	});
-	it('starts ferry movement after walking and wait time, and reaches the destination', () => {
-		expect(playbackPosition(timed, 15).point?.[0]).toBeCloseTo(73.515, 6);
-		expect(playbackPosition(timed, 20)).toMatchObject({ point: [73.52, 4.1], phase: 'Arrived' });
-	});
-	it('samples a measured journey repeatedly while preserving waits, leg changes and arrival', () => {
+	it('honors walking, boarding waits, scheduled movement and arrival with explicit positions', () => {
 		const sample = createPlaybackSampler(timed);
-		for (const elapsed of [0, 2.5, 5, 7, 10, 15, 20, 25]) {
-			expect(sample(elapsed)).toEqual(playbackPosition(timed, elapsed));
+		for (const [elapsed, longitude, phase, mode, legIndex] of [
+			[0, 73.5, 'Walking', 'walk', 0],
+			[2.5, 73.505, 'Walking', 'walk', 0],
+			[5, 73.51, 'Waiting to board', 'ferry', 1],
+			[7, 73.51, 'Waiting to board', 'ferry', 1],
+			[10, 73.51, 'On the ferry', 'ferry', 1],
+			[15, 73.515, 'On the ferry', 'ferry', 1],
+			[20, 73.52, 'Arrived', 'ferry', 1],
+			[25, 73.52, 'Arrived', 'ferry', 1]
+		] as const) {
+			const position = sample(elapsed);
+			expect(position).toMatchObject({ phase, mode, legIndex });
+			expect(position.point?.[0]).toBeCloseTo(longitude, 6);
+			expect(position.point?.[1]).toBe(4.1);
 		}
-		const replacement = createPlaybackSampler({
-			...timed,
-			path: [
-				{
-					...timed.path[0],
-					geometry: [
-						[73, 4],
-						[74, 4]
-					]
-				}
-			]
-		});
-		expect(replacement(2.5).point).toEqual([73.5, 4]);
-		expect(sample(2.5).point?.[0]).toBeCloseTo(73.505, 6);
 	});
 	it('does not reread provider vertices for each animation frame', () => {
 		let reads = 0;
@@ -132,17 +112,23 @@ describe('calculated journey playback', () => {
 		expect(preparationReads).toBeGreaterThan(0);
 		expect(reads).toBe(preparationReads);
 	});
-	it('interpolates by geometric length rather than point count', () => {
-		expect(
-			pointOnLine(
-				[
-					[0, 0],
-					[1, 0],
-					[4, 0]
-				],
-				0.5
-			)
-		).toEqual([2, 0]);
+	it('measures distance rather than vertex count and keeps independent journeys separate', () => {
+		const original = createPlaybackSampler(timed);
+		const replacement = createPlaybackSampler({
+			...timed,
+			path: [
+				{
+					...timed.path[0],
+					geometry: [
+						[0, 0],
+						[1, 0],
+						[4, 0]
+					]
+				}
+			]
+		});
+		expect(replacement(2.5).point).toEqual([2, 0]);
+		expect(original(2.5).point?.[0]).toBeCloseTo(73.505, 6);
 	});
 	it('retains leg modes and exact network geometry without fabricating an unlocated leg', () => {
 		const routes = routeFeatures(timed, 'outward');
@@ -154,5 +140,22 @@ describe('calculated journey playback', () => {
 		expect(
 			routeFeatures({ ...timed, path: [{ ...timed.path[0], geometry: [] }] }, 'outward').features
 		).toEqual([]);
+	});
+	it('does not fabricate a route or animate across a missing provider vertex', () => {
+		const broken = {
+			...timed,
+			path: [
+				{
+					...timed.path[0],
+					geometry: [
+						[73.5, 4.1],
+						[NaN, 4.1],
+						[73.51, 4.1]
+					]
+				}
+			]
+		};
+		expect(routeFeatures(broken, 'outward').features).toEqual([]);
+		expect(createPlaybackSampler(broken)(2.5).point).toBeNull();
 	});
 });

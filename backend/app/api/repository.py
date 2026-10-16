@@ -285,13 +285,3 @@ class NormalizedRepository:
             return self.cache.read_json(relative_path)
         except FileNotFoundError:
             return default
-
-
-def _age_group_start(label: str) -> int | None:
-    text = label.strip().casefold()
-    if text == "75 or older":
-        return 75
-    try:
-        return int(text.split("-", 1)[0])
-    except ValueError, IndexError:
-        return None

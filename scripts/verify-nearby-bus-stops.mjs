@@ -1,9 +1,11 @@
+import { projectMapPoint } from './browser-map.mjs';
+import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
-const baseURL = process.env.BASE_URL || process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
+const baseURL = browserBaseURL();
 const output = path.resolve('artifacts/qa/nearby-bus-stops');
 await mkdir(output, { recursive: true });
 const expect = playwrightExpect.configure({ timeout: 60000 });
@@ -36,29 +38,7 @@ async function check(name, action) {
 
 /** @param {[number,number]} coordinates */
 async function project(coordinates) {
-	return atlas.evaluate((element, location) => {
-		const canvas = element.querySelector('.maplibregl-canvas');
-		if (!canvas) throw new Error('Map canvas missing');
-		const bounds = canvas.getBoundingClientRect();
-		const zoom = Number(element.getAttribute('data-zoom'));
-		const longitude = Number(element.getAttribute('data-center-longitude'));
-		const latitude = Number(element.getAttribute('data-center-latitude'));
-		const left = Number(element.getAttribute('data-camera-padding-left'));
-		const right = Number(element.getAttribute('data-camera-padding-right'));
-		const top = Number(element.getAttribute('data-camera-padding-top'));
-		const bottom = Number(element.getAttribute('data-camera-padding-bottom'));
-		const world = 512 * 2 ** zoom;
-		/** @param {number} value */
-		const mercatorY = (value) =>
-			(1 - Math.log(Math.tan(Math.PI / 4 + (value * Math.PI) / 360)) / Math.PI) / 2;
-		return {
-			x: bounds.x + (bounds.width + left - right) / 2 + ((location[0] - longitude) * world) / 360,
-			y:
-				bounds.y +
-				(bounds.height + top - bottom) / 2 +
-				(mercatorY(location[1]) - mercatorY(latitude)) * world
-		};
-	}, coordinates);
+	return projectMapPoint(atlas, coordinates);
 }
 
 /** Pan through genuine unobscured canvas gestures without selecting a different island.

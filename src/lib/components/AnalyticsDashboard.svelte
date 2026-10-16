@@ -55,8 +55,8 @@
 		onForecast?: () => void;
 		active?: boolean;
 	} = $props();
-	let accessibility = $state<NationalAccessibility | null>(null);
-	let infrastructure = $state<MapFeatures | null>(null);
+	let accessibility = $state.raw<NationalAccessibility | null>(null);
+	let infrastructure = $state.raw<MapFeatures | null>(null);
 	let loading = $state(true);
 	let mounted = $state(false);
 	let needsRefresh = $state(false);
@@ -73,7 +73,7 @@
 	let page = $state(0);
 	let showMethod = $state(false);
 	let selectedScoreId = $state<string | null>(null);
-	let scoreDetails = $state<Accessibility | null>(null);
+	let scoreDetails = $state.raw<Accessibility | null>(null);
 	let scoreDetailsLoading = $state(false);
 	let scoreDetailsError = $state('');
 	let scoreController: AbortController | undefined;

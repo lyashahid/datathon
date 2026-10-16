@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { locationFromInput, providerRouteCoordinates } from './map-location';
+import { locationFromInput, providerRouteCoordinates, routeEndpointsMatch } from './map-location';
 
 describe('visual location selection boundaries', () => {
 	it('does not turn empty advanced fields into a location at zero', () => {
@@ -30,5 +30,28 @@ describe('visual location selection boundaries', () => {
 				[73.6, 91]
 			])
 		).toEqual([]);
+	});
+});
+
+describe('route and boarding-point selection', () => {
+	it('retains the same accepted snapped route and stops within its declared tolerance', () => {
+		expect(
+			routeEndpointsMatch([73.5, 4.2], [73.51, 4.21], [73.5, 4.2002], [73.51, 4.2101], 30)
+		).toBe(true);
+		expect(routeEndpointsMatch([73.5, 4.2], [73.51, 4.21], [73.5, 4.2002], [73.51, 4.2101])).toBe(
+			false
+		);
+	});
+	it('hides stale results when either selected endpoint moves beyond the supplied snap', () => {
+		expect(routeEndpointsMatch([73.5, 4.2], [73.51, 4.21], [73.5, 4.201], null, 30)).toBe(false);
+		expect(routeEndpointsMatch([73.5, 4.2], [73.51, 4.21], null, [73.51, 4.211], 30)).toBe(false);
+	});
+	it('requires valid calculated endpoints and rejects unusable tolerance metadata', () => {
+		expect(routeEndpointsMatch(undefined, [73.51, 4.21], null, null)).toBe(false);
+		expect(routeEndpointsMatch([73.5, NaN], [73.51, 4.21], null, null)).toBe(false);
+		expect(routeEndpointsMatch([73.5, 4.2], [73.51, 4.21], [73.5, 4.2002], null, Infinity)).toBe(
+			false
+		);
+		expect(routeEndpointsMatch([73.5, 4.2], [73.51, 4.21], null, null)).toBe(true);
 	});
 });

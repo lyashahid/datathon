@@ -1,5 +1,7 @@
 # Code review and cleanup — 16 October 2026
 
+The latest results are in [Follow-up: code and test review](#follow-up-code-and-test-review). Earlier sections preserve the preceding pass and its measured receipts.
+
 This pass traced the frontend entry routes, retained workspaces, map interactions, data exploration, API proxy/cache, planning calculations, background preparation and persisted source updates. Real-time collaboration remains excluded.
 
 ## Correctness and efficiency
@@ -20,7 +22,7 @@ Eight component download implementations and the root JSON exports use the share
 
 Removed six unreferenced tooltip primitive files, unused transit catalogue types, an unused straight-line placement catchment helper, duplicate road-distance projection, obsolete cache state and duplicate file writers. The previous monolithic default browser harness and seven navigation-specific suites were superseded by maintained suites. Specialist planning, places, calibration, imports and source data remain because their callers and distinct capabilities were verified.
 
-The default `npm run test:browser` now runs seven suites sequentially: analytics, forecasts/Data Studio, capital map entry, navigation, map controls, proposal experience and island connections. Specialist checks remain separately available. Earlier design documents are retained as historical records and point to current verification commands.
+The maintained `npm run test:browser` now runs the 13 core suites sequentially, with specialist checks separately selectable. Use the [current browser verification guide](browser-verification.md) and `npm run test:browser:list` for the catalogue. The measured seven-suite receipt below records the earlier cleanup pass; earlier design documents likewise retain historical results.
 
 ## Verification
 
@@ -37,3 +39,36 @@ Local production measurements used real APIs and software WebGL at 1440 × 1000.
 ## Boundaries
 
 This review does not expand the supplied geographic or timetable evidence. Provider outages, unknown populations, limited outer-island resident modeling and assumed service durations remain explicit. Browser measurements depend on the local machine and warm caches; they are not deployment latency guarantees.
+
+## Follow-up: code and test review
+
+The follow-up reviewed runtime consumers, immutable API snapshots, map callbacks, saved proposal validation, test assertions and the browser runner. The receipts above belong to the earlier pass; this section records the subsequent cleanup.
+
+| Before                                                                                                  | After                                                                                                    | Why                                                                                                       |
+| ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| A snapped bus route could render while a separate, stricter endpoint check hid its boarding stops.      | Route lines and boarding/alighting markers share the accepted snap tolerance.                            | A valid itinerary now shows where to board and leave the bus; moved endpoints still reject stale results. |
+| Invalid journey vertices were filtered out, joining the remaining points.                               | A broken leg is omitted from the line and playback.                                                      | The map cannot invent a connection across missing geometry.                                               |
+| Separate cluster callbacks could reject without handling the error or pan after changing islands/tools. | One guarded callback handles both sources, retains their zoom limits and ignores obsolete results.       | Avoid unhandled errors and unexpected camera movement.                                                    |
+| An accepted-marker animation could outlive its initiating effect.                                       | Pending ticks/frames are cancelled on cleanup.                                                           | Old proposal actions cannot animate or pan a newer context.                                               |
+| On phones, a restored proposal summary covered the Layers/View controls.                                | Passive proposal summaries temporarily hide while explicit map controls are open and return when closed. | The heading, close button and opacity slider remain usable with pointer and keyboard input.               |
+| Releasing a resized drawer restarted its entrance animation.                                            | Resize settles finite window motion before measurement and preserves its CSS animation identity.         | Resizing stays stable while opening, closing, saved sizes and reduced motion remain supported.            |
+| Large, wholesale-replaced API snapshots used deep reactive proxies.                                     | Analytics and Data Studio use raw snapshots; mutable form state remains reactive.                        | Avoid proxy overhead while preserving source refreshes and derived views.                                 |
+
+Removed two unused age-parsing helpers, an unused API alias, two test-only playback wrappers and a redundant Vela async-marking hook already covered by pytest's automatic async mode. Reused number/date formatters and validated saved proposal geometry once while retaining atomic route-package rejection and the operation limit. Retained reachable specialist workspaces and their distinct behavioral coverage.
+
+The obsolete continuous-hex design harness was removed after mapping its useful assertions to maintained grid, aggregation, overlay and proposal tests. Playback tests now assert explicit walking/waiting/riding/arrival results instead of comparing a sampler with its own wrapper. Browser scripts share URL resolution, camera-aware gesture projection and one suite catalogue. Focused selection rejects typos before launching Chromium and deduplicates repeated suites; existing npm aliases remain compatible. Plain JavaScript regains undefined-name lint checks, while Svelte keeps the type information required by its recommended rules.
+
+The current [browser verification guide](browser-verification.md) documents commands, focused coverage and provider/fixture boundaries. Historical design receipts remain labelled as historical evidence.
+
+### Follow-up verification
+
+- Backend: **777 tests passed** after removing the redundant async hook; Ruff passed. The only pytest warning was an upstream Starlette/httpx deprecation.
+- Frontend: **280 tests across 25 files** and **9 startup/runner tests passed**. Svelte/TypeScript reported zero errors and warnings. Full formatting/ESLint passed with typed Svelte checks retained.
+- The optimized production build passed. Its existing large-map-bundle advisory remains; this cleanup does not claim a measured overall latency improvement.
+- The **13 core browser suites passed all 128 checks**, with no page errors, including budgets, actual proposal colours, mobile layouts, persisted window sizes, ferry benefits and PDF export.
+- The specialist overlay suite passed **all 6 checks** on the rebuilt app: actual shared hex identities, before/after costs, persisted keyboard opacity, unchanged evidence/calculation requests and camera, plus phone Layers/View hit testing, summary restoration and focus. The corrected phone layout was also inspected visually.
+- The specialist map-legibility suite passed **all 10 checks**, covering infrastructure provenance, qualified movement fixtures, pause behavior, street routing, closures, removal and unknown targets. Map controls passed **10 checks** and proposal experience passed **19 checks** again after the phone overlay correction.
+- After the resize fix and final rebuild, motion/windows passed **11 checks** and proposal review passed **8 checks**, with no page errors. The resized drawer's immediate right edge stayed at 1440px rather than the previously observed 1458px; the settled phone sheet fit exactly within its 375px viewport. This run also covered saved sizes, cancellation, keyboard resizing, maximize/restore, reduced motion, focus, stale results and failed-evaluation recovery. Frontend tests, type checks and full lint passed again against the final source.
+- Additional manual browser checks verified named-place directions in ordinary and reduced motion, and a real Malé–Hulhumalé R3/R4 itinerary: five route segments, four boarding/alighting markers and complete removal of both after reset.
+
+Local receipts and screenshots remain under `artifacts/qa`; credentials, generated artifacts and source stores are excluded from the commit.

@@ -1,10 +1,12 @@
+import { projectMapPoint } from './browser-map.mjs';
+import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
 // Real snapshot positions and headings drive the map; no feed or app state is replaced.
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
+const baseURL = browserBaseURL();
 const output = path.resolve('artifacts/qa/bus-vehicles');
 await mkdir(output, { recursive: true });
 const expect = playwrightExpect.configure({ timeout: 60000 });
@@ -14,21 +16,7 @@ const browser = await chromium.launch({ headless: true, args: ['--enable-unsafe-
 
 /** @param {import('@playwright/test').Locator} atlas @param {[number,number]} position */
 async function project(atlas, position) {
-	return atlas.evaluate((element, coordinates) => {
-		const canvas = element.querySelector('.maplibregl-canvas');
-		if (!canvas) throw new Error('Map canvas missing');
-		const box = canvas.getBoundingClientRect();
-		const longitude = Number(element.getAttribute('data-center-longitude'));
-		const latitude = Number(element.getAttribute('data-center-latitude'));
-		const world = 512 * 2 ** Number(element.getAttribute('data-zoom'));
-		/** @param {number} value */
-		const mercatorY = (value) =>
-			(1 - Math.log(Math.tan(Math.PI / 4 + (value * Math.PI) / 360)) / Math.PI) / 2;
-		return {
-			x: box.x + box.width / 2 + ((coordinates[0] - longitude) * world) / 360,
-			y: box.y + box.height / 2 + (mercatorY(coordinates[1]) - mercatorY(latitude)) * world
-		};
-	}, position);
+	return projectMapPoint(atlas, position);
 }
 
 /** @param {import('@playwright/test').Locator} locator */

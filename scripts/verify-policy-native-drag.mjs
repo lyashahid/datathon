@@ -1,9 +1,11 @@
+import { projectMapPoint } from './browser-map.mjs';
+import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
+const baseURL = browserBaseURL();
 const output = path.resolve('artifacts/qa/policy-native-drag');
 await mkdir(output, { recursive: true });
 const expect = playwrightExpect.configure({ timeout: 90000 });
@@ -63,33 +65,7 @@ async function check(name, action) {
 }
 /** @param {Coordinates} coordinates */
 async function project(coordinates) {
-	return atlas.evaluate((element, location) => {
-		const canvas = element.querySelector('.maplibregl-canvas');
-		if (!canvas) throw new Error('Map canvas is missing');
-		const box = canvas.getBoundingClientRect();
-		const zoom = Number(element.getAttribute('data-zoom'));
-		const longitude = Number(element.getAttribute('data-center-longitude'));
-		const latitude = Number(element.getAttribute('data-center-latitude'));
-		const world = 512 * 2 ** zoom;
-		const padding = Object.fromEntries(
-			['top', 'right', 'bottom', 'left'].map((side) => [
-				side,
-				Number(element.getAttribute(`data-camera-padding-${side}`))
-			])
-		);
-		/** @param {number} lat */
-		const y = (lat) => (1 - Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) / Math.PI) / 2;
-		return {
-			x:
-				box.x +
-				(box.width + padding.left - padding.right) / 2 +
-				((location[0] - longitude) * world) / 360,
-			y:
-				box.y +
-				(box.height + padding.top - padding.bottom) / 2 +
-				(y(location[1]) - y(latitude)) * world
-		};
-	}, coordinates);
+	return projectMapPoint(atlas, coordinates);
 }
 /** @param {Road[]} roads @param {Point|null} prior @returns {Promise<RoadSite>} */
 async function roadSite(roads, prior = null) {

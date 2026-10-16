@@ -180,7 +180,7 @@ function installStyles(): void {
 		.window-resize-handle[data-edge="bottom-left"]::after { transform: rotate(90deg); }
 		.window-resize-handle[data-edge="top-left"]::after { transform: rotate(180deg); }
 		.window-resize-handle[data-edge="top-right"]::after { transform: rotate(270deg); }
-		[data-resizable="true"].is-resizing { transition: none !important; animation: none !important; user-select: none; }
+		[data-resizable="true"].is-resizing { transition: none !important; user-select: none; }
 		@media (prefers-reduced-motion: reduce) { .window-resize-handle::after { transition: none; } }
 	`;
 	document.head.append(style);
@@ -240,6 +240,21 @@ export function resizable(node: HTMLElement, initialOptions: ResizableOptions) {
 		return { width: node.offsetWidth, height: node.offsetHeight };
 	}
 
+	function settleMotion() {
+		// Measure the window at rest without removing its CSS animation name:
+		// toggling animation:none would replay its entrance when a drag ends.
+		for (const animation of node.getAnimations()) {
+			if (
+				animation.playState === 'running' &&
+				animation.playbackRate > 0 &&
+				animation.effect instanceof KeyframeEffect &&
+				animation.effect.target === node &&
+				Number.isFinite(animation.effect.getComputedTiming().endTime)
+			)
+				animation.finish();
+		}
+	}
+
 	function bounds(): ResizeBounds {
 		const parent = node.offsetParent;
 		const parentRect = parent instanceof HTMLElement ? parent.getBoundingClientRect() : undefined;
@@ -280,6 +295,7 @@ export function resizable(node: HTMLElement, initialOptions: ResizableOptions) {
 
 	function reset() {
 		stopDrag?.();
+		settleMotion();
 		preferred = null;
 		maximized = false;
 		savePanelSize(localStorageOrNull(), options.key, null);
@@ -291,6 +307,7 @@ export function resizable(node: HTMLElement, initialOptions: ResizableOptions) {
 	function maximize(): boolean {
 		if (!active) return false;
 		stopDrag?.();
+		settleMotion();
 		maximized = !maximized;
 		const limits = bounds();
 		applyBounds(limits);
@@ -317,6 +334,7 @@ export function resizable(node: HTMLElement, initialOptions: ResizableOptions) {
 		event.stopPropagation();
 		if (event.button !== 0 || !event.isPrimary || stopDrag) return;
 		event.preventDefault();
+		settleMotion();
 		const initial = currentSize();
 		const limits = bounds();
 		const previous = preferred;
@@ -424,6 +442,7 @@ export function resizable(node: HTMLElement, initialOptions: ResizableOptions) {
 		if (!x && !y) return;
 		event.preventDefault();
 		event.stopPropagation();
+		settleMotion();
 		preferred = resizedPanelSize(
 			currentSize(),
 			{ x, y },

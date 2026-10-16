@@ -1,9 +1,10 @@
+import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
-const baseURL = process.env.MOBILITY_QA_URL || process.env.BASE_URL || 'http://127.0.0.1:5173';
+const baseURL = browserBaseURL();
 const output = path.resolve('artifacts/qa/motion-windows');
 await mkdir(output, { recursive: true });
 const expect = playwrightExpect.configure({ timeout: 90000 });
@@ -61,6 +62,11 @@ async function resize(panel, edge, dx, dy, cancel = false) {
 	assert.ok(box);
 	await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
 	await page.mouse.down();
+	// Render the held-pointer state, as a human drag would, before releasing it.
+	await panel.evaluate((element) => {
+		void getComputedStyle(element).animationName;
+		return new Promise(requestAnimationFrame);
+	});
 	await page.mouse.move(box.x + box.width / 2 + dx, box.y + box.height / 2 + dy, { steps: 8 });
 	if (cancel) await page.keyboard.press('Escape');
 	await page.mouse.up();
@@ -89,6 +95,21 @@ async function boxOf(locator) {
 	const box = await locator.boundingBox();
 	assert.ok(box, 'The window must be visible before measuring its dimensions.');
 	return box;
+}
+
+/** @param {import('@playwright/test').Locator} window */
+async function settledWindow(window) {
+	await expect
+		.poll(() =>
+			window.evaluate(
+				(element) =>
+					getComputedStyle(element).opacity === '1' &&
+					element
+						.getAnimations()
+						.every((animation) => !animation.pending && animation.playState !== 'running')
+			)
+		)
+		.toBe(true);
 }
 
 try {
@@ -185,15 +206,17 @@ try {
 			const sheet = page.locator('.island-accessibility-details');
 			await expect(sheet).toBeVisible();
 			await expect(sheet.locator('.accessibility-title')).toBeFocused();
-			await expect
-				.poll(() => sheet.evaluate((element) => getComputedStyle(element).opacity))
-				.toBe('1');
+			await settledWindow(sheet);
 			const initial = await sheet.boundingBox();
 			assert.ok(initial);
 			await resize(sheet, 'left', -120, 0);
 			await resize(sheet, 'bottom', 0, -120);
 			const saved = await sheet.boundingBox();
 			assert.ok(saved && saved.width > initial.width + 100 && saved.height < initial.height - 100);
+			assert.ok(
+				Math.abs(saved.x + saved.width - (initial.x + initial.width)) < 2,
+				`Finishing a pointer resize must retain the docked edge: ${JSON.stringify({ initial, saved })}`
+			);
 			await page.keyboard.press('Escape');
 			await expect(sheet).toHaveCount(0, { timeout: 4000 });
 			await expect(trigger).toBeFocused();
@@ -230,18 +253,36 @@ try {
 		const sheet = page.locator('.island-accessibility-details');
 		await expect(sheet).toBeVisible();
 		await expect(sheet.locator('.window-resize-handle')).toHaveCount(0);
+		const opening = await sheet.evaluate((element) => {
+			const style = getComputedStyle(element);
+			return {
+				bounds: element.getBoundingClientRect().toJSON(),
+				viewportWidth: innerWidth,
+				width: style.width,
+				maxWidth: style.maxWidth,
+				transform: style.transform,
+				opacity: style.opacity,
+				animations: element.getAnimations().map((animation) => ({
+					pending: animation.pending,
+					playState: animation.playState,
+					currentTime: animation.currentTime
+				}))
+			};
+		});
+		await settledWindow(sheet);
 		const box = await sheet.boundingBox();
-		assert.ok(box && box.width <= 375 && box.x >= 0);
+		assert.ok(
+			box && box.width <= 375 && box.x >= 0 && box.x + box.width <= 375,
+			`The settled mobile sheet must fit the viewport: ${JSON.stringify({ opening, settled: box })}`
+		);
 		await noOverflow();
-		await expect
-			.poll(() => sheet.evaluate((element) => getComputedStyle(element).opacity))
-			.toBe('1');
 		await page.screenshot({ path: path.join(output, 'island-score-mobile.png') });
 		await sheet.getByRole('button', { name: 'Close', exact: true }).click();
 		await expect(sheet).toHaveCount(0, { timeout: 4000 });
 		await expect(page.locator('[data-slot="sheet-overlay"]')).toHaveCount(0, { timeout: 4000 });
 		await expect(trigger).toBeFocused();
 		await page.setViewportSize({ width: 1440, height: 1000 });
+		return { opening, settledBounds: box, viewport: { width: 375, height: 812 } };
 	});
 	await nav.getByRole('button', { name: 'Map & planning', exact: true }).click();
 	await expect(atlas).toHaveAttribute('aria-busy', 'false');

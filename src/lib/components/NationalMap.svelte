@@ -45,6 +45,7 @@
 	import { pointWithinIsland } from '#lib/map-policy.js';
 	import { nearestPlacementRoad, placementLocationHint } from '#lib/map-placement-preview.js';
 	import { changedImpactCells } from '#lib/map-impact-feedback.js';
+	import { routeEndpointsMatch } from '#lib/map-location.js';
 	import { mobileServiceRoutePadding, serviceCardMaxHeight } from '#lib/map-service-layout.js';
 	import { shouldAnimateMotion } from '#lib/motion.js';
 	import type { MapPolicyState, PendingPlacementDecision, PlacementKind } from '#lib/map-policy.js';
@@ -812,36 +813,44 @@
 		return { data: collection(items), unlocated };
 	});
 	const scenarioFeatures = $derived(scenarioPreview.data);
+	const matchedJourney = $derived(
+		route?.journey?.status === 'reachable' &&
+			routeEndpointsMatch(
+				route.journey.legs[0]?.from.coordinates,
+				route.journey.legs.at(-1)?.to.coordinates,
+				routeStart,
+				routeEnd,
+				route.snap_distance_m
+			)
+			? route.journey
+			: null
+	);
 	const routeFeatures = $derived.by(() => {
 		const coordinates = route?.geometry;
-		const samePoint = (first: Coordinates, second: Coordinates) => {
-			const latitude = (((first[1] + second[1]) / 2) * Math.PI) / 180;
-			const dx = (first[0] - second[0]) * 111320 * Math.cos(latitude);
-			const dy = (first[1] - second[1]) * 111320;
-			return Math.hypot(dx, dy) <= (route?.snap_distance_m ?? 0) + 2;
-		};
 		const journey = route?.journey;
 		const firstPoint = journey?.legs[0]?.from.coordinates;
 		const lastPoint = journey?.legs.at(-1)?.to.coordinates;
-		const journeyMatches =
-			journey?.status === 'reachable' &&
-			firstPoint &&
-			lastPoint &&
-			(!routeStart || samePoint(routeStart, firstPoint)) &&
-			(!routeEnd || samePoint(routeEnd, lastPoint));
+		const journeyMatches = !!matchedJourney;
 		const routeMatches =
 			!journey &&
 			coordinates?.length &&
 			coordinates.every(validCoordinates) &&
-			(!routeStart || samePoint(routeStart, coordinates[0])) &&
-			(!routeEnd || samePoint(routeEnd, coordinates[coordinates.length - 1]));
+			routeEndpointsMatch(
+				coordinates[0],
+				coordinates.at(-1),
+				routeStart,
+				routeEnd,
+				route?.snap_distance_m
+			);
 		const start =
 			routeStart ?? (journeyMatches ? firstPoint : routeMatches ? coordinates?.[0] : null);
 		const end =
 			routeEnd ??
 			(journeyMatches ? lastPoint : routeMatches ? coordinates?.[coordinates.length - 1] : null);
 		return collection([
-			...(journeyMatches ? (exploreJourneyFeatures(journey).features as Feature<Geometry>[]) : []),
+			...(matchedJourney
+				? (exploreJourneyFeatures(matchedJourney).features as Feature<Geometry>[])
+				: []),
 			...(routeMatches && coordinates && coordinates.length > 1
 				? ([
 						{
@@ -889,18 +898,8 @@
 		]);
 	});
 	const journeyStopFeatures = $derived.by(() => {
-		const journey = route?.journey;
-		if (journey?.status !== 'reachable') return emptyCollection;
-		for (const [selected, point] of [
-			[routeStart, journey.legs[0]?.from.coordinates],
-			[routeEnd, journey.legs.at(-1)?.to.coordinates]
-		] as const) {
-			if (
-				selected &&
-				(!point || Math.hypot(selected[0] - point[0], selected[1] - point[1]) > 0.00003)
-			)
-				return emptyCollection;
-		}
+		const journey = matchedJourney;
+		if (!journey) return emptyCollection;
 		return collection(
 			journey.stops
 				.filter((stop) => validCoordinates(stop.coordinates))
@@ -1174,20 +1173,35 @@
 		}
 	}
 
-	function expandVesselCluster(feature: MapGeoJSONFeature, restoreFocus = false) {
-		if (!map || feature.geometry.type !== 'Point') return;
+	function expandCluster(feature: MapGeoJSONFeature, restoreFocus = false) {
+		if (
+			!map ||
+			!active ||
+			feature.geometry.type !== 'Point' ||
+			!['pois', 'live-vessels'].includes(feature.source)
+		)
+			return;
+		const instance = map;
+		const islandId = selectedId;
 		const coordinates = feature.geometry.coordinates;
-		const source = map.getSource('live-vessels') as GeoJSONSource;
-		void source.getClusterExpansionZoom(Number(feature.properties.cluster_id)).then((zoom) => {
-			if (!map || !validCoordinates(coordinates)) return;
-			userZoomGesture = null;
-			map.easeTo({
-				center: coordinates,
-				zoom: Math.min(zoom, 17),
-				duration: reducedMotion() ? 0 : 280
+		if (!validCoordinates(coordinates)) return;
+		const source = instance.getSource(feature.source) as GeoJSONSource;
+		void source
+			.getClusterExpansionZoom(Number(feature.properties.cluster_id))
+			.then((zoom) => {
+				if (map !== instance || !active || selectedId !== islandId || picking || serviceEditor)
+					return;
+				userZoomGesture = null;
+				instance.easeTo({
+					center: coordinates,
+					zoom: Math.min(zoom, feature.source === 'live-vessels' ? 17 : 16),
+					duration: reducedMotion() ? 0 : 280
+				});
+				if (restoreFocus) instance.getCanvas().focus({ preventScroll: true });
+			})
+			.catch(() => {
+				// A live refresh can replace the selected cluster while the worker resolves its zoom.
 			});
-			if (restoreFocus) map.getCanvas().focus({ preventScroll: true });
-		});
 	}
 
 	function syncMovementCounts() {
@@ -1225,7 +1239,7 @@
 					const current = map
 						?.queryRenderedFeatures({ layers: ['live-vessel-clusters'] })
 						.find((item) => String(item.properties.cluster_id) === id);
-					if (current) expandVesselCluster(current, event.detail === 0);
+					if (current) expandCluster(current, event.detail === 0);
 				});
 				marker = new makeMarker({ element: button })
 					.setLngLat(feature.geometry.coordinates)
@@ -2506,12 +2520,11 @@
 			: (pendingProposal?.coordinates ?? [location.lng, location.lat]);
 		const kind = pendingProposal?.kind ?? placementKind!;
 		const snapped = kind === 'add_stop' ? nearestPlacementRoad(raw, placementRoads) : null;
-		const coordinates =
-			snapped?.snapped &&
-			selectedId &&
-			pointWithinIsland(snapped.coordinates, features, selectedId) === true
-				? snapped.coordinates
-				: raw;
+		const snapAllowed =
+			!!snapped?.snapped &&
+			!!selectedId &&
+			pointWithinIsland(snapped.coordinates, features, selectedId) === true;
+		const coordinates = snapAllowed ? snapped!.coordinates : raw;
 		const point = map.project(coordinates);
 		const north = map.project([coordinates[0], coordinates[1] + 400 / 111320]);
 		placementPreview = {
@@ -2519,9 +2532,13 @@
 			y: point.y,
 			radius: Math.max(5, Math.min(1600, Math.abs(point.y - north.y))),
 			coordinates,
-			snapped: snapped?.snapped === true && coordinates === snapped.coordinates,
+			snapped: snapAllowed,
 			distance: snapped?.distance ?? null,
-			suitable: selectedId ? pointWithinIsland(coordinates, features, selectedId) : null
+			suitable: snapAllowed
+				? true
+				: selectedId
+					? pointWithinIsland(coordinates, features, selectedId)
+					: null
 		};
 	}
 	function schedulePlacementPreview() {
@@ -2768,22 +2785,11 @@
 			return;
 		}
 		if (vesselGroup) {
-			expandVesselCluster(vesselGroup);
+			expandCluster(vesselGroup);
 			return;
 		}
 		if (cluster?.geometry.type === 'Point') {
-			const center = cluster.geometry.coordinates;
-			const source = map.getSource('pois') as GeoJSONSource;
-			void source.getClusterExpansionZoom(Number(cluster.properties.cluster_id)).then((zoom) => {
-				if (map && validCoordinates(center)) {
-					userZoomGesture = null;
-					map.easeTo({
-						center,
-						zoom: Math.min(zoom, 16),
-						duration: reducedMotion() ? 0 : 280
-					});
-				}
-			});
+			expandCluster(cluster);
 			return;
 		}
 		const record = rendered.find((feature) =>
@@ -4152,6 +4158,7 @@
 		);
 		const previous = acceptedPositions;
 		acceptedPositions = entries;
+		const islandId = selectedId;
 		if (!previous || entries.length < previous.length || pendingProposal) return;
 		const changed = entries.findLast((entry) => {
 			const prior = previous.find((item) => item.index === entry.index);
@@ -4161,25 +4168,33 @@
 				prior.coordinates[1] !== entry.coordinates[1]
 			);
 		});
-		if (changed)
-			void tick().then(() => {
-				requestAnimationFrame(() => {
-					keepAcceptedPointVisible(changed.coordinates);
-					if (!active || !shouldAnimateMotion()) return;
-					// Animate the inner symbol, never MapLibre's positioning transform.
-					policyMarkers
-						.get(changed.index)
-						?.getElement()
-						.querySelector('svg')
-						?.animate(
-							[
-								{ transform: 'translateY(-3px) scale(0.94)' },
-								{ transform: 'translateY(0) scale(1)' }
-							],
-							{ duration: 220, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' }
-						);
-				});
+		if (!changed) return;
+		let canceled = false;
+		let frame = 0;
+		void tick().then(() => {
+			if (canceled) return;
+			frame = requestAnimationFrame(() => {
+				if (selectedId !== islandId) return;
+				keepAcceptedPointVisible(changed.coordinates);
+				if (!active || !shouldAnimateMotion()) return;
+				// Animate the inner symbol, never MapLibre's positioning transform.
+				policyMarkers
+					.get(changed.index)
+					?.getElement()
+					.querySelector('svg')
+					?.animate(
+						[
+							{ transform: 'translateY(-3px) scale(0.94)' },
+							{ transform: 'translateY(0) scale(1)' }
+						],
+						{ duration: 220, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' }
+					);
 			});
+		});
+		return () => {
+			canceled = true;
+			cancelAnimationFrame(frame);
+		};
 	});
 	$effect(() => {
 		if (!ready || !active || !map) return;

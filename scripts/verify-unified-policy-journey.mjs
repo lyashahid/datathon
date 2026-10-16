@@ -1,3 +1,5 @@
+import { projectMapPoint } from './browser-map.mjs';
+import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -6,7 +8,7 @@ import { chromium, expect as playwrightExpect } from '@playwright/test';
 
 // Verify real endpoint evidence, user gestures and the downloaded decision brief.
 // This journey does not replace responses, inject application state or fabricate access.
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
+const baseURL = browserBaseURL();
 const output = path.resolve('artifacts/qa/unified-policy-journey');
 await mkdir(output, { recursive: true });
 const expect = playwrightExpect.configure({ timeout: 90000 });
@@ -84,36 +86,7 @@ async function mapView() {
 }
 /** @param {[number, number]} coordinates */
 async function project(coordinates) {
-	return atlas.evaluate((element, location) => {
-		const canvas = element.querySelector('.maplibregl-canvas');
-		if (!canvas) throw new Error('Map canvas is missing');
-		const box = canvas.getBoundingClientRect();
-		const zoom = Number(element.getAttribute('data-zoom'));
-		const center = [
-			Number(element.getAttribute('data-center-longitude')),
-			Number(element.getAttribute('data-center-latitude'))
-		];
-		const padding = Object.fromEntries(
-			['top', 'right', 'bottom', 'left'].map((side) => [
-				side,
-				Number(element.getAttribute(`data-camera-padding-${side}`))
-			])
-		);
-		const world = 512 * 2 ** zoom;
-		/** @param {number} latitude */
-		const y = (latitude) =>
-			(1 - Math.log(Math.tan(Math.PI / 4 + (latitude * Math.PI) / 360)) / Math.PI) / 2;
-		return {
-			x:
-				box.x +
-				(box.width + padding.left - padding.right) / 2 +
-				((location[0] - center[0]) * world) / 360,
-			y:
-				box.y +
-				(box.height + padding.top - padding.bottom) / 2 +
-				(y(location[1]) - y(center[1])) * world
-		};
-	}, coordinates);
+	return projectMapPoint(atlas, coordinates);
 }
 /** @param {Array<{geometry?:Array<[number,number]>}>} roads @param {string} [hint] */
 async function chooseVisibleRoad(roads, hint) {

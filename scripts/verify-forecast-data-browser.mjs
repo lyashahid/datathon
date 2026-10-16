@@ -1,10 +1,11 @@
+import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
 // Real frontend/backend responses only. A fresh browser keeps saved-story checks isolated.
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
+const baseURL = browserBaseURL();
 const output = path.resolve('artifacts/qa/forecast-data');
 const expect = playwrightExpect.configure({ timeout: 30000 });
 /** @type {{baseURL: string, startedAt: string, finishedAt?: string, checks: Array<{name: string, status: string, milliseconds?: number, detail?: unknown, message?: string}>, errors: string[], failure?: {message: string, stack?: string}}} */

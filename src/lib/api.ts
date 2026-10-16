@@ -307,6 +307,5 @@ export function createApiClient({
 
 const client = createApiClient();
 export const api = client.request;
-export const invalidateApiCache = client.invalidate;
 /** Retained views refresh their source data without losing local filters or drafts. */
 export const subscribeApiInvalidation = client.subscribeInvalidation;

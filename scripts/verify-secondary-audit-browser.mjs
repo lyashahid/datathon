@@ -1,3 +1,4 @@
+import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -5,7 +6,7 @@ import { chromium, expect as playwrightExpect } from '@playwright/test';
 
 // Every successful payload is the real backend response. These checks delay delivery or
 // simulate a failed connection to exercise races, without substituting analytical data.
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
+const baseURL = browserBaseURL();
 const output = path.resolve('artifacts/qa/secondary-audit');
 await mkdir(output, { recursive: true });
 const expect = playwrightExpect.configure({ timeout: 45000 });

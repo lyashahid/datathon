@@ -1,10 +1,12 @@
+import { projectMapPoint } from './browser-map.mjs';
+import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
 // Drive the native slider and genuine planning actions without injecting application state.
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
+const baseURL = browserBaseURL();
 const output = path.resolve('artifacts/qa/map-heat-opacity');
 await mkdir(output, { recursive: true });
 const expect = playwrightExpect.configure({ timeout: 90000 });
@@ -12,8 +14,7 @@ const expect = playwrightExpect.configure({ timeout: 90000 });
 /** @typedef {{geometry?:Coordinates[]}} Road */
 /** @typedef {{type:'Polygon',coordinates:Coordinates[][]}|{type:'MultiPolygon',coordinates:Coordinates[][][]}} CellGeometry */
 /** @typedef {{id?:string,geometry:CellGeometry,properties:{id?:string,contributions?:Array<{origin_id:string,share:number}>}}} Cell */
-/** @typedef {{operations:Array<{type:string,coordinates?:Coordinates}>}} EvaluationRequest */
-/** @type {{baseURL:string,startedAt:string,finishedAt?:string,checks:Array<{name:string,status:string,detail?:unknown}>,pageErrors:string[]}} */
+/** @type {{baseURL:string,startedAt:string,finishedAt?:string,checks:Array<{name:string,status:string,detail?:unknown}>,pageErrors:string[],failure?:string}} */
 const report = { baseURL, startedAt: new Date().toISOString(), checks: [], pageErrors: [] };
 const browser = await chromium.launch({ headless: true, args: ['--enable-unsafe-swiftshader'] });
 const context = await browser.newContext({
@@ -23,7 +24,6 @@ const context = await browser.newContext({
 const page = await context.newPage();
 page.setDefaultTimeout(90000);
 page.on('pageerror', (error) => report.pageErrors.push(error.message));
-/** @type {Coordinates|null} */ let markerCoordinates = null;
 let evaluationRequests = 0;
 let evidenceRequests = 0;
 page.on('request', (request) => {
@@ -34,14 +34,10 @@ page.on('request', (request) => {
 		evidenceRequests++;
 	if (request.method() !== 'POST' || !request.url().includes('/planning/evaluate')) return;
 	evaluationRequests++;
-	/** @type {EvaluationRequest} */ const body = request.postDataJSON();
-	markerCoordinates =
-		body.operations.find((operation) => operation.type === 'add_hospital')?.coordinates ?? null;
 });
 const atlas = page.locator('.national-map');
 const panel = page.getByRole('region', { name: 'Island needs and proposal', exact: true });
 const budget = page.getByRole('region', { name: 'Proposal budget', exact: true });
-const colours = page.getByRole('combobox', { name: 'Map colours', exact: true });
 const slider = page.getByRole('slider', { name: 'Overlay opacity', exact: true });
 /** @param {string} name @param {()=>Promise<unknown>} action */
 async function check(name, action) {
@@ -115,33 +111,23 @@ async function opacity(value) {
 	);
 	await expect(slider).toBeFocused();
 }
+/** @param {'before'|'after'} view */
+async function comparison(view) {
+	const closeControls = page.getByRole('button', { name: 'Close map controls', exact: true });
+	if (await closeControls.isVisible()) await closeControls.click();
+	await page
+		.getByRole('button', {
+			name: view === 'before' ? 'Without proposal' : 'With proposal',
+			exact: true
+		})
+		.filter({ visible: true })
+		.first()
+		.click();
+	await expect(atlas).toHaveAttribute('data-policy-impact-view', view);
+}
 /** @param {Coordinates} location */
 async function project(location) {
-	return atlas.evaluate(
-		(element, { coordinates, anchor }) => {
-			const canvas = element.querySelector('.maplibregl-canvas');
-			if (!canvas) throw new Error('Map canvas missing');
-			const box = canvas.getBoundingClientRect();
-			const world = 512 * 2 ** Number(element.getAttribute('data-zoom'));
-			const longitude = Number(element.getAttribute('data-center-longitude'));
-			const latitude = Number(element.getAttribute('data-center-latitude'));
-			/** @param {number} value */ const y = (value) =>
-				(1 - Math.log(Math.tan(Math.PI / 4 + (value * Math.PI) / 360)) / Math.PI) / 2;
-			const marker = element.querySelector('.policy-proposal-marker.confirmed');
-			if (marker && anchor) {
-				const markerBox = marker.getBoundingClientRect();
-				return {
-					x: markerBox.x + markerBox.width / 2 + ((coordinates[0] - anchor[0]) * world) / 360,
-					y: markerBox.bottom + (y(coordinates[1]) - y(anchor[1])) * world
-				};
-			}
-			return {
-				x: box.x + box.width / 2 + ((coordinates[0] - longitude) * world) / 360,
-				y: box.y + box.height / 2 + (y(coordinates[1]) - y(latitude)) * world
-			};
-		},
-		{ coordinates: location, anchor: markerCoordinates }
-	);
+	return projectMapPoint(atlas, location);
 }
 /** @param {Coordinates[]} locations */
 async function visibleSite(locations) {
@@ -192,6 +178,14 @@ try {
 	);
 	assert.equal(detailResponse.status(), 200);
 	/** @type {{hex_grid:{features:Cell[]}}} */ const detail = await detailResponse.json();
+	const nearbyResponse = await page.request.get(
+		`${baseURL}/api/backend/planning/opportunities/${encodeURIComponent('island:1443')}`
+	);
+	assert.equal(nearbyResponse.status(), 200);
+	/** @type {{hex_grid:{features:Cell[]}}} */ const nearby = await nearbyResponse.json();
+	// Explore intentionally shows both capital islands' local evidence. Proposal
+	// comparisons use only the selected island's mesh; the baseline layer keeps both.
+	const baselineHexCount = detail.hex_grid.features.length + nearby.hex_grid.features.length;
 	await check('The display source is a genuine identified hex mesh', async () => {
 		const mesh = detail.hex_grid.features;
 		assert.ok(mesh.length > 0);
@@ -209,10 +203,24 @@ try {
 		waitUntil: 'domcontentloaded'
 	});
 	await expect(atlas).toHaveAttribute('aria-busy', 'false');
+	await expect(atlas).toHaveAttribute('data-policy-hex-grid', String(baselineHexCount));
 	await openLayers();
 	await expect(slider).toHaveValue('65');
+	await check(
+		'Baseline service-gap opacity changes paint without refetching evidence',
+		async () => {
+			const before = await camera();
+			const counts = { evaluationRequests, evidenceRequests };
+			for (const value of [0, 35, 100]) await opacity(value);
+			assert.deepEqual(await camera(), before);
+			assert.deepEqual({ evaluationRequests, evidenceRequests }, counts);
+			await opacity(65);
+			await page.getByRole('button', { name: /^Layers/ }).click();
+			return { baselineOpacity: true, cameraUnchanged: true, requestsUnchanged: true };
+		}
+	);
 	await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
-	await expect(panel.getByText('Loading island evidence…', { exact: true })).toHaveCount(0);
+	await expect(panel.getByText(/^Loading island evidence/)).toHaveCount(0);
 	await panel
 		.locator('.policy-palette')
 		.getByRole('button', { name: 'Hospital', exact: true })
@@ -229,16 +237,11 @@ try {
 	await panel.locator('.policy-operation-list li').first().getByRole('button').first().click();
 	await expect.poll(async () => Number(await atlas.getAttribute('data-zoom'))).toBeGreaterThan(15);
 	await closePanel();
-	await colours.selectOption('gaps');
-	await page
-		.locator('.policy-lens-bar')
-		.getByRole('button', { name: 'Health', exact: true })
-		.click();
-	await expect(atlas).toHaveAttribute('data-policy-lens', 'health');
-	await expect(atlas).toHaveAttribute(
-		'data-policy-hex-grid',
-		String(detail.hex_grid.features.length)
-	);
+	await comparison('before');
+	await page.getByLabel('Access shown on map', { exact: true }).selectOption('healthcare');
+	await expect(page.getByLabel('Access shown on map', { exact: true })).toHaveValue('healthcare');
+	await estimate();
+	await expect(atlas).toHaveAttribute('data-policy-hex-grid', String(baselineHexCount));
 	await check(
 		'Opacity is keyboard accessible and updates map styling without data requests or camera changes',
 		async () => {
@@ -261,19 +264,16 @@ try {
 		}
 	);
 	await check(
-		'Gap and impact modes retain the shared mesh and proposal costs at adjustable opacity',
+		'Without and with proposal retain the shared mesh and costs at adjustable opacity',
 		async () => {
 			await opacity(65);
 			const beforeCamera = await camera();
-			await colours.selectOption('impact');
+			await comparison('after');
 			await expect(atlas).toHaveAttribute(
 				'data-policy-impact-cells',
 				String(detail.hex_grid.features.length)
 			);
-			await expect(atlas).toHaveAttribute(
-				'data-policy-hex-grid',
-				String(detail.hex_grid.features.length)
-			);
+			await expect(atlas).toHaveAttribute('data-policy-hex-grid', String(baselineHexCount));
 			await page.screenshot({ path: path.join(output, 'desktop-impact-opacity-65.png') });
 			await opacity(35);
 			await page.screenshot({ path: path.join(output, 'desktop-impact-opacity-35.png') });
@@ -299,112 +299,143 @@ try {
 			await expect(atlas).toHaveAttribute('data-policy-overlay-opacity', '35');
 			await page.setViewportSize({ width: 390, height: 844 });
 			await noOverflow();
+			const closeControls = page.getByRole('button', { name: 'Close map controls', exact: true });
+			const comparisonControls = page.locator('.policy-map-controls');
+			await expect(budget).toBeHidden();
+			await expect(comparisonControls).toBeHidden();
+			await expect(closeControls).toBeFocused();
+			await closeControls.click();
+			await expect(page.getByRole('button', { name: /^Layers/ })).toBeFocused();
+			await expect(budget).toBeVisible();
+			await expect(comparisonControls).toBeVisible();
+			const view = page.getByRole('button', { name: 'View', exact: true });
+			await view.click();
+			await expect(closeControls).toBeFocused();
+			await expect(budget).toBeHidden();
+			await expect(comparisonControls).toBeHidden();
+			await page.keyboard.press('Escape');
+			await expect(view).toBeFocused();
+			await expect(budget).toBeVisible();
+			await expect(comparisonControls).toBeVisible();
 			await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
 			await estimate(false);
-			await colours.selectOption('impact');
-			await expect
-				.poll(async () => Number(await atlas.getAttribute('data-policy-impact-cells')))
-				.toBeGreaterThan(0);
 			assert.equal(await budget.locator('.cost-values').innerText(), costs);
 			await panel.locator('.policy-operation-list li').first().getByRole('button').first().click();
 			await closePanel();
-			await colours.selectOption('gaps');
+			await comparison('after');
+			await expect
+				.poll(async () => Number(await atlas.getAttribute('data-policy-impact-cells')))
+				.toBeGreaterThan(0);
+			await comparison('before');
 			await opacity(65);
 			await noOverflow();
 			await page.screenshot({ path: path.join(output, 'mobile-gaps-opacity-65.png') });
 			await opacity(100);
 			await page.screenshot({ path: path.join(output, 'mobile-gaps-opacity-100.png') });
-			await colours.selectOption('impact');
+			await comparison('after');
 			await opacity(35);
 			await page.screenshot({ path: path.join(output, 'mobile-impact-opacity-35.png') });
 			return { persistedOpacity: 35, mobile: '390x844', unchangedCosts: costs };
 		}
 	);
-	await check('The same neighbourhood has the same hex ID in gaps and impact', async () => {
-		await page.setViewportSize({ width: 1440, height: 1000 });
-		await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
-		await panel.locator('.policy-operation-list li').first().getByRole('button').first().click();
-		await closePanel();
-		const layers = page.getByRole('button', { name: /^Layers/ });
-		if ((await layers.getAttribute('aria-expanded')) === 'true') await layers.click();
-		await colours.selectOption('gaps');
-		await expect(atlas).toHaveAttribute('data-policy-impact-cells', '0');
-		const centers = detail.hex_grid.features.flatMap((cell) => {
-			const polygon =
-				cell.geometry.type === 'Polygon' ? cell.geometry.coordinates : cell.geometry.coordinates[0];
-			const ring = polygon?.[0];
-			if (!ring || ring.length !== 7 || polygon.length !== 1) return [];
-			const center = /** @type {Coordinates} */ ([
-				ring.slice(0, -1).reduce((sum, point) => sum + point[0], 0) / 6,
-				ring.slice(0, -1).reduce((sum, point) => sum + point[1], 0) / 6
-			]);
-			const radii = ring
-				.slice(0, -1)
-				.map((point) =>
-					Math.hypot(
-						(point[0] - center[0]) * Math.cos((center[1] * Math.PI) / 180),
-						point[1] - center[1]
-					)
-				);
-			if (Math.max(...radii) / Math.min(...radii) > 1.01) return [];
-			return [center];
-		});
-		const beforeCamera = await camera();
-		/** @type {{coordinates:Coordinates,point:{x:number,y:number}}|null} */ let tile = null;
-		let attempts = 0;
-		for (const center of centers) {
-			let candidate;
-			try {
-				candidate = await visibleSite([center]);
-			} catch {
-				continue;
+	await check(
+		'The same neighbourhood has the same source-backed hex ID without and with the proposal',
+		async () => {
+			await page.setViewportSize({ width: 1440, height: 1000 });
+			await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
+			await panel.locator('.policy-operation-list li').first().getByRole('button').first().click();
+			await closePanel();
+			const layers = page.getByRole('button', { name: /^Layers/ });
+			if ((await layers.getAttribute('aria-expanded')) === 'true') await layers.click();
+			await comparison('before');
+			await expect(atlas).toHaveAttribute(
+				'data-policy-impact-cells',
+				String(detail.hex_grid.features.length)
+			);
+			const centers = detail.hex_grid.features.flatMap((cell) => {
+				const polygon =
+					cell.geometry.type === 'Polygon'
+						? cell.geometry.coordinates
+						: cell.geometry.coordinates[0];
+				const ring = polygon?.[0];
+				if (!ring || ring.length !== 7 || polygon.length !== 1) return [];
+				const center = /** @type {Coordinates} */ ([
+					ring.slice(0, -1).reduce((sum, point) => sum + point[0], 0) / 6,
+					ring.slice(0, -1).reduce((sum, point) => sum + point[1], 0) / 6
+				]);
+				const radii = ring
+					.slice(0, -1)
+					.map((point) =>
+						Math.hypot(
+							(point[0] - center[0]) * Math.cos((center[1] * Math.PI) / 180),
+							point[1] - center[1]
+						)
+					);
+				if (Math.max(...radii) / Math.min(...radii) > 1.01) return [];
+				return [center];
+			});
+			const beforeCamera = await camera();
+			/** @type {{coordinates:Coordinates,point:{x:number,y:number}}|null} */ let tile = null;
+			let attempts = 0;
+			for (const center of centers) {
+				let candidate;
+				try {
+					candidate = await visibleSite([center]);
+				} catch {
+					continue;
+				}
+				await page.mouse.click(candidate.point.x, candidate.point.y);
+				try {
+					await expect(panel.locator('.policy-selected-cell')).toBeVisible({ timeout: 1500 });
+					tile = candidate;
+					break;
+				} catch {
+					const close = panel.getByRole('button', {
+						name: 'Close island planning panel',
+						exact: true
+					});
+					if (await close.isVisible()) await close.click();
+				}
+				if (++attempts === 10) break;
 			}
-			await page.mouse.click(candidate.point.x, candidate.point.y);
-			try {
-				await expect(panel.locator('.policy-selected-cell')).toBeVisible({ timeout: 1500 });
-				tile = candidate;
-				break;
-			} catch {
-				const close = panel.getByRole('button', {
-					name: 'Close island planning panel',
-					exact: true
-				});
-				if (await close.isVisible()) await close.click();
+			assert.ok(tile, 'A visible full hex must open its neighbourhood details');
+			const gapId = await panel.locator('.policy-selected-cell').getAttribute('data-cell-id');
+			console.log('Selected gap hex', gapId);
+			assert.ok(gapId?.startsWith('hex:'));
+			assert.ok(
+				detail.hex_grid.features.some((cell) => (cell.id ?? cell.properties.id) === gapId),
+				'The selected hex belongs to the actual source mesh.'
+			);
+			await closePanel();
+			await comparison('after');
+			await expect(atlas).toHaveAttribute(
+				'data-policy-impact-cells',
+				String(detail.hex_grid.features.length)
+			);
+			const impactCell = panel.getByLabel('Selected neighbourhood impact', { exact: true });
+			for (let attempt = 0; attempt < 5; attempt++) {
+				await page.mouse.click(tile.point.x, tile.point.y);
+				try {
+					await expect(impactCell).toBeVisible({ timeout: 1500 });
+					break;
+				} catch {
+					if (attempt === 4) throw new Error('Painted impact hex must open its matching detail');
+					const close = panel.getByRole('button', {
+						name: 'Close island planning panel',
+						exact: true
+					});
+					if (await close.isVisible()) await close.click();
+				}
 			}
-			if (++attempts === 10) break;
+			assert.equal(await impactCell.getAttribute('data-cell-id'), gapId);
+			assert.deepEqual(await camera(), beforeCamera);
+			await closePanel();
+			return { gapId, impactId: gapId, unchangedCamera: beforeCamera };
 		}
-		assert.ok(tile, 'A visible full hex must open its neighbourhood details');
-		const gapId = await panel.locator('.policy-selected-cell').getAttribute('data-cell-id');
-		console.log('Selected gap hex', gapId);
-		assert.ok(gapId?.startsWith('hex:'));
-		await closePanel();
-		await colours.selectOption('impact');
-		await expect(atlas).toHaveAttribute(
-			'data-policy-impact-cells',
-			String(detail.hex_grid.features.length)
-		);
-		const impactCell = panel.getByLabel('Selected neighbourhood impact', { exact: true });
-		for (let attempt = 0; attempt < 5; attempt++) {
-			await page.mouse.click(tile.point.x, tile.point.y);
-			try {
-				await expect(impactCell).toBeVisible({ timeout: 1500 });
-				break;
-			} catch {
-				if (attempt === 4) throw new Error('Painted impact hex must open its matching detail');
-				const close = panel.getByRole('button', {
-					name: 'Close island planning panel',
-					exact: true
-				});
-				if (await close.isVisible()) await close.click();
-			}
-		}
-		assert.equal(await impactCell.getAttribute('data-cell-id'), gapId);
-		assert.deepEqual(await camera(), beforeCamera);
-		await closePanel();
-		return { gapId, impactId: gapId, unchangedCamera: beforeCamera };
-	});
+	);
 	assert.deepEqual(report.pageErrors, []);
 } catch (error) {
+	report.failure = error instanceof Error ? (error.stack ?? error.message) : String(error);
 	console.error(error);
 	await page.screenshot({ path: path.join(output, 'failure.png'), fullPage: true }).catch(() => {});
 	process.exitCode = 1;

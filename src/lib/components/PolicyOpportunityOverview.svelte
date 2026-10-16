@@ -46,7 +46,7 @@
 		onConnections?: (islandId?: string) => void;
 		active?: boolean;
 	} = $props();
-	let snapshot = $state<PolicyOpportunities | null>(null);
+	let snapshot = $state.raw<PolicyOpportunities | null>(null);
 	let loading = $state(true);
 	let mounted = $state(false);
 	let needsRefresh = $state(false);
@@ -101,9 +101,10 @@
 		}))
 	);
 	const candidates = $derived(scoped.filter((island) => opportunityMatches(island, lens, queue)));
+	const normalizedSearch = $derived(search.trim().toLowerCase());
 	const searched = $derived(
 		candidates.filter((island) =>
-			`${island.name} ${island.atoll}`.toLowerCase().includes(search.trim().toLowerCase())
+			`${island.name} ${island.atoll}`.toLowerCase().includes(normalizedSearch)
 		)
 	);
 	const matched = $derived(

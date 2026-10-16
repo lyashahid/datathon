@@ -542,6 +542,11 @@ html[data-motion-input='keyboard'] [data-slot='tabs-content'] {
 	.map-workspace.placing-proposal .policy-map-controls {
 		display: none;
 	}
+	/* Keep explicit map controls usable above passive proposal summaries on phones. */
+	.map-workspace:has(.national-map .control-panel) .proposal-floating-budget,
+	.map-workspace:has(.national-map .control-panel) .policy-map-controls {
+		visibility: hidden;
+	}
 }
 .map-workspace:has(.map-source-record-popup) .policy-map-controls {
 	visibility: hidden;

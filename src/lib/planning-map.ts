@@ -97,6 +97,7 @@ export function impactHexes(
 			.filter((origin) => validPoint([origin.lon, origin.lat]))
 			.map((origin) => {
 				const row = byId.get(origin.id);
+				const impact = row ? impactClass(row) : 'uncomputed';
 				const radius = 43;
 				const points: Coordinates[] = Array.from({ length: 6 }, (_, i) => {
 					const angle = (Math.PI / 3) * i;
@@ -112,8 +113,8 @@ export function impactHexes(
 					id: origin.id,
 					properties: {
 						id: origin.id,
-						impact: row ? impactClass(row) : 'uncomputed',
-						color: impactColors[row ? impactClass(row) : 'uncomputed'],
+						impact,
+						color: impactColors[impact],
 						population: row?.population ?? origin.population2026 ?? null,
 						before: row?.before.minutes ?? null,
 						after: row?.after.minutes ?? null,
@@ -130,7 +131,7 @@ export function routeFeatures(
 ): FeatureCollection {
 	return collection(
 		(journey?.path ?? []).flatMap((leg, index) => {
-			const points = leg.geometry.filter(validPoint);
+			const points = linePoints(leg.geometry);
 			return points.length > 1
 				? [
 						{
@@ -148,13 +149,19 @@ function distance(first: Coordinates, second: Coordinates): number {
 	const x = (second[0] - first[0]) * 111320 * Math.cos(((first[1] + second[1]) * Math.PI) / 360);
 	return Math.hypot(x, y);
 }
-export function pointOnLine(geometry: number[][], fraction: number): Coordinates | null {
-	return measureLine(geometry)(fraction);
+/** Missing vertices break the path; dropping them would invent a connecting segment. */
+function linePoints(geometry: number[][]): Coordinates[] {
+	const points: Coordinates[] = [];
+	for (const point of geometry) {
+		if (!validPoint(point)) return [];
+		points.push(point);
+	}
+	return points;
 }
 
 /** Measure each immutable provider path once, then sample it without per-frame arrays. */
 function measureLine(geometry: number[][]): (fraction: number) => Coordinates | null {
-	const points = geometry.filter(validPoint);
+	const points = linePoints(geometry);
 	const lengths = points.slice(1).map((point, index) => distance(points[index], point));
 	const totalLength = lengths.reduce((sum, length) => sum + length, 0);
 	return (fraction) => pointOnMeasuredLine(points, lengths, totalLength, fraction);
@@ -194,13 +201,6 @@ export function createPlaybackSampler(
 ): (elapsed: number) => PlaybackPosition {
 	const lines = (journey?.path ?? []).map((leg) => measureLine(leg.geometry));
 	return (elapsed) => sampledPlaybackPosition(journey, lines, elapsed);
-}
-
-export function playbackPosition(
-	journey: PlanningJourney | null,
-	elapsed: number
-): PlaybackPosition {
-	return createPlaybackSampler(journey)(elapsed);
 }
 
 function sampledPlaybackPosition(

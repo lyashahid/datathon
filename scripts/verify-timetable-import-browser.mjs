@@ -1,3 +1,4 @@
+import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
@@ -7,7 +8,7 @@ import path from 'node:path';
 import { setTimeout as pause } from 'node:timers/promises';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
-const baseURL = process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
+const baseURL = browserBaseURL();
 const output = path.resolve('artifacts/qa/timetable-import');
 const run = path.join(output, `isolated-${Date.now()}`);
 const privateData = path.join(run, 'backend-data');

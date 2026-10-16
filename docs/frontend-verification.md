@@ -1,44 +1,18 @@
 # Frontend verification against the supplied Python backend
 
-This document records the initial backend migration verification, before the subsequent UI redesign. That Svelte application was exercised in Chromium against the actual imported FastAPI application, its supplied cache, and the optional public live providers. No response payloads are mocked or replaced. The current harness adds one delay-only geometry-request regression, described with the redesigned interface and its current verification in [ui-ux-redesign.md](ui-ux-redesign.md). Backend unit/API verification and the old-to-new feature comparison are documented separately in [backend-verification.md](backend-verification.md) and [backend-feature-audit.md](backend-feature-audit.md).
+For the current application, commands and coverage, use the [current browser verification guide](browser-verification.md). This document preserves the initial migration's measured results.
+
+This document records the initial backend migration verification, before the subsequent UI redesign. That Svelte application was exercised in Chromium against the actual imported FastAPI application, its supplied cache, and the optional public live providers. No response payloads were mocked or replaced in that migration run. The subsequent redesign added a delay-only geometry-request regression, described in [ui-ux-redesign.md](ui-ux-redesign.md). Backend unit/API verification and the old-to-new feature comparison are documented separately in [backend-verification.md](backend-verification.md) and [backend-feature-audit.md](backend-feature-audit.md).
 
 Development verification passed 11 of 11 workflow groups. Production preview verification passed 12 of 12 groups on 14 October 2026, completing at 08:30:55 UTC, including the additional passenger-ferry restriction case, with zero browser runtime or console errors. Map hint/legend and attribution collision checks passed at both 768 px and 375 px.
 
 ## Reproduce
 
-Use the Node 24 and uv prerequisites described in [README.md](../README.md). Install the repository dependencies and Chromium once:
-
-```powershell
-npm install
-npm run setup
-npx playwright install chromium
-```
-
-Start the real frontend and backend with `npm run dev`. In a second terminal, run:
-
-```powershell
-npm run test:browser
-```
-
-The default frontend address is `http://127.0.0.1:5173`. To verify a production build, leave the backend running on port 8000 and use:
-
-```powershell
-npm run build
-npm run preview -- --host 127.0.0.1 --port 5180
-```
-
-Then, in another terminal:
-
-```powershell
-$env:MOBILITY_QA_URL = 'http://127.0.0.1:5180'
-npm run test:browser
-```
-
-The current harness creates an isolated browser context, waits for the real backend to connect and the supplied island source to finish drawing, and saves redesigned-UI evidence under `artifacts/qa/ui-ux-redesign`. The historical migration run below remains under `artifacts/qa/backend-revamp`. The harness returns a nonzero exit code on failure. A successful complete run replaces the latest JSON report and screenshots in its output directory. A failed run saves a failure screenshot and may leave earlier screenshots alongside its report. The harness does not alter the backend cache or the user's existing browser storage.
+Follow the [current browser verification guide](browser-verification.md) for installation, production and preview commands, focused suites and their evidence boundaries. `npm run test:browser` now runs the current journey rather than the migration harness used below. Each maintained suite writes its own directory under `artifacts/qa`; the historical migration run remains under `artifacts/qa/backend-revamp`.
 
 ## Tested workflows
 
-These results describe the initial migration interface. The current harness adds national analytics, dedicated navigation, contextual proposal tabs, browser-history restoration and decision-brief exports; consult the UI report for its validated outcomes.
+These results describe the initial migration interface. Later interfaces added national analytics, dedicated navigation, contextual proposal tabs, browser-history restoration and decision-brief exports; consult the current guide for maintained coverage.
 
 | Workflow                          | Assertions against actual behavior                                                                                                                                                                                                                                        |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

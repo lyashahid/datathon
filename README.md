@@ -111,23 +111,16 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-Additional focused checks cover specialist service/fleet planning, isolated timetable imports, island evidence, and movement rendering:
+List all maintained suites or select focused checks for specialist service/fleet planning, timetable imports, island evidence, movement and analytical overlays:
 
 ```powershell
+npm run test:browser:list
+npm run test:browser -- planning delivery timetables
+npm run test:browser -- overlays map-legibility
 npm run test:policy-api
-npm run test:browser:planning
-npm run test:browser:delivery
-npm run test:browser:timetables
-npm run test:browser:accessibility
-npm run test:browser:map-focus
-npm run test:browser:bus-vehicles
-npm run test:browser:motion
-npm run test:browser:review-window
-npm run test:browser:decisions
-node scripts/verify-map-transport-planning.mjs
 ```
 
-Browser harnesses default to http://127.0.0.1:5173, matching `npm start`. Set `MOBILITY_QA_URL` only to test another frontend URL. For production-preview verification, run `npm run build`, start `npm run preview -- --host 127.0.0.1 --port 5180`, keep FastAPI running, and set the harness URL to http://127.0.0.1:5180.
+Browser harnesses default to http://127.0.0.1:5173, matching `npm start`. Set `MOBILITY_QA_URL` only to test another frontend URL. See the [current browser verification guide](docs/browser-verification.md) for coverage, compatibility aliases, all-suite execution, production-preview URLs and evidence boundaries.
 
 The frontend uses SvelteKit's Node adapter with precompressed static assets. `npm start -- --port 5180` serves the optimized application at another port; `--force-build` rebuilds it explicitly. Hosting requires managed Node/FastAPI processes and deployment access controls. Private source caches and environment files remain ignored.
 

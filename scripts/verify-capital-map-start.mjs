@@ -1,10 +1,11 @@
+import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
 // Verify the public opening journey with real island geography and the rendered map camera.
-const baseURL = process.env.BASE_URL || process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
+const baseURL = browserBaseURL();
 const output = path.resolve('artifacts/qa/capital-map-start');
 await mkdir(output, { recursive: true });
 const expect = playwrightExpect.configure({ timeout: 60000 });

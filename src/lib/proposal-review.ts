@@ -150,14 +150,17 @@ export function finiteValue(value: unknown): number | null {
 	return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
+const amountFormat = new Intl.NumberFormat('en-GB', { maximumFractionDigits: 0 });
+const compactAmountFormat = new Intl.NumberFormat('en-GB', {
+	maximumFractionDigits: 1,
+	notation: 'compact'
+});
+
 export function formatAmount(value: unknown, compact = false): string {
 	const amount = finiteValue(value);
 	return amount === null
 		? 'Unavailable'
-		: new Intl.NumberFormat('en-GB', {
-				maximumFractionDigits: compact ? 1 : 0,
-				...(compact ? { notation: 'compact' as const } : {})
-			}).format(amount);
+		: (compact ? compactAmountFormat : amountFormat).format(amount);
 }
 
 /** Undiscounted commitment illustration; it is not a demand or causal forecast. */

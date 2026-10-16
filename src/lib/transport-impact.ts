@@ -63,6 +63,13 @@ export type TransportImpactData = {
 };
 
 const numberFormat = new Intl.NumberFormat('en-GB', { maximumFractionDigits: 1 });
+const countFormat = new Intl.NumberFormat('en-GB');
+const dateFormat = new Intl.DateTimeFormat('en-GB', {
+	day: 'numeric',
+	month: 'short',
+	year: 'numeric',
+	timeZone: 'UTC'
+});
 
 export function impactNumber(value: unknown): number | null {
 	return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
@@ -75,7 +82,7 @@ export function formatImpactMinutes(value: unknown, unavailable = 'Not estimated
 
 export function formatImpactCount(value: unknown): string {
 	const count = impactNumber(value);
-	return count === null ? 'Unavailable' : new Intl.NumberFormat('en-GB').format(count);
+	return count === null ? 'Unavailable' : countFormat.format(count);
 }
 
 export function formatImpactClock(value: unknown): string {
@@ -92,12 +99,7 @@ export function formatImpactDate(value: string | undefined): string {
 	const date = new Date(`${value}T00:00:00Z`);
 	if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== value)
 		return 'Selected date';
-	return new Intl.DateTimeFormat('en-GB', {
-		day: 'numeric',
-		month: 'short',
-		year: 'numeric',
-		timeZone: 'UTC'
-	}).format(date);
+	return dateFormat.format(date);
 }
 
 export function changedTransportLines(impact: TransportImpactData | null | undefined) {

@@ -82,8 +82,10 @@
 	const benefit = $derived(proposalBenefit(displayGained, transportImpact));
 	const animateValues = $derived(!pending && !stale && !previewChecking);
 	const numberContext = $derived(`${context}:${preview ? 'preview' : 'accepted'}`);
+	const countFormatter = new Intl.NumberFormat('en', { maximumFractionDigits: 0 });
+	const minuteFormatter = new Intl.NumberFormat('en', { maximumFractionDigits: 1 });
 	const formatBenefit = (value: number) =>
-		new Intl.NumberFormat('en', { maximumFractionDigits: benefit.unit ? 1 : 0 }).format(value);
+		(benefit.unit ? minuteFormatter : countFormatter).format(value);
 	const over = $derived(
 		(capital !== null && resolvedCapitalBudget !== null && capital > resolvedCapitalBudget) ||
 			(annual !== null && resolvedAnnualBudget !== null && annual > resolvedAnnualBudget)

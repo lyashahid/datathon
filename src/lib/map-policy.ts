@@ -110,20 +110,20 @@ export function restorePlanningOperations(value: unknown): {
 		return true;
 	};
 	// A route package is atomic: restoring half a return route misrepresents its service and cost.
-	const rejectedPackages = new Set(
-		value.flatMap((operation) =>
-			!valid(operation) &&
+	const rejectedPackages = new Set<string>();
+	const candidates: PlanningOperation[] = [];
+	for (const operation of value) {
+		if (valid(operation)) candidates.push(operation);
+		else if (
 			record(operation) &&
 			record(operation.metadata) &&
 			typeof operation.metadata.ui_package === 'string' &&
 			operation.metadata.ui_package.length > 0
-				? [operation.metadata.ui_package]
-				: []
 		)
-	);
-	const operations = value.filter(
-		(operation): operation is PlanningOperation =>
-			valid(operation) && !rejectedPackages.has(String(operation.metadata?.ui_package ?? ''))
+			rejectedPackages.add(operation.metadata.ui_package);
+	}
+	const operations = candidates.filter(
+		(operation) => !rejectedPackages.has(String(operation.metadata?.ui_package ?? ''))
 	);
 	// Never truncate a routed package halfway at the API's 100-operation limit.
 	if (operations.length > 100) return { operations: [], discarded: value.length };

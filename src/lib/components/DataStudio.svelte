@@ -83,7 +83,7 @@
 	};
 
 	const storageKey = 'mobility-v3-data-stories';
-	let catalogue = $state<Dataset[]>([]);
+	let catalogue = $state.raw<Dataset[]>([]);
 	let datasetId = $state('passenger-monthly');
 	let comparisonId = $state('');
 	let groupBy = $state('month');
@@ -112,10 +112,10 @@
 	let comparisonSort = $state('group');
 	let comparisonDescending = $state(false);
 	let comparisonLimit = $state<number | null>(null);
-	let chart = $state<ChartResult | null>(null);
+	let chart = $state.raw<ChartResult | null>(null);
 	let builtSignature = $state('');
 	let chartSeriesLabel = $state('value');
-	let rows = $state<RowResult | null>(null);
+	let rows = $state.raw<RowResult | null>(null);
 	let displayedColumns = $state<string[]>([]);
 	let builtRowsSignature = $state('');
 	let selectedColumns = $state<string[]>([]);

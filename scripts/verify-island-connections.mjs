@@ -1,10 +1,11 @@
+import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
 // Run against npm start. Every result below comes from the real local API and UI.
-const baseURL = process.env.BASE_URL || process.env.MOBILITY_QA_URL || 'http://127.0.0.1:5173';
+const baseURL = browserBaseURL();
 const output = path.resolve('artifacts/qa/island-connections');
 await mkdir(output, { recursive: true });
 const expect = playwrightExpect.configure({ timeout: 60000 });
