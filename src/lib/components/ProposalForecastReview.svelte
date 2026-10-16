@@ -20,6 +20,7 @@
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Badge } from '#lib/components/ui/badge/index.js';
 	import TransportImpact from './TransportImpact.svelte';
+	import AnimatedNumber from './AnimatedNumber.svelte';
 	import { transportImpactHeadline } from '#lib/transport-impact.js';
 	import {
 		downloadProposalPdf,
@@ -79,17 +80,29 @@
 	const gained = $derived(finiteValue(summary?.gained_residents));
 	const lost = $derived(finiteValue(summary?.lost_residents));
 	const unknown = $derived(finiteValue(summary?.unknown_residents));
+	// Retained results must keep the assumptions that produced them, including on failure.
+	const displayedAssumptions = $derived<Record<string, unknown>>(
+		evaluation
+			? evaluation.assumptions &&
+				typeof evaluation.assumptions === 'object' &&
+				!Array.isArray(evaluation.assumptions)
+				? (evaluation.assumptions as Record<string, unknown>)
+				: {}
+			: request.assumptions
+	);
 	const target = $derived(
-		finiteValue(evaluation?.target_minutes ?? request.assumptions.target_minutes) ?? 30
+		finiteValue(evaluation?.target_minutes ?? displayedAssumptions.target_minutes)
 	);
 	const goal = $derived(
-		request.assumptions.goal === 'transport'
+		displayedAssumptions.goal === 'transport'
 			? 'public transport'
-			: request.assumptions.goal === 'education'
+			: displayedAssumptions.goal === 'education'
 				? 'education'
-				: 'healthcare'
+				: displayedAssumptions.goal === 'healthcare'
+					? 'healthcare'
+					: 'the selected service'
 	);
-	const walkingGoal = $derived(request.assumptions.goal === 'transport');
+	const walkingGoal = $derived(displayedAssumptions.goal === 'transport');
 	const transport = $derived(evaluation?.transport_connectivity);
 	const transportImpact = $derived(transport?.impact);
 	const transportBenefitHeadline = $derived(transportImpactHeadline(transportImpact));
@@ -134,6 +147,8 @@
 	const annualRemaining = $derived(finiteValue(economics?.budget.annual_remaining_mvr));
 	const withinOperating = $derived(annualRemaining === null ? null : annualRemaining >= 0);
 	const ready = $derived(evaluation !== null && !pending && !stale);
+	const numberContext = $derived(`${request.island_id}:${displayedAssumptions.goal}`);
+	const money = (value: number) => formatAmount(value, true);
 
 	$effect(() => {
 		if (!dialog) return;
@@ -285,8 +300,10 @@
 				</div>
 				<div class="report-date">
 					<small>Evaluation date</small><strong
-						>{String(request.assumptions.date ?? 'Not selected')}</strong
-					><span>{request.assumptions.population_year ?? 'Selected year'} resident projection</span>
+						>{String(displayedAssumptions.date ?? 'Unavailable')}</strong
+					><span
+						>{displayedAssumptions.population_year ?? 'Unavailable year'} resident projection</span
+					>
 				</div>
 			</div>
 			{#if error || exportError}<div class="report-alert error" role="alert">
@@ -330,13 +347,26 @@
 							><strong>{transport ? proposedServices.length : 'Unavailable'}</strong><span
 								>Departure schedules are reviewed separately from resident access.</span
 							>{:else}<small>Residents gaining {goal} access</small><strong
-								>{formatAmount(gained)}</strong
+								><AnimatedNumber
+									value={gained}
+									format={formatAmount}
+									animate={ready}
+									context={numberContext}
+								/></strong
 							><span
-								>Newly within {target} minutes{walkingGoal ? ' on foot' : ''} in this model</span
+								>{target === null
+									? 'Journey target unavailable'
+									: `Newly within ${target} minutes${walkingGoal ? ' on foot' : ''} in this model`}</span
 							>{/if}
 					</article>
 					<article class="metric">
-						<small>One-time investment</small><strong>MVR {formatAmount(capital, true)}</strong
+						<small>One-time investment</small><strong
+							>MVR <AnimatedNumber
+								value={capital}
+								format={money}
+								animate={ready}
+								context={numberContext}
+							/></strong
 						><span
 							>{withinCapital === false
 								? 'Exceeds your capital budget'
@@ -346,7 +376,13 @@
 						>
 					</article>
 					<article class="metric">
-						<small>Added yearly running cost</small><strong>MVR {formatAmount(annual, true)}</strong
+						<small>Added yearly running cost</small><strong
+							>MVR <AnimatedNumber
+								value={annual}
+								format={money}
+								animate={ready}
+								context={numberContext}
+							/></strong
 						><span
 							>{withinOperating === false
 								? 'Exceeds your annual budget'
@@ -357,7 +393,12 @@
 					</article>
 					<article class="metric">
 						<small>10-year added commitment</small><strong
-							>MVR {formatAmount(projections[2].total, true)}</strong
+							>MVR <AnimatedNumber
+								value={projections[2].total}
+								format={money}
+								animate={ready}
+								context={numberContext}
+							/></strong
 						><span>Capital + 10 years of added operating cost</span>
 					</article>
 				</div>
@@ -383,7 +424,7 @@
 							Compare waiting times, dated departures and direct island connections. Walking to a
 							stop can stay the same while your service improves.
 						</p>
-						<TransportImpact impact={transportImpact} />
+						<TransportImpact impact={transportImpact} {pending} {stale} context={numberContext} />
 						{#if hasFerryProposal}<div class="transport-cost-note">
 								<span><strong>MVR 0</strong> new port construction for this ferry service</span>
 								<p>
@@ -407,7 +448,9 @@
 								<span class="eyebrow">Resident access</span>
 								<h2>Before and after</h2>
 							</div>
-							<Badge variant="secondary">{target}-minute target</Badge>
+							<Badge variant="secondary"
+								>{target === null ? 'Target unavailable' : `${target}-minute target`}</Badge
+							>
 						</div>
 						<p>
 							Residents with a modeled {walkingGoal

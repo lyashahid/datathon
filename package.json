@@ -25,6 +25,7 @@
 		"test:backend": "uv run --directory backend pytest",
 		"lint:backend": "uv run --directory backend ruff check app tests",
 		"test:browser": "node scripts/verify-browser.mjs",
+		"test:browser:decisions": "node scripts/verify-analytics-decision-flow.mjs",
 		"test:browser:accessibility": "node scripts/verify-island-accessibility.mjs",
 		"test:browser:country": "node scripts/verify-country-map-journey.mjs",
 		"test:browser:capital": "node scripts/verify-capital-map-start.mjs",

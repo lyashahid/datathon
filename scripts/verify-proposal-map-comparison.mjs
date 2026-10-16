@@ -22,7 +22,7 @@ const report = {
 const browser = await chromium.launch({ headless: true, args: ['--enable-unsafe-swiftshader'] });
 const context = await browser.newContext({
 	viewport: { width: 1440, height: 1000 },
-	reducedMotion: 'reduce'
+	reducedMotion: 'no-preference'
 });
 const page = await context.newPage();
 const cpuRate = Number(process.env.QA_CPU_RATE || 1);
@@ -72,6 +72,24 @@ await page.addInitScript(() => {
 	};
 	requestAnimationFrame(frame);
 	Reflect.set(window, '__comparisonPerformance', { entries, frames });
+	/** @type {number[]} */
+	const feedback = [];
+	new MutationObserver((changes) => {
+		for (const change of changes) {
+			if (
+				change.attributeName !== 'data-policy-feedback-cells' ||
+				!(change.target instanceof Element)
+			)
+				continue;
+			const count = Number(change.target.getAttribute('data-policy-feedback-cells'));
+			if (count > 0) feedback.push(count);
+		}
+	}).observe(document, {
+		subtree: true,
+		attributes: true,
+		attributeFilter: ['data-policy-feedback-cells']
+	});
+	Reflect.set(window, '__impactFeedbackEvents', feedback);
 });
 const atlas = page.locator('.national-map');
 const panel = page.getByRole('region', { name: 'Island needs and proposal', exact: true });
@@ -79,6 +97,8 @@ const confirmation = page.getByTestId('map-placement-confirmation');
 const budget = page.getByRole('region', { name: 'Proposal budget', exact: true });
 /** @type {import('../src/lib/map-policy.js').MapBaseline} */
 let baseline;
+/** @type {number[] | undefined} */
+let hospitalCoordinates;
 async function save() {
 	await writeFile(path.join(output, 'verification.json'), JSON.stringify(report, null, 2));
 }
@@ -205,9 +225,16 @@ async function mapDiagnostics() {
 		)
 	);
 }
-async function placeHospital() {
+async function feedbackEvents() {
+	return page.evaluate(() =>
+		/** @type {number[]} */ (Reflect.get(window, '__impactFeedbackEvents')).slice()
+	);
+}
+/** @param {number[]} [coordinates] */
+async function placeHospital(coordinates) {
 	await showProposal();
-	const target = await site();
+	const target = coordinates ? { coordinates, point: await project(coordinates) } : await site();
+	assert.ok(await isClear(target.point), 'The hospital location must be visible outside controls.');
 	await panel.getByRole('button', { name: 'Hospital', exact: true }).click();
 	await page.mouse.click(target.point.x, target.point.y);
 	await expect(confirmation).toHaveAttribute('aria-busy', 'false');
@@ -284,6 +311,9 @@ function screenshotColours(png) {
 }
 /** @param {number[]} coordinates @param {string} name */
 async function neighbourhoodColours(coordinates, name) {
+	// The map compares cached layers through a 180 ms uniform-opacity transition.
+	// Pixel assertions inspect the settled result, independently of the timing checks above.
+	await page.waitForTimeout(250);
 	const point = await project(coordinates);
 	const png = await page.screenshot({
 		path: path.join(output, name),
@@ -319,8 +349,10 @@ try {
 	await expect(atlas).toHaveAttribute('aria-busy', 'false');
 	await showProposal();
 	await expect(panel.getByRole('button', { name: 'Hospital', exact: true })).toBeEnabled();
+	await panel.getByRole('button', { name: 'Edit budget limits', exact: true }).click();
 	await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('1000000000');
 	await panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('1000000000');
+	await panel.getByRole('button', { name: 'Done', exact: true }).click();
 	await check('No proposal leaves every real transport journey unchanged', async () => {
 		const response = await page.request.post(`${baseURL}/api/backend/planning/evaluate`, {
 			data: {
@@ -347,6 +379,7 @@ try {
 	await check(
 		'A valid placement recolours real access before confirmation and Cancel restores the map',
 		async () => {
+			const eventsBefore = await feedbackEvents();
 			const target = await placeHospital();
 			await impactReady();
 			await expect(atlas).toHaveAttribute('data-policy-proposal-points', '0');
@@ -362,6 +395,11 @@ try {
 				'The preview must be supported by the real accessibility model.'
 			);
 			await page.screenshot({ path: path.join(output, 'hospital-live-preview.png') });
+			assert.deepEqual(
+				await feedbackEvents(),
+				eventsBefore,
+				'Unconfirmed previews must never trigger completion feedback.'
+			);
 			await page.keyboard.press('Escape');
 			await expect(confirmation).toHaveCount(0);
 			await expect(atlas).toHaveAttribute('data-policy-pending-points', '0');
@@ -381,11 +419,19 @@ try {
 		'A real hospital proposal evaluates and displays resident access evidence',
 		async () => {
 			const target = await placeHospital();
+			hospitalCoordinates = target.coordinates;
 			const preview = await confirmation.innerText();
 			await page.screenshot({ path: path.join(output, 'hospital-preview.png') });
 			const completedRequests = evaluations.length;
+			const feedbackBefore = (await feedbackEvents()).length;
 			await confirmation.getByRole('button', { name: 'Add to proposal', exact: true }).click();
 			await impactReady();
+			await expect
+				.poll(async () => (await feedbackEvents()).length)
+				.toBeGreaterThan(feedbackBefore);
+			await page.screenshot({ path: path.join(output, 'localized-impact-feedback.png') });
+			await expect(atlas).toHaveAttribute('data-focus-context', '');
+			await expect(atlas).toHaveAttribute('data-policy-placement-road-hints', '0');
 			assert.equal(
 				evaluations.length,
 				completedRequests,
@@ -402,6 +448,7 @@ try {
 	);
 	await check('Comparison controls reuse completed evaluation', async () => {
 		const before = evaluations.length;
+		const feedbackBefore = (await feedbackEvents()).length;
 		const diagnosticsBefore = await mapDiagnostics();
 		const controls = [
 			['Without proposal', 'before'],
@@ -413,6 +460,12 @@ try {
 		for (const [name, view] of [...controls, ...controls, ...controls])
 			measurements.push(await toggle(name, view));
 		assert.equal(evaluations.length, before, 'View switches must not recalculate residents.');
+		assert.equal(
+			(await feedbackEvents()).length,
+			feedbackBefore,
+			'Comparison switches must not replay an old impact highlight.'
+		);
+		await expect(atlas).toHaveAttribute('data-policy-feedback-cells', '0');
 		const diagnosticsAfter = await mapDiagnostics();
 		assert.equal(
 			diagnosticsAfter['data-policy-impact-source-updates'],
@@ -442,16 +495,60 @@ try {
 		};
 	});
 	await check(
+		'Clearing a proposal cancels feedback and equivalent additions compare against baseline',
+		async () => {
+			assert.ok(hospitalCoordinates);
+			const coordinates = hospitalCoordinates;
+			await budget.getByRole('button', { name: 'Undo proposal change', exact: true }).click();
+			await expect(atlas).toHaveAttribute('data-policy-proposal-points', '0');
+			await expect(atlas).toHaveAttribute('data-policy-impact-cells', '0');
+			const eventsBefore = (await feedbackEvents()).length;
+			async function addEquivalentHospital() {
+				const before = (await feedbackEvents()).length;
+				await placeHospital(coordinates);
+				await confirmation.getByRole('button', { name: 'Add to proposal', exact: true }).click();
+				await impactReady();
+				await expect.poll(async () => (await feedbackEvents()).length).toBeGreaterThan(before);
+				await expect(atlas).toHaveAttribute('data-policy-feedback-cells', /^[1-9]\d*$/);
+			}
+			await addEquivalentHospital();
+			// Undo while the brief feedback is actually visible, rather than waiting
+			// for its normal timeout and accidentally passing an obsolete overlay.
+			await budget.getByRole('button', { name: 'Undo proposal change', exact: true }).focus();
+			await expect(atlas).toHaveAttribute('data-policy-feedback-cells', /^[1-9]\d*$/);
+			await page.keyboard.press('Enter');
+			await expect(atlas).toHaveAttribute('data-policy-feedback-cells', '0', { timeout: 300 });
+			await expect(atlas).toHaveAttribute('data-policy-impact-cells', '0');
+			await addEquivalentHospital();
+			await page.screenshot({ path: path.join(output, 'feedback-after-proposal-reset.png') });
+			return {
+				coordinates,
+				baselineRestoredOnClear: true,
+				activeFeedbackClearedImmediately: true,
+				equivalentAdditionsReplayed: (await feedbackEvents()).length - eventsBefore
+			};
+		}
+	);
+	await check(
 		'One real gaining neighbourhood gets a cooler colour as its modeled journey shortens',
 		async () => {
-			const gains = latestEvaluation().origins.filter(
-				(origin) =>
-					origin.gained_access &&
-					origin.before.minutes !== null &&
-					origin.before.minutes > 30 &&
-					origin.after.minutes !== null &&
-					origin.after.minutes <= 30
-			);
+			const gains = latestEvaluation()
+				.origins.filter(
+					(origin) =>
+						origin.gained_access &&
+						origin.before.minutes !== null &&
+						origin.before.minutes > 30 &&
+						origin.after.minutes !== null &&
+						origin.after.minutes <= 30
+				)
+				// A clearly improved source-backed location avoids pixel sampling a tiny
+				// aggregate change at a road edge merely because it crossed the target.
+				.sort(
+					(a, b) =>
+						(b.before.minutes ?? 0) -
+						(b.after.minutes ?? 0) -
+						((a.before.minutes ?? 0) - (a.after.minutes ?? 0))
+				);
 			assert.ok(gains.length > 0);
 			await toggle('Without proposal', 'before');
 			const explanation = panel.locator('[aria-label="Selected neighbourhood impact"]');
@@ -533,6 +630,19 @@ try {
 		await showProposal();
 		const target = await site();
 		await panel.getByRole('button', { name: 'Bus stop', exact: true }).click();
+		await page.mouse.move(target.point.x, target.point.y);
+		await expect(atlas).toHaveAttribute('data-focus-context', 'bus');
+		await expect
+			.poll(async () => Number(await atlas.getAttribute('data-policy-placement-road-hints')))
+			.toBeGreaterThan(0);
+		await expect(page.getByTestId('map-placement-preview')).toHaveAttribute(
+			'data-placement-snapped',
+			'true'
+		);
+		await expect(page.getByTestId('map-placement-preview')).toContainText(
+			'Aligned to a mapped road'
+		);
+		await page.screenshot({ path: path.join(output, 'precise-road-placement-hint.png') });
 		await page.mouse.click(target.point.x, target.point.y);
 		const editor = page.getByTestId('map-service-editor');
 		await expect(editor).toHaveAttribute('data-service-mode', 'bus-connection');

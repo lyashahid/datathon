@@ -20,7 +20,6 @@
 		Ship,
 		Sparkles,
 		Trash2,
-		Undo2,
 		X
 	} from '@lucide/svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
@@ -41,6 +40,7 @@
 		assessDraftBudget,
 		draftCosts,
 		emptyFeatures,
+		planningBudgetNumber as budgetNumber,
 		pointWithinIsland,
 		restorePlanningOperations,
 		type MapBaseline,
@@ -220,6 +220,7 @@
 	let pendingBase = $state.raw<PlanningOperation | null>(null);
 	let pendingId = $state('');
 	let budgetEditing = $state(false);
+	let composeMode = $state<'manual' | 'budget'>('manual');
 	let actionMessage = $state('');
 	let consumedEdit = 0;
 	let placementEvaluation = $state.raw<{ key: string; value: MapEvaluation } | null>(null);
@@ -266,8 +267,8 @@
 	let ferryPreviewing = $state(false);
 	let ferryError = $state('');
 
-	let capitalBudget = $state<number | string>(150_000_000);
-	let annualBudget = $state<number | string>(25_000_000);
+	let capitalBudget = $state<number | string | null | undefined>(150_000_000);
+	let annualBudget = $state<number | string | null | undefined>(25_000_000);
 	let goal = $state<'healthcare' | 'education' | 'transport'>('healthcare');
 	const goalLabel = $derived(
 		goal === 'transport'
@@ -296,6 +297,7 @@
 	let evaluating = $state(false);
 	const calculating = $derived(evaluationQueued || evaluating);
 	let evaluatedSignature = $state('');
+	let resultTime = $state('');
 	let review = $state(false);
 	let impactView = $state<'current' | 'proposal'>('proposal');
 	let restoredScope = $state('');
@@ -841,7 +843,7 @@
 				? ferryPreview?.quote?.transport_connectivity?.impact
 				: busOpen
 					? busPreview?.transport_connectivity?.impact
-					: !stale
+					: operations.length
 						? evaluation?.transport_connectivity?.impact
 						: undefined
 	);
@@ -1074,6 +1076,7 @@
 			nearbyGapVersion += 1;
 			nearbyGapError = '';
 			evaluation = null;
+			resultTime = '';
 			financialQuote = null;
 			evaluatedSignature = '';
 			evaluationQueued = false;
@@ -1188,11 +1191,13 @@
 		editingIndex = null;
 		pendingBase = null;
 		budgetEditing = false;
+		composeMode = 'manual';
 		actionMessage = '';
 		placementEvaluation = null;
 		previewController?.abort();
 		closeBusService();
 		evaluation = null;
+		resultTime = '';
 		evaluatedSignature = '';
 		error = '';
 		evaluationQueued = false;
@@ -1619,6 +1624,8 @@
 			serviceEditor,
 			serviceEditorContent,
 			calculating: calculating || previewCalculating,
+			policyEvaluationId:
+				evaluation && !stale && !calculating && !comparisonPreview ? evaluatedSignature : null,
 			stale: !comparisonPreview && stale,
 			panelOpen: opened,
 			placementRoads: baseline?.graph_edges ?? []
@@ -1731,6 +1738,7 @@
 					annual: value.economics.delta.annual_operating_mvr ?? null
 				};
 				evaluatedSignature = expected;
+				resultTime = calculationTime();
 			}
 		} catch (cause) {
 			if (!controller.signal.aborted)
@@ -1739,8 +1747,10 @@
 			if (evaluateController === controller) evaluating = false;
 		}
 	}
-	function budgetNumber(value: number | string) {
-		return value === '' ? NaN : Number(value);
+	function calculationTime() {
+		return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(
+			new Date()
+		);
 	}
 	function requiresQuote(changes: PlanningOperation[]) {
 		const calibrated =
@@ -1763,6 +1773,11 @@
 	function commitChange(next: PlanningOperation[], undoing = false) {
 		history = undoing ? history.slice(0, -1) : [...history.slice(-29), operations];
 		operations = next;
+		if (!next.length) {
+			evaluation = null;
+			evaluatedSignature = '';
+			resultTime = '';
+		}
 		suggested = null;
 		error = '';
 		impactView = 'proposal';
@@ -1904,6 +1919,11 @@
 		budgetEditing = true;
 		open('proposal');
 		void tick().then(() => document.getElementById('map-capital-budget')?.focus());
+	}
+	function chooseComposeMode(value: 'manual' | 'budget') {
+		composeMode = value;
+		budgetEditing = value === 'budget';
+		if (value === 'manual') cancelSuggestions();
 	}
 	function open(mode: 'needs' | 'proposal') {
 		opened = true;
@@ -2247,6 +2267,7 @@
 		if (acceptedEvaluation && JSON.stringify(request) === acceptedSignature) {
 			evaluation = acceptedEvaluation;
 			evaluatedSignature = acceptedSignature;
+			resultTime = calculationTime();
 		}
 		cancelPending();
 		actionMessage = wasMoving
@@ -2478,7 +2499,7 @@
 {/snippet}
 
 {#snippet serviceEditorContent()}
-	<div class="policy-service-popover">
+	<div class="policy-service-popover" class:compact-preview={serviceEditorCompact}>
 		{#if serviceEditorCompact}
 			<header>
 				<div>
@@ -2505,9 +2526,12 @@
 						? ferryPreview?.summary?.name
 						: busPattern?.name}
 			</p>
-			<small
+			<small class="service-preview-schedule"
 				>Every {busConnectionMode ? busConnectionHeadway : ferryOpen ? ferryHeadway : busHeadway} minutes
-				on {date}. Review the highlighted path before accepting.</small
+				on {date}.
+				<span class="service-preview-instructions"
+					>Review the highlighted path before accepting.</span
+				></small
 			>
 			<div class="service-costs">
 				<span>Whole proposal</span><strong
@@ -2518,7 +2542,18 @@
 					<small>Preview · {comparisonGoalLabel} within {comparisonTarget} min</small>
 					{@render comparisonViews()}
 				</div>{/if}
-			<TransportImpact impact={visibleTransportImpact} compact preview />
+			{#if visibleTransportImpact}
+				<div class="service-preview-full-impact">
+					<TransportImpact impact={visibleTransportImpact} compact preview />
+				</div>
+				<details class="service-preview-evidence">
+					<summary>
+						<span>{transportBenefitHeadline ?? 'Timetable evidence'}</span>
+						<small>Preview · view timetable details</small>
+					</summary>
+					<TransportImpact impact={visibleTransportImpact} compact preview />
+				</details>
+			{/if}
 			<footer>
 				<Button
 					disabled={busConnectionMode
@@ -3057,7 +3092,7 @@
 				{/if}
 			</p>
 		{/if}
-		{#if transportBenefitHeadline && !calculating && !previewCalculating}
+		{#if transportBenefitHeadline && !calculating && !previewCalculating && (!stale || pending || ferryOpen || busOpen)}
 			<p class="proposal-transport-result" aria-live="polite">
 				{transportBenefitHeadline}
 				<button onclick={() => open('proposal')}>Service details <ArrowRight size={12} /></button>
@@ -3339,33 +3374,85 @@
 						}}>Island details & directions</Button
 					>
 				{:else}
-					<div class="policy-field">
-						<Label for="map-proposal-title">Proposal name</Label><Input
-							id="map-proposal-title"
-							bind:value={title}
-							maxlength={160}
-						/>
+					<div
+						class="proposal-paths"
+						aria-label="How to build your proposal"
+						data-compose-mode={composeMode}
+					>
+						<button
+							class:active={composeMode === 'manual'}
+							aria-pressed={composeMode === 'manual'}
+							onclick={() => chooseComposeMode('manual')}
+						>
+							<Plus size={17} /><span
+								><strong>Add an improvement</strong><small
+									>Choose it, then place it on the map</small
+								></span
+							>
+						</button>
+						<button
+							class:active={composeMode === 'budget'}
+							aria-pressed={composeMode === 'budget'}
+							onclick={() => chooseComposeMode('budget')}
+						>
+							<Sparkles size={17} /><span
+								><strong>Find options within my budget</strong><small
+									>Compare a suggested draft first</small
+								></span
+							>
+						</button>
 					</div>
-					<div class="policy-budget-grid">
-						<div>
-							<Label for="map-capital-budget">Capital budget · MVR</Label><Input
-								id="map-capital-budget"
-								type="number"
-								min="0"
-								step="100000"
-								bind:value={capitalBudget}
-							/>
+					{#if composeMode === 'manual' && !budgetEditing}
+						<div class="proposal-budget-overview">
+							<span
+								>Budget limits<small
+									>MVR {Number.isFinite(budgetNumber(capitalBudget))
+										? formatAmount(budgetNumber(capitalBudget), true)
+										: '—'} upfront · {Number.isFinite(budgetNumber(annualBudget))
+										? formatAmount(budgetNumber(annualBudget), true)
+										: '—'}/year</small
+								></span
+							>
+							<Button
+								variant="ghost"
+								size="sm"
+								aria-label="Edit budget limits"
+								onclick={adjustBudget}>Edit</Button
+							>
 						</div>
-						<div>
-							<Label for="map-annual-budget">Annual running budget · MVR</Label><Input
-								id="map-annual-budget"
-								type="number"
-								min="0"
-								step="100000"
-								bind:value={annualBudget}
-							/>
-						</div>
-					</div>
+					{/if}
+					{#if budgetEditing || composeMode === 'budget'}
+						<section class="proposal-budget-editor" aria-label="Proposal budget limits">
+							<div class="proposal-budget-editor-heading">
+								<strong>Set your budget limits</strong>{#if composeMode === 'manual'}<Button
+										variant="ghost"
+										size="sm"
+										onclick={() => (budgetEditing = false)}>Done</Button
+									>{/if}
+							</div>
+							<div class="policy-budget-grid">
+								<div>
+									<Label for="map-capital-budget">Capital budget · MVR</Label><Input
+										id="map-capital-budget"
+										type="number"
+										min="0"
+										step="100000"
+										bind:value={capitalBudget}
+									/>
+								</div>
+								<div>
+									<Label for="map-annual-budget">Annual running budget · MVR</Label><Input
+										id="map-annual-budget"
+										type="number"
+										min="0"
+										step="100000"
+										bind:value={annualBudget}
+									/>
+								</div>
+							</div>
+							<p>Both limits are checked before a change can be added.</p>
+						</section>
+					{/if}
 					{#if !budgetDecision.allowed && budgetDecision.known}<p
 							class="policy-budget-alert"
 							role="alert"
@@ -3375,154 +3462,159 @@
 					{#if checkingBudget}<p class="policy-budget-check" role="status">
 							Checking the cost against both budgets…
 						</p>{/if}
-					<div class="policy-priorities">
-						<span>Priorities</span>
-						<div class="policy-priority-options">
-							{#each ['transport', 'health', 'education'] as domain (domain)}<button
-									class:active={priorities.includes(domain as PolicyDomain)}
-									aria-pressed={priorities.includes(domain as PolicyDomain)}
-									onclick={() => togglePriority(domain as PolicyDomain)}
-									>{domain === 'health'
-										? 'Health'
-										: domain === 'education'
-											? 'Education'
-											: 'Transport'}</button
+					{#if composeMode === 'budget'}
+						<div class="policy-priorities">
+							<span>Priorities</span>
+							<div class="policy-priority-options">
+								{#each ['transport', 'health', 'education'] as domain (domain)}<button
+										class:active={priorities.includes(domain as PolicyDomain)}
+										aria-pressed={priorities.includes(domain as PolicyDomain)}
+										onclick={() => togglePriority(domain as PolicyDomain)}
+										>{domain === 'health'
+											? 'Health'
+											: domain === 'education'
+												? 'Education'
+												: 'Transport'}</button
+									>{/each}
+							</div>
+						</div>
+						{#if !priorities.length}<p class="policy-qualification" role="status">
+								Choose at least one priority to find a suitable draft.
+							</p>{/if}
+						<Button
+							variant="outline"
+							class="policy-primary"
+							disabled={!supported ||
+								loading ||
+								suggesting ||
+								checkingBudget ||
+								!budgetDecision.allowed ||
+								!priorities.length ||
+								operations.length >= 90}
+							onclick={suggest}
+							><Sparkles size={16} />{suggesting
+								? 'Finding a suitable draft…'
+								: 'Suggest investments within my budget'}</Button
+						>
+						{#if !supported && current}<p class="policy-qualification">
+								{localConstructionReason}
+							</p>{/if}
+						{#if suggested}<div
+								class="policy-suggestion"
+								data-suggestion-count={suggested.selected.length}
+							>
+								<strong
+									>{suggested.selected.length
+										? 'Suggested draft · shown on the map'
+										: 'No eligible package within these limits'}</strong
+								>{#each suggested.selected as item (item.id)}<button
+										onclick={() => onFocus(item.coordinates)}
+										><MapPin size={15} /><span
+											>{item.title}<small
+												>MVR {formatAmount(item.capital_mvr, true)} capital · {formatAmount(
+													item.annual_operating_mvr,
+													true
+												)}/year</small
+											></span
+										></button
+									>{/each}{#each suggested.warnings as warning, i (i)}<p>
+										{warning}
+									</p>{/each}{#if suggested.selected.length}<div>
+										<Button size="sm" onclick={acceptSuggestions}
+											><Check size={14} />Use this draft</Button
+										><Button size="sm" variant="ghost" onclick={() => (suggested = null)}
+											>Dismiss</Button
+										>
+									</div>{/if}
+							</div>{/if}
+					{/if}
+					{#if composeMode === 'manual'}
+						{#if !supported && current}<p class="policy-qualification">
+								{localConstructionReason}
+							</p>{/if}
+						<div class="policy-place-heading">
+							<h3>What would you like to improve?</h3>
+							<small
+								>Choose an item and click the map, or drag its icon. Confirm above the preview on
+								the map.</small
+							>
+						</div>
+						<div class="policy-palette">
+							{#each [{ kind: 'add_stop', label: 'Bus stop', icon: BusFront }, { kind: 'add_school', label: 'School', icon: GraduationCap }, { kind: 'add_hospital', label: 'Hospital', icon: Hospital }] as item (item.kind)}<button
+									draggable={!!baseline &&
+										supported &&
+										!loading &&
+										!checkingBudget &&
+										operations.length < 100}
+									disabled={!baseline ||
+										!supported ||
+										loading ||
+										checkingBudget ||
+										operations.length >= 100}
+									ondragstart={(event) => {
+										cancelPending();
+										closeFerry();
+										closeBusService();
+										armedKind = item.kind as PlacementKind;
+										pendingId = `proposal:${item.kind}:${crypto.randomUUID()}`;
+										setGoal(
+											item.kind === 'add_stop'
+												? 'transport'
+												: item.kind === 'add_school'
+													? 'education'
+													: 'healthcare'
+										);
+										onPickKind(item.kind as PlacementKind);
+										event.dataTransfer?.setData('application/x-policy-placement', item.kind);
+										if (event.dataTransfer) {
+											event.dataTransfer.effectAllowed = 'copy';
+											const icon =
+												event.currentTarget.querySelector<HTMLElement>('.palette-drag-icon');
+											if (icon) event.dataTransfer.setDragImage(icon, 22, 22);
+										}
+									}}
+									ondragend={() => {
+										armedKind = null;
+										onPickKind(null);
+									}}
+									onclick={() => begin(item.kind as PlacementKind)}
+									><span class="palette-drag-icon" data-placement-icon={item.kind}
+										><item.icon size={24} /></span
+									><span>{item.label}</span><Plus size={12} /></button
 								>{/each}
 						</div>
-					</div>
-					<Button
-						variant="outline"
-						class="policy-primary"
-						disabled={!supported ||
-							loading ||
-							suggesting ||
-							checkingBudget ||
-							!budgetDecision.allowed ||
-							!priorities.length ||
-							operations.length >= 90}
-						onclick={suggest}
-						><Sparkles size={16} />{suggesting
-							? 'Finding a suitable draft…'
-							: 'Suggest investments within my budget'}</Button
-					>
-					{#if !supported && current}<p class="policy-qualification">
-							{localConstructionReason}
-						</p>{/if}
-					{#if suggested}<div
-							class="policy-suggestion"
-							data-suggestion-count={suggested.selected.length}
-						>
-							<strong
-								>{suggested.selected.length
-									? 'Suggested draft · shown on the map'
-									: 'No eligible package within these limits'}</strong
-							>{#each suggested.selected as item (item.id)}<button
-									onclick={() => onFocus(item.coordinates)}
-									><MapPin size={15} /><span
-										>{item.title}<small
-											>MVR {formatAmount(item.capital_mvr, true)} capital · {formatAmount(
-												item.annual_operating_mvr,
-												true
-											)}/year</small
-										></span
-									></button
-								>{/each}{#each suggested.warnings as warning, i (i)}<p>
-									{warning}
-								</p>{/each}{#if suggested.selected.length}<div>
-									<Button size="sm" onclick={acceptSuggestions}
-										><Check size={14} />Use this draft</Button
-									><Button size="sm" variant="ghost" onclick={() => (suggested = null)}
-										>Dismiss</Button
-									>
-								</div>{/if}
-						</div>{/if}
-					<div class="policy-place-heading">
-						<h3>Add to your proposal</h3>
-						<small
-							>Choose an item, then click its location on the map. You can also drag its icon.</small
-						>
-					</div>
-					<div class="policy-palette">
-						{#each [{ kind: 'add_stop', label: 'Bus stop', icon: BusFront }, { kind: 'add_school', label: 'School', icon: GraduationCap }, { kind: 'add_hospital', label: 'Hospital', icon: Hospital }] as item (item.kind)}<button
-								draggable={!!baseline &&
-									supported &&
-									!loading &&
-									!checkingBudget &&
-									operations.length < 100}
-								disabled={!baseline ||
-									!supported ||
-									loading ||
-									checkingBudget ||
-									operations.length >= 100}
-								ondragstart={(event) => {
-									cancelPending();
-									closeFerry();
-									closeBusService();
-									armedKind = item.kind as PlacementKind;
-									pendingId = `proposal:${item.kind}:${crypto.randomUUID()}`;
-									setGoal(
-										item.kind === 'add_stop'
-											? 'transport'
-											: item.kind === 'add_school'
-												? 'education'
-												: 'healthcare'
-									);
-									onPickKind(item.kind as PlacementKind);
-									event.dataTransfer?.setData('application/x-policy-placement', item.kind);
-									if (event.dataTransfer) {
-										event.dataTransfer.effectAllowed = 'copy';
-										const icon =
-											event.currentTarget.querySelector<HTMLElement>('.palette-drag-icon');
-										if (icon) event.dataTransfer.setDragImage(icon, 22, 22);
-									}
-								}}
-								ondragend={() => {
-									armedKind = null;
-									onPickKind(null);
-								}}
-								onclick={() => begin(item.kind as PlacementKind)}
-								><span class="palette-drag-icon" data-placement-icon={item.kind}
-									><item.icon size={24} /></span
-								><span>{item.label}</span><Plus size={12} /></button
-							>{/each}
-					</div>
-					<div class="policy-service-palette" aria-label="Transport services">
-						<button
-							class="policy-service-tile"
-							draggable="true"
-							ondragstart={(event) => serviceDrag(event, 'bus')}
-							onclick={() => beginBusService()}
-							disabled={!supported || !busPatterns.length || loading || checkingBudget}
-						>
-							<span data-service-icon><BusFront size={24} /></span><span
-								><strong>Bus service</strong><small>Choose a route on the map</small></span
-							><Plus size={15} /></button
-						>
-						<button
-							class="policy-service-tile"
-							draggable="true"
-							ondragstart={(event) => serviceDrag(event, 'ferry')}
-							onclick={() => beginFerry()}
-							disabled={loading || checkingBudget || operations.length >= 97}
-						>
-							<span data-service-icon><Ship size={24} /></span><span
-								><strong>Ferry service</strong><small>Connect existing landing places</small></span
-							><Plus size={15} /></button
-						>
-					</div>
-					{#if pending}<p class="policy-placement-hint" role="status">
-							Your {pendingDecision?.label.toLowerCase()} is on the map. Drag its pin to adjust, then
-							confirm or cancel above it.
-						</p>{/if}
+						<div class="policy-service-palette" aria-label="Transport services">
+							<button
+								class="policy-service-tile"
+								draggable="true"
+								ondragstart={(event) => serviceDrag(event, 'bus')}
+								onclick={() => beginBusService()}
+								disabled={!supported || !busPatterns.length || loading || checkingBudget}
+							>
+								<span data-service-icon><BusFront size={24} /></span><span
+									><strong>Bus service</strong><small>Choose a route on the map</small></span
+								><Plus size={15} /></button
+							>
+							<button
+								class="policy-service-tile"
+								draggable="true"
+								ondragstart={(event) => serviceDrag(event, 'ferry')}
+								onclick={() => beginFerry()}
+								disabled={loading || checkingBudget || operations.length >= 97}
+							>
+								<span data-service-icon><Ship size={24} /></span><span
+									><strong>Ferry service</strong><small>Connect existing landing places</small
+									></span
+								><Plus size={15} /></button
+							>
+						</div>
+						{#if pending}<p class="policy-placement-hint" role="status">
+								Your {pendingDecision?.label.toLowerCase()} is on the map. Drag its pin to adjust, then
+								confirm or cancel above it.
+							</p>{/if}
+					{/if}
 					{#if operations.length}<div class="policy-draft-heading">
 							<h3>On your map · {draftItems.length} changes</h3>
-							<Button
-								variant="ghost"
-								size="icon-sm"
-								disabled={!history.length}
-								aria-label="Undo proposal change"
-								onclick={undo}><Undo2 size={16} /></Button
-							>
 						</div>
 						<ol class="policy-operation-list">
 							{#each draftItems as { operation, index: i }, rowNumber (i)}<li>
@@ -3546,23 +3638,41 @@
 										onclick={() => removeOperation(i)}><Trash2 size={14} /></Button
 									>
 								</li>{/each}
-						</ol>{:else}<p class="policy-empty">
-							Your map is the canvas. Add a location or generate a draft to start comparing.
-						</p>{/if}
-					<TransportImpact impact={visibleTransportImpact} compact />
-					<div class="policy-forecast-goal">
-						<Label for="map-goal">Compare residents' access to</Label><select
-							id="map-goal"
-							value={goal}
-							onchange={(event) => setGoal(event.currentTarget.value as typeof goal)}
-							><option value="transport">Public transport · walking access</option><option
-								value="healthcare">Healthcare</option
-							><option value="education">Education</option></select
-						><small
-							>Public transport measures walking to a mapped stop or ferry landing place. Waiting
-							times and island connections appear in the service benefits above.</small
-						>
-					</div>
+						</ol>{/if}
+					<TransportImpact
+						impact={visibleTransportImpact}
+						compact
+						preview={!!pending || ferryOpen || busOpen}
+						pending={calculating || previewCalculating}
+						stale={stale && !pending && !ferryOpen && !busOpen}
+						context={scopedKey}
+					/>
+					{#if operations.length || pending || ferryOpen || busOpen}
+						<div class="policy-forecast-goal">
+							<Label for="map-goal">Compare residents' access to</Label><select
+								id="map-goal"
+								value={goal}
+								onchange={(event) => setGoal(event.currentTarget.value as typeof goal)}
+								><option value="transport">Public transport · walking access</option><option
+									value="healthcare">Healthcare</option
+								><option value="education">Education</option></select
+							><small
+								>Public transport measures walking to a mapped stop or ferry landing place. Waiting
+								times and island connections appear in the service benefits above.</small
+							>
+						</div>
+					{/if}
+					<details class="policy-evidence-note proposal-details">
+						<summary>Proposal details</summary>
+						<div class="policy-field">
+							<Label for="map-proposal-title">Proposal name</Label><Input
+								id="map-proposal-title"
+								bind:value={title}
+								maxlength={160}
+							/>
+						</div>
+						<p>{savedMessage || 'Your draft is saved on this device as you make changes.'}</p>
+					</details>
 					<details class="policy-evidence-note">
 						<summary>Travel target, date & assumptions</summary>
 						<div class="policy-budget-grid">
@@ -3593,14 +3703,16 @@
 							This is an access scenario, not a prediction of future demand.
 						</p>
 					</details>
-					<p class="policy-qualification">
-						Costs are editable planning illustrations. A bus stop alone adds no service. Draft
-						siting, land rights, staffing and recurring funding require review.
-					</p>
-					{#if onAdvanced}<Button variant="ghost" size="sm" onclick={onAdvanced}
-							>Advanced service & fleet tools <ArrowRight size={14} /></Button
-						>{/if}
-					<small class="policy-saved">{savedMessage}</small>
+					<details class="policy-evidence-note">
+						<summary>Costs, evidence & advanced tools</summary>
+						<p>
+							Costs are editable planning illustrations. A bus stop alone adds no service. Draft
+							siting, land rights, staffing and recurring funding require review.
+						</p>
+						{#if onAdvanced}<Button variant="ghost" size="sm" onclick={onAdvanced}
+								>Advanced service & fleet tools <ArrowRight size={14} /></Button
+							>{/if}
+					</details>
 				{/if}
 			</div>
 			{#if baseline && (section === 'proposal' || operations.length || pending)}<footer>
@@ -3615,7 +3727,10 @@
 							? budgetNumber(annualBudget)
 							: null}
 						pending={calculating || previewCalculating}
-						{stale}
+						stale={stale && !pending && !ferryOpen && !busOpen}
+						transportImpact={visibleTransportImpact}
+						{resultTime}
+						context={scopedKey}
 						operationCount={draftItems.length}
 						preview={!!pending || ferryOpen || busOpen}
 						previewChecking={(!!pending && !quotedPlacement) ||
@@ -3623,9 +3738,9 @@
 							(busOpen && !busPreview)}
 						gainedResidents={pending
 							? pendingEvaluation?.summary.gained_residents
-							: !stale
-								? evaluation?.summary.gained_residents
-								: null}
+							: ferryOpen || busOpen
+								? null
+								: evaluation?.summary.gained_residents}
 						onEditBudget={adjustBudget}
 						onUndo={undo}
 						canUndo={!!history.length}
@@ -3650,7 +3765,10 @@
 					? budgetNumber(annualBudget)
 					: null}
 				pending={calculating || previewCalculating}
-				{stale}
+				stale={stale && !pending && !ferryOpen && !busOpen}
+				transportImpact={visibleTransportImpact}
+				{resultTime}
+				context={scopedKey}
 				operationCount={draftItems.length}
 				preview={!!pending || ferryOpen || busOpen}
 				previewChecking={(!!pending && !quotedPlacement) ||
@@ -3658,9 +3776,9 @@
 					(busOpen && !busPreview)}
 				gainedResidents={pending
 					? pendingEvaluation?.summary.gained_residents
-					: !stale
-						? evaluation?.summary.gained_residents
-						: null}
+					: ferryOpen || busOpen
+						? null
+						: evaluation?.summary.gained_residents}
 				onEditBudget={adjustBudget}
 				onUndo={undo}
 				canUndo={!!history.length}
@@ -3864,6 +3982,9 @@
 	}
 	.service-preview-map:disabled {
 		opacity: 0.45;
+	}
+	.service-preview-evidence {
+		display: none;
 	}
 	.service-budget-line {
 		display: flex;
@@ -4389,6 +4510,81 @@
 		align-items: end;
 		gap: 12px;
 	}
+	.proposal-paths {
+		display: grid;
+		gap: 8px;
+	}
+	.proposal-paths > button {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 13px;
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		background: var(--card);
+		color: var(--muted-foreground);
+		text-align: left;
+		transition:
+			background 160ms ease,
+			border-color 160ms ease;
+	}
+	.proposal-paths > button.active {
+		border-color: color-mix(in srgb, var(--chart-1) 45%, var(--border));
+		background: color-mix(in srgb, var(--chart-1) 6%, var(--card));
+		color: #245b40;
+	}
+	.proposal-paths > button:focus-visible {
+		outline: 2px solid var(--ring);
+		outline-offset: 3px;
+	}
+	.proposal-paths > button > span,
+	.proposal-budget-overview > span {
+		display: grid;
+		gap: 4px;
+		min-width: 0;
+	}
+	.proposal-paths strong {
+		font-size: 12px;
+		font-weight: 600;
+		line-height: 1.4;
+	}
+	.proposal-paths small,
+	.proposal-budget-overview small {
+		font-size: 10px;
+		font-weight: 400;
+		line-height: 1.5;
+		color: var(--muted-foreground);
+	}
+	.proposal-budget-overview,
+	.proposal-budget-editor-heading {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px;
+		font-size: 11px;
+		color: var(--foreground);
+	}
+	.proposal-budget-overview {
+		padding: 2px 0 10px;
+		border-bottom: 1px solid var(--border);
+	}
+	.proposal-budget-editor {
+		display: grid;
+		gap: 12px;
+		padding: 14px;
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		background: color-mix(in srgb, var(--muted) 35%, var(--card));
+	}
+	.proposal-budget-editor-heading strong {
+		font-weight: 600;
+	}
+	.proposal-budget-editor p {
+		margin: 0;
+		font-size: 10px;
+		line-height: 1.5;
+		color: var(--muted-foreground);
+	}
 	.policy-field,
 	.policy-budget-grid > div {
 		display: flex;
@@ -4582,13 +4778,6 @@
 		font-weight: 500;
 		line-height: 1.5;
 	}
-	.policy-empty {
-		font-size: 12px;
-		line-height: 1.65;
-		color: #939983;
-		text-align: center;
-		padding: 12px;
-	}
 	.policy-evidence-note {
 		font-size: 11px;
 		color: #77836a;
@@ -4618,10 +4807,6 @@
 		display: block;
 		margin-top: 12px;
 		margin-bottom: 7px;
-	}
-	.policy-saved {
-		font-size: 10px;
-		color: #8b9380;
 	}
 	.policy-error {
 		font-size: 12px;
@@ -4819,6 +5004,50 @@
 		}
 	}
 	@media (max-width: 700px) {
+		.compact-preview {
+			gap: 8px;
+			padding: 12px 16px 0;
+		}
+		.compact-preview header .eyebrow,
+		.compact-preview .service-preview-instructions,
+		.compact-preview .service-preview-full-impact,
+		.compact-preview .service-costs > span {
+			display: none;
+		}
+		.compact-preview h3 {
+			margin: 0;
+			font-size: 16px;
+		}
+		.compact-preview .service-costs {
+			flex-direction: row;
+			align-items: center;
+			justify-content: space-between;
+			gap: 8px;
+			padding: 8px 10px;
+		}
+		.compact-preview .service-costs strong {
+			font-size: 13px;
+		}
+		.compact-preview .service-preview-evidence {
+			display: block;
+		}
+		.service-preview-evidence > summary {
+			cursor: pointer;
+			font-size: 12px;
+			font-weight: 600;
+			line-height: 1.4;
+		}
+		.service-preview-evidence > summary small {
+			display: block;
+			margin-left: 14px;
+			font-weight: 400;
+		}
+		.service-preview-evidence[open] :global(.transport-impact) {
+			margin-top: 8px;
+		}
+		.compact-preview footer {
+			padding: 8px 0;
+		}
 		.proposal-action-feedback {
 			display: none;
 		}

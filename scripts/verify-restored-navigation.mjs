@@ -271,6 +271,7 @@ try {
 				.click();
 			await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
 			await expect(planning).toHaveAttribute('data-policy-section', 'proposal');
+			await planning.getByRole('button', { name: /^Find options within my budget/ }).click();
 			await expect(planning.getByLabel('Capital budget · MVR', { exact: true })).toBeVisible();
 			await expect(
 				planning.getByLabel('Annual running budget · MVR', { exact: true })
@@ -283,6 +284,7 @@ try {
 			await page.screenshot({ path: path.join(output, 'proposal-desktop.png') });
 			const budget = planning.getByLabel('Capital budget · MVR', { exact: true });
 			await budget.fill('45000000');
+			await planning.getByText('Costs, evidence & advanced tools', { exact: true }).click();
 			await planning
 				.getByRole('button', { name: 'Advanced service & fleet tools', exact: true })
 				.click();
@@ -295,6 +297,7 @@ try {
 			).toBeVisible();
 			await page.getByRole('button', { name: 'Map & planning', exact: true }).click();
 			await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
+			await planning.getByRole('button', { name: /^Find options within my budget/ }).click();
 			await expect(budget).toHaveValue('45000000');
 			await atlas.getByRole('button', { name: 'Show all Maldives islands', exact: true }).click();
 			await countryReady();
@@ -332,6 +335,8 @@ try {
 			await page.screenshot({ path: path.join(output, 'island-mobile.png') });
 			await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
 			await expect(planning).toHaveAttribute('data-policy-section', 'proposal');
+			await planning.getByRole('button', { name: /^Find options within my budget/ }).click();
+			await planning.getByLabel('Capital budget · MVR', { exact: true }).scrollIntoViewIfNeeded();
 			await expect(planning.getByLabel('Capital budget · MVR', { exact: true })).toBeInViewport();
 			await floatingNavigation();
 			await noOverflow();

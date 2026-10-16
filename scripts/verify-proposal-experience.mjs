@@ -240,16 +240,26 @@ async function noOverflow() {
 
 /** @param {import('@playwright/test').Locator} item */
 async function fullyOnScreen(item) {
-	const box = await item.boundingBox();
 	const viewport = page.viewportSize();
-	assert.ok(box && viewport);
-	assert.ok(
-		box.x >= 0 &&
-			box.y >= 0 &&
-			box.x + box.width <= viewport.width + 1 &&
-			box.y + box.height <= viewport.height + 1,
-		`The actionable map card must fit on screen: ${JSON.stringify({ box, viewport })}`
-	);
+	assert.ok(viewport);
+	// Anchored cards measure their content and settle on the next animation frame.
+	await expect
+		.poll(
+			async () => {
+				const box = await item.boundingBox();
+				return !!(
+					box &&
+					box.x >= 0 &&
+					box.y >= 0 &&
+					box.x + box.width <= viewport.width + 1 &&
+					box.y + box.height <= viewport.height + 1
+				);
+			},
+			{ message: 'The actionable map card must fit on screen after layout settles', timeout: 3000 }
+		)
+		.toBe(true);
+	const box = await item.boundingBox();
+	assert.ok(box);
 	return box;
 }
 
@@ -282,6 +292,36 @@ try {
 		return { visibleBudgetAtStart: true };
 	});
 	await check(
+		'Cleared budget limits are blocked while an explicit zero remains valid',
+		async () => {
+			await panel.getByRole('button', { name: /^Find options within my budget/ }).click();
+			const capital = panel.getByLabel('Capital budget · MVR', { exact: true });
+			const annual = panel.getByLabel('Annual running budget · MVR', { exact: true });
+			const originalCapital = await capital.inputValue();
+			const originalAnnual = await annual.inputValue();
+			const suggest = panel.getByRole('button', {
+				name: 'Suggest investments within my budget',
+				exact: true
+			});
+			await capital.fill('');
+			await expect(panel.getByRole('alert')).toContainText('Enter a valid capital budget');
+			await expect(suggest).toBeDisabled();
+			await capital.fill('0');
+			await annual.fill('0');
+			await expect(panel.locator('.policy-budget-alert')).toBeHidden();
+			await expect(suggest).toBeEnabled();
+			await annual.fill('');
+			await expect(panel.getByRole('alert')).toContainText('Enter a valid capital budget');
+			await expect(suggest).toBeDisabled();
+			await capital.fill(originalCapital);
+			await annual.fill(originalAnnual);
+			await expect(panel.locator('.policy-budget-alert')).toBeHidden();
+			await expect(suggest).toBeEnabled();
+			await panel.getByRole('button', { name: /^Add an improvement/ }).click();
+			return { missingLimitsBlocked: true, explicitZeroAllowed: true, validBudgetsRestored: true };
+		}
+	);
+	await check(
 		'Click-to-place previews a bus icon and suggests a road path in an anchored editor',
 		async () => {
 			await choosePlacement('Bus stop');
@@ -290,7 +330,8 @@ try {
 			await expect(preview).toBeVisible();
 			await expect(preview).toHaveAttribute('data-placement-kind', 'add_stop');
 			await expect(atlas.getByTestId('placement-distance-guide')).toBeVisible();
-			await expect(atlas).toContainText(/distance guide/i);
+			await expect(preview).toHaveAttribute('data-placement-snapped', 'true');
+			await expect(preview).toContainText('Aligned to a mapped road');
 			await acceptedPoints(0);
 			await page.mouse.click(site.point.x, site.point.y);
 			await expect(serviceEditor).toHaveAttribute('data-service-mode', 'bus-connection');
@@ -327,6 +368,7 @@ try {
 		'A blocked placement explains its shortfall and offers budget adjustment at the pin',
 		async () => {
 			await showProposal();
+			await panel.getByRole('button', { name: 'Edit budget limits', exact: true }).click();
 			await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('1');
 			await panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('1');
 			const count = evaluationRequests.length;

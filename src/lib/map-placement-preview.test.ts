@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nearestPlacementRoad } from './map-placement-preview.js';
+import { nearestPlacementRoad, placementLocationHint } from './map-placement-preview.js';
 
 describe('bus stop placement snapping', () => {
 	const road = [
@@ -63,5 +63,35 @@ describe('bus stop placement snapping', () => {
 		).toBe(true);
 		expect(nearestPlacementRoad([181, 4], road).distance).toBeNull();
 		expect(nearestPlacementRoad(point, road, -1).snapped).toBe(false);
+	});
+});
+
+describe('placement advice', () => {
+	const location = {
+		kind: 'add_stop',
+		suitable: true,
+		snapped: false,
+		distance: 56,
+		hasRoads: true
+	};
+	it('prioritizes an invalid island over a nearby road', () => {
+		expect(placementLocationHint({ ...location, suitable: false, snapped: true }).title).toContain(
+			'selected island'
+		);
+	});
+	it('explains snapped distance without approving construction', () => {
+		const hint = placementLocationHint({ ...location, snapped: true, distance: 12.6 });
+		expect(hint.detail).toContain('13 m');
+		expect(hint.detail).toContain('suggested stop connection');
+		expect(hint.caution).toBe(false);
+	});
+	it('distinguishes missing road evidence from a distant road', () => {
+		expect(placementLocationHint(location).detail).toContain('35 m');
+		expect(placementLocationHint({ ...location, hasRoads: false }).title).toContain(
+			'not available'
+		);
+		expect(placementLocationHint({ ...location, kind: 'add_school', suitable: null }).caution).toBe(
+			true
+		);
 	});
 });

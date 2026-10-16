@@ -12,6 +12,7 @@
 		CircleHelp,
 		Download,
 		MapPin,
+		RefreshCw,
 		Search,
 		SlidersHorizontal
 	} from '@lucide/svelte';
@@ -24,6 +25,7 @@
 	import PolicyOpportunityOverview from '#lib/components/PolicyOpportunityOverview.svelte';
 	import MobilityPulse from '#lib/components/MobilityPulse.svelte';
 	import IslandAccessibilityDetails from '#lib/components/IslandAccessibilityDetails.svelte';
+	import AnimatedNumber from '#lib/components/AnimatedNumber.svelte';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
 	import {
 		atollInventory,
@@ -59,6 +61,7 @@
 	let mounted = $state(false);
 	let needsRefresh = $state(false);
 	let error = $state('');
+	let checkedAt = $state<Date | null>(null);
 	let cohort = $state('residential');
 	let selectedAtoll = $state('all');
 	let chartMetric = $state<'all' | 'health' | 'education' | 'airports'>('all');
@@ -194,11 +197,11 @@
 				: 'Residential islands'
 			: selectedAtoll
 	);
+	const initialLoading = $derived(loading && !accessibility && !infrastructure);
 
 	async function load() {
 		needsRefresh = false;
 		scoreController?.abort();
-		scoreDetails = null;
 		scoreDetailsLoading = false;
 		controller?.abort();
 		const requestController = new AbortController();
@@ -221,6 +224,7 @@
 			if (controller === requestController && !requestController.signal.aborted) {
 				accessibility = result[0];
 				infrastructure = result[1];
+				checkedAt = new Date();
 				if (selectedScoreId) void openScoreDetails(selectedScoreId);
 			}
 		} catch (caught) {
@@ -392,24 +396,57 @@
 					}}>Reset filters</Button
 				>{/if}
 		</div>
-		<div class="snapshot-note">
-			<span class="snapshot-dot"></span> Supplied data snapshot
-			<span class="snapshot-divider">/</span>
-			{summary ? `${number(summary.island_count)} island records` : 'Loading island catalogue…'}
+		<div class="snapshot-controls">
+			<div class="snapshot-note">
+				<span class="snapshot-dot"></span> Supplied data snapshot
+				<span class="snapshot-divider">/</span>
+				{summary ? `${number(summary.island_count)} island records` : 'Loading island catalogue…'}
+			</div>
+			<div class="refresh-state" role="status" aria-live="polite">
+				{#if loading}<span>{initialLoading ? 'Loading analysis…' : 'Updating analysis…'}</span>
+				{:else if checkedAt && !error}<Check size={12} /><span
+						>Loaded {new Intl.DateTimeFormat('en-GB', {
+							hour: '2-digit',
+							minute: '2-digit'
+						}).format(checkedAt)}</span
+					>{/if}
+				<Button
+					variant="ghost"
+					size="icon-sm"
+					aria-label="Reload national analytics"
+					title="Reload the available analysis"
+					disabled={loading}
+					onclick={load}><RefreshCw size={13} class={loading ? 'refresh-icon' : ''} /></Button
+				>
+			</div>
 		</div>
 	</div>
 
 	{#if error}
 		<div class="analysis-error" role="alert">
 			<div>
-				<strong>National analytics are unavailable.</strong>
-				<p>{error}</p>
+				<strong
+					>{accessibility && infrastructure
+						? 'The latest analysis could not be checked.'
+						: 'National analytics are unavailable.'}</strong
+				>
+				<p>
+					{accessibility && infrastructure
+						? 'The previous results remain visible. Retry to check for updates.'
+						: 'Try again to load the service records and island scores.'}
+				</p>
+				<details>
+					<summary>Error details</summary>
+					<p>{error}</p>
+				</details>
 			</div>
 			<Button variant="outline" size="sm" onclick={load}>Retry analysis</Button>
 		</div>
 	{/if}
 
-	<div class="analytics-grid">
+	<PolicyOpportunityOverview atoll={selectedAtoll} {cohort} {onExplore} {onConnections} {active} />
+
+	<div class="analytics-grid" class:initial-loading={initialLoading}>
 		<Card.Root class="analytics-card footprint-card">
 			<div class="card-heading">
 				<div>
@@ -417,13 +454,17 @@
 					<p>Official facility inventory · {scopeLabel}</p>
 				</div>
 				<Badge variant="secondary"
-					>{loading || !features ? 'Loading' : `${number(scopeRows.length)} islands`}</Badge
+					>{!infrastructure || !features ? 'Loading' : `${number(scopeRows.length)} islands`}</Badge
 				>
 			</div>
 			<div class="inventory-metric">
-				<strong>{infrastructure ? number(scopeInventory.length) : '—'}</strong><span
-					>official facility records</span
-				>
+				<strong
+					><AnimatedNumber
+						value={infrastructure ? scopeInventory.length : null}
+						format={number}
+						context={`${cohort}:${selectedAtoll}`}
+					/></strong
+				><span>official facility records</span>
 			</div>
 			<div class="chart-tabs" aria-label="Facility chart categories">
 				{#each [{ id: 'all' as const, label: 'All services' }, { id: 'health' as const, label: 'Health' }, { id: 'education' as const, label: 'Education' }, { id: 'airports' as const, label: 'Airports' }] as metric (metric.id)}
@@ -539,9 +580,13 @@
 						>{/each}
 				</svg>
 				<div class="mix-centre">
-					<strong>{infrastructure ? number(scopeInventory.length) : '—'}</strong><span
-						>facility records</span
-					>
+					<strong
+						><AnimatedNumber
+							value={infrastructure ? scopeInventory.length : null}
+							format={number}
+							context={`${cohort}:${selectedAtoll}`}
+						/></strong
+					><span>facility records</span>
 				</div>
 			</div>
 			<div class="category-list">
@@ -613,9 +658,13 @@
 					/>
 				</svg>
 				<div class="gauge-value">
-					<strong>{infrastructure ? `${locatedPercent}%` : '—'}</strong><span
-						>{number(locatedCount)} of {number(scopeInventory.length)} records</span
-					>
+					<strong
+						><AnimatedNumber
+							value={infrastructure ? locatedPercent : null}
+							format={(value) => `${value}%`}
+							context={`${cohort}:${selectedAtoll}`}
+						/></strong
+					><span>{number(locatedCount)} of {number(scopeInventory.length)} records</span>
 				</div>
 			</div>
 			<div class="coverage-breakdown">
@@ -649,9 +698,13 @@
 				<Badge variant="outline">Out of 100</Badge>
 			</div>
 			<div class="access-metric">
-				<strong>{averageScore === null ? '—' : decimal(averageScore)}</strong><span
-					>average across {number(scoredRows.length)} islands</span
-				>
+				<strong
+					><AnimatedNumber
+						value={averageScore}
+						format={decimal}
+						context={`${cohort}:${selectedAtoll}`}
+					/></strong
+				><span>average across {number(scoredRows.length)} islands</span>
 			</div>
 			<div
 				class="distribution-chart"
@@ -701,8 +754,6 @@
 			></Card.Root
 		>
 	{/if}
-
-	<PolicyOpportunityOverview atoll={selectedAtoll} {cohort} {onExplore} {onConnections} {active} />
 
 	<details class="inventory-disclosure">
 		<summary
@@ -970,6 +1021,63 @@
 		gap: 7px;
 		font-size: 10px;
 		color: #777181;
+	}
+	.snapshot-controls {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 3px;
+	}
+	.refresh-state {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		min-height: 24px;
+		font-size: 10px;
+		color: #6b7973;
+	}
+	.refresh-state :global(button) {
+		height: 24px;
+		width: 24px;
+	}
+	:global(.analytics-dashboard .refresh-icon) {
+		animation: analytics-refresh 850ms linear infinite;
+	}
+	@keyframes analytics-refresh {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+	.analytics-grid.initial-loading .atoll-chart,
+	.analytics-grid.initial-loading .facility-mix-chart,
+	.analytics-grid.initial-loading .coverage-gauge,
+	.analytics-grid.initial-loading .distribution-chart {
+		position: relative;
+		border-radius: 12px;
+		background: #f6f3f9;
+	}
+	.analytics-grid.initial-loading .atoll-chart > *,
+	.analytics-grid.initial-loading .facility-mix-chart > *,
+	.analytics-grid.initial-loading .coverage-gauge > *,
+	.analytics-grid.initial-loading .distribution-chart > * {
+		visibility: hidden;
+	}
+	.analysis-error details {
+		font-size: 10px;
+		margin-top: 8px;
+	}
+	.analysis-error details summary {
+		cursor: pointer;
+	}
+	@media (max-width: 850px) {
+		.snapshot-controls {
+			align-items: flex-start;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		:global(.analytics-dashboard .refresh-icon) {
+			animation: none;
+		}
 	}
 	.snapshot-dot {
 		width: 6px;
@@ -1876,6 +1984,13 @@
 			width: 100%;
 			min-width: 0;
 			font-size: 10px;
+		}
+		.scope-controls > :global(button) {
+			flex-basis: 100%;
+			justify-content: flex-start;
+			padding-inline: 0;
+			height: 24px;
+			font-size: 11px;
 		}
 		.snapshot-note {
 			max-width: none;

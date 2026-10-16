@@ -63,6 +63,8 @@ async function openProposal() {
 	await expect(panel).toBeVisible();
 	if ((await panel.getAttribute('data-policy-section')) !== 'proposal')
 		await panel.getByRole('button', { name: /^Your proposal/ }).click();
+	if ((await panel.locator('.proposal-details').getAttribute('open')) === null)
+		await panel.locator('.proposal-details > summary').click();
 	await expect(proposalTitle).toBeEnabled();
 }
 

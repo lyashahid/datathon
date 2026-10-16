@@ -28,6 +28,8 @@ const navigation = page.getByRole('navigation', { name: 'Workspace', exact: true
 const serviceDay = '2026-10-10';
 const capitalBudget = 1000000000;
 const annualBudget = 1000000000;
+/** @type {import('../src/lib/transport-impact.js').TransportImpactData | null} */
+let acceptedFerryImpact = null;
 /** @type {Array<{request: typeof ferryPayload, body: any}>} */
 const ferryResponses = [];
 page.on('response', async (response) => {
@@ -198,6 +200,62 @@ async function previewService(capitalLimit = capitalBudget, annualLimit = annual
 	const response = current();
 	assert.ok(response, 'The matching service quote has completed');
 	return response.body;
+}
+
+/** Verify the accepted outward and return timetable against the real preview quote.
+ * @param {import('@playwright/test').Locator} target
+ */
+async function expectAcceptedReturnService(target) {
+	assert.ok(acceptedFerryImpact, 'The accepted ferry quote includes timetable impact');
+	const impact = target.getByRole('region', { name: 'Transport service impact', exact: true });
+	await expect(impact).toBeVisible();
+	await expect(impact).toHaveAttribute('data-preview', 'false');
+	await expect(impact).toHaveAttribute('data-outdated', 'false');
+	const details = impact.locator('.impact-details');
+	if ((await details.getAttribute('open')) === null)
+		await details.getByText('Route and island connection details', { exact: true }).click();
+	const lines = (acceptedFerryImpact.lines ?? []).filter((line) => line.change !== 'unchanged');
+	const directions = (acceptedFerryImpact.connections ?? []).filter(
+		(connection) => connection.change !== 'unchanged'
+	);
+	assert.equal(lines.length, 2, 'The quote retains outward and return service patterns');
+	assert.equal(directions.length, 2, 'The quote retains two directed island connections');
+	await expect(impact.locator('.service-row:not(.connection-row)')).toHaveCount(lines.length);
+	await expect(impact.locator('.connection-row')).toHaveCount(directions.length);
+	for (const line of lines) {
+		const row = impact
+			.locator('.service-row:not(.connection-row)')
+			.filter({ has: page.getByRole('heading', { name: line.name, exact: true }) })
+			.filter({
+				has: page.getByText(`${line.from_stop_name} → ${line.to_stop_name}`, { exact: true })
+			});
+		await expect(row).toBeVisible();
+		await expect(row).toContainText('New service');
+		assert.ok(line.after && Number(line.after.departure_count) > 0);
+		await expect(
+			row
+				.locator('.service-values > div')
+				.filter({ hasText: /^Dated departures/ })
+				.locator('dd')
+		).toContainText(`${line.after.departure_count} departures`);
+		await expect(
+			row
+				.locator('.service-values > div')
+				.filter({ hasText: /^Expected wait/ })
+				.locator('dd')
+		).toContainText(
+			`${new Intl.NumberFormat('en-GB', { maximumFractionDigits: 1 }).format(Number(line.after.expected_wait_minutes))} min`
+		);
+	}
+	for (const direction of directions) {
+		await expect(
+			impact.locator('.connection-row').getByRole('heading', {
+				name: `${direction.from_island_name} → ${direction.to_island_name}`,
+				exact: true
+			})
+		).toBeVisible();
+	}
+	return { servicePatterns: lines.length, directedConnections: directions.length };
 }
 
 try {
@@ -372,6 +430,8 @@ try {
 			await expect(composer).toContainText('No new port is built.');
 			await composer.getByRole('button', { name: 'Edit budgets', exact: true }).click();
 			await expect(planning).toHaveAttribute('data-policy-section', 'proposal');
+			if ((await planning.locator('.proposal-details').getAttribute('open')) === null)
+				await planning.locator('.proposal-details > summary').click();
 			await planning
 				.getByLabel('Proposal name', { exact: true })
 				.fill('Hulhumalé to Malé ferry service');
@@ -423,6 +483,7 @@ try {
 			).toBeDisabled();
 			const draft = await previewService();
 			assert.equal(draft.quote.budget.allowed, true);
+			acceptedFerryImpact = draft.quote.transport_connectivity.impact;
 			await expect(
 				composer.getByRole('button', { name: 'Accept ferry service', exact: true })
 			).toBeEnabled();
@@ -439,7 +500,8 @@ try {
 			await composer.getByRole('button', { name: 'Accept ferry service', exact: true }).click();
 			await expect(composer).not.toBeVisible();
 			await expect(planning.locator('.policy-operation-list li')).toHaveCount(1);
-			await expect(planning.locator('.policy-ferry-outcome')).toContainText('1 ferry service');
+			await expect(planning.locator('.policy-operation-list li')).toContainText(draft.summary.name);
+			const timetable = await expectAcceptedReturnService(planning);
 			await expect
 				.poll(async () => Number(await atlas.getAttribute('data-policy-service-features')))
 				.toBeGreaterThan(0);
@@ -447,6 +509,7 @@ try {
 			await page.screenshot({ path: path.join(output, 'ferry-confirmed.png') });
 			return {
 				summary: draft.summary,
+				timetable,
 				mapFeatures: await atlas.getAttribute('data-policy-service-features')
 			};
 		}
@@ -462,7 +525,7 @@ try {
 				exact: true
 			});
 			await expect(transport).toBeVisible();
-			await expect(transport).toContainText('Outward and return sailings included');
+			const timetable = await expectAcceptedReturnService(transport);
 			await expect(transport).toContainText('MVR 0');
 			const save = review.getByRole('button', { name: 'Save as PDF', exact: true });
 			await expect(save).toBeEnabled();
@@ -480,7 +543,7 @@ try {
 				'The exported decision brief contains substantive PDF content'
 			);
 			await review.getByRole('button', { name: 'Close proposal review', exact: true }).click();
-			return { pdfPath, bytes: bytes.length, filename: download.suggestedFilename() };
+			return { timetable, pdfPath, bytes: bytes.length, filename: download.suggestedFilename() };
 		}
 	);
 	await check(
@@ -491,7 +554,9 @@ try {
 				.getByRole('button', { name: /^Remove .* package$/ })
 				.click();
 			await expect(planning.locator('.policy-operation-list li')).toHaveCount(0);
-			await expect(planning.locator('.policy-ferry-outcome')).not.toBeVisible();
+			await expect(
+				planning.getByRole('region', { name: 'Transport service impact', exact: true })
+			).not.toBeVisible();
 			await expect(atlas).toHaveAttribute('data-policy-service-features', '0');
 			await expect(
 				planning.getByRole('button', { name: 'Review full impact', exact: true })
@@ -506,6 +571,9 @@ try {
 		'The transport opportunity card links analytics directly into island connections',
 		async () => {
 			await navigation.getByRole('button', { name: 'Analytics', exact: true }).click();
+			const services = page.locator('.service-comparison-disclosure');
+			if ((await services.getAttribute('open')) === null)
+				await services.locator('summary').first().click();
 			await page.getByRole('button', { name: 'Check island connections', exact: true }).click();
 			await expect(connections).toBeVisible();
 			await expect(page).toHaveURL((url) => url.searchParams.get('view') === 'map');
@@ -555,9 +623,58 @@ try {
 				await mobileComposer
 					.getByRole('button', { name: 'See the full route on the map', exact: true })
 					.click();
+				const evidence = mobileComposer.locator('.compact-preview .service-preview-evidence');
+				const evidenceSummary = mobileComposer.locator('.service-preview-evidence > summary');
+				await expect(evidence).toBeVisible();
+				await expect(evidence).not.toHaveAttribute('open', '');
+				await expect(evidenceSummary).toContainText('2 new island-to-island directions');
+				await expect(
+					mobileComposer.getByRole('button', { name: 'Accept ferry service', exact: true })
+				).toBeEnabled();
+				await expect(
+					mobileComposer.getByRole('button', { name: 'Edit settings', exact: true })
+				).toBeVisible();
 				await expectVisibleTerminals(mobilePage.locator('.national-map'));
 				await mobilePage.screenshot({ path: path.join(output, 'ferry-preview-mobile.png') });
-				return { viewport: { width: 390, height: 844 }, horizontalOverflow: false };
+				await evidenceSummary.click();
+				await expect(evidence).toHaveAttribute('open', '');
+				const mobileImpact = evidence.getByRole('region', {
+					name: 'Transport service impact',
+					exact: true
+				});
+				await expect(mobileImpact).toBeVisible();
+				await mobileImpact.locator('.impact-details > summary').click();
+				await expect(mobileImpact.locator('.connection-row')).toHaveCount(2);
+				const directionHeading = mobileImpact
+					.locator('.connection-row')
+					.getByRole('heading', { name: 'Hulhumalé → Malé', exact: true });
+				await directionHeading.scrollIntoViewIfNeeded();
+				await expect(directionHeading).toBeInViewport();
+				await expect(
+					mobileComposer.getByRole('button', { name: 'Accept ferry service', exact: true })
+				).toBeInViewport();
+				await expect(
+					mobileComposer.getByRole('button', { name: 'Edit settings', exact: true })
+				).toBeInViewport();
+				assert.ok(
+					await mobileComposer.evaluate((element) => element.scrollHeight > element.clientHeight),
+					'Expanded timetable evidence scrolls inside the map preview'
+				);
+				await expectVisibleTerminals(mobilePage.locator('.national-map'));
+				await mobilePage.screenshot({
+					path: path.join(output, 'ferry-preview-mobile-expanded.png')
+				});
+				await evidenceSummary.click();
+				await expect(evidence).not.toHaveAttribute('open', '');
+				await expectVisibleTerminals(mobilePage.locator('.national-map'));
+				return {
+					viewport: { width: 390, height: 844 },
+					horizontalOverflow: false,
+					expandedEvidenceScrollable: true,
+					stickyActionsVisible: true,
+					terminalsVisibleWhileExpanded: true,
+					terminalsVisibleAfterCollapse: true
+				};
 			} catch (error) {
 				await mobilePage
 					.screenshot({ path: path.join(output, 'mobile-failure.png') })

@@ -215,6 +215,10 @@ try {
 	await check(
 		'The main dashboard leads with actual numbers and keeps technical explanations optional',
 		async () => {
+			await expect(priorities.locator('[data-decision-priority]')).toHaveCount(3);
+			const services = priorities.locator('.service-comparison-disclosure');
+			await expect(services).not.toHaveAttribute('open');
+			await services.locator('summary').first().click();
 			const residential = opportunities.islands.filter(
 				(island) => island.category === 'Residential Island'
 			);

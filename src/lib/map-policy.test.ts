@@ -3,6 +3,7 @@ import type { FeatureCollection, Position } from 'geojson';
 import {
 	assessDraftBudget,
 	draftCosts,
+	planningBudgetNumber,
 	pointWithinIsland,
 	restorePlanningOperations
 } from './map-policy.js';
@@ -119,6 +120,20 @@ describe('saved proposal recovery', () => {
 });
 
 describe('proposal budget commitments', () => {
+	it('keeps cleared input limits invalid while allowing an explicit zero commitment', () => {
+		for (const empty of [null, undefined, '', '  ']) {
+			const budget = planningBudgetNumber(empty);
+			expect(budget).toBeNaN();
+			expect(assessDraftBudget({ capital: 0, annual: 0 }, budget, 100_000)).toMatchObject({
+				allowed: false,
+				known: true,
+				reason: 'Enter a valid capital budget and yearly running budget.'
+			});
+		}
+		expect(planningBudgetNumber(0)).toBe(0);
+		expect(planningBudgetNumber('0')).toBe(0);
+		expect(planningBudgetNumber('150000000')).toBe(150_000_000);
+	});
 	it('permits the exact capital and annual limits, including zero-cost changes', () => {
 		expect(
 			assessDraftBudget({ capital: 100_000, annual: 5_000_000 }, 100_000, 5_000_000)

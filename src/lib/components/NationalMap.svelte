@@ -43,7 +43,10 @@
 	import { impactColors, type PlanningOperation } from '#lib/planning-map.js';
 	import { accessColors, comparisonCellProperties } from '#lib/display-grid.js';
 	import { pointWithinIsland } from '#lib/map-policy.js';
-	import { nearestPlacementRoad } from '#lib/map-placement-preview.js';
+	import { nearestPlacementRoad, placementLocationHint } from '#lib/map-placement-preview.js';
+	import { changedImpactCells } from '#lib/map-impact-feedback.js';
+	import { mobileServiceRoutePadding, serviceCardMaxHeight } from '#lib/map-service-layout.js';
+	import { shouldAnimateMotion } from '#lib/motion.js';
 	import type { MapPolicyState, PendingPlacementDecision, PlacementKind } from '#lib/map-policy.js';
 	import { api } from '#lib/api.js';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
@@ -117,6 +120,8 @@
 		impactFeatures?: FeatureCollection;
 		policyComparisonView?: 'current' | 'proposal';
 		comparisonPreview?: boolean;
+		policyEvaluationId?: string | null;
+		policyComparisonPending?: boolean;
 		gapLens?: PolicyLens;
 		policyOperations?: PlanningOperation[];
 		pendingProposal?: { coordinates: Coordinates; kind: PlacementKind } | null;
@@ -181,6 +186,8 @@
 		impactFeatures = { type: 'FeatureCollection', features: [] },
 		policyComparisonView = 'proposal',
 		comparisonPreview = false,
+		policyEvaluationId = null,
+		policyComparisonPending = false,
 		gapLens = 'overall',
 		policyOperations = [],
 		pendingProposal = null,
@@ -229,8 +236,20 @@
 		radius: number;
 		coordinates: Coordinates;
 		snapped: boolean;
+		distance: number | null;
 		suitable: boolean | null;
 	} | null>(null);
+	const placementAdvice = $derived(
+		placementPreview
+			? placementLocationHint({
+					kind: pendingProposal?.kind ?? placementKind ?? '',
+					suitable: placementPreview.suitable,
+					snapped: placementPreview.snapped,
+					distance: placementPreview.distance,
+					hasRoads: placementRoads.length > 0
+				})
+			: null
+	);
 	let selectedProposalIndex = $state<number | null>(null);
 	let proposalEditAnchor = $state<{ x: number; y: number; below: boolean; arrow: number } | null>(
 		null
@@ -255,6 +274,40 @@
 	const selectedProposalLocked = $derived(
 		!!selectedProposal?.metadata?.ui_preview || !!selectedProposal?.metadata?.ui_package
 	);
+	const editingMap = $derived(
+		!!pendingProposal || !!placementKind || !!serviceEditor || selectedProposalIndex !== null
+	);
+	const focusContext = $derived(
+		editingMap
+			? serviceEditor?.mode === 'ferry' || !!selectedProposal?.metadata?.ui_ferry_summary
+				? 'ferry'
+				: (pendingProposal?.kind ?? placementKind ?? selectedProposal?.type) === 'add_hospital'
+					? 'health'
+					: (pendingProposal?.kind ?? placementKind ?? selectedProposal?.type) === 'add_school'
+						? 'education'
+						: 'bus'
+			: route
+				? 'journey'
+				: ''
+	);
+	const placementRoadHints = $derived.by((): FeatureCollection => ({
+		type: 'FeatureCollection',
+		features:
+			focusContext === 'bus' && editingMap
+				? placementRoads.flatMap((edge) => {
+						const coordinates = edge.geometry;
+						return coordinates && coordinates.length > 1 && coordinates.every(validCoordinates)
+							? [
+									{
+										type: 'Feature' as const,
+										properties: {},
+										geometry: { type: 'LineString' as const, coordinates }
+									}
+								]
+							: [];
+					})
+				: []
+	}));
 	let pendingPlacementFocused = false;
 	let acceptedPositions: { index: number; coordinates: Coordinates }[] | null = null;
 	const placementTitle = $derived(
@@ -302,6 +355,16 @@
 			: (impactFeatures.features[0]?.properties?.view ?? 'improvement')
 	);
 	let impactSourceUpdates = $state(0);
+	let feedbackCellCount = $state(0);
+	let lastImpactEvaluationId: string | null = null;
+	let lastFeedbackIsland: string | null = null;
+	let lastFeedbackLens: PolicyLens | null = null;
+	let previousEvaluatedImpact: FeatureCollection | null = null;
+	let suppressedScopeOperations: string | null = null;
+	let feedbackGeneration = 0;
+	let feedbackFrame = 0;
+	let feedbackTimer: ReturnType<typeof setTimeout> | undefined;
+	let removeFeedbackListener: (() => void) | undefined;
 	const comparisonDiagnostics = $derived.by(() => {
 		let changed = 0;
 		let beforeBeyond = 0;
@@ -1655,6 +1718,61 @@
 		inspectedIslandId = null;
 	}
 
+	function stopImpactFeedback() {
+		feedbackGeneration++;
+		cancelAnimationFrame(feedbackFrame);
+		clearTimeout(feedbackTimer);
+		removeFeedbackListener?.();
+		removeFeedbackListener = undefined;
+		feedbackCellCount = 0;
+		if (!map?.getLayer('policy-feedback-fill')) return;
+		map.setPaintProperty('policy-feedback-fill', 'fill-opacity-transition', { duration: 0 });
+		map.setPaintProperty('policy-feedback-fill', 'fill-opacity', 0);
+		map.setPaintProperty('policy-feedback-outline', 'line-opacity-transition', { duration: 0 });
+		map.setPaintProperty('policy-feedback-outline', 'line-opacity', 0);
+	}
+	function showImpactFeedback(cells: FeatureCollection) {
+		stopImpactFeedback();
+		if (!map || !cells.features.length || overlayOpacity <= 0 || !shouldAnimateMotion()) return;
+		const instance = map;
+		const source = instance.getSource('policy-feedback') as GeoJSONSource;
+		const generation = feedbackGeneration;
+		feedbackCellCount = cells.features.length;
+		instance.setPaintProperty('policy-feedback-fill', 'fill-opacity', overlayOpacity / 100);
+		instance.setPaintProperty('policy-feedback-outline', 'line-opacity', 0.65);
+		// Only this small changed-cell source is written, once. MapLibre interpolates constant
+		// opacity uniforms over the already prepared before/after colours; no per-frame geometry.
+		void source
+			.setData(cells)
+			.then(() => {
+				if (map !== instance || generation !== feedbackGeneration) return;
+				const reveal = () => {
+					removeFeedbackListener = undefined;
+					feedbackFrame = requestAnimationFrame(() => {
+						if (map !== instance || generation !== feedbackGeneration) return;
+						instance.setPaintProperty('policy-feedback-fill', 'fill-opacity-transition', {
+							duration: 230
+						});
+						instance.setPaintProperty('policy-feedback-fill', 'fill-opacity', 0);
+						feedbackTimer = setTimeout(() => {
+							if (map !== instance || generation !== feedbackGeneration) return;
+							instance.setPaintProperty('policy-feedback-outline', 'line-opacity-transition', {
+								duration: 180
+							});
+							instance.setPaintProperty('policy-feedback-outline', 'line-opacity', 0);
+							feedbackCellCount = 0;
+						}, 850);
+					});
+				};
+				instance.once('render', reveal);
+				removeFeedbackListener = () => instance.off('render', reveal);
+				instance.triggerRepaint();
+			})
+			.catch(() => {
+				if (map === instance && generation === feedbackGeneration) stopImpactFeedback();
+			});
+	}
+
 	function objectProperty(value: unknown): Record<string, unknown> {
 		if (typeof value === 'string') {
 			try {
@@ -2137,8 +2255,8 @@
 			return;
 		}
 		const width = Math.min(352, Math.max(240, viewport.right - 24));
-		// Use the available map height; long editors scroll inside their own card.
-		const maxHeight = Math.max(160, viewport.bottom - viewport.top);
+		// Phone editors share the screen with the route; long forms scroll inside the card.
+		const maxHeight = serviceCardMaxHeight(container.clientWidth, viewport.top, viewport.bottom);
 		const height = Math.min(serviceCard?.offsetHeight || 360, maxHeight);
 		// Keep the route above its editor on phones instead of covering its destination.
 		if (container.clientWidth < 700) {
@@ -2402,6 +2520,7 @@
 			radius: Math.max(5, Math.min(1600, Math.abs(point.y - north.y))),
 			coordinates,
 			snapped: snapped?.snapped === true && coordinates === snapped.coordinates,
+			distance: snapped?.distance ?? null,
 			suitable: selectedId ? pointWithinIsland(coordinates, features, selectedId) : null
 		};
 	}
@@ -2892,6 +3011,8 @@
 						'live',
 						'policy-gaps',
 						'policy-impact',
+						'policy-feedback',
+						'placement-roads',
 						'policy-service',
 						'island-connections',
 						'conditions-route',
@@ -2996,6 +3117,28 @@
 						}
 					});
 					instance.addLayer({
+						id: 'policy-feedback-fill',
+						type: 'fill',
+						source: 'policy-feedback',
+						paint: {
+							'fill-color': ['coalesce', ['get', 'feedback_before_color'], ['get', 'before_color']],
+							'fill-opacity': 0,
+							'fill-opacity-transition': { duration: 0 },
+							'fill-antialias': false
+						}
+					});
+					instance.addLayer({
+						id: 'policy-feedback-outline',
+						type: 'line',
+						source: 'policy-feedback',
+						paint: {
+							'line-color': '#315d61',
+							'line-width': ['interpolate', ['linear'], ['zoom'], 12, 0.65, 17, 1.2],
+							'line-opacity': 0,
+							'line-opacity-transition': { duration: 0 }
+						}
+					});
+					instance.addLayer({
 						id: 'island-centroids',
 						type: 'circle',
 						source: 'centroids',
@@ -3060,7 +3203,9 @@
 						'policy-gaps-points',
 						'policy-current-fill',
 						'policy-impact-fill',
-						'policy-impact-outline'
+						'policy-impact-outline',
+						'policy-feedback-fill',
+						'policy-feedback-outline'
 					]) {
 						instance.moveLayer(layer);
 					}
@@ -3569,6 +3714,18 @@
 						source: 'conditions-route',
 						paint: { 'line-color': '#bb7f48', 'line-width': 5, 'line-opacity': 0.9 }
 					});
+					instance.addLayer({
+						id: 'placement-road-hints',
+						type: 'line',
+						source: 'placement-roads',
+						minzoom: 12,
+						layout: { 'line-cap': 'round', 'line-join': 'round' },
+						paint: {
+							'line-color': '#27877b',
+							'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1.5, 17, 3],
+							'line-opacity': 0.5
+						}
+					});
 					ready = true;
 					scheduleStreetContext();
 					centerCoordinates = [instance.getCenter().lng, instance.getCenter().lat];
@@ -3634,23 +3791,26 @@
 					});
 					instance.getCanvas().style.cursor = picking ? 'crosshair' : hits.length ? 'pointer' : '';
 					const props = hits[0]?.properties;
-					hoverDescription = props?.cluster
-						? hits[0]?.source === 'live-vessels'
-							? `${props.point_count} observed vessel positions · select to zoom in`
-							: `${props.point_count} mapped places · click to zoom and inspect`
-						: props
-							? String(
-									props.label ??
-										(props.impact
-											? 'Select to compare resident access here'
-											: props.origin_id
-												? 'Select to inspect local service access'
-												: null) ??
-										[props.name, String(props.category ?? '').replaceAll('_', ' ')]
-											.filter(Boolean)
-											.join(' · ')
-								)
-							: '';
+					hoverDescription =
+						serviceEditor?.mode === 'ferry' && props?.kind === 'ferry_landing'
+							? `Existing ferry landing · ${props.name ?? 'Select to use this landing place'}`
+							: props?.cluster
+								? hits[0]?.source === 'live-vessels'
+									? `${props.point_count} observed vessel positions · select to zoom in`
+									: `${props.point_count} mapped places · click to zoom and inspect`
+								: props
+									? String(
+											props.label ??
+												(props.impact
+													? 'Select to compare resident access here'
+													: props.origin_id
+														? 'Select to inspect local service access'
+														: null) ??
+												[props.name, String(props.category ?? '').replaceAll('_', ' ')]
+													.filter(Boolean)
+													.join(' · ')
+										)
+									: '';
 				});
 				instance.on('mouseout', () => {
 					hoverDescription = '';
@@ -3696,6 +3856,7 @@
 			cancelAnimationFrame(scopeFocusFrame);
 			cancelAnimationFrame(placementPositionFrame);
 			cancelAnimationFrame(placementPreviewFrame);
+			stopImpactFeedback();
 			sourceData.clear();
 			clearTimeout(contextTimer);
 			contextGeneration++;
@@ -3825,6 +3986,126 @@
 		setData('policy-impact', impactFeatures);
 	});
 	$effect(() => {
+		if (!ready || !map) return;
+		const scopeChanged = lastFeedbackIsland !== selectedId || lastFeedbackLens !== gapLens;
+		if (scopeChanged) {
+			const hadScope = lastFeedbackLens !== null;
+			lastFeedbackIsland = selectedId;
+			lastFeedbackLens = gapLens;
+			lastImpactEvaluationId = policyEvaluationId;
+			previousEvaluatedImpact = policyEvaluationId ? impactFeatures : null;
+			suppressedScopeOperations =
+				hadScope && !policyEvaluationId
+					? JSON.stringify(policyOperations.filter((operation) => !operation.metadata?.ui_preview))
+					: null;
+			untrack(stopImpactFeedback);
+			return;
+		}
+		// An empty accepted draft shows the baseline again. It starts a new visual
+		// comparison, unlike a transient null token while a nonempty draft updates.
+		if (
+			!policyEvaluationId &&
+			!policyComparisonPending &&
+			!comparisonPreview &&
+			!policyCalculating &&
+			!policyStale &&
+			!pendingProposal &&
+			!policyOperations.some((operation) => !operation.metadata?.ui_preview)
+		) {
+			previousEvaluatedImpact = null;
+			lastImpactEvaluationId = null;
+			suppressedScopeOperations = null;
+			untrack(stopImpactFeedback);
+			return;
+		}
+		if (
+			!active ||
+			overlayOpacity <= 0 ||
+			policyComparisonView === 'current' ||
+			policyComparisonPending ||
+			comparisonPreview ||
+			policyCalculating ||
+			policyStale ||
+			pendingProposal
+		) {
+			untrack(stopImpactFeedback);
+		}
+		if (
+			!policyEvaluationId ||
+			policyComparisonPending ||
+			comparisonPreview ||
+			policyCalculating ||
+			policyStale
+		)
+			return;
+		if (policyEvaluationId === lastImpactEvaluationId) return;
+		lastImpactEvaluationId = policyEvaluationId;
+		const previous = previousEvaluatedImpact;
+		previousEvaluatedImpact = impactFeatures;
+		const suppressed =
+			suppressedScopeOperations !== null &&
+			suppressedScopeOperations ===
+				JSON.stringify(policyOperations.filter((operation) => !operation.metadata?.ui_preview));
+		suppressedScopeOperations = null;
+		// A completed evaluation is consumed even while hidden/current-access: revisiting
+		// a tab or changing the lens must never replay an old proposal as a fresh change.
+		if (!active || policyComparisonView === 'current' || pendingProposal || suppressed) return;
+		const changed = changedImpactCells(impactFeatures, previous);
+		untrack(() => showImpactFeedback(changed));
+	});
+	$effect(() => {
+		if (!ready || !map || !active) return;
+		setData('placement-roads', placementRoadHints);
+	});
+	$effect(() => {
+		if (!ready || !map || !active) return;
+		const focused = !!focusContext;
+		const duration = shouldAnimateMotion() ? 160 : 0;
+		for (const id of [
+			'facilities-symbols',
+			'transport-symbols',
+			'bus-stop-symbols',
+			'poi-clusters',
+			'live-symbols',
+			'live-vessel-symbols',
+			'live-vessel-clusters'
+		])
+			map.setPaintProperty(id, 'icon-opacity-transition', { duration });
+		map.setPaintProperty(
+			'facilities-symbols',
+			'icon-opacity',
+			!focused
+				? 1
+				: focusContext === 'health'
+					? ['match', ['get', 'category'], ['hospital', 'clinic', 'health_center'], 1, 0.3]
+					: focusContext === 'education'
+						? ['match', ['get', 'category'], 'school', 1, 0.3]
+						: 0.3
+		);
+		map.setPaintProperty(
+			'transport-symbols',
+			'icon-opacity',
+			!focused ? 1 : ['bus', 'ferry', 'journey'].includes(focusContext) ? 0.85 : 0.4
+		);
+		map.setPaintProperty(
+			'bus-stop-symbols',
+			'icon-opacity',
+			!focused ? 1 : ['bus', 'journey'].includes(focusContext) ? 0.85 : 0.4
+		);
+		map.setPaintProperty('poi-clusters', 'icon-opacity', focused ? 0.45 : 1);
+		for (const id of ['live-symbols', 'live-vessel-symbols'])
+			map.setPaintProperty(id, 'icon-opacity', [
+				'*',
+				focused ? 0.32 : 1,
+				['case', ['get', 'stale'], 0.48, 1]
+			]);
+		map.setPaintProperty('live-vessel-clusters', 'icon-opacity', [
+			'*',
+			focused ? 0.32 : 1,
+			['case', ['==', ['get', 'stale_count'], ['get', 'point_count']], 0.48, 1]
+		]);
+	});
+	$effect(() => {
 		if (!ready || !active || !map) return;
 		setData('policy-service', policyServiceFeatures);
 		if (inspectedSource === 'policy-service') closeInspection();
@@ -3882,7 +4163,22 @@
 		});
 		if (changed)
 			void tick().then(() => {
-				requestAnimationFrame(() => keepAcceptedPointVisible(changed.coordinates));
+				requestAnimationFrame(() => {
+					keepAcceptedPointVisible(changed.coordinates);
+					if (!active || !shouldAnimateMotion()) return;
+					// Animate the inner symbol, never MapLibre's positioning transform.
+					policyMarkers
+						.get(changed.index)
+						?.getElement()
+						.querySelector('svg')
+						?.animate(
+							[
+								{ transform: 'translateY(-3px) scale(0.94)' },
+								{ transform: 'translateY(0) scale(1)' }
+							],
+							{ duration: 220, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' }
+						);
+				});
 			});
 	});
 	$effect(() => {
@@ -3942,14 +4238,11 @@
 						};
 			if (container.clientWidth < 700 && serviceEditor && serviceCard) {
 				const viewport = serviceViewport();
-				const height = Math.min(
-					serviceCard.offsetHeight,
-					Math.max(160, viewport.bottom - viewport.top)
-				);
-				padding.top = Math.max(padding.top, viewport.top + 52);
-				padding.bottom = Math.min(
-					container.clientHeight - padding.top - 24,
-					Math.max(80, container.clientHeight - viewport.bottom + height + 24)
+				// Reserve the expanded editor's space so opening details never covers a terminal.
+				const height = serviceCardMaxHeight(container.clientWidth, viewport.top, viewport.bottom);
+				Object.assign(
+					padding,
+					mobileServiceRoutePadding(container.clientHeight, viewport.top, viewport.bottom, height)
 				);
 			}
 			map?.fitBounds(bounds, {
@@ -4297,6 +4590,9 @@
 	data-policy-impact-cells={impactFeatures.features.length}
 	data-policy-impact-view={policyOverlayView}
 	data-policy-impact-source-updates={impactSourceUpdates}
+	data-policy-feedback-cells={feedbackCellCount}
+	data-policy-placement-road-hints={placementRoadHints.features.length}
+	data-focus-context={focusContext}
 	data-policy-comparison-changed-cells={comparisonDiagnostics.changed}
 	data-policy-before-beyond-cells={comparisonDiagnostics.beforeBeyond}
 	data-policy-after-within-cells={comparisonDiagnostics.afterWithin}
@@ -4339,6 +4635,7 @@
 			<div
 				class="placement-preview"
 				class:unsuitable={placementPreview.suitable === false}
+				class:caution={placementAdvice?.caution}
 				style:left={`${placementPreview.x}px`}
 				style:top={`${placementPreview.y}px`}
 				data-testid="map-placement-preview"
@@ -4355,14 +4652,8 @@
 					{:else}<BusFront size={22} />{/if}
 				</span>
 				<span class="placement-preview-label">
-					<strong
-						>{placementPreview.suitable === false
-							? 'Choose land on this island'
-							: placementPreview.snapped
-								? 'Aligned to mapped road'
-								: 'Click or tap to choose this location'}</strong
-					>
-					<span>400 m distance guide · access calculated after placement</span>
+					<strong>{placementAdvice?.title}</strong>
+					<span>{placementAdvice?.detail}</span>
 				</span>
 			</div>
 		{/if}
@@ -5107,6 +5398,16 @@
 		color: #71847b;
 		font-size: 10px;
 		line-height: 1.5;
+	}
+	.caution .placement-preview-label {
+		border-color: #d9c5a4;
+	}
+	.national-map[data-focus-context]:not([data-focus-context='']) :global(.vessel-group-target) {
+		opacity: 0.35;
+	}
+	.national-map[data-focus-context]:not([data-focus-context=''])
+		:global(.atlas-stop-label:not(.journey-stop-label)) {
+		opacity: 0.55;
 	}
 	.proposal-edit-anchor {
 		position: absolute;

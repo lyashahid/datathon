@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ArrowRight, BusFront, Clock3, Ship } from '@lucide/svelte';
 	import { Badge } from '#lib/components/ui/badge/index.js';
+	import AnimatedNumber from './AnimatedNumber.svelte';
 	import {
 		bestTransportWaitChange,
 		changedIslandConnections,
@@ -24,11 +25,17 @@
 	let {
 		impact = null,
 		compact = false,
-		preview = false
+		preview = false,
+		pending = false,
+		stale = false,
+		context = ''
 	}: {
 		impact?: TransportImpactData | null;
 		compact?: boolean;
 		preview?: boolean;
+		pending?: boolean;
+		stale?: boolean;
+		context?: string;
 	} = $props();
 	const lines = $derived(changedTransportLines(impact));
 	const connections = $derived(changedIslandConnections(impact));
@@ -43,6 +50,10 @@
 			: formatImpactClock(impact?.departure_minutes)
 	);
 	const hasChanges = $derived(lines.length > 0 || connections.length > 0);
+	const animate = $derived(!pending && !stale);
+	const numberContext = $derived(
+		`${context}:${impact?.service_date}:${impact?.departure_minutes}:${preview}`
+	);
 	function changeLabel(change: string) {
 		return change === 'added'
 			? 'New service'
@@ -62,11 +73,19 @@
 		class:compact
 		aria-label="Transport service impact"
 		data-preview={preview}
+		data-outdated={pending || stale}
 	>
 		<header class="impact-heading">
 			<h3><Clock3 size={16} /> Beyond walking access</h3>
 			<Badge variant="outline">{preview ? 'Preview' : 'Timetable model'}</Badge>
 		</header>
+		{#if pending || stale}
+			<p class="previous-result" role="status">
+				{pending
+					? 'Updating… · previous calculation'
+					: 'Previous calculation · changes need recalculation'}
+			</p>
+		{/if}
 		<p class="impact-context">
 			{formatImpactDate(impact.service_date)}{#if selectedTime}
 				· timetable checked at {selectedTime}{/if}
@@ -80,7 +99,12 @@
 						<strong class="metric-comparison">
 							<span>{formatImpactMinutes(waitChange.line.before?.expected_wait_minutes)}</span>
 							<ArrowRight size={14} aria-label="changes to" />
-							<span>{formatImpactMinutes(waitChange.line.after?.expected_wait_minutes)}</span>
+							<AnimatedNumber
+								value={impactNumber(waitChange.line.after?.expected_wait_minutes)}
+								format={formatImpactMinutes}
+								{animate}
+								context={`${numberContext}:${waitChange.line.id}`}
+							/>
 						</strong>
 						<span class="metric-note" class:reduced={waitChange.saved < 0}>
 							{waitChangeText(waitChange.saved)}
@@ -88,7 +112,11 @@
 					{:else if addedConnections || removedConnections}
 						<small>Island-to-island connections</small>
 						<strong
-							>{addedConnections || removedConnections}
+							><AnimatedNumber
+								value={addedConnections || removedConnections}
+								{animate}
+								context={`${numberContext}:connections`}
+							/>
 							{addedConnections ? 'new' : 'removed'}</strong
 						>
 						<span class="metric-note">One direction counted separately</span>
@@ -98,7 +126,13 @@
 						<span class="metric-note">New service · no previous wait to compare</span>
 					{:else}
 						<small>Service changes</small>
-						<strong>{lines.length}</strong>
+						<strong
+							><AnimatedNumber
+								value={lines.length}
+								{animate}
+								context={`${numberContext}:lines`}
+							/></strong
+						>
 						<span class="metric-note">Review the dated timetable below</span>
 					{/if}
 				</div>
@@ -107,7 +141,12 @@
 					<strong class="metric-comparison">
 						<span>{formatImpactCount(impact.summary?.departures_before)}</span>
 						<ArrowRight size={14} aria-label="changes to" />
-						<span>{formatImpactCount(impact.summary?.departures_after)}</span>
+						<AnimatedNumber
+							value={impactNumber(impact.summary?.departures_after)}
+							format={formatImpactCount}
+							{animate}
+							context={`${numberContext}:departures`}
+						/>
 					</strong>
 					<span class="metric-note">Without → With · selected island and edited routes</span>
 				</div>
@@ -306,6 +345,12 @@
 	}
 	.impact-context {
 		margin: 5px 0 14px;
+	}
+	.previous-result {
+		margin: 8px 0 0;
+		color: var(--muted-foreground, #687a70);
+		font-size: 11px;
+		line-height: 1.5;
 	}
 	.impact-headline {
 		margin: 0 0 14px;

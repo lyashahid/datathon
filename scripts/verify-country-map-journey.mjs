@@ -297,7 +297,9 @@ try {
 		await expect(panel).toBeVisible();
 		await expect(panel).toHaveAttribute('data-policy-section', 'proposal');
 		await expect(panel.getByRole('heading', { name: island.name, exact: true })).toBeVisible();
+		await panel.locator('.proposal-details > summary').click();
 		await expect(panel.getByRole('textbox', { name: 'Proposal name', exact: true })).toBeVisible();
+		await panel.getByRole('button', { name: /^Find options within my budget/ }).click();
 		await expect(panel.getByLabel('Capital budget · MVR', { exact: true })).toBeVisible();
 		await expect(
 			panel.getByRole('button', { name: 'Suggest investments within my budget', exact: true })
@@ -435,6 +437,7 @@ try {
 			await page.getByRole('button', { name: 'Create proposal', exact: true }).click();
 			await expect(panel).toBeVisible();
 			await expect(panel).toHaveAttribute('data-policy-section', 'proposal');
+			await panel.getByRole('button', { name: /^Find options within my budget/ }).click();
 			await expect(
 				panel.getByRole('button', { name: 'Suggest investments within my budget', exact: true })
 			).toBeEnabled();

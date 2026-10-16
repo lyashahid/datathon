@@ -1313,17 +1313,23 @@
 			return;
 		}
 		if (id) selectIsland(id, false);
+		else {
+			resetIslandSelection();
+			countryAtoll = selectedAtoll ?? null;
+			atoll = selectedAtoll ?? '';
+			search = '';
+		}
 		if (selectedAtoll !== undefined) {
 			atoll = selectedAtoll;
 			search = '';
 		}
-		go('explore');
+		go('explore', false);
 		exploreView = 'map';
-		if (lens) policyLens = lens;
+		policyLens = lens ?? 'overall';
 		accessExplorerOpen = !id && !lens;
 		if (lens) policyAction('gaps');
 		else policyAction('close');
-		writeLocation(false);
+		writeLocation(true);
 		if (!id && selectedAtoll) void openIslandSearch();
 	}
 	function exportBrief() {
@@ -1575,6 +1581,10 @@
 						impactFeatures={accessExplorerOpen ? emptyPolicyMap : policyState.impactFeatures}
 						policyComparisonView={policyState.policyComparisonView}
 						comparisonPreview={policyState.comparisonPreview}
+						policyEvaluationId={policyState.policyEvaluationId}
+						policyComparisonPending={policyState.calculating ||
+							policyState.stale ||
+							!!policyState.comparisonPreview}
 						gapLens={policyLens}
 						policyOperations={accessExplorerOpen ? emptyOperations : policyState.operations}
 						pendingProposal={accessExplorerOpen ? null : policyState.pending}

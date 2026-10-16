@@ -261,6 +261,7 @@ try {
 	});
 	await expect(atlas).toHaveAttribute('aria-busy', 'false');
 	await showProposal();
+	await panel.getByRole('button', { name: 'Edit budget limits', exact: true }).click();
 	await panel.locator('#map-capital-budget').fill('1000000000');
 	await panel.locator('#map-annual-budget').fill('1000000000');
 	await check('Dropping a bus stop draws a real road route in an anchored map editor', async () => {

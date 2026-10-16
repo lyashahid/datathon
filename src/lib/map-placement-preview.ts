@@ -1,6 +1,47 @@
 import type { Coordinates } from './types.js';
 import { validPoint } from './planning-map.js';
 
+/** Advice describes the map evidence, not a construction or accessibility approval. */
+export function placementLocationHint(input: {
+	kind: string;
+	suitable: boolean | null;
+	snapped: boolean;
+	distance: number | null;
+	hasRoads: boolean;
+}): { title: string; detail: string; caution: boolean } {
+	if (input.suitable === false)
+		return {
+			title: 'Choose land on the selected island',
+			detail: 'Move the pin onto this island before reviewing the location.',
+			caution: true
+		};
+	if (input.kind === 'add_stop') {
+		if (input.snapped)
+			return {
+				title: 'Aligned to a mapped road',
+				detail: `Pin adjusted ${Math.round(input.distance ?? 0)} m. Review the suggested stop connection after placing.`,
+				caution: false
+			};
+		return {
+			title: input.hasRoads
+				? 'Move closer to a highlighted road'
+				: 'Road detail is not available here',
+			detail: input.hasRoads
+				? 'Within 35 m, the pin aligns to the road. Final suitability is checked after placing.'
+				: 'You can review this location, but a road connection still needs verification.',
+			caution: true
+		};
+	}
+	return {
+		title:
+			input.suitable === null
+				? 'Land boundary is not verified here'
+				: 'Click or tap to review this location',
+		detail: 'The 400 m ring is a distance guide. Resident access is calculated after placement.',
+		caution: input.suitable === null
+	};
+}
+
 /** A local geometry snap, not a claim that a road is suitable for a stop. */
 export function nearestPlacementRoad(
 	point: Coordinates,

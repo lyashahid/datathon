@@ -160,6 +160,8 @@ export type MapPolicyState = {
 	impactFeatures: FeatureCollection;
 	policyComparisonView?: 'current' | 'proposal';
 	comparisonPreview?: boolean;
+	/** Identity of the last accepted, complete evaluation; absent for stale/draft results. */
+	policyEvaluationId?: string | null;
 	serviceFeatures: FeatureCollection;
 	calculating: boolean;
 	stale: boolean;
@@ -192,6 +194,13 @@ export type DraftBudgetDecision = {
 	capitalRemaining: number | null;
 	annualRemaining: number | null;
 };
+
+/** Number inputs can emit null when cleared; an empty limit is not a zero budget. */
+export function planningBudgetNumber(value: unknown): number {
+	if (typeof value === 'number') return value;
+	if (typeof value === 'string' && value.trim() !== '') return Number(value);
+	return NaN;
+}
 
 /** Both limits are commitments: unknown costs cannot be treated as free additions. */
 export function assessDraftBudget(

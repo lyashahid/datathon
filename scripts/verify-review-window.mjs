@@ -77,9 +77,9 @@ async function createRealFrequencyProposal() {
 	}
 	if ((await panel.getAttribute('data-policy-section')) !== 'proposal')
 		await panel.getByRole('button', { name: /^Your proposal/ }).click();
+	await panel.getByRole('button', { name: 'Edit budget limits', exact: true }).click();
 	await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('1000000000');
 	await panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('1000000000');
-	await panel.getByLabel("Compare residents' access to", { exact: true }).selectOption('transport');
 	console.log('SETUP load dated route');
 	const response = await page.request.get(
 		`${baseURL}/api/backend/planning/baseline?island_id=island%3A1442`
@@ -216,6 +216,87 @@ try {
 			assert.equal(await review.evaluate((element) => element.getAnimations().length), 0);
 			assert.deepEqual(await size(), preferred);
 			return { rememberedAfterReload: await size(), reducedMotion: true };
+		}
+	);
+	await check(
+		'Updating and failed evaluations retain qualified results, then recover on review',
+		async () => {
+			const previousAccess = await review.locator('.access-card').innerText();
+			await page.keyboard.press('Escape');
+			await expect(review).not.toBeVisible();
+			const budget = panel.getByRole('region', { name: 'Proposal budget', exact: true });
+			const transport = panel.getByRole('region', {
+				name: 'Transport service impact',
+				exact: true
+			});
+			const previous = await transport.locator('.impact-metrics').innerText();
+			let requested = false;
+			/** @type {() => void} */
+			let release = () => {};
+			const held = new Promise((resolve) => {
+				release = () => resolve(undefined);
+			});
+			await page.route(
+				'**/planning/evaluate',
+				async (route) => {
+					requested = true;
+					await held;
+					await route.abort('failed');
+				},
+				{ times: 1 }
+			);
+			try {
+				await page.getByLabel('Access shown on map', { exact: true }).selectOption('education');
+				await expect.poll(() => requested).toBe(true);
+				await expect(budget).toHaveAttribute('aria-busy', 'true');
+				await expect(transport).toContainText('Updating… · previous calculation');
+				assert.equal(await transport.locator('.impact-metrics').innerText(), previous);
+				await page.screenshot({ path: path.join(output, 'proposal-updating-retained.png') });
+			} finally {
+				release();
+			}
+			await expect(budget).toHaveAttribute('aria-busy', 'false');
+			await expect(budget).toContainText('Previous calculation');
+			await expect(transport).toContainText('changes need recalculation');
+			assert.equal(await transport.locator('.impact-metrics').innerText(), previous);
+			let retryRequested = false;
+			/** @type {() => void} */
+			let releaseRetry = () => {};
+			const heldRetry = new Promise((resolve) => {
+				releaseRetry = () => resolve(undefined);
+			});
+			await page.route(
+				'**/planning/evaluate',
+				async (route) => {
+					retryRequested = true;
+					await heldRetry;
+					await route.continue();
+				},
+				{ times: 1 }
+			);
+			try {
+				await opener.click(); // Opening stale impact retries the real request.
+				await expect(review).toBeVisible();
+				await expect.poll(() => retryRequested).toBe(true);
+				await expect(review.locator('.forecast-shell')).toHaveAttribute('aria-busy', 'true');
+				assert.equal(await review.locator('.access-card').innerText(), previousAccess);
+				await expect(
+					review.getByRole('button', { name: 'Save as PDF', exact: true })
+				).toBeDisabled();
+			} finally {
+				releaseRetry();
+			}
+			await expect(review.locator('.forecast-shell')).toHaveAttribute('aria-busy', 'false');
+			await expect(review.getByRole('button', { name: 'Save as PDF', exact: true })).toBeEnabled();
+			await expect(review).not.toContainText('These results describe the previous version.');
+			await expect(review.locator('.access-card')).toContainText('education');
+			await expect(review.locator('.access-card')).toContainText('30-minute target');
+			return {
+				retainedWhileUpdating: true,
+				failureQualified: true,
+				previousGoalRetained: true,
+				realRetryCompleted: true
+			};
 		}
 	);
 	assert.deepEqual(report.pageErrors, []);

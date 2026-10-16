@@ -379,9 +379,11 @@ try {
 			await expect(page.locator('.national-map')).toHaveAttribute('aria-busy', 'false');
 			await expect(page).toHaveURL((value) => value.searchParams.get('island') === 'island:1442');
 			await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
+			await policyPanel.getByRole('button', { name: 'Edit budget limits', exact: true }).click();
 			await expect(policyPanel.getByLabel('Capital budget · MVR')).toBeVisible();
 			await policyPanel.getByLabel('Capital budget · MVR').fill(expectedCapital);
 			await policyPanel.getByLabel('Annual running budget · MVR').fill(expectedAnnual);
+			await policyPanel.locator('.proposal-details > summary').click();
 			await policyPanel
 				.getByLabel('Proposal name', { exact: true })
 				.fill('Retained island proposal');
@@ -604,6 +606,10 @@ try {
 			await expect(page).toHaveURL((value) => value.searchParams.get('island') === 'island:1442');
 			await page.getByRole('button', { name: 'Back to map', exact: true }).click();
 			await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
+			if (!(await policyPanel.getByLabel('Capital budget · MVR').isVisible()))
+				await policyPanel.getByRole('button', { name: 'Edit budget limits', exact: true }).click();
+			if ((await policyPanel.locator('.proposal-details').getAttribute('open')) === null)
+				await policyPanel.locator('.proposal-details > summary').click();
 			await expect(policyPanel.getByLabel('Capital budget · MVR')).toHaveValue(expectedCapital);
 			await expect(policyPanel.getByLabel('Annual running budget · MVR')).toHaveValue(
 				expectedAnnual

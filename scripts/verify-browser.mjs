@@ -4,6 +4,7 @@ import { handleSignals, processRunner } from './runtime.mjs';
 // Suites run sequentially to avoid competing for the map renderer or planning cache.
 const suites = [
 	'verify-analytics-redesign.mjs',
+	'verify-analytics-decision-flow.mjs',
 	'verify-forecast-data-browser.mjs',
 	'verify-capital-map-start.mjs',
 	'verify-restored-navigation.mjs',
@@ -12,6 +13,8 @@ const suites = [
 	'verify-map-floating-controls.mjs',
 	'verify-proposal-experience.mjs',
 	'verify-proposal-map-comparison.mjs',
+	'verify-motion-windows.mjs',
+	'verify-review-window.mjs',
 	'verify-island-connections.mjs'
 ];
 const runner = processRunner();

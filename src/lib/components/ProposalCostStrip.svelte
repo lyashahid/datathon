@@ -7,6 +7,9 @@
 		Undo2
 	} from '@lucide/svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
+	import AnimatedNumber from './AnimatedNumber.svelte';
+	import { proposalBenefit } from '#lib/proposal-benefit.js';
+	import type { TransportImpactData } from '#lib/transport-impact.js';
 	import {
 		budgetUse,
 		finiteValue,
@@ -16,8 +19,8 @@
 
 	let {
 		economics = null,
-		capitalBudget = null,
-		annualBudget = null,
+		capitalBudget = undefined,
+		annualBudget = undefined,
 		pending = false,
 		stale = false,
 		operationCount = 0,
@@ -26,6 +29,9 @@
 		preview = false,
 		previewChecking = false,
 		gainedResidents = null,
+		transportImpact = null,
+		resultTime = '',
+		context = '',
 		onEditBudget = () => {},
 		onUndo = () => {},
 		canUndo = false,
@@ -42,6 +48,9 @@
 		preview?: boolean;
 		previewChecking?: boolean;
 		gainedResidents?: number | null;
+		transportImpact?: TransportImpactData | null;
+		resultTime?: string;
+		context?: string;
 		onEditBudget?: () => void;
 		onUndo?: () => void;
 		canUndo?: boolean;
@@ -50,10 +59,12 @@
 	const capital = $derived(finiteValue(economics?.delta.capital_mvr));
 	const annual = $derived(finiteValue(economics?.delta.annual_operating_mvr));
 	const resolvedCapitalBudget = $derived(
-		capitalBudget ?? finiteValue(economics?.budget.capital_budget_mvr)
+		capitalBudget === undefined ? finiteValue(economics?.budget.capital_budget_mvr) : capitalBudget
 	);
 	const resolvedAnnualBudget = $derived(
-		annualBudget ?? finiteValue(economics?.budget.annual_operating_budget_mvr)
+		annualBudget === undefined
+			? finiteValue(economics?.budget.annual_operating_budget_mvr)
+			: annualBudget
 	);
 	const capitalShare = $derived(budgetUse(capital, resolvedCapitalBudget));
 	const annualShare = $derived(budgetUse(annual, resolvedAnnualBudget));
@@ -68,6 +79,11 @@
 	]);
 	const previewUnpriced = $derived(preview && previewChecking);
 	const displayGained = $derived(finiteValue(gainedResidents));
+	const benefit = $derived(proposalBenefit(displayGained, transportImpact));
+	const animateValues = $derived(!pending && !stale && !previewChecking);
+	const numberContext = $derived(`${context}:${preview ? 'preview' : 'accepted'}`);
+	const formatBenefit = (value: number) =>
+		new Intl.NumberFormat('en', { maximumFractionDigits: benefit.unit ? 1 : 0 }).format(value);
 	const over = $derived(
 		(capital !== null && resolvedCapitalBudget !== null && capital > resolvedCapitalBudget) ||
 			(annual !== null && resolvedAnnualBudget !== null && annual > resolvedAnnualBudget)
@@ -94,38 +110,65 @@
 		{#if previewUnpriced}<span class="cost-status" role="status">Cost check needed</span>
 		{:else if over}<span class="cost-status over"><CircleAlert size={13} /> Over budget</span>
 		{:else if pending}<span class="cost-status" role="status"
-				><LoaderCircle size={13} class="cost-spinner" /> Recalculating</span
+				><LoaderCircle size={13} class="cost-spinner" /> Updating…</span
 			>
-		{:else if stale}<span class="cost-status">Changes need recalculation</span>
+		{:else if stale}<span class="cost-status">Previous calculation</span>
 		{:else if economics}<span class="cost-status"
-				>{preview ? 'Preview estimate' : 'Planning estimate'}</span
+				>{preview
+					? 'Preview estimate'
+					: resultTime
+						? `Calculated ${resultTime}`
+						: 'Planning estimate'}</span
 			>{/if}
 	</div>
 	<div class="cost-values">
 		<div>
 			<small>{compact ? 'Upfront cost' : 'One-time investment'}</small><strong
 				>{#if previewUnpriced || capital === null}—{:else}<span class="currency">MVR</span>
-					{formatAmount(capital, true)}{/if}</strong
+					<AnimatedNumber
+						value={capital}
+						format={(value) => formatAmount(value, true)}
+						animate={animateValues}
+						context={numberContext}
+					/>{/if}</strong
 			>
 		</div>
 		<div>
 			<small>{compact ? 'Yearly running' : 'Added yearly running cost'}</small><strong
 				>{#if previewUnpriced || annual === null}—{:else}<span class="currency">MVR</span>
-					{formatAmount(annual, true)}{/if}</strong
+					<AnimatedNumber
+						value={annual}
+						format={(value) => formatAmount(value, true)}
+						animate={animateValues}
+						context={numberContext}
+					/>{/if}</strong
 			>
 		</div>
 		{#if compact}<div class="resident-value">
-				<small>Gaining access</small><strong class:updating={displayGained === null && pending}
-					>{displayGained === null
-						? pending
-							? 'Updating…'
-							: '—'
-						: new Intl.NumberFormat('en', { maximumFractionDigits: 0 }).format(
-								displayGained
-							)}</strong
+				<small>{benefit.label}</small><strong
+					class:updating={benefit.value === null && pending}
+					class:reduced={benefit.reduced}
+					><AnimatedNumber
+						value={benefit.value}
+						format={formatBenefit}
+						empty={pending ? 'Updating…' : '—'}
+						animate={animateValues}
+						context={`${numberContext}:${benefit.label}`}
+					/>{#if benefit.value !== null && benefit.unit}<span class="benefit-unit">
+							{benefit.unit}</span
+						>{/if}</strong
 				>
 			</div>{/if}
 	</div>
+	{#if compact && benefit.detail}<p class="benefit-detail" class:reduced={benefit.reduced}>
+			{benefit.detail}
+		</p>{/if}
+	{#if compact && benefit.guardrail}<p class="benefit-guardrail">{benefit.guardrail}</p>{/if}
+	{#if stale && !preview}<p class="result-qualification" role="status">
+			{pending
+				? 'Showing the previous impact while your changes are calculated.'
+				: 'Impact is from the previous calculation. Review impact to retry your changes.'}
+		</p>{/if}
 	{#if preview}<p class="preview-note" role="status">
 			{previewUnpriced
 				? 'Budget remaining appears after the preview is priced. Check the location and service settings before confirming.'
@@ -157,7 +200,7 @@
 					>
 				</div>
 			{:else if compact}<div class="budget-summary no-limit">
-					<span>{budget.label} budget</span><small>No limit set</small>
+					<span>{budget.label} budget</span><small>Enter a valid limit</small>
 				</div>
 			{/if}
 		{/each}
@@ -267,7 +310,29 @@
 		line-height: 1.4;
 	}
 	.compact .resident-value strong {
-		color: var(--chart-1);
+		color: #176c61;
+	}
+	.compact .resident-value strong.reduced,
+	.benefit-detail.reduced {
+		color: var(--destructive);
+	}
+	.benefit-unit {
+		font-size: 10px;
+		font-weight: 500;
+		letter-spacing: 0;
+	}
+	.benefit-detail,
+	.benefit-guardrail,
+	.result-qualification {
+		margin: 0;
+		font-size: 10px;
+		line-height: 1.5;
+	}
+	.benefit-detail {
+		color: #176c61;
+	}
+	.benefit-guardrail {
+		color: #8b5424;
 	}
 	.compact .resident-value strong.updating {
 		font-size: 12px;

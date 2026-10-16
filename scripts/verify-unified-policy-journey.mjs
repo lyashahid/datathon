@@ -65,9 +65,12 @@ async function showProposal() {
 		await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
 	if ((await panel.getAttribute('data-policy-section')) !== 'proposal')
 		await panel.getByRole('button', { name: /^Your proposal/ }).click();
+	await panel.getByRole('button', { name: /^Add an improvement/ }).click();
 }
 /** @param {string} domain */
 async function selectSector(domain) {
+	if ((await priorities.locator('.service-comparison-disclosure').getAttribute('open')) === null)
+		await priorities.locator('.service-comparison-disclosure > summary').click();
 	const action = priorities.locator(`.sector-${domain} .sector-action[aria-pressed]`);
 	if ((await action.getAttribute('aria-pressed')) !== 'true') await action.click();
 	await expect(action).toHaveAttribute('aria-pressed', 'true');
@@ -227,6 +230,7 @@ try {
 	await check(
 		'Analytics distinguishes review signals from missing evidence and hands the chosen service to the same map',
 		async () => {
+			await priorities.locator('.service-comparison-disclosure > summary').click();
 			await expect(
 				priorities.locator('.screening-legend').getByText('Need more data', { exact: true })
 			).toBeVisible();
@@ -309,9 +313,11 @@ try {
 		async () => {
 			await panel.getByRole('button', { name: 'Build a funded proposal', exact: true }).click();
 			await expect(panel).toHaveAttribute('data-policy-section', 'proposal');
+			await panel.locator('.proposal-details > summary').click();
 			await panel
 				.getByRole('textbox', { name: 'Proposal name', exact: true })
 				.fill('Hulhumale policy investment QA');
+			await panel.getByRole('button', { name: /^Find options within my budget/ }).click();
 			await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('200000000');
 			await panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('50000000');
 			await panel
@@ -357,6 +363,7 @@ try {
 			const previousCount = await panel.locator('.policy-operation-list li').count();
 			const previousCosts = await budget.locator('.cost-values').innerText();
 			const previousPoints = Number(await atlas.getAttribute('data-policy-proposal-points'));
+			await panel.getByRole('button', { name: /^Add an improvement/ }).click();
 			await panel
 				.locator('.policy-palette')
 				.getByRole('button', { name: 'Bus stop', exact: true })
@@ -480,6 +487,7 @@ try {
 		'A user-edited draft restores budgets, travel assumptions and priorities after reload',
 		async () => {
 			const count = await panel.locator('.policy-operation-list li').count();
+			await panel.getByRole('button', { name: /^Find options within my budget/ }).click();
 			await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('210000000');
 			await panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('55000000');
 			await panel
@@ -497,6 +505,8 @@ try {
 			await page.reload({ waitUntil: 'domcontentloaded' });
 			await expect(atlas).toBeVisible();
 			await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
+			await panel.getByRole('button', { name: /^Find options within my budget/ }).click();
+			await panel.locator('.proposal-details > summary').click();
 			await expect(panel.locator('.policy-operation-list li')).toHaveCount(count);
 			await expect(panel.getByLabel('Proposal name', { exact: true })).toHaveValue(
 				'Hulhumale policy investment QA'
@@ -617,6 +627,8 @@ try {
 				.poll(async () => Number(await atlas.getAttribute('data-policy-impact-cells')))
 				.toBeGreaterThan(0);
 			await panel.getByRole('button', { name: /^Your proposal/ }).click();
+			if ((await panel.locator('.proposal-details').getAttribute('open')) === null)
+				await panel.locator('.proposal-details > summary').click();
 			await expect(panel.getByLabel('Proposal name', { exact: true })).toHaveValue(
 				'Hulhumale policy investment QA'
 			);

@@ -141,11 +141,9 @@ try {
 	);
 	assert.ok(route, 'The test uses a captured R1 service, not a synthetic route.');
 	await showProposal(bus);
+	await bus.panel.getByRole('button', { name: 'Edit budget limits', exact: true }).click();
 	await bus.panel.getByLabel('Capital budget · MVR', { exact: true }).fill('1000000000');
 	await bus.panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('1000000000');
-	await bus.panel
-		.getByLabel("Compare residents' access to", { exact: true })
-		.selectOption('transport');
 	await bus.panel.getByRole('button', { name: /^Bus service/ }).click();
 	const busEditor = bus.page.getByTestId('map-service-editor');
 	await expect(busEditor).toHaveAttribute('data-service-mode', 'bus');
@@ -198,6 +196,16 @@ try {
 		async () => {
 			await busEditor.getByRole('button', { name: 'Accept service', exact: true }).click();
 			await expect(busEditor).not.toBeVisible();
+			await showProposal(bus);
+			await bus.panel
+				.getByLabel("Compare residents' access to", { exact: true })
+				.selectOption('transport');
+			await expect
+				.poll(
+					() =>
+						bus.responses.findLast((row) => row.endpoint === 'evaluate')?.request.assumptions?.goal
+				)
+				.toBe('transport');
 			const value = await evaluated(bus);
 			const impact = value.transport_connectivity?.impact;
 			assert.ok(impact, 'The confirmed bus evaluation includes transport service impact.');

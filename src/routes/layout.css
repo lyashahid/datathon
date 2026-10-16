@@ -29,6 +29,9 @@
 	--chart-4: #d8e7ce;
 	--chart-5: #ecd6c5;
 	--radius: 0.8rem;
+	--panel-radius: 20px;
+	--control-radius: 10px;
+	--surface-shadow: 0 2px 5px #23233403;
 	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 	color: var(--foreground);
 	background: var(--background);
@@ -136,17 +139,20 @@
 .ui-button:active:not(:disabled):not([aria-disabled='true']):not(:focus-visible) {
 	transform: scale(0.97);
 }
+html[data-motion-input='keyboard'] .ui-button:active {
+	transform: none;
+}
 [data-slot='card'] {
 	border: 1px solid var(--border);
-	border-radius: 20px;
-	box-shadow: 0 2px 5px #23233403;
+	border-radius: var(--panel-radius);
+	box-shadow: var(--surface-shadow);
 	--tw-ring-color: transparent;
 }
 [data-slot='input'],
 [data-slot='native-select'] {
 	height: 40px;
 	background: #fff;
-	border-radius: 10px;
+	border-radius: var(--control-radius);
 	box-shadow: none;
 	font-size: 13px;
 }

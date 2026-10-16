@@ -281,6 +281,9 @@ try {
 	await check(
 		'Evidence disclosure and policy selection keep explanations and map handoff connected',
 		async () => {
+			const services = priorities.locator('.service-comparison-disclosure');
+			if ((await services.getAttribute('open')) === null)
+				await services.locator('summary').first().click();
 			await dashboard
 				.getByRole('button', { name: 'Explain analytics methodology', exact: true })
 				.click();

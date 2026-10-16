@@ -174,6 +174,7 @@ try {
 	await check(
 		'Capital budget blocks a bus stop at its map pin; raising the limit enables confirmation',
 		async () => {
+			await panel.getByRole('button', { name: 'Edit budget limits', exact: true }).click();
 			await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('1');
 			await panel.getByLabel('Annual running budget · MVR', { exact: true }).fill('50000000');
 			const before = requests.length;
@@ -398,6 +399,8 @@ try {
 		'A placement cannot be confirmed until its real backend budget quote has resolved',
 		async () => {
 			// Change the quote key so an earlier verified placement cannot satisfy this check.
+			if (!(await panel.getByLabel('Capital budget · MVR', { exact: true }).isVisible()))
+				await panel.getByRole('button', { name: 'Edit budget limits', exact: true }).click();
 			await panel.getByLabel('Capital budget · MVR', { exact: true }).fill('151000000');
 			const visibleSite = await roadSite(baseline.graph_edges);
 			let releaseQuote = () => {};
