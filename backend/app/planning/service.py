@@ -257,17 +257,33 @@ class PlanningService:
         scope = self.repository.planning_id(request.island_id)
         supported = {island["id"] for island in self.repository.baseline.get("islands", [])}
         snapshot = self.repository.baseline.get("referenceDate")
+        transit = self.repository.baseline.get("transit", {})
+        stop_ids = {
+            stop["id"]
+            for stop in transit.get("stops", [])
+            if not scope or stop.get("islandId") == scope
+        }
+        has_bus_snapshot = any(
+            pattern.get("mode") == "bus"
+            and (not scope or stop_ids.intersection(pattern.get("stopIds", [])))
+            for pattern in transit.get("patterns", [])
+        )
         return {
             "status": "outside_snapshot" if scope and scope not in supported else "partial",
+            **self.repository.evidence_coverage(request.island_id),
             "service_date": request.assumptions.date.isoformat(),
             "snapshot_date": snapshot,
             "snapshot_date_matches": request.assumptions.date.isoformat() == snapshot,
             "timezone": "Indian/Maldives",
             "meaning": "Computed shortest journeys in available walking and dated transit "
             "evidence. Results are modeled access, not observed travel or admissions availability.",
-            "bus_calendar": "remaining_departures_only"
-            if request.assumptions.date.isoformat() == snapshot
-            else "no_recurring_calendar_verified",
+            "bus_calendar": (
+                "remaining_departures_only"
+                if request.assumptions.date.isoformat() == snapshot
+                else "no_recurring_calendar_verified"
+            )
+            if has_bus_snapshot
+            else "unavailable",
             "ferry_crossing_times": "requires_explicit_import",
         }
 
@@ -291,7 +307,7 @@ class PlanningService:
                 "planning-public-baseline" if public_baseline else "planning-evaluation",
                 [
                     model_code_version(),
-                    self.repository.baseline,
+                    self.repository.baseline_fingerprint(),
                     self.repository.calendars,
                     self.repository.receipts,
                     self.repository.ferry_terminals,
@@ -307,8 +323,12 @@ class PlanningService:
             self.repository, request, share_unchanged_network=True
         )
         origins = self._origins(request)
-        before = self._router(before_world, request.assumptions)
-        after = self._router(after_world, request.assumptions)
+        before = self._router(
+            self.repository.scope_world(before_world, request.island_id), request.assumptions
+        )
+        after = self._router(
+            self.repository.scope_world(after_world, request.island_id), request.assumptions
+        )
         comparisons = []
         summary = {
             key: 0.0
@@ -378,7 +398,7 @@ class PlanningService:
             comparison = {
                 "origin_id": origin["id"],
                 "island_id": origin["islandId"],
-                "national_island_id": IDENTITY_BRIDGE.get(origin["islandId"]),
+                "national_island_id": IDENTITY_BRIDGE.get(origin["islandId"], origin["islandId"]),
                 "population": population,
                 "coordinates": [origin["lon"], origin["lat"]],
                 "before": first,
@@ -417,7 +437,7 @@ class PlanningService:
             for values in bands.values():
                 for band in values:
                     band["residents"] = None
-        if not coverage["snapshot_date_matches"]:
+        if coverage["bus_calendar"] == "no_recurring_calendar_verified":
             warnings.append(
                 "Selected date is outside the verified bus snapshot: only walking "
                 "and explicitly imported/calendared services can be evaluated"
@@ -434,7 +454,7 @@ class PlanningService:
             island_summaries.append(
                 {
                     "island_id": island_id,
-                    "national_island_id": IDENTITY_BRIDGE.get(island_id),
+                    "national_island_id": IDENTITY_BRIDGE.get(island_id, island_id),
                     "population": round(sum(x["population"] for x in rows), 3),
                     "gained_residents": round(
                         sum(x["population"] for x in rows if x["gained_access"]), 3
@@ -478,8 +498,8 @@ class PlanningService:
                 "dataset": self.repository.baseline.get("version"),
                 "model": "fastapi-service-planning-1.0",
             },
-            "population_basis": self.repository.baseline.get("assumptions", {}).get(
-                "populationSpatialDistribution"
+            "population_basis": self.repository.population_basis(
+                request.island_id, population_year=request.assumptions.population_year
             ),
             "access_method": (
                 "Shortest walking time to mapped boarding points. Proposed new stops "
@@ -499,7 +519,8 @@ class PlanningService:
         origin = next((x for x in self._origins(request) if x["id"] == request.origin_id), None)
         if origin is None:
             raise ValueError("Resident origin ID not found in the selected supported scope")
-        world, warnings = apply_operations(self.repository, request)
+        world, warnings = apply_operations(self.repository, request, share_unchanged_network=True)
+        world = self.repository.scope_world(world, request.island_id)
         world = self._world_for_goal(world, request.assumptions)
         destinations = None
         if request.destination_id:
@@ -552,7 +573,9 @@ class PlanningService:
         return_origin = dict(destination, id="return:destination")
         # Reviewed validity is checked at each leg's departure, including midnight rollover.
         return_request = request.model_copy(update={"assumptions": assumptions})
-        return_world, return_warnings = apply_operations(self.repository, return_request)
+        return_world, return_warnings = apply_operations(
+            self.repository, return_request, share_unchanged_network=True
+        )
         result["warnings"].extend(f"Return journey: {warning}" for warning in return_warnings)
         inward = JourneyRouter(return_world, assumptions, [home_target]).route(
             return_origin, include_geometry=assumptions.include_journey_geometry

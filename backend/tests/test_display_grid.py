@@ -114,6 +114,32 @@ def test_source_holes_and_disconnected_footprints_survive_clipping():
     assert origin_shares(grid) == pytest.approx({"ring": 1, "parts": 1}, abs=1e-10)
 
 
+def test_island_display_cells_expand_fragmented_support_without_allocating_more_residents():
+    origins = [origin("parts", MultiPolygon([box(-8, -8, 8, 8), box(35, -8, 45, 8)]))]
+    before = copy.deepcopy(origins)
+    land = degrees(box(-150, -150, 150, 150))
+    source_grid = mesh(origins)
+    display_grid = build_display_grid(
+        origins, scope="island:1152", island_id="island:1152", display_boundary=mapping(land)
+    )
+    source_support = unary_union(geometries(source_grid))
+    display_support = unary_union(geometries(display_grid))
+    assert display_support.area > source_support.area * 5
+    assert display_support.difference(land).area < 1e-12
+    assert len(display_grid["features"]) == len(source_grid["features"])
+    assert [row["properties"]["contributions"] for row in display_grid["features"]] == [
+        row["properties"]["contributions"] for row in source_grid["features"]
+    ]
+    shares = origin_shares(display_grid)
+    assert shares == pytest.approx({"parts": 1}, abs=1e-10)
+    for year in (2026, 2030):
+        assert sum(
+            row[f"population{year}"] * shares[row["id"]] for row in origins
+        ) == pytest.approx(sum(row[f"population{year}"] for row in origins))
+    assert all(row["properties"]["contributions"] for row in display_grid["features"])
+    assert origins == before
+
+
 def test_grid_ids_and_contributions_are_stable_when_input_order_changes():
     origins = [origin("b", box(0, 0, 100, 100)), origin("a", box(100, 0, 200, 100))]
     first, second = mesh(origins), mesh(list(reversed(origins)))
@@ -161,6 +187,7 @@ def test_detail_caches_mesh_by_scope_and_does_not_expose_mutable_cache(tmp_path,
     monkeypatch.setattr("app.planning.opportunities.build_display_grid", counted)
     first = service.detail("island:1443")
     unchanged = copy.deepcopy(first["hex_grid"])
+    assert unchanged == mesh(origins)
     first["hex_grid"]["features"][0]["properties"]["contributions"][0]["share"] = 99
     second = service.detail("male")
     assert calls == ["male"]

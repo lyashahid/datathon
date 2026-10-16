@@ -63,7 +63,8 @@ def test_fiscal_projection_has_constant_cost_assumptions_and_preserves_unknown()
     assert clock_time(1500) == "01:00 (+1d)"
 
 
-def test_pdf_has_access_comparison_cost_horizons_and_source_caveats():
+@pytest.mark.parametrize("structured_basis", [False, True])
+def test_pdf_has_access_comparison_cost_horizons_and_source_caveats(structured_basis):
     payload = PlanningRequest.model_validate(
         {
             "island_id": "male",
@@ -77,9 +78,16 @@ def test_pdf_has_access_comparison_cost_horizons_and_source_caveats():
             ],
         }
     )
+    evaluated = evaluation()
+    if structured_basis:
+        evaluated["population_basis"] = {
+            "spatial_method": "residential_building_footprint_area",
+            "spatial_quality": "coarse_assumption",
+            "qualification": "Approximate footprint allocation; occupancy remains unverified",
+        }
     result = build_planning_report(
         payload,
-        evaluation(),
+        evaluated,
         "Island investment brief",
         {
             "islands": [{"id": "male", "name": "Malé"}],
@@ -104,6 +112,8 @@ def test_pdf_has_access_comparison_cost_horizons_and_source_caveats():
     assert all("Page " in page.extract_text() for page in reader.pages)
     assert "proposal-inputs.json" in reader.attachments
     assert b"Harbour school <draft>" in reader.attachments["proposal-inputs.json"][0]
+    if structured_basis:
+        assert "Approximate footprint allocation; occupancy remains unverified" in text
 
 
 def test_export_recalculates_canonical_results_and_rejects_supplied_totals():

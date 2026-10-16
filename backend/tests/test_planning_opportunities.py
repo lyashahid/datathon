@@ -87,6 +87,63 @@ def request(**overrides):
     )
 
 
+@pytest.mark.parametrize("domain", ["health", "education", "transport"])
+def test_national_island_suggestions_apply_with_scoped_evidence_and_year(opportunities, domain):
+    repository = opportunities.repository
+    # Reuse the bounded three-node fixture under the actual national ID format.
+    repository.baseline = json.loads(
+        json.dumps(repository.baseline).replace('"male"', '"island:1152"')
+    )
+    island = repository.baseline["islands"][0]
+    island["populationBasis"] = {
+        "method": "residential_building_footprint_area",
+        "spatialQuality": "coarse_assumption",
+        "qualification": "Fixture approximate allocation, not observed residents",
+        "years": [2026, 2030],
+    }
+    repository.national_population = {"coverage": {}}
+    national = OpportunityService(PlanningService(repository))
+    original = copy.deepcopy(repository.baseline)
+    result = national.suggest(
+        request(
+            island_id="island:1152",
+            priorities=[domain],
+            assumptions={"population_year": 2030, "target_minutes": 10},
+        )
+    )
+    assert len(result["selected"]) == 1
+    candidate = result["selected"][0]
+    assert candidate["island_id"] == "island:1152"
+    assert candidate["population_basis"] == repository.population_basis(
+        "island:1152", population_year=2030
+    )
+    assert candidate["population_basis"]["spatial_method"] == "residential_building_footprint_area"
+    assert candidate["population_basis"]["population_year"] == 2030
+    proposal_ids = [
+        operation["metadata"]["proposal_id"]
+        for operation in result["operations"]
+        if operation.get("metadata", {}).get("proposal_id")
+    ]
+    assert proposal_ids
+    assert all(identity.count(":") == 2 for identity in proposal_ids)
+    evaluation = national.planning.evaluate(
+        PlanningRequest(
+            island_id="island:1152",
+            operations=result["operations"],
+            assumptions={
+                "goal": "healthcare" if domain == "health" else domain,
+                "population_year": 2030,
+                "target_minutes": 10,
+            },
+        )
+    )
+    assert evaluation["summary"]["population"] == 180
+    assert evaluation["summary"]["gained_residents"] == candidate["estimated_gained_residents"]
+    assert evaluation["population_basis"]["population_year"] == 2030
+    assert {row["national_island_id"] for row in evaluation["origins"]} == {"island:1152"}
+    assert repository.baseline == original
+
+
 def test_zero_budget_never_invents_free_suggestions(opportunities):
     result = opportunities.suggest(request(capital_budget_mvr=0))
     assert result["status"] == "no_eligible_candidates"

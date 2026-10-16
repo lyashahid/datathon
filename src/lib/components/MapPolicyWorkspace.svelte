@@ -29,6 +29,11 @@
 	import { Label } from '#lib/components/ui/label/index.js';
 	import { api, subscribeApiInvalidation } from '#lib/api.js';
 	import { capitalIslandIds, isCapitalIsland } from '#lib/capital-region.js';
+	import {
+		planningEvidence,
+		type PlanningCoverage,
+		type PopulationBasis
+	} from '#lib/planning-evidence.js';
 	import type { PlanningOperation } from '#lib/planning-map.js';
 	import {
 		displayGapHexes,
@@ -124,6 +129,9 @@
 		gap_cells?: FeatureCollection;
 		features?: FeatureCollection;
 		hex_grid?: FeatureCollection;
+		population_basis?: PopulationBasis;
+		journey_population_basis?: PopulationBasis;
+		coverage?: PlanningCoverage;
 	};
 	const preparedGapDetails = new WeakMap<
 		LocalGapDetail,
@@ -327,9 +335,18 @@
 			title = `${current.name} service improvement`;
 	});
 	const supported = $derived(current?.planning_supported ?? false);
+	const evidence = $derived(
+		planningEvidence(baseline?.population_basis ?? current?.population_basis, baseline?.coverage)
+	);
+	const selectedEvidence = $derived(
+		planningEvidence(baseline?.population_basis ?? current?.population_basis, baseline?.coverage, {
+			spatial_method: typeof cell?.spatial_method === 'string' ? cell.spatial_method : undefined,
+			spatial_quality: typeof cell?.spatial_quality === 'string' ? cell.spatial_quality : undefined
+		})
+	);
 	const localConstructionReason = $derived(
 		current
-			? 'Local construction planning needs detailed road and resident data, which are unavailable for this island. You can still plan a ferry service using existing landing places.'
+			? 'This island has no supported resident allocation for local construction estimates. Existing mapped landing places can still support a ferry proposal.'
 			: 'Loading the island evidence before placing local construction…'
 	);
 	const scopedKey = $derived(islandId ?? '');
@@ -1181,7 +1198,7 @@
 		// Warm both map evidence and planning baselines together. The API shares the
 		// selected island's in-flight reads and retains each result in its normal cache.
 		// Depending on the region, rather than the selected ID, keeps sibling loads alive
-		// when moving between these three islands. Empty airport evidence is ready too.
+		// when moving between regional siblings. Empty airport evidence is ready too.
 		void Promise.allSettled(scopes.map((scope) => loadIslandEvidence(scope, controller.signal)))
 			.then((results) => {
 				if (controller.signal.aborted) return;
@@ -1230,7 +1247,15 @@
 		}
 		if (capitalIslandIds.includes(scope) && capitalGapMaps[scope] !== prepared.gaps)
 			capitalGapMaps = { ...capitalGapMaps, [scope]: prepared.gaps };
-		return { ...prepared, baseline: data };
+		return {
+			...prepared,
+			baseline: {
+				...data,
+				population_basis:
+					detail.journey_population_basis ?? data.population_basis ?? detail.population_basis,
+				coverage: detail.coverage ?? data.coverage
+			}
+		};
 	}
 	$effect(() => {
 		const scope = scopedKey;
@@ -3172,6 +3197,15 @@
 				<RefreshCw size={12} class="spin" />{nearbyGapLoading
 					? 'Preparing capital-area map and analysis…'
 					: 'Loading neighborhood journeys…'}
+			</p>
+		{:else if islandId && baseline && !gapCells.features.length}<p
+				class="local-map-status"
+				role="status"
+			>
+				Local journey estimates are unavailable for this island. Mapped services remain available.
+			</p>
+		{:else if islandId && evidence.approximate}<p class="local-map-status">
+				Approximate resident distribution · inspect a tile for its evidence.
 			</p>{/if}
 		{#if impact.features.length && (previewCalculating || (!comparisonPreview && stale))}
 			<p class="proposal-map-result" role="status">Updating access · previous result shown</p>
@@ -3313,6 +3347,10 @@
 						>
 							<strong>Selected neighbourhood</strong><span
 								>{formatAmount(cell.population)} modeled residents</span
+							><small
+								>{selectedEvidence.approximate
+									? 'Approximate resident distribution'
+									: 'Modeled resident distribution'}</small
 							>{#each [{ key: 'transport', label: 'Walk to a stop' }, { key: 'health', label: 'Healthcare journey' }, { key: 'education', label: 'Education journey' }] as metric (metric.key)}<p
 								>
 									{metric.label}<b
@@ -3324,6 +3362,11 @@
 							{#if cell.display_grid}<details class="policy-cell-evidence">
 									<summary>Journey evidence</summary>
 									<p>Journey times are resident-weighted averages for this tile.</p>
+									{#if selectedEvidence.population}<p>{selectedEvidence.population}</p>{/if}
+									{#if selectedEvidence.distribution}<p>{selectedEvidence.distribution}</p>{/if}
+									{#if selectedEvidence.qualification}<p>{selectedEvidence.qualification}</p>{/if}
+									<p>{selectedEvidence.timetable}</p>
+									{#each selectedEvidence.warnings as warning (warning)}<p>{warning}</p>{/each}
 								</details>{/if}
 						</div>{:else if cell?.impact && impact.features.length}<div
 							class="policy-selected-cell"
@@ -3750,12 +3793,25 @@
 							bind:value={date}
 						/>
 						<p>
-							Uses the captured schedule and modeled {String(request.assumptions.population_year)} population.
-							This is an access scenario, not a prediction of future demand.
+							Uses the mapped walking network and modeled {String(
+								request.assumptions.population_year
+							)} residents. Scheduled services contribute only where dated evidence is available. This
+							is an access scenario, not a prediction of future demand.
 						</p>
 					</details>
 					<details class="policy-evidence-note">
 						<summary>Costs, evidence & advanced tools</summary>
+						{#if evidence.population}<p>{evidence.population}</p>{/if}
+						{#if evidence.distribution}<p>{evidence.distribution}</p>{/if}
+						{#if evidence.qualification}<p>{evidence.qualification}</p>{/if}
+						<p>{evidence.timetable}</p>
+						{#if baseline?.coverage}<p>
+								{formatAmount(baseline.coverage.resident_origins)} resident areas · {formatAmount(
+									baseline.coverage.walking_edges
+								)} mapped walking links · {formatAmount(baseline.coverage.healthcare_destinations)} health
+								destinations · {formatAmount(baseline.coverage.education_destinations)} education destinations
+							</p>{/if}
+						{#each evidence.warnings as warning (warning)}<p>{warning}</p>{/each}
 						<p>
 							Costs are editable planning illustrations. A bus stop alone adds no service. Draft
 							siting, land rights, staffing and recurring funding require review.

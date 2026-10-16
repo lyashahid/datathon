@@ -1,25 +1,36 @@
 # Policy planning model
 
-The planning API reads the pinned `data/public/planning-baseline.json` and
-`policy-evidence/service-calendars.json` files. Responses contain their SHA-256
-receipts and the model version. Each evaluation applies an isolated overlay to
+The planning API combines the preserved `data/public/planning-baseline.json`,
+`national-population-origins.json`, `national-planning-infrastructure.json`,
+`island-context.json` and `policy-evidence/service-calendars.json` files.
+Responses contain their SHA-256 receipts and model versions. Each evaluation applies an isolated overlay to
 the same baseline and compares both networks at the same date and departure.
 The internal baseline view is read-only; scenario and response changes cannot
 mutate the pinned source data.
 
 ## Coverage and resident calculations
 
-The source snapshot covers Malé, Hulhumalé, Hulhulé, and Vilimalé. The explicit
-identity bridge maps those source island IDs to national map IDs by their
-verified physical location. A national island outside this snapshot returns
-`outside_snapshot` and null resident measures, rather than an invented zero.
+The combined snapshot contains the original Malé, Hulhumalé, Hulhulé and Vilimalé
+records plus all 186 additional administrative islands matched to official MBS
+2026/2030 island projections. The explicit capital identity bridge retains the
+original four IDs; additional islands use their canonical OneMap IDs directly.
+There are 189 islands with resident weights and 11,520 origins. Hulhulé has no
+separate verified resident projection. Resorts, industrial islands and atoll
+non-administrative aggregates without a matched island projection stay
+unallocated; missing resident measures are not zero.
 
-Resident origins use WorldPop spatial allocations scaled to the source's MBS
-2026 or 2030 projections. These are projected residents and modeled geographic
+Resident origins use existing WorldPop spatial allocations scaled to official MBS
+2026 or 2030 projections where raster screening passes. The national importer
+requires a 0.5–2 calibration factor and sufficient mapped residential support
+where available. Addu Hithadhoo fails that screen: its 141 origins use the area
+of existing explicitly residential building footprints, labeled coarse and
+approximate, with occupancy, floors and completeness unverified. Its sparse
+raster is rejected. Laamu Hithadhoo passes the raster screen. These are projected residents and modeled geographic
 allocations, not individual records or a fresh census. Origins with no supplied
 population weight remain unweighted. The selected island filters resident
-origins; the entire available network remains usable for cross-island journeys
-and fleet comparison. Band totals include an unavailable band and reconcile to
+origins; routing indexes the island and all explicitly transit-connected islands,
+retaining the original capital cluster. The complete world remains available
+for fleet and financial comparison. Band totals include an unavailable band and reconcile to
 the weighted population. A gained-access resident moves into the selected
 travel-time threshold. A lost-access resident has a previously qualifying route
 and a known proposed route above that threshold. Routes that become unavailable
@@ -54,6 +65,23 @@ the one-way restriction. Wheelchair audit mode excludes edges without explicit
 wheelchair evidence. Healthcare destinations require verified, open general-care
 facilities; education uses open schools. Proposed facilities enter the model on
 their proposed opening date. No capacity or appointment booking is inferred.
+
+Additional infrastructure uses existing tag-aware national OSM roads and accepted
+official-directory location matches: 52,187 nodes, 61,683 edges, 86 institutions
+and 345 boarding points. Construction/proposed/raceway edges and unreviewed or
+unlocated facility matches do not enter destination routes. A new official RTL
+catalogue adds 13 national route memberships, including Addu; empty timings do
+not create scheduled services. Walking to a mapped boarding point remains
+separate from a verified departure. Polygons clip the imported road graph;
+unsupported causeway gaps remain disconnected.
+
+Each island response supplies its allocation method, spatial quality, origin,
+network and destination counts, timetable status and warnings. Structured
+population evidence is preserved through proposal evaluation, the map and PDF
+export. The display hexagons conserve each source origin's population share and
+never fill unsupported land or water. See
+[national source/model inventory](../../../docs/national-data-models.md) for
+preparation commands and the remaining observation limits.
 
 ## Scheduled journeys and fleets
 

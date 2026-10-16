@@ -134,6 +134,21 @@ def test_no_verified_service_is_not_missing_infrastructure(transport):
     assert "does not" in result["qualification"] or "never proves" in result["qualification"]
 
 
+def test_local_bus_access_uses_available_national_resident_allocations(transport):
+    baseline = transport.planning.repository.baseline
+    node = next(row for row in baseline["network"]["nodes"] if row["islandId"] == "island:500")
+    baseline["origins"].append(dict(node, id="resident:c", population2026=75))
+    baseline["transit"]["stops"].append(dict(node, id="bus:c", mode="bus"))
+    result = transport.local_access("island:500")
+    assert result["status"] == "modeled"
+    assert result["population"] == result["residents_within_walk_target"] == 75
+    assert result["resident_coverage_pct"] == 100
+    assert result["planning_bus_stop_count"] == 1
+    assert "modeled island allocations" in result["qualification"]
+    assert "does not confirm a departing bus" in result["qualification"]
+    assert "Greater Malé" not in result["qualification"]
+
+
 def test_missing_terminal_blocks_port_free_proposal_without_claiming_absence(transport):
     result = draft(transport, destination_island_id="island:501")
     assert result["status"] == "evidence_needed"

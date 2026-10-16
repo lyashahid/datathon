@@ -2,7 +2,8 @@
 
 The hexagons are a presentation mesh, not additional population observations.
 Each source polygon contributes its existing value by intersection-area share;
-unmodeled land, water and source holes are never filled to complete the grid.
+an optional island boundary expands only the presentation of supported cells.
+Resident allocations and their contribution shares retain the source footprints.
 """
 
 from __future__ import annotations
@@ -32,14 +33,21 @@ def _polygonal(geometry):
 
 
 def build_display_grid(
-    origins: list[dict[str, Any]], *, scope: str, island_id: str
+    origins: list[dict[str, Any]],
+    *,
+    scope: str,
+    island_id: str,
+    display_boundary: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return a deterministic 55 m flat-top mesh and conservative origin shares.
 
     Local equirectangular metres are sufficient for the small Maldives island
     scopes. Integer lattice vertices make adjacent hexagons share the same
-    coordinates, including before clipping. Missing/invalid source polygons do
-    not gain a fabricated footprint. Input records and population stay intact.
+    coordinates, including before clipping. By default source support also clips
+    display geometry. An explicit island boundary instead shows each supported
+    cell as a full land-clipped hexagon; contribution shares still use only the
+    original footprints. Cells without sources are never added. Input records
+    and population stay intact.
     """
     empty = {"type": "FeatureCollection", "features": []}
     sources = []
@@ -74,6 +82,12 @@ def build_display_grid(
     inverse = [1 / scale_x, 0, 0, 1 / scale_y, longitude, latitude]
     projected = [affinity.affine_transform(polygon, projection) for _, polygon in sources]
     support = unary_union(projected)
+    display_support = None
+    if display_boundary:
+        boundary = _polygonal(shape(display_boundary))
+        if boundary.is_empty or not boundary.is_valid:
+            raise ValueError("Display boundary must be valid polygonal island land")
+        display_support = affinity.affine_transform(boundary, projection)
     tree = STRtree(projected)
     min_x, min_y, max_x, max_y = support.bounds
     height = math.sqrt(3) * HEX_RADIUS_M
@@ -106,16 +120,28 @@ def build_display_grid(
                     )
             if not contributions:
                 continue
+            display_geometry = (
+                _polygonal(hexagon.intersection(display_support))
+                if display_support is not None
+                else clipped
+            )
+            if display_geometry.is_empty:
+                continue
             feature_id = f"hex:{scope}:{q}:{r}"
             features.append(
                 {
                     "type": "Feature",
                     "id": feature_id,
-                    "geometry": mapping(affinity.affine_transform(clipped, inverse)),
+                    "geometry": mapping(affinity.affine_transform(display_geometry, inverse)),
                     "properties": {
                         "id": feature_id,
                         "island_id": island_id,
                         "contributions": contributions,
+                        **(
+                            {"display_geometry": "island_clipped_hexagon"}
+                            if display_support is not None
+                            else {}
+                        ),
                     },
                 }
             )

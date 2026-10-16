@@ -4,9 +4,12 @@
 	import { Badge } from '#lib/components/ui/badge/index.js';
 	import * as Sheet from '#lib/components/ui/sheet/index.js';
 	import type { IslandAnalytics } from '#lib/analytics.js';
+	import type { OfficialIslandContext as OfficialIslandContextData } from '#lib/types.js';
+	import OfficialIslandContext from '#lib/components/OfficialIslandContext.svelte';
 
 	let {
 		island,
+		officialIslandContext = null,
 		onclose,
 		onExplore,
 		loading = false,
@@ -14,6 +17,7 @@
 		onRetry
 	}: {
 		island: IslandAnalytics;
+		officialIslandContext?: OfficialIslandContextData | null;
 		onclose: () => void;
 		onExplore: (islandId: string, atoll: string) => void;
 		loading?: boolean;
@@ -80,6 +84,7 @@
 						: number.format(island.population.total)}</strong
 				>
 			</div>
+			<OfficialIslandContext context={officialIslandContext} islandId={island.id} />
 			<section
 				class="score-reasons"
 				aria-label="Reasons for this accessibility score"

@@ -1,4 +1,5 @@
 import type { MapFeatures } from './types.js';
+import type { PopulationBasis } from './planning-evidence.js';
 
 export type PolicyLens = 'overall' | 'transport' | 'health' | 'education';
 export type PolicyDomain = Exclude<PolicyLens, 'overall'>;
@@ -20,7 +21,7 @@ export interface OpportunityIsland {
 	coordinates: [number, number] | null;
 	population: number | null;
 	population_status: string;
-	population_basis: string;
+	population_basis: PopulationBasis;
 	planning_supported: boolean;
 	priority_score: number | null;
 	priority_domain: PolicyDomain | null;

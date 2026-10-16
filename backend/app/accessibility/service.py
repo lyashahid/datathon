@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 from copy import deepcopy
 from pathlib import Path
@@ -11,8 +12,15 @@ from typing import Any
 from app.accessibility.assessment import ASSESSMENT_VERSION, island_assessment
 from app.accessibility.config import DEFAULT_ACCESSIBILITY_CONFIG, AccessibilityConfig
 from app.accessibility.evidence import scored_facilities
+from app.analytics.sources import public_data_directory
 from app.data.cache import FileCache
 from app.data.computed_cache import ComputedCache, model_code_version
+from app.data.national_transport import (
+    CAPITAL_ISLAND_IDS,
+    NATIONAL_TRANSPORT_ARTIFACT,
+    merge_national_boarding_points,
+    national_transport_path,
+)
 from app.data.population import POPULATION_TRANSFORM_VERSION, attach_population, population_summary
 from app.routing.engine import RoutingRepository
 
@@ -24,9 +32,11 @@ class AccessibilityService:
         routing: RoutingRepository,
         *,
         computed_cache: ComputedCache | None = None,
+        public_dir: Path | None = None,
     ) -> None:
         self.cache = FileCache(data_dir / "cache")
         self.routing = routing
+        self.public_dir = public_dir or public_data_directory()
         self.islands: dict[str, dict[str, Any]] = {}
         self.facilities: list[dict[str, Any]] = []
         self.transport: list[dict[str, Any]] = []
@@ -69,6 +79,13 @@ class AccessibilityService:
         attach_population(self.population, list(self.islands.values()))
         transport_data = self._read_json("normalized/transport.json", {"features": []})
         self.transport = transport_data.get("features", [])
+        transport_path = national_transport_path(self.public_dir)
+        if transport_path.is_file():
+            content = transport_path.read_bytes()
+            self.source_fingerprint[f"public/{NATIONAL_TRANSPORT_ARTIFACT}"] = hashlib.sha256(
+                content
+            ).hexdigest()
+            self.transport = merge_national_boarding_points(self.transport, json.loads(content))
         demand_data = self._read_json("derived/demand-anchors.json", {"anchors": []})
         self.anchors = demand_data.get("anchors", [])
         captured = self.cache.path("derived/accessibility-default.json")
@@ -106,7 +123,17 @@ class AccessibilityService:
         captured = self._read_json("derived/accessibility-default.json", {})
         valid = (
             captured.get("population_transform_version") == POPULATION_TRANSFORM_VERSION
-            and captured.get("source_fingerprint") == self.source_fingerprint
+            and captured.get("source_fingerprint")
+            in (
+                self.source_fingerprint,
+                # Boarding-point additions change transport evidence; existing health/education
+                # route results are still valid against their unchanged captured input files.
+                {
+                    key: value
+                    for key, value in self.source_fingerprint.items()
+                    if key != f"public/{NATIONAL_TRANSPORT_ARTIFACT}"
+                },
+            )
             and captured.get("config") == self.config()
             and isinstance(captured.get("scores"), list)
             and len(captured["scores"]) == len(self.islands)
@@ -407,6 +434,23 @@ class AccessibilityService:
                 or tags.get("amenity") == "bus_station"
             )
 
+        marine = [
+            item
+            for item in self.routing.marine.get("nodes", [])
+            if item.get("island_id") == island_id
+            and item.get("category") in {"ferry_terminal", "pier"}
+        ]
+        if island_id not in CAPITAL_ISLAND_IDS:
+            known_ids = {item.get("id") for item in marine}
+            for item in self.transport:
+                if item.get("island_id") != island_id or item.get("id") in known_ids:
+                    continue
+                tags = item.get("tags") or {}
+                if item.get("category") in {"ferry_terminal", "pier"} or (
+                    tags.get("amenity") == "ferry_terminal" or tags.get("ferry") == "yes"
+                ):
+                    marine.append(item)
+                    known_ids.add(item.get("id"))
         return {
             "airport_count": sum(
                 item.get("category") == "airport"
@@ -416,11 +460,7 @@ class AccessibilityService:
             "bus_stop_count": sum(
                 is_bus(item) for item in self.transport if item.get("island_id") == island_id
             ),
-            "marine_terminal_count": sum(
-                item.get("category") in {"ferry_terminal", "pier"}
-                for item in self.routing.marine.get("nodes", [])
-                if item.get("island_id") == island_id
-            ),
+            "marine_terminal_count": len(marine),
         }
 
     def _population_profile(

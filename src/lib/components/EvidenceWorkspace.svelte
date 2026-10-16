@@ -104,7 +104,7 @@
 			icon: Hospital,
 			title: 'Resident access and investment',
 			detail:
-				'Greater Malé resident travel bands, gained/lost access, hospital and school proposals, costs, budgets and emissions.'
+				'Island resident travel bands, gained/lost access, hospital and school proposals, costs, budgets and emissions, with each island’s coverage and allocation method shown.'
 		},
 		{
 			icon: Database,
@@ -128,7 +128,7 @@
 		{
 			title: 'Nationwide scheduled coverage',
 			detail:
-				'Detailed journeys use the preserved Greater Malé snapshot. Outer islands need verified stops, runtimes and dated service calendars.'
+				'Local walking access uses mapped roads, facilities and stops. Scheduled journeys require verified departure times, runtimes and dated calendars; availability varies by island.'
 		},
 		{
 			title: 'Verified ferry arrivals and service exceptions',
@@ -138,7 +138,7 @@
 		{
 			title: 'Resident distribution and equity',
 			detail:
-				'Population-weighted origins are a spatial model. Audited small-area demographic cohorts and individual travel behaviour remain unavailable.'
+				'Population-weighted origins use source-specific methods, including approximate building or uniform allocations. Audited small-area demographic cohorts and individual travel behaviour remain unavailable.'
 		},
 		{
 			title: 'Procurement-grade costs and emissions',
@@ -242,9 +242,9 @@
 					>
 				</div>
 				<div>
-					<BusFront size={16} /><strong>{count(summary?.osm.feature_count)}</strong><span
-						>OSM transport records</span
-					>
+					<BusFront size={16} /><strong
+						>{count(summary?.transport?.feature_count ?? summary?.osm.feature_count)}</strong
+					><span>Transport records</span>
 				</div>
 			</div>
 			<div class="population-linking">
@@ -332,7 +332,8 @@
 			<div class="evidence-note">
 				<Layers size={13} /><span
 					>Each workspace keeps source receipts, coverage and assumptions attached to its results.
-					The national structural model and Greater Malé service model use distinct evidence scopes.</span
+					Resident access results identify each island’s spatial method, mapped coverage and
+					timetable availability.</span
 				>
 			</div>
 		</Card.Root>

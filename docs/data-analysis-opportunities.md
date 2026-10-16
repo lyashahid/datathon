@@ -1,5 +1,7 @@
 # Data analysis assessment and next opportunities
 
+Historical assessment reviewed 15 October 2026. **Implementation update, 16 October:** the national resident, census, labour, projection, school, constituency, hospital, household and relevant finance/transport source conversions are now implemented; see [national data models](national-data-models.md). Counts and future-tense descriptions below describe the earlier snapshot, not current coverage. Both reviewed spelling aliases are now reconciled, giving 186 employment matches.
+
 Reviewed 15 October 2026. This assessment combines a fresh profile of every installed analytical collection, a read-only code/API review, and inspection of the underlying census, school, hospital, transport and spatial archives. The new deliverables are the assessment, source inventories, calculations and executed notebook. Recommendations below are proposed additions; they have not been added to the application in this review.
 
 The strongest next step is to turn the existing evidence into decisions: where access improvements are needed, which recorded barriers merit repair, and which combination of proposals delivers the most modeled benefit within a budget. Several useful source families currently appear in the generic explorer without a dedicated analytical workflow.
@@ -65,10 +67,10 @@ Hulhumalé school access is 97.65% within 30 minutes at the same settings, but i
 
 The national static index also needs careful presentation: 1,466 of 1,561 records receive zero and every record has at least one missing-input flag. The index combines heuristic coverage/distance inputs across mixed residential/non-residential islands. Its zero is not observed deprivation, and its confidence score is not a probability. A zero-score investment league table would reward missing evidence.
 
-### Unexposed indicators already exist in the archive
+### Source findings from the pre-expansion assessment (now converted)
 
 - The island population workbook has **186 administrative-island rows**, all safely matched through current atoll/locality reconciliation. It includes nationality, historical growth, age/dependency and density context. The age/dependency cohorts apply to resident Maldivians; the sheet excludes Greater Malé and non-administrative islands. The 236,911 resident total across this subset is not the national total.
-- The employment workbook has 186 rows and **184 safe current matches**. Two spelling aliases need reviewed reconciliation: L/Mundhoo and GDh/Madeveli. Adult, labour-force and youth denominators differ, and percentages cannot be summed into national rates or interpreted as trips.
+- The employment workbook has 186 rows and **186 reviewed island matches** after reconciling L/Mundhoo and GDh/Madeveli with the official island identities. Adult, labour-force and youth denominators differ, and percentages cannot be summed into national rates or interpreted as trips.
 - The IGMH archive has beds/outpatient history for **2010–2025**, and several inpatient metrics for **2005–2025**. Reported occupancy is missing in 2023/2024. Published stay and patient-days/admissions do not reconcile identically in all years; retain reported measures and seek definition clarification rather than replacing them. Year-end beds are not average annual available beds.
 - The school publication contains dated enrolment by grade/sex/atoll/locality, plus teacher context. These are useful historical demand indicators. They do not supply current school seats, classroom availability, home locations or daily pupil journeys. Extraction must preserve page/table identifiers and source inconsistencies.
 

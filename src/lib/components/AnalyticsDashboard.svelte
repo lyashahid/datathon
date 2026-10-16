@@ -38,7 +38,13 @@
 		scoreDistribution,
 		type NationalAccessibility
 	} from '#lib/analytics.js';
-	import type { Accessibility, IslandProfile, MapFeatures, NationalSummary } from '#lib/types.js';
+	import type {
+		Accessibility,
+		IslandProfile,
+		MapFeatures,
+		NationalSummary,
+		OfficialIslandContext
+	} from '#lib/types.js';
 
 	let {
 		summary,
@@ -74,6 +80,7 @@
 	let showMethod = $state(false);
 	let selectedScoreId = $state<string | null>(null);
 	let scoreDetails = $state.raw<Accessibility | null>(null);
+	let officialIslandContext = $state.raw<OfficialIslandContext | null>(null);
 	let scoreDetailsLoading = $state(false);
 	let scoreDetailsError = $state('');
 	let scoreController: AbortController | undefined;
@@ -241,6 +248,7 @@
 		scoreController = requestController;
 		selectedScoreId = id;
 		scoreDetails = null;
+		officialIslandContext = null;
 		scoreDetailsLoading = true;
 		scoreDetailsError = '';
 		try {
@@ -252,6 +260,7 @@
 			if (!requestController.signal.aborted && scoreController === requestController) {
 				if (!profile.accessibility) throw new Error('The score explanation is not available yet.');
 				scoreDetails = profile.accessibility;
+				officialIslandContext = profile.official_island_context ?? null;
 			}
 		} catch (caught) {
 			if (!requestController.signal.aborted && scoreController === requestController)
@@ -265,6 +274,7 @@
 		scoreController?.abort();
 		selectedScoreId = null;
 		scoreDetails = null;
+		officialIslandContext = null;
 	}
 
 	function selectAtoll(name: string) {
@@ -942,6 +952,7 @@
 {#if selectedScore}
 	<IslandAccessibilityDetails
 		island={selectedScore}
+		{officialIslandContext}
 		onclose={closeScoreDetails}
 		loading={scoreDetailsLoading}
 		error={scoreDetailsError}

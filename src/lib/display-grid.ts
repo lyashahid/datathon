@@ -70,6 +70,42 @@ function population(rows: Evidence[]): number | null {
 	return rows.reduce((total, row) => total + (row.weight ?? 0), 0);
 }
 
+function allocationProvenance(parts: Contribution[], byOrigin: Map<unknown, Feature>) {
+	const observed = parts.flatMap(({ origin_id }) => {
+		const properties = byOrigin.get(origin_id)?.properties;
+		return properties ? [properties] : [];
+	});
+	const distinct = (keys: string[]) => [
+		...new Set(
+			observed.flatMap((properties) => {
+				const value = keys.map((key) => properties[key]).find((item) => typeof item === 'string');
+				return typeof value === 'string' ? [value] : [];
+			})
+		)
+	];
+	const methods = distinct([
+		'spatial_method',
+		'allocation_method',
+		'allocationMethod',
+		'spatialMethod'
+	]);
+	const qualities = distinct(['spatial_quality', 'spatialQuality']);
+	return {
+		source_origin_ids: [...new Set(parts.map(({ origin_id }) => origin_id))],
+		...(methods.length ? { spatial_method: methods.length === 1 ? methods[0] : 'mixed' } : {}),
+		...(qualities.length
+			? {
+					spatial_quality: qualities.includes('coarse_assumption')
+						? 'coarse_assumption'
+						: qualities.length === 1
+							? qualities[0]
+							: 'mixed'
+				}
+			: {}),
+		allocation_qualifications: distinct(['qualification', 'population_qualification'])
+	};
+}
+
 /** A partially observed cell stays unknown; never normalize away missing residents. */
 function mean(rows: Evidence[], key: string): number | null {
 	const total = population(rows);
@@ -106,6 +142,7 @@ export function displayGapHexes(
 				...cell,
 				properties: {
 					...cell.properties,
+					...allocationProvenance(parts, byOrigin),
 					origin_id: cell.properties?.id ?? cell.id,
 					population: population(rows),
 					...values,

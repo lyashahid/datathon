@@ -404,7 +404,29 @@ def test_all_collection_analysis_profiles_sources_without_fabricated_covariates(
     root = Path(__file__).resolve().parents[2]
     service = ForecastService(root / "data" / "public", root / "backend" / "data")
     report = service.analysis()
-    assert report["summary"]["availableCollections"] == 38
+    assert report["summary"]["availableCollections"] == 60
+    profiles = {item["id"]: item for item in report["collectionProfiles"]}
+    for identity in (
+        "national-resident-origins",
+        "island-census-demographics",
+        "island-employment-indicators",
+        "island-population-projections",
+        "school-enrolment",
+        "school-statistics-context",
+        "constituency-population-context",
+        "constituency-employment-context",
+        "constituency-education-context",
+        "igmh-utilisation-history",
+        "hies-expenditure-context",
+        "budget-programme-allocations",
+        "mtcc-segment-accounts",
+        "mtcc-passenger-annual",
+        "government-health-license-history",
+        "transport-monthly-context",
+        "hdc-landuse-plan-context",
+    ):
+        assert profiles[identity]["status"] == "available"
+        assert profiles[identity]["row_count"] > 0
     assert report["summary"]["passengerObservations"] == 161
     assert report["summary"]["collectionsWithExactDuplicates"] == []
     assert len(report["horizonDiagnostics"]) == 36

@@ -21,7 +21,7 @@ from app.planning.display_grid import build_display_grid
 from app.planning.economics import economics
 from app.planning.models import PlanningAssumptions, PlanningRequest
 from app.planning.repository import IDENTITY_BRIDGE
-from app.planning.routing import JourneyRouter, WalkingNetwork
+from app.planning.routing import WalkingNetwork
 from app.planning.service import PlanningService
 from app.planning.world import apply_operations, baseline_world
 
@@ -59,7 +59,7 @@ class OpportunityService:
         self.planning = planning
         self.repository = planning.repository
         self.accessibility = accessibility
-        self.world = baseline_world(self.repository)
+        self.world = baseline_world(self.repository, share_network=True)
         self.walking = WalkingNetwork(self.world["network"])
         self.audited_walking = WalkingNetwork(self.world["network"], wheelchair=True)
         self.driving = WalkingNetwork(self.world["network"], drive=True)
@@ -81,10 +81,8 @@ class OpportunityService:
             and origin.get(f"population{assumptions.population_year}") is not None
         ]
 
-    def _population_basis(self) -> str:
-        return self.repository.baseline.get("assumptions", {}).get(
-            "populationSpatialDistribution", "Source-backed planning origin weights"
-        )
+    def _population_basis(self, island_id: str | None = None, population_year: int = 2026) -> Any:
+        return self.repository.population_basis(island_id, population_year=population_year)
 
     def overview(self, *, include_geometry: bool = True) -> dict[str, Any]:
         accessibility = self.accessibility
@@ -130,7 +128,7 @@ class OpportunityService:
                 population = sum(float(o["population2026"]) for o in planning_origins)
                 population_profile = {
                     "status": "projected_spatial_allocation",
-                    "qualification": self._population_basis(),
+                    "qualification": self._population_basis(island_id),
                 }
             domains = {}
             for domain in DOMAINS:
@@ -314,8 +312,9 @@ class OpportunityService:
         if key in self._routes:
             self._routes.move_to_end(key)
             return self._routes[key]
-        router = JourneyRouter(
-            self.world, assumptions.model_copy(update={"goal": GOALS.get(domain, assumptions.goal)})
+        router = self.planning._router(
+            self.repository.scope_world(self.world, island_id),
+            assumptions.model_copy(update={"goal": GOALS.get(domain, assumptions.goal)}),
         )
         result = {o["id"]: router.route(o) for o in origins}
         self._routes[key] = result
@@ -327,11 +326,7 @@ class OpportunityService:
         self, targets: list[dict[str, Any]], max_snap_m: float, wheelchair: bool = False
     ) -> dict[str, float]:
         """Reverse multi-source Dijkstra honours asymmetric walking restrictions."""
-        reverse: dict[str, list[tuple[str, float]]] = defaultdict(list)
         network = self.audited_walking if wheelchair else self.walking
-        for source, edges in network.adjacency.items():
-            for target, distance, _, _ in edges:
-                reverse[target].append((source, distance))
         distances: dict[str, float] = {}
         queue = []
         for target in targets:
@@ -343,7 +338,7 @@ class OpportunityService:
             distance, target = heapq.heappop(queue)
             if distance != distances[target]:
                 continue
-            for source, metres in reverse.get(target, []):
+            for source, metres, _, _ in network.reverse_adjacency.get(target, []):
                 value = distance + metres
                 if value < distances.get(source, math.inf):
                     distances[source] = value
@@ -387,7 +382,17 @@ class OpportunityService:
         distances = self._transport_distances(self.world, assumptions)
         origins = self._origins(island_id, assumptions)
         if scope not in self._hex_grids:
-            self._hex_grids[scope] = build_display_grid(origins, scope=scope, island_id=canonical)
+            # National footprint allocations can cover tiny building fragments.
+            # Expand presentation only; keep the calibrated capital mesh and all
+            # resident weights, origin geometry and journey evidence unchanged.
+            boundary = (
+                (self._island(island_id) or {}).get("geometry")
+                if scope not in IDENTITY_BRIDGE
+                else None
+            )
+            self._hex_grids[scope] = build_display_grid(
+                origins, scope=scope, island_id=canonical, display_boundary=boundary
+            )
         cells = []
         for origin in origins:
             properties = {
@@ -395,6 +400,9 @@ class OpportunityService:
                 "island_id": canonical,
                 "population": round(origin[f"population{assumptions.population_year}"], 3),
                 "coordinates": [origin["lon"], origin["lat"]],
+                "allocation_method": origin.get("allocationMethod", "worldpop_calibrated"),
+                "spatial_quality": origin.get("spatialQuality", "modeled_distribution"),
+                "distribution_unavailable": origin.get("distributionUnavailable", False),
             }
             known_gaps = []
             for domain in GOALS:
@@ -434,7 +442,8 @@ class OpportunityService:
             "gap_cells": {"type": "FeatureCollection", "features": cells},
             "hex_grid": deepcopy(self._hex_grids[scope]),
             "assumptions": assumptions.model_dump(mode="json"),
-            "journey_population_basis": self._population_basis() if cells else None,
+            "journey_population_basis": self._population_basis(island_id) if cells else None,
+            "coverage": self.repository.evidence_coverage(island_id),
             "method": (
                 "Health/education use scheduled journey routing to eligible facilities. "
                 "Transport uses walking-network minutes to the nearest mapped stop or "
@@ -505,7 +514,7 @@ class OpportunityService:
             return None
         kind = "hospital" if domain == "health" else "school"
         scope = self.repository.planning_id(island_id)
-        stable = f"auto-{scope}-{kind}"
+        stable = f"auto-{scope}-{kind}".replace(":", "-")
         operation = {
             "type": f"add_{kind}",
             "island_id": island_id,
@@ -581,7 +590,7 @@ class OpportunityService:
             if not choices:
                 continue
             outward_m, _, terminal, inward_m = min(choices)
-            stable = f"auto-{scope}-bus"
+            stable = f"auto-{scope}-bus".replace(":", "-")
             stop_id = f"proposal:add_stop:{stable}"
             operations: list[dict[str, Any]] = [
                 {
@@ -626,6 +635,7 @@ class OpportunityService:
                 PlanningRequest(
                     island_id=island_id, assumptions=assumptions, operations=operations
                 ),
+                share_unchanged_network=True,
             )
             new_distances = self._transport_distances(after, assumptions)
             gained = {
@@ -723,6 +733,7 @@ class OpportunityService:
                                 assumptions=assumptions,
                                 operations=candidate["operations"],
                             ),
+                            share_unchanged_network=True,
                         )
                         financial = economics(self.world, after, assumptions)
                         candidate["capital_mvr"] = financial["delta"]["capital_mvr"]
@@ -731,7 +742,9 @@ class OpportunityService:
                         ]
                         candidate["confidence"] = "screening"
                         candidate["review_required"] = REVIEW_REQUIRED
-                        candidate["population_basis"] = self._population_basis()
+                        candidate["population_basis"] = self._population_basis(
+                            island_id, assumptions.population_year
+                        )
                         candidate["cost_basis"] = financial["basis"]
                         candidates.append(candidate)
         # Fixed deterministic ranking ensures raising budgets cannot discard a cheaper prefix.
@@ -747,6 +760,7 @@ class OpportunityService:
             world, _ = apply_operations(
                 self.repository,
                 PlanningRequest(assumptions=assumptions, operations=proposal_operations),
+                share_unchanged_network=True,
             )
             financial = economics(self.world, world, assumptions)
             required_capital = financial["delta"]["capital_mvr"]

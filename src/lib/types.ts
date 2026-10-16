@@ -22,6 +22,11 @@ export interface NationalSummary {
 	facility_categories: Record<string, number>;
 	facility_match_status: Record<string, number>;
 	osm: { feature_count: number; feature_categories: Record<string, number> };
+	transport?: {
+		feature_count: number;
+		feature_categories: Record<string, number>;
+		additional_national_boarding_point_count?: number;
+	};
 }
 export interface Facility {
 	id: string;
@@ -73,6 +78,38 @@ export interface Accessibility {
 	assessment?: AccessibilityAssessment;
 	population?: { total: number | null; year: number | null };
 }
+export interface OfficialIslandDemographics {
+	island_id: string;
+	year: number;
+	residents_total: number | null;
+	maldivians_total: number | null;
+	maldivian_children_0_17_total: number | null;
+	maldivian_older_adults_65_plus_total: number | null;
+}
+export interface OfficialIslandProjection {
+	island_id: string;
+	year: number;
+	residents_total: number | null;
+	basis: string;
+}
+export interface OfficialIslandEmployment {
+	island_id: string;
+	year: number;
+	population_scope: string;
+	sex: string;
+	unemployment_rate: number | null;
+	labour_force_participation_rate: number | null;
+}
+export interface OfficialIslandContext {
+	status: 'available' | 'unavailable';
+	geography_grain: 'administrative_island';
+	census_demographics: OfficialIslandDemographics | null;
+	employment: OfficialIslandEmployment[];
+	projections: OfficialIslandProjection[];
+	transform_version: string | null;
+	sources: { id: string; title: string; url: string; reference_year: number | string }[];
+	qualifications: string[];
+}
 export interface IslandProfile {
 	island: {
 		id: string;
@@ -95,6 +132,7 @@ export interface IslandProfile {
 		older_adult?: number;
 		demographic_breakdown: boolean;
 	};
+	official_island_context?: OfficialIslandContext;
 	infrastructure: { items: Facility[]; total: number };
 	transport: { items: TransportFeature[]; total: number };
 	accessibility: Accessibility | null;

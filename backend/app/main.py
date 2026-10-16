@@ -133,7 +133,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.conditions = ConditionsService()
     app.state.notices = NoticeStore(app_settings.data_dir / "runtime", app_settings.public_data_dir)
     app.state.repository = NormalizedRepository(
-        app_settings.data_dir, allow_context_build=app_settings.environment != "production"
+        app_settings.data_dir,
+        allow_context_build=app_settings.environment != "production",
+        public_dir=app_settings.public_data_dir,
     )
     # Construct shared mutable services before concurrent request dependencies run.
     # Forecast acceptance and dataset cache readers must use the same instances.
@@ -148,7 +150,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.routing = RoutingRepository(app_settings.data_dir)
     app.state.accessibility = AccessibilityService(
-        app_settings.data_dir, app.state.routing, computed_cache=app.state.computed_cache
+        app_settings.data_dir,
+        app.state.routing,
+        computed_cache=app.state.computed_cache,
+        public_dir=app_settings.public_data_dir,
     )
     app.state.simulation = ScenarioEngine(app_settings.data_dir, app.state.routing)
     app.state.recommendations = RecommendationService(

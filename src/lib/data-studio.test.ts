@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { datasetFilter, validStory, type Column, type Story } from './data-studio.js';
+import {
+	defaultDatasetChart,
+	datasetFilter,
+	validStory,
+	type Column,
+	type Story
+} from './data-studio.js';
 
 const columns: Column[] = [
 	['name', 'string'],
@@ -13,6 +19,45 @@ const columns: Column[] = [
 	distinct_count: 3,
 	examples: []
 }));
+
+describe('official island chart defaults', () => {
+	const islandColumns = [
+		['island_id', 'string'],
+		['year', 'number'],
+		['residents_total', 'number'],
+		['population_scope', 'string'],
+		['sex', 'string'],
+		['unemployment_rate', 'number']
+	].map(([name, type]) => ({ ...columns[0], name, type }));
+	it('starts census counts at distinct island identities and keeps projection years separate', () => {
+		expect(defaultDatasetChart('island-census-demographics', islandColumns)).toMatchObject({
+			group_by: 'island_id',
+			measure: 'residents_total',
+			aggregation: 'sum'
+		});
+		expect(defaultDatasetChart('island-population-projections', islandColumns)).toMatchObject({
+			group_by: 'year',
+			measure: 'residents_total',
+			aggregation: 'sum'
+		});
+	});
+	it('scopes labour rates to residents and both sexes without adding percentages', () => {
+		expect(defaultDatasetChart('island-employment-indicators', islandColumns)).toMatchObject({
+			group_by: 'island_id',
+			measure: 'unemployment_rate',
+			aggregation: 'mean',
+			filters: [
+				{ column: 'population_scope', op: 'eq', value: 'residents' },
+				{ column: 'sex', op: 'eq', value: 'both' }
+			]
+		});
+	});
+	it('keeps unrelated or incomplete schemas on record counts', () => {
+		expect(defaultDatasetChart('school-statistics-context', columns).aggregation).toBe('count');
+		expect(defaultDatasetChart('island-employment-indicators', columns).aggregation).toBe('count');
+		expect(defaultDatasetChart('unavailable', []).group_by).toBe('');
+	});
+});
 
 describe('dataset filter types', () => {
 	it('preserves distinct text, numeric and boolean equality values for strict backend matching', () => {

@@ -22,6 +22,7 @@
 	import TransportImpact from './TransportImpact.svelte';
 	import AnimatedNumber from './AnimatedNumber.svelte';
 	import { transportImpactHeadline } from '#lib/transport-impact.js';
+	import { planningEvidence } from '#lib/planning-evidence.js';
 	import {
 		downloadProposalPdf,
 		finiteValue,
@@ -80,6 +81,7 @@
 	const gained = $derived(finiteValue(summary?.gained_residents));
 	const lost = $derived(finiteValue(summary?.lost_residents));
 	const unknown = $derived(finiteValue(summary?.unknown_residents));
+	const residentEvidence = $derived(planningEvidence(evaluation?.population_basis));
 	// Retained results must keep the assumptions that produced them, including on failure.
 	const displayedAssumptions = $derived<Record<string, unknown>>(
 		evaluation
@@ -488,10 +490,23 @@
 								>
 							</div>
 						</div>
+						{#if residentEvidence.population}<p class="method-note">
+								{residentEvidence.population}
+							</p>{/if}
+						{#if residentEvidence.distribution}<p class="method-note">
+								{residentEvidence.distribution}
+							</p>{/if}
+						{#if residentEvidence.qualification}<p class="method-note">
+								{residentEvidence.qualification}
+							</p>{/if}
+						{#each residentEvidence.warnings as warning (warning)}<p class="method-note">
+								{warning}
+							</p>{/each}
 						<p class="method-note">
-							{evaluation.population_basis ||
-								'No source-backed resident allocation is available for this scope.'} Missing journey evidence
-							is not proof of no access.
+							{evaluation.population_basis
+								? ''
+								: 'No source-backed resident allocation is available for this scope. '}
+							Missing journey evidence is not proof of no access.
 						</p>
 					</section>
 					<section class="report-card">

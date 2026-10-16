@@ -5149,7 +5149,9 @@
 						>
 							<strong
 								>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
-									? 'Local journey time'
+									? gapLens === 'transport'
+										? 'Walk to mapped stop'
+										: 'Local journey time'
 									: 'Mapped service screening'}</strong
 							>
 							<span

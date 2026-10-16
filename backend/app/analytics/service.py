@@ -34,6 +34,61 @@ class DatasetSpec:
 
 SPECS = (
     DatasetSpec(
+        "transport-monthly-context",
+        "Official monthly ferry zones and bus/ferry categories, 2020–2026",
+        "transport-context.json",
+        "observations",
+        "Transport",
+        "All 19 published transport categories, with source blanks and six repeated June 2026 "
+        "bus cells retained as unavailable/quarantined. Categories can overlap; "
+        "these records do not extend the three reviewed passenger forecast series.",
+    ),
+    DatasetSpec(
+        "national-planning-islands",
+        "Additional resident planning islands",
+        "national-population-origins.json",
+        "islands",
+        "National planning",
+        "186 official administrative-island projection matches outside Greater Malé. "
+        "Distributions are modeled; inspect the island-specific method and qualifications.",
+    ),
+    DatasetSpec(
+        "national-resident-origins",
+        "Additional national resident spatial estimates",
+        "national-population-origins.json",
+        "origins",
+        "National planning",
+        "Island projections allocated to screened existing raster or approximate residential "
+        "footprints. These are modeled weights, not observed block residents or travel demand.",
+    ),
+    DatasetSpec(
+        "national-planning-destinations",
+        "Additional located national planning destinations",
+        "national-planning-infrastructure.json",
+        "facilities",
+        "National planning",
+        "Official institution identities with accepted existing location matches. "
+        "Coordinates are approximate; no current capacity or entrance audit is implied.",
+    ),
+    DatasetSpec(
+        "national-planning-stops",
+        "Additional national passenger boarding points",
+        "national-planning-infrastructure.json",
+        "transit.stops",
+        "National planning",
+        "Official operator coordinates and existing mapped passenger stops. "
+        "A mapped stop does not establish a verified timetable or operating service.",
+    ),
+    DatasetSpec(
+        "national-operator-route-catalogues",
+        "Additional official operator route catalogues",
+        "national-planning-infrastructure.json",
+        "transit.routeCatalogues",
+        "National planning",
+        "Official route membership only. Empty timings remain unavailable and do not create "
+        "scheduled journeys.",
+    ),
+    DatasetSpec(
         "passenger-monthly",
         "Official monthly passenger movements",
         "prediction-source.json",
@@ -200,6 +255,79 @@ SPECS = (
         "constituencies",
         "Demographics",
     ),
+    *(
+        DatasetSpec(
+            f"constituency-{kind}-context",
+            f"Official national constituency {kind} context, Census 2022",
+            "constituency-context.json",
+            kind,
+            "Constituency context",
+            "All 93 published source rows with unmatched boundaries. Source-row keys are "
+            "not island IDs; repeated Meedhoo names are distinct rows. Filter/group one "
+            "metric and use constituency_key for identity. Source ratios become percent "
+            "explicitly; rates cannot be summed and means are unweighted. Blank cells stay "
+            "null. Do not allocate constituency context to islands or resident origins.",
+        )
+        for kind in ("population", "employment", "education")
+    ),
+    DatasetSpec(
+        "igmh-utilisation-history",
+        "Official IGMH annual institutional history 2005–2025",
+        "institution-context.json",
+        "igmh",
+        "Healthcare context",
+        "Six reported institutional metrics with their own units; filter to one metric "
+        "before comparing values. Blank/not-available cells stay null. Year-end beds are "
+        "not available appointments, and encounters are not unique patients or resident demand.",
+    ),
+    DatasetSpec(
+        "budget-programme-allocations",
+        "Official Special Budget programme allocations 2024–2028",
+        "official-finance-context.json",
+        "budgetAllocations",
+        "Finance context",
+        "Nonoverlapping terminal programme lines from the captured Special Budget table; "
+        "not the whole national budget. Actual/revised/budget years differ. MVR allocations "
+        "do not establish delivered services, route subsidy receipts or marginal route costs.",
+    ),
+    DatasetSpec(
+        "mtcc-segment-accounts",
+        "MTCC audited Group segment accounts 2024–2025",
+        "official-finance-context.json",
+        "mtccSegmentAccounts",
+        "Finance context",
+        "Audited Group Note29 amounts in MVR; group total overlaps segment components, "
+        "and metrics differ. No account has been divided into route, trip or passenger cost.",
+    ),
+    DatasetSpec(
+        "mtcc-passenger-annual",
+        "MTCC annual reported passenger movements 2022–2025",
+        "official-finance-context.json",
+        "mtccPassengerAnnual",
+        "Transport",
+        "Annual operator category totals, not unique people or route boardings. All modes "
+        "overlaps bus/ferry; ferry totals overlap zones. May overlap MBS monthly publications.",
+    ),
+    DatasetSpec(
+        "hies-expenditure-context",
+        "Official HIES 2019 full expenditure indicators",
+        "official-finance-context.json",
+        "hiesExpenditure",
+        "Finance context",
+        "All 63 published indicators across Republic, Malé and Atolls. Nominal 2019 survey "
+        "estimates; means, medians and shares cannot be summed. Published fractions are "
+        "explicitly converted to percentages. No island or current-price allocation.",
+    ),
+    DatasetSpec(
+        "government-health-license-history",
+        "Government health facility license register as at 31 December 2024",
+        "government-health-license-context.json",
+        "licenses",
+        "Healthcare context",
+        "All 193 dated published facility license records, including source registration "
+        "duplicates. Historical levels and issue dates establish no current opening, "
+        "capacity, staffing or appointments. No facility or island match is asserted.",
+    ),
     DatasetSpec(
         "weather-alerts",
         "Official captured weather alerts",
@@ -229,13 +357,14 @@ SPECS = (
     ),
     DatasetSpec(
         "national-readiness",
-        "Island population and service readiness",
+        "Captured island population inventory",
         "operations/bundle.json",
         "nationalReadiness",
         "Demographics",
         (
-            "Official census/projections and source gaps; this is not observed origin-destination "
-            "demand."
+            "Historical pre-expansion inventory, captured 11 October 2026. Its routingAvailable "
+            "field describes that capture; inspect current island planning coverage for routes. "
+            "Official census/projections are not observed origin-destination demand."
         ),
     ),
     DatasetSpec(
@@ -309,6 +438,72 @@ SPECS = (
             "without selecting sex, nationality and age scope."
         ),
         True,
+    ),
+    DatasetSpec(
+        "island-census-demographics",
+        "Official island Census 2022 demographics",
+        "island-context.json",
+        "demographics",
+        "Demographics",
+        "One row per administrative island. Age counts and dependency ratios describe resident "
+        "Maldivians only; overlapping age cohorts must not be added together.",
+    ),
+    DatasetSpec(
+        "island-employment-indicators",
+        "Official island Census 2022 labour indicators",
+        "island-context.json",
+        "employment",
+        "Demographics",
+        "Percentages at island, nationality scope and sex grain. Rates cannot be summed; "
+        "no labour-force denominators or commute counts are supplied. "
+        "Blank source cells stay null.",
+    ),
+    DatasetSpec(
+        "island-population-projections",
+        "Official annual island population projections 2022–2030",
+        "island-context.json",
+        "projections",
+        "Demographics",
+        "One island-year per row. MBS allocates atoll projections by ratio; nationality and sex "
+        "columns overlap with resident totals. "
+        "Select one year and population scope before summing.",
+    ),
+    DatasetSpec(
+        "island-indicator-definitions",
+        "Official census indicator definitions",
+        "island-context.json",
+        "definitions",
+        "Provenance",
+    ),
+    DatasetSpec(
+        "school-enrolment",
+        "Official school locality enrolment by grade and sex, 2023/24",
+        "school-context.json",
+        "enrolment",
+        "Education",
+        "One published school-locality, grade and sex per row, November 2023. "
+        "Localities describe where students enrolled, not homes, catchments or campus capacity. "
+        "Source blanks stay null; combined localities are not forced onto one island.",
+    ),
+    DatasetSpec(
+        "school-statistics-context",
+        "Official school, teacher and national education statistics, 2023/24",
+        "school-context.json",
+        "statistics",
+        "Education",
+        "Published table cells with row and column dimensions, units and PDF page provenance. "
+        "Tables repeat totals and have different scopes. Select one table, metric and "
+        "demographic slice; never sum across tables. Conflicting source values are preserved.",
+    ),
+    DatasetSpec(
+        "hdc-landuse-plan-context",
+        "HDC Hulhumalé land-use plan panels, October 2025",
+        "hdc-plan-context.json",
+        "observations",
+        "Land use",
+        "Published phase areas, estimated capacity, land-use shares, housing types and lot counts. "
+        "Planning values do not establish completed homes, occupancy or observed residents. "
+        "Totals overlap phase values; the published capacity-total conflict is preserved.",
     ),
     DatasetSpec(
         "national-transport",
@@ -550,9 +745,13 @@ class DatasetService:
             "row_count": len(rows),
             "columns": columns,
             "qualification": spec.qualification,
-            "transformVersion": "census-atoll-locality-v2"
-            if spec.id == "national-population"
-            else None,
+            "transformVersion": (
+                "census-atoll-locality-v2"
+                if spec.id == "national-population"
+                else data.get("transformVersion")
+                if isinstance(data, dict)
+                else None
+            ),
             "provenance": {"receipt": receipt, "timestamps": timestamps, "sources": sources},
         }
         return spec, rows, metadata
@@ -682,6 +881,126 @@ class DatasetService:
             column = next(item for item in metadata["columns"] if item["name"] == request.measure)
             if column["type"] not in {"number", "unknown"}:
                 raise ValueError("Chart measure must be a numeric column")
+            if dataset_id == "transport-monthly-context" and request.measure in {
+                "value",
+                "published_value",
+            }:
+                if len({row["category_id"] for row in filtered}) > 1 and not (
+                    {"category_id", "category"}.intersection(columns)
+                ):
+                    raise ValueError(
+                        "Overlapping transport categories require a filter or grouping"
+                    )
+                if request.measure == "published_value" and any(
+                    row["value_status"].startswith("quarantined") for row in filtered
+                ):
+                    raise ValueError("Use value to keep quarantined transport cells unavailable")
+            if dataset_id in {
+                "constituency-population-context",
+                "constituency-employment-context",
+                "constituency-education-context",
+            } and request.measure in {"value", "published_value"}:
+                if len({row["metric"] for row in filtered}) > 1 and "metric" not in columns:
+                    raise ValueError("Constituency values require a metric filter or grouping")
+                if request.aggregation == "sum" and any(
+                    row["unit"] != "people" for row in filtered
+                ):
+                    raise ValueError("Constituency rates and sex ratios cannot be summed")
+                if "constituency" in columns and "constituency_key" not in columns:
+                    name_keys: dict[str, set[str]] = defaultdict(set)
+                    for row in filtered:
+                        name_keys[row["constituency"]].add(row["constituency_key"])
+                    if any(len(keys) > 1 for keys in name_keys.values()):
+                        raise ValueError(
+                            "Repeated constituency names require constituency_key grouping"
+                        )
+            if dataset_id == "island-employment-indicators":
+                if request.aggregation == "sum":
+                    raise ValueError("Published labour rates cannot be summed")
+                for scope_column in ("population_scope", "sex"):
+                    if len({row.get(scope_column) for row in filtered}) > 1 and (
+                        scope_column not in columns
+                    ):
+                        raise ValueError(
+                            "Labour rates require population_scope and sex filters or grouping"
+                        )
+            if dataset_id == "island-population-projections" and request.aggregation == "sum":
+                if len({row["year"] for row in filtered}) > 1 and "year" not in columns:
+                    raise ValueError("Projected population sums require a year filter or grouping")
+            if dataset_id == "island-census-demographics" and request.aggregation == "sum":
+                non_additive = ("percent", "ratio", "median_age", "_per_square_km")
+                if any(token in (request.measure or "") for token in non_additive):
+                    raise ValueError("Census rates, medians and densities cannot be summed")
+            if dataset_id == "school-statistics-context" and request.measure == "value":
+                for scope in ("table_id", "metric", "sex"):
+                    if len({row.get(scope) for row in filtered}) > 1 and scope not in columns:
+                        raise ValueError(
+                            "School context requires table_id, metric and sex filters or grouping"
+                        )
+                if request.aggregation == "sum" and (
+                    any(row.get("unit") in {"percent", "ratio"} for row in filtered)
+                    or any(row.get("is_total") for row in filtered)
+                    and len(filtered) > 1
+                ):
+                    raise ValueError(
+                        "Published school rates and overlapping totals cannot be summed"
+                    )
+            if dataset_id == "hdc-landuse-plan-context" and request.measure == "value":
+                if len({row["metric"] for row in filtered}) > 1 and "metric" not in columns:
+                    raise ValueError("HDC planning values require a metric filter or grouping")
+                if request.aggregation == "sum" and (
+                    any(row["unit"] == "percent" for row in filtered)
+                    or any(row["is_total"] for row in filtered) and len(filtered) > 1
+                ):
+                    raise ValueError("HDC plan percentages and overlapping totals cannot be summed")
+            if dataset_id == "igmh-utilisation-history" and request.aggregation == "sum":
+                non_additive = {
+                    "hospital_beds",
+                    "average_duration_of_stay",
+                    "average_occupancy_ratio",
+                }
+                if (
+                    request.measure == "value"
+                    and any(row["metric"] in non_additive for row in filtered)
+                    and len({row["year"] for row in filtered}) > 1
+                    and "year" not in columns
+                ):
+                    raise ValueError(
+                        "IGMH beds, mean stay and occupancy cannot be summed across years"
+                    )
+            if dataset_id == "budget-programme-allocations" and request.aggregation == "sum":
+                if len({row["year"] for row in filtered}) > 1 and "year" not in columns:
+                    raise ValueError("Budget sums require one fiscal year or year grouping")
+            if dataset_id == "mtcc-segment-accounts" and request.measure == "value":
+                for scope in ("metric", "year"):
+                    if len({row[scope] for row in filtered}) > 1 and scope not in columns:
+                        raise ValueError(
+                            "MTCC accounts require metric and year filters or grouping"
+                        )
+                if (
+                    any(row["is_group_total"] for row in filtered)
+                    and any(not row["is_group_total"] for row in filtered)
+                    and "segment" not in columns
+                    and "is_group_total" not in columns
+                ):
+                    raise ValueError("MTCC group totals overlap their business segments")
+            if dataset_id == "mtcc-passenger-annual" and request.measure == "value":
+                if len({row["series"] for row in filtered}) > 1 and "series" not in columns:
+                    raise ValueError(
+                        "Overlapping MTCC passenger series require a filter or grouping"
+                    )
+            if dataset_id == "hies-expenditure-context" and request.measure in {
+                "value",
+                "published_value",
+            }:
+                if request.aggregation == "sum":
+                    raise ValueError("HIES means, medians and shares cannot be summed")
+                for scope in ("section", "indicator", "geography"):
+                    if len({row[scope] for row in filtered}) > 1 and scope not in columns:
+                        raise ValueError(
+                            "HIES estimates require section, indicator and geography "
+                            "filters or grouping"
+                        )
         # Mixed metric records must be scoped rather than adding MVR to people or years.
         for unit_column in ("unit", "units"):
             units = {str(row[unit_column]) for row in filtered if row.get(unit_column)}

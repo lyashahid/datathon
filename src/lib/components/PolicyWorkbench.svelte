@@ -30,8 +30,20 @@
 	import type { TransportImpactData } from '#lib/transport-impact.js';
 	import type { Coordinates, MapFeatures } from '#lib/types.js';
 	import type { CalibrationRecord, FleetResources, ResourceAudit } from '#lib/planning-delivery.js';
+	import {
+		planningEvidence,
+		type PlanningCoverage,
+		type PopulationBasis
+	} from '#lib/planning-evidence.js';
 
-	type Origin = { id: string; islandId: string; lon: number; lat: number; population2026: number };
+	type Origin = {
+		id: string;
+		islandId: string;
+		lon: number;
+		lat: number;
+		population2026: number;
+		population2030?: number;
+	};
 	type Facility = {
 		id: string;
 		name: string;
@@ -94,7 +106,8 @@
 		patterns: Pattern[];
 		graph_edges: Edge[];
 		warnings: string[];
-		population_basis: string;
+		population_basis: PopulationBasis;
+		coverage?: PlanningCoverage;
 		cost_defaults: Record<string, number>;
 		islands: { id: string; name: string }[];
 		source_receipts: { path: string; sha256: string }[];
@@ -181,7 +194,7 @@
 		assumptions: unknown;
 		source_receipts: unknown;
 		version_pins: unknown;
-		population_basis: string;
+		population_basis: PopulationBasis | null;
 		access_method: string;
 		transport_connectivity?: { impact?: TransportImpactData };
 	};
@@ -278,7 +291,7 @@
 	let timetableShift = $state(10);
 	let fleetType = $state('electric');
 	let serviceJson = $state('');
-	let proposalIsland = $state('male');
+	let proposalIsland = $state('');
 	let serviceMode = $state('bus');
 	let serviceFrom = $state('');
 	let serviceTo = $state('');
@@ -351,6 +364,15 @@
 	const integerFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 	const number = (value: number | null | undefined) =>
 		value == null ? 'Unavailable' : integerFormat.format(value);
+	const evidence = $derived(planningEvidence(baseline?.population_basis, baseline?.coverage));
+	const evaluationEvidence = $derived(planningEvidence(evaluation?.population_basis));
+	const planningAreaLabel = $derived(
+		baseline?.islands.length === 1
+			? baseline.islands[0].name
+			: baseline?.islands.length
+				? `${number(baseline.islands.length)} supported islands`
+				: 'Supported planning areas'
+	);
 	const residentAreaNames = $derived.by(() => {
 		const names: Record<string, string> = {};
 		for (const island of baseline?.islands ?? []) {
@@ -621,7 +643,7 @@
 			baseline = data;
 			originId = '';
 			targetId = data.patterns[0]?.id ?? '';
-			proposalIsland = data.planning_island_id || 'male';
+			proposalIsland = data.planning_island_id || data.islands[0]?.id || '';
 			serviceFrom = data.stops[0]?.id ?? '';
 			serviceTo = data.stops[1]?.id ?? '';
 			const origin = data.origins[Math.floor(data.origins.length / 2)];
@@ -702,7 +724,7 @@
 					].some((item) => item.id === operation.target_id)
 				) {
 					error =
-						'This reviewed notice targets another planning area. Its source ID is retained; switch to all Greater Malé to inspect the full effect.';
+						'This reviewed notice targets another planning area. Its source ID is retained; switch to all supported islands to inspect the full effect.';
 				}
 				onConsume();
 			});
@@ -1244,7 +1266,7 @@
 				{baseline?.islands.length === 1
 					? `Plan for ${baseline.islands[0].name}.`
 					: baseline?.islands.length
-						? 'Plan for Greater Malé.'
+						? 'Plan across supported islands.'
 						: 'Plan on the map.'}
 			</h2>
 			<p>Explore a resident area, place a change, then compare its impact.</p>
@@ -1266,15 +1288,15 @@
 			><Card.Content
 				><h3>This island needs a planning dataset.</h3>
 				<p>
-					National island and facility context remains available on the map. Resident travel-time
-					outcomes require connected roads, resident allocation and dated services. We have those
-					inputs for Greater Malé.
+					National island and facility context remains available on the map. Local travel-time
+					outcomes need resident allocation and a connected walking network. Timetable-based
+					journeys also need dated service evidence.
 				</p>
 				<Button
 					onclick={() => {
 						scope = '';
 						void loadBaseline(scope);
-					}}>Use the Greater Malé planning area <ArrowRight size={16} /></Button
+					}}>Explore supported planning areas <ArrowRight size={16} /></Button
 				><Button variant="outline" onclick={onExplore}
 					><ArrowLeft size={16} /> Back to Explore</Button
 				></Card.Content
@@ -1463,11 +1485,12 @@
 					<Card.Root class="policy-context"
 						><Card.Content>
 							<div class="policy-context-title">
-								<strong>{baseline.islands.map((x) => x.name).join(' · ') || 'Greater Malé'}</strong
-								><Badge variant="outline">Partial service evidence</Badge><span
+								<strong>{planningAreaLabel}</strong><Badge variant="outline"
+									>Partial service evidence</Badge
+								><span
 									>{number(baseline.counts.origins)} resident areas · {number(
 										baseline.counts.patterns
-									)} bus patterns</span
+									)} service patterns</span
 								>
 								{#if scope}<Button
 										variant="ghost"
@@ -1475,7 +1498,7 @@
 										onclick={() => {
 											scope = '';
 											void loadBaseline(scope);
-										}}>Plan across Greater Malé</Button
+										}}>Plan across supported islands</Button
 									>{/if}
 							</div>
 							<div class="policy-inputs">
@@ -1524,11 +1547,13 @@
 									>{busy ? 'Calculating…' : 'Evaluate proposal'} <ArrowRight size={16} /></Button
 								>
 							</div>
-							<p class="policy-note">
-								The verified bus snapshot is 10 October 2026 from 15:20. Changing the date uses
-								walking and explicitly calendared imported services. Missing observations are shown
-								as unavailable.
-							</p>
+							{#if evidence.population}<p class="policy-note">{evidence.population}</p>{/if}
+							{#if evidence.distribution}<p class="policy-note">{evidence.distribution}</p>{/if}
+							{#if evidence.qualification}<p class="policy-note">{evidence.qualification}</p>{/if}
+							<p class="policy-note">{evidence.timetable} Missing observations stay unavailable.</p>
+							{#each evidence.warnings as warning (warning)}<p class="policy-note">
+									{warning}
+								</p>{/each}
 						</Card.Content></Card.Root
 					>
 				</details>
@@ -1932,7 +1957,7 @@
 											<div>
 												<strong>{operationTitle(operation)}</strong><small
 													>{baseline.islands.find((island) => island.id === operation.island_id)
-														?.name ?? 'Greater Malé'}{operation.opening_date
+														?.name ?? 'Selected planning area'}{operation.opening_date
 														? ` · Opens ${operation.opening_date}`
 														: ''}</small
 												>
@@ -2070,7 +2095,18 @@
 									><Card.Content
 										><h3>Read the result correctly</h3>
 										<p>{evaluation.access_method}</p>
-										<p class="policy-note">{evaluation.population_basis}</p>
+										{#if evaluationEvidence.population}<p class="policy-note">
+												{evaluationEvidence.population}
+											</p>{/if}
+										{#if evaluationEvidence.distribution}<p class="policy-note">
+												{evaluationEvidence.distribution}
+											</p>{/if}
+										{#if evaluationEvidence.qualification}<p class="policy-note">
+												{evaluationEvidence.qualification}
+											</p>{/if}
+										{#each evaluationEvidence.warnings as warning (warning)}<p class="policy-note">
+												{warning}
+											</p>{/each}
 										<div class="policy-inline-stat">
 											<strong>{number(evaluation.summary.became_unavailable_residents)}</strong
 											><span
@@ -2195,7 +2231,7 @@
 										>{#each baseline.origins as origin (origin.id)}<NativeSelect.Option
 												value={origin.id}
 												>{residentAreaNames[origin.id] ?? 'Modeled resident area'} · {number(
-													origin.population2026
+													populationYear === '2030' ? origin.population2030 : origin.population2026
 												)} residents</NativeSelect.Option
 											>{/each}</NativeSelect.Root
 									><Label for="policy-destination">Destination</Label><NativeSelect.Root

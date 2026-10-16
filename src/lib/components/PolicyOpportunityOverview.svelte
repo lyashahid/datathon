@@ -599,7 +599,7 @@
 						<h3>Use the map to investigate, then test the investment.</h3>
 						<p>
 							{number(scoped.length)} islands in this selection · {number(populationCount)} with resident
-							counts · {number(supportedCount)} with detailed proposal forecasts available.
+							counts · {number(supportedCount)} with modeled resident access available.
 							{referenceDate ? `Data reference: ${referenceDate}.` : ''}
 						</p>
 						<p>
@@ -623,9 +623,10 @@
 							there.
 						</p>
 						<p>
-							Resident totals remain unavailable where the source does not supply an estimate.
-							Detailed access and investment forecasts are limited to islands with supported
-							resident origins and planning networks. Proposals remain estimates for review.
+							Resident totals remain unavailable where the source does not supply an estimate. Local
+							access models need resident allocation and planning networks. Some use approximate
+							resident distributions; check each island's evidence. Timetable-based journeys require
+							separate dated service evidence. Proposals remain estimates for review.
 						</p>
 						{#if snapshot?.warnings.length}<ul>
 								{#each snapshot.warnings as warning (warning)}<li>{warning}</li>{/each}

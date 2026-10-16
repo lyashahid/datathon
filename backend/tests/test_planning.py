@@ -777,6 +777,97 @@ def test_service_overlay_shares_only_unchanged_graphs(service, operation):
     assert service.repository.baseline == baseline
 
 
+@pytest.mark.parametrize(
+    ("operations", "scenario", "shares_network"),
+    [
+        ([], None, True),
+        (
+            [{"type": "move_stop", "target_id": "stop:a", "coordinates": [73.5001, 4.17]}],
+            None,
+            True,
+        ),
+        ([{"type": "add_hospital", "coordinates": [73.5, 4.17]}], None, True),
+        ([{"type": "weather_disruption", "disabled_modes": ["ferry"]}], None, True),
+        (
+            [{"type": "road_closure", "target_id": "edge:a-b", "disabled_modes": ["walk"]}],
+            None,
+            False,
+        ),
+        ([{"type": "weather_disruption", "disabled_modes": ["walk"]}], None, False),
+        (
+            [
+                {
+                    "type": "pedestrian_connection",
+                    "from_node_id": "a",
+                    "to_node_id": "c",
+                    "distance_m": 100,
+                }
+            ],
+            None,
+            False,
+        ),
+        (
+            [],
+            {
+                "operations": [
+                    {
+                        "type": "pedestrian_connection",
+                        "from_node_id": "a",
+                        "to_node_id": "c",
+                        "distance_m": 100,
+                    }
+                ]
+            },
+            False,
+        ),
+    ],
+    ids=[
+        "cross-island-return",
+        "moved-stop",
+        "new-local-hospital",
+        "ferry-weather",
+        "road-closure",
+        "walking-weather",
+        "walking-link",
+        "structural-walking-link",
+    ],
+)
+def test_journey_shared_network_matches_isolated_overlay_without_source_mutation(
+    service, monkeypatch, operations, scenario, shares_network
+):
+    baseline = copy.deepcopy(service.repository.baseline)
+    request = JourneyRequest(
+        island_id="island:1443",
+        origin_id="origin:a",
+        assumptions={"departure_minutes": 470},
+        appointment_minutes=30,
+        operations=operations,
+        scenario=scenario,
+    )
+
+    def isolated(repository, request, **kwargs):
+        return apply_operations(repository, request)
+
+    monkeypatch.setattr("app.planning.service.apply_operations", isolated)
+    expected = service.journey(request)
+    observed_sharing = []
+
+    def measured(repository, request, **kwargs):
+        world, warnings = apply_operations(repository, request, **kwargs)
+        observed_sharing.append(world["network"] is repository.baseline["network"])
+        return world, warnings
+
+    monkeypatch.setattr("app.planning.service.apply_operations", measured)
+    actual = service.journey(request)
+    assert actual == expected
+    assert observed_sharing == [shares_network] * (2 if actual["return_journey"] else 1)
+    assert service.repository.baseline == baseline
+    if not operations and not scenario:
+        assert actual["outward"]["destination_id"] == "hospital:c"
+        assert any(leg["mode"] == "ferry" for leg in actual["outward"]["path"])
+        assert actual["return_journey"]["destination_id"] == "origin:a"
+
+
 def test_concurrent_quotes_and_evaluations_keep_draft_budgets_and_access_separate(service):
     pin = copy.deepcopy(service.repository.baseline)
     school = PlanningRequest(

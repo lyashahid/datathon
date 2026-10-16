@@ -56,6 +56,19 @@ def factor_amount(value: Any) -> str:
     return "Unavailable" if number is None else f"{number:,}".removesuffix(".0")
 
 
+def population_description(value: Any) -> str:
+    if isinstance(value, str) and value:
+        return value
+    if isinstance(value, dict):
+        qualification = value.get("qualification")
+        if qualification:
+            return str(qualification)
+        source = value.get("population_source") or "Modeled resident allocation"
+        method = value.get("spatial_method") or value.get("method")
+        return str(source) + (f"; {str(method).replace('_', ' ')}" if method else "")
+    return "Resident allocation unavailable"
+
+
 def fiscal_projection(capital: Any, annual: Any) -> list[dict[str, Any]]:
     """Explicit constant-service, undiscounted arithmetic, preserving unknowns."""
     one_time, recurring = finite(capital), finite(annual)
@@ -786,7 +799,7 @@ def build_planning_report(
                 "Note",
             ),
             p(
-                (evaluation.get("population_basis") or "Resident allocation unavailable.")
+                population_description(evaluation.get("population_basis"))
                 + ". Resident counts are rounded from modeled allocations; exact chart values "
                 "are attached to this PDF.",
                 "Note",

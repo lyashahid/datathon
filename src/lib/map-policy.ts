@@ -4,6 +4,7 @@ import type { Coordinates } from './types.js';
 import type { PlanningComparison, PlanningOperation, PlanningPlace } from './planning-map.js';
 import type { PlanningEvaluation } from './proposal-review.js';
 import type { TransportServicePattern } from './transport-service.js';
+import type { PlanningCoverage, PopulationBasis } from './planning-evidence.js';
 import { validPoint } from './planning-map.js';
 
 const operationTypes = new Set([
@@ -171,6 +172,8 @@ export type MapPolicyState = {
 export type MapEvaluation = PlanningEvaluation & { origins: PlanningComparison[] };
 export type MapBaseline = {
 	origins: PlanningPlace[];
+	population_basis?: PopulationBasis;
+	coverage?: PlanningCoverage;
 	cost_defaults: Record<string, number>;
 	graph_edges: { geometry?: number[][] }[];
 	warnings: string[];

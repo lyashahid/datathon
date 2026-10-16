@@ -87,3 +87,44 @@ Validation passed: 656 backend tests, 142 frontend unit tests, six startup tests
 Local receipts are in `artifacts/qa/site-performance/{before,after-isolated}.json`, `artifacts/qa/backend-performance-after.json` and the individual journey directories. Those runtime artifacts are excluded from Git.
 
 Implementation references: [SvelteKit Node adapter](https://svelte.dev/docs/kit/adapter-node) and [Vite production deployment](https://vite.dev/guide/static-deploy.html).
+
+### Local verification · 16 October 2026
+
+This verification uses the current national data model and a running Uvicorn/Vite development environment. Serial loopback API requests measure complete response bodies, decoded and compressed size, and separate JSON parsing. The first observed request is **not a cold server start**: startup preparation, previous visitors, local files and shared results may already have warmed it. API timing excludes browser rendering, the frontend proxy and a visitor's network. The dated 15 October browser figures above remain a separate measurement.
+
+The source of ordinary island geography, population, walking networks, official facilities, transport evidence and contextual datasets is the prepared local artifacts in `data/public` and `backend/data/cache`. Forecast calculations also start from local, reviewed source models. PostgreSQL is an optional development cache of computed results, rather than the authoritative dataset store. The running development backend had an established database connection and a read-only cache-table query succeeded; production and test settings explicitly disable this connection. Reviewed notice/import workflow uses its own local SQLite store.
+
+Primary MapLibre maps draw the application's GeoJSON over a local background; they do not need an external base-tile service. Weather and marine panels request Open-Meteo and retain a 10-minute process cache. Places uses external provider queries with a two-minute process response cache and a six-hour identity cache; it has no PostgreSQL or disk result cache. Live movement uses provider-specific short caches and explicit age/coverage states. Places imagery is a separate external request. Successful HTTP responses do not establish fresh observations or complete provider coverage.
+
+Profiling exposed a national-data regression: an already cached proposal evaluation still spent about 1.4 seconds encoding the entire baseline merely to construct its cache key. The repository now memoizes its deterministic content fingerprint by mutation revision. Nested source edits, version changes and snapshot replacement invalidate that fingerprint; scenario copies remain independent. Private-cache checks confirmed that repeated and directly computed results are identical. The first fingerprint is still computed once, typically during background preparation. This improves repeated evaluations without precomputing arbitrary proposals or changing model results.
+
+The final API sweep ran after tests/builds finished, with the restarted backend's 33 background preparation jobs complete and the browser idle. All 29 intended endpoints returned HTTP 200 in four timed requests each; 18 supported conditional checks returned 304 with no body. Repeated figures below are medians of the last three requests.
+
+| API request | First observed | Repeated median |
+| --- | ---: | ---: |
+| Country island map, simplified | 20 ms | 21 ms |
+| Compact national scores | 7 ms | 7 ms |
+| Scoped planning baselines, four islands | 12–713 ms | 11–26 ms |
+| Island detail, four islands | 250–634 ms | 4–6 ms |
+| Island profile, four islands | 6–279 ms | 4–10 ms |
+| Dataset catalogue | 32 ms | 30 ms |
+| Dataset rows, 50 origins | 10 ms | 7 ms |
+| Published passenger history | 3 ms | 2 ms |
+| Forecast analysis | 77 ms | 78 ms |
+| Baseline evaluation, Malé | 2,732 ms | 23 ms |
+| Baseline evaluation, Hulhumalé | 1,118 ms | 15 ms |
+| Baseline evaluation, Addu Hithadhoo | 403 ms | 9 ms |
+| Baseline evaluation, Laamu Hithadhoo | 229 ms | 8 ms |
+| Hypothetical school evaluation, Addu Hithadhoo | 428 ms | 9 ms |
+| School quote | 57 ms | 54 ms |
+| Addu Hithadhoo journey | 134 ms | 145 ms |
+
+Before the fingerprint fix, repeated live evaluations for these requests took 1.19–1.65 seconds. They now take 8–23 milliseconds; private-cache CPU profiles independently confirm removal of the repeated serialization. Journey requests also reuse the unchanged national network before island scoping, reducing the measured repeated journey from 2.66 seconds to 145 milliseconds. All five evaluation response bodies and the journey response are byte-for-byte identical before and after, verified by SHA256. New operations still calculate their exact impact, and the slower first observed computations above remain relevant.
+
+The actual initial map uses 1.39 MB of decoded island geometry (about 347 KB compressed) and compact scores; the optional unscoped 15 MB full map and 31 MB planning baseline are not normal initial UI requests. Earlier provider probes measured weather, marine and Places lookups at about 0.54–0.91 seconds on the first observed query and 3–8 milliseconds on repeat. Those provider samples predate the restart and depend on their short-lived caches. Replaying an old Places identity after restart correctly requires a fresh search or a detail request with name/coordinates; that unintended replay is recorded separately from the successful timing sweep.
+
+Detailed requests, source/cache architecture, database availability evidence and before/after CPU profiles are retained in `artifacts/qa/loading-verification-2026-10-16.json`. Its private-cache measurements use temporary storage with PostgreSQL disabled and never clear the running application's cache.
+
+The optimized Node frontend was also started temporarily on port 5174 and visually checked against the same backend. Country, Addu Hithadhoo, Malé and Hulhumalé maps rendered successfully with no application console errors. Browser-control navigation observations were about 6.4–7.4 seconds for the island maps, but included repeated three-second controller deadlines/stale-element retries. These are conservative automation observations, not reliable paint or LCP measurements, and must not be compared directly with the 15 October browser harness. The incomplete country sample is excluded. Raw observations are in `artifacts/qa/app-verification/browser-readiness-observations.json`; the temporary frontend and its test tab were closed afterward.
+
+Final validation: 911 backend tests, 307 frontend tests and nine startup tests passed; Ruff, frontend lint, Svelte diagnostics and the production build passed. The refreshed-server data audit passed all 60 collections and 65,345 rows, including CSV exports, 58 nonempty default charts, facility/profile joins and source receipts. All 186 added resident meshes conserve their origin contributions and projected totals. Malé and Hulhumalé retain their original mesh geometry and regression results.

@@ -26,6 +26,62 @@ export type ChartDefinition = {
 	limit: number;
 };
 
+/** Start official island collections on a defined measure and compatible population scope. */
+export function defaultDatasetChart(datasetId: string, columns: Column[]): ChartDefinition {
+	const names = columns.map((column) => column.name);
+	const group = ['month', 'islandId', 'category', 'refPeriod', 'atoll', 'name'].find((name) =>
+		names.includes(name)
+	);
+	const definition: ChartDefinition = {
+		group_by: group ?? names[0] ?? '',
+		series_by: datasetId === 'passenger-monthly' ? 'name' : null,
+		measure: names.includes('value')
+			? 'value'
+			: (columns.find((column) => column.type === 'number')?.name ?? null),
+		aggregation: datasetId === 'passenger-monthly' ? 'sum' : 'count',
+		filters: [],
+		q: null,
+		sort: 'group',
+		descending: false,
+		limit: 200
+	};
+	const presets: Record<
+		string,
+		Pick<ChartDefinition, 'group_by' | 'measure' | 'aggregation' | 'filters'>
+	> = {
+		'island-census-demographics': {
+			group_by: 'island_id',
+			measure: 'residents_total',
+			aggregation: 'sum',
+			filters: []
+		},
+		'island-population-projections': {
+			group_by: 'year',
+			measure: 'residents_total',
+			aggregation: 'sum',
+			filters: []
+		},
+		'island-employment-indicators': {
+			group_by: 'island_id',
+			measure: 'unemployment_rate',
+			aggregation: 'mean',
+			filters: [
+				{ column: 'population_scope', op: 'eq', value: 'residents' },
+				{ column: 'sex', op: 'eq', value: 'both' }
+			]
+		}
+	};
+	const preset = presets[datasetId];
+	if (
+		preset &&
+		names.includes(preset.group_by) &&
+		columns.some((column) => column.name === preset.measure && column.type === 'number') &&
+		preset.filters.every((filter) => names.includes(filter.column))
+	)
+		Object.assign(definition, preset);
+	return definition;
+}
+
 export type Story = {
 	id: string;
 	title: string;

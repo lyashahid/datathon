@@ -2,26 +2,35 @@
 
 from __future__ import annotations
 
+import json
 import math
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
 from shapely.affinity import scale
 from shapely.geometry import mapping, shape
 
+from app.analytics.sources import public_data_directory
 from app.data.cache import FileCache
+from app.data.island_context import island_context_profile
 from app.data.map_context import MapContext
+from app.data.national_transport import merge_national_boarding_points, national_transport_path
 from app.data.population import attach_population, population_summary
 
 
 class NormalizedRepository:
-    def __init__(self, data_dir: Path, *, allow_context_build: bool = True) -> None:
+    def __init__(
+        self, data_dir: Path, *, allow_context_build: bool = True, public_dir: Path | None = None
+    ) -> None:
         self.cache = FileCache(data_dir / "cache")
+        self.public_dir = public_dir or public_data_directory()
         self.islands: list[dict[str, Any]] = []
         self.islands_by_id: dict[str, dict[str, Any]] = {}
         self.facilities: list[dict[str, Any]] = []
         self.facilities_by_id: dict[str, dict[str, Any]] = {}
         self.population: list[dict[str, Any]] = []
+        self.island_context: dict[str, Any] = {}
         self.transport: dict[str, Any] = {"features": [], "summary": {}}
         self.summary: dict[str, Any] = {}
         self.facility_review: dict[str, Any] = {"records": [], "summary": {}}
@@ -38,10 +47,32 @@ class NormalizedRepository:
         self.facilities_by_id = {item["id"]: item for item in self.facilities if item.get("id")}
         self.population = self._read_json("normalized/population.json", default=[])
         attach_population(self.population, self.islands)
+        context_path = self.public_dir / "island-context.json"
+        self.island_context = (
+            json.loads(context_path.read_text(encoding="utf-8")) if context_path.is_file() else {}
+        )
         self.transport = self._read_json(
             "normalized/transport.json", default={"features": [], "summary": {}}
         )
+        transport_path = national_transport_path(self.public_dir)
+        if transport_path.is_file():
+            captured_count = len(self.transport["features"])
+            self.transport["features"] = merge_national_boarding_points(
+                self.transport["features"], json.loads(transport_path.read_text("utf-8"))
+            )
+            features = self.transport["features"]
+            self.transport.setdefault("summary", {}).update(
+                {
+                    "feature_count": len(features),
+                    "feature_categories": dict(Counter(row["category"] for row in features)),
+                    "island_assigned_feature_count": sum(
+                        bool(row.get("island_id")) for row in features
+                    ),
+                    "additional_national_boarding_point_count": len(features) - captured_count,
+                }
+            )
         self.summary = self._read_json("derived/national_summary.json", default={})
+        self.summary["transport"] = self.transport.get("summary", {})
         self.summary["population_attached_count"] = sum(
             item.get("island_id") is not None for item in self.population
         )
@@ -52,6 +83,7 @@ class NormalizedRepository:
             "reference_year": 2022,
             "basis": "census residents; named atoll/island and disjoint city wards",
         }
+        self.summary["island_indicator_coverage"] = self.island_context.get("coverage", {})
         accessibility = self._read_json("derived/accessibility-default.json", default={})
         if isinstance(accessibility.get("scores"), list) and accessibility.get("summary"):
             self.summary["accessibility_status"] = "calculated"
@@ -113,6 +145,9 @@ class NormalizedRepository:
     def population_summary(self, island_id: str) -> dict[str, Any]:
         records = [item for item in self.population if item.get("island_id") == island_id]
         return population_summary(records)
+
+    def island_indicator_context(self, island_id: str) -> dict[str, Any]:
+        return island_context_profile(self.island_context, island_id)
 
     def infrastructure(
         self, *, island_id: str | None = None, category: str | None = None
@@ -225,6 +260,19 @@ class NormalizedRepository:
                             "source_id": transport.get("source_id"),
                             "object_type": transport.get("object_type"),
                             "tags": transport.get("tags", {}),
+                            **{
+                                key: transport[key]
+                                for key in (
+                                    "source_ids",
+                                    "source_artifact",
+                                    "operator_code",
+                                    "verification",
+                                    "timetable_status",
+                                    "physical_operating_status",
+                                    "qualification",
+                                )
+                                if key in transport
+                            },
                         },
                     }
                 )

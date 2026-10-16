@@ -1,6 +1,7 @@
 import type { PlanningComparison, PlanningOperation } from './planning-map.js';
 import { backendUrl } from './app-paths.js';
 import type { TransportImpactData } from './transport-impact.js';
+import type { PopulationBasis } from './planning-evidence.js';
 
 /** The report uses the same request and canonical evaluation as the map. */
 export type PlanningReviewRequest = {
@@ -72,7 +73,7 @@ export type PlanningEvaluation = {
 	assumptions: unknown;
 	source_receipts: unknown;
 	version_pins: unknown;
-	population_basis: string | null;
+	population_basis: PopulationBasis | null;
 	access_method: string;
 };
 

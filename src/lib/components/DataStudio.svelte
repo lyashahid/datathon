@@ -2,6 +2,7 @@
 	import { backendUrl } from '#lib/app-paths.js';
 	import { downloadText as download } from '#lib/download.js';
 	import {
+		defaultDatasetChart,
 		datasetFilter,
 		validStory,
 		type Column,
@@ -320,32 +321,26 @@
 		message = '';
 		error = '';
 		selectedColumns = defaultColumns(next);
-		const names = next.columns.map((item) => item.name);
-		groupBy = names.includes('month')
-			? 'month'
-			: names.includes('islandId')
-				? 'islandId'
-				: names.includes('category')
-					? 'category'
-					: names.includes('refPeriod')
-						? 'refPeriod'
-						: names.includes('atoll')
-							? 'atoll'
-							: names.includes('name')
-								? 'name'
-								: (names[0] ?? '');
-		seriesBy = id === 'passenger-monthly' ? 'name' : '';
-		measure = names.includes('value')
-			? 'value'
-			: (next.columns.find((item) => item.type === 'number')?.name ?? '');
-		aggregation = id === 'passenger-monthly' ? 'sum' : 'count';
+		const defaults = defaultDatasetChart(id, next.columns);
+		groupBy = defaults.group_by;
+		seriesBy = defaults.series_by ?? '';
+		measure = defaults.measure ?? '';
+		aggregation = defaults.aggregation;
+		filters = defaults.filters;
 		chartSort = 'group';
 		chartDescending = false;
 		comparisonSort = 'group';
 		comparisonDescending = false;
 		comparisonLimit = null;
-		chartType = groupBy === 'month' ? 'line' : 'bar';
-		keyDomain = groupBy === 'month' ? 'calendar-month' : 'category';
+		chartType = ['month', 'year'].includes(groupBy) ? 'line' : 'bar';
+		keyDomain =
+			groupBy === 'month'
+				? 'calendar-month'
+				: groupBy === 'year'
+					? 'calendar-year'
+					: groupBy === 'island_id'
+						? 'island-id'
+						: 'category';
 		void refresh();
 	}
 	function chooseComparison(id: string) {

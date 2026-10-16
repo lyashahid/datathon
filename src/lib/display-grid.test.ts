@@ -111,6 +111,26 @@ function comparisons(): PlanningComparison[] {
 }
 
 describe('display gap grid', () => {
+	it('keeps coarse resident allocations disclosed when display tiles combine source origins', () => {
+		const source = gapSource();
+		Object.assign(source.features[0].properties!, {
+			allocationMethod: 'worldpop_calibrated',
+			spatialQuality: 'modeled'
+		});
+		Object.assign(source.features[1].properties!, {
+			allocation_method: 'assumed_uniform_land',
+			spatial_quality: 'coarse_assumption',
+			qualification: 'Uniform land assumption, not a settlement map.'
+		});
+		const cell = displayGapHexes(source, mesh()).features[0];
+		expect(cell.properties).toMatchObject({
+			spatial_method: 'mixed',
+			spatial_quality: 'coarse_assumption',
+			source_origin_ids: ['origin:1', 'origin:2'],
+			allocation_qualifications: ['Uniform land assumption, not a settlement map.']
+		});
+	});
+
 	it('conserves source residents across fractional raster contributions and weights every metric', () => {
 		const result = displayGapHexes(gapSource(), mesh());
 		expect(result.features.map((cell) => cell.properties?.population)).toEqual([50, 100]);

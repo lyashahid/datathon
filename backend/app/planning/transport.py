@@ -226,7 +226,8 @@ class TransportPlanningService:
             "unknown_residents": None,
             "qualification": "Walking access to mapped bus stops on the available street "
             "graph. This does not confirm a departing bus, service frequency, capacity or "
-            "ridership. Resident allocations are available only in the Greater Malé snapshot.",
+            "ridership. Resident totals use available modeled island allocations, "
+            "not observed residents at individual origins.",
         }
         if not origins:
             return result

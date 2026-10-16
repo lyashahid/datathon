@@ -54,6 +54,7 @@ def get_island_profile(
     infrastructure_items = repository.infrastructure(island_id=island_id)
     transport_items = repository.transport_features(island_id)
     population = repository.population_summary(island_id)
+    indicator_context = repository.island_indicator_context(island_id)
     unresolved_facilities = [
         item
         for item in infrastructure_items
@@ -67,7 +68,7 @@ def get_island_profile(
     warnings = []
     if not population["record_count"]:
         warnings.append("No island-specific census count is available; population is unknown.")
-    if not population["demographic_breakdown"]:
+    if not population["demographic_breakdown"] and not indicator_context["census_demographics"]:
         warnings.append(
             "Island age breakdown is unavailable; no age-specific resident demand is estimated."
         )
@@ -76,6 +77,7 @@ def get_island_profile(
     return {
         "island": island,
         "population": population,
+        "official_island_context": indicator_context,
         "infrastructure": {
             "items": infrastructure_items,
             "total": len(infrastructure_items),
