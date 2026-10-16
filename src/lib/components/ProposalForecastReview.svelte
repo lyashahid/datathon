@@ -14,6 +14,8 @@
 	} from '@lucide/svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Badge } from '#lib/components/ui/badge/index.js';
+	import TransportImpact from './TransportImpact.svelte';
+	import { transportImpactHeadline } from '#lib/transport-impact.js';
 	import {
 		downloadProposalPdf,
 		finiteValue,
@@ -79,15 +81,19 @@
 	);
 	const walkingGoal = $derived(request.assumptions.goal === 'transport');
 	const transport = $derived(evaluation?.transport_connectivity);
+	const transportImpact = $derived(transport?.impact);
+	const transportBenefitHeadline = $derived(transportImpactHeadline(transportImpact));
 	const proposedFerries = $derived(proposedFerryServiceGroups(transport?.after));
 	const proposedBuses = $derived(proposedBusServiceGroups(transport?.after));
 	const proposedServices = $derived([...proposedBuses, ...proposedFerries]);
 	const hasFerryProposal = $derived(
-		request.operations.some((operation) => operation.service?.mode === 'ferry')
+		request.operations.some((operation) => operation.service?.mode === 'ferry') ||
+			!!transportImpact?.lines?.some((line) => line.mode === 'ferry' && line.change !== 'unchanged')
 	);
 	const hasBusProposal = $derived(
 		request.operations.some((operation) => operation.service?.mode === 'bus') ||
-			proposedBuses.length > 0
+			proposedBuses.length > 0 ||
+			!!transportImpact?.lines?.some((line) => line.mode === 'bus' && line.change !== 'unchanged')
 	);
 	const hasTransportProposal = $derived(hasBusProposal || hasFerryProposal);
 	const proposalItems = $derived(
@@ -100,51 +106,6 @@
 				? []
 				: [{ operation, index }]
 		)
-	);
-	const transportMetrics = $derived(
-		transport
-			? [
-					...(hasBusProposal
-						? [
-								{
-									label: 'Bus departure schedules',
-									before: transport.before.lines.filter((line) => line.mode === 'bus').length,
-									after: transport.after.lines.filter((line) => line.mode === 'bus').length
-								},
-								{
-									label: 'Bus departures on this date',
-									before: transport.before.lines.reduce(
-										(sum, line) => sum + (line.mode === 'bus' ? line.departure_count : 0),
-										0
-									),
-									after: transport.after.lines.reduce(
-										(sum, line) => sum + (line.mode === 'bus' ? line.departure_count : 0),
-										0
-									)
-								}
-							]
-						: []),
-					...(hasFerryProposal
-						? [
-								{
-									label: 'Islands with modeled services',
-									before: transport.before.islands_connected.length,
-									after: transport.after.islands_connected.length
-								},
-								{
-									label: 'Ferry departure schedules',
-									before: transport.before.ferry_lines,
-									after: transport.after.ferry_lines
-								},
-								{
-									label: 'Inter-island departure schedules',
-									before: transport.before.inter_island_lines,
-									after: transport.after.inter_island_lines
-								}
-							]
-						: [])
-				]
-			: []
 	);
 	const maximumBand = $derived(
 		Math.max(
@@ -266,7 +227,10 @@
 			{:else}
 				<div class="headline-metrics" class:outdated={stale || pending}>
 					<article class="metric reach">
-						{#if hasTransportProposal}<small
+						{#if transportBenefitHeadline}<small>Transport service benefit</small><strong
+								class="service-headline">{transportBenefitHeadline}</strong
+							><span>Scheduled service comparison; walking access is shown separately below.</span>
+						{:else if hasTransportProposal}<small
 								>{hasBusProposal && hasFerryProposal
 									? 'Transport services in your proposal'
 									: hasBusProposal
@@ -325,64 +289,10 @@
 							{#if hasBusProposal}<BusFront size={23} />{:else}<Ship size={23} />{/if}
 						</div>
 						<p>
-							Compare modeled connections on {transport.after.service_date}. Each direction has its
-							own departure schedule; an outward and return service count as two schedules.
-							Departures are planned trips, not a prediction of passenger demand.
+							Compare waiting times, dated departures and direct island connections. Walking to a
+							stop can stay the same while your service improves.
 						</p>
-						<div class="transport-report-layout">
-							<div class="transport-comparison">
-								<div class="band-key">
-									<span><i class="baseline-key"></i>Current</span><span
-										><i class="proposed-key"></i>Proposal</span
-									>
-								</div>
-								{#each transportMetrics as metric (metric.label)}<div
-										class="transport-comparison-row"
-									>
-										<div>
-											<strong>{metric.label}</strong><span>{metric.before} → {metric.after}</span>
-										</div>
-										<div class="band-track" aria-hidden="true">
-											<span
-												class="baseline"
-												style:width={`${(metric.before / Math.max(1, metric.before, metric.after)) * 100}%`}
-											></span>
-										</div>
-										<div class="band-track" aria-hidden="true">
-											<span
-												class="proposed"
-												style:width={`${(metric.after / Math.max(1, metric.before, metric.after)) * 100}%`}
-											></span>
-										</div>
-									</div>{/each}
-							</div>
-							<div class="transport-service-list">
-								{#each proposedServices as service (service.key)}<article
-										data-service-mode={service.mode}
-									>
-										<div>
-											{#if service.mode === 'bus'}<BusFront size={18} />{:else}<Ship
-													size={18}
-												/>{/if}<strong>{service.name}</strong>
-										</div>
-										<p>
-											<b>{formatAmount(service.departures)}</b> modeled departures{service.returnService
-												? ' across both directions'
-												: ''}
-										</p>
-										<span
-											>{service.returnService
-												? service.mode === 'bus'
-													? 'Outward and return trips included'
-													: 'Outward and return sailings included'
-												: 'Return service needs review'}</span
-										>
-									</article>{:else}<p>
-										No proposed service is active on this date. Check its opening date and timetable
-										before making a decision.
-									</p>{/each}
-							</div>
-						</div>
+						<TransportImpact impact={transportImpact} />
 						{#if hasFerryProposal}<div class="transport-cost-note">
 								<span><strong>MVR 0</strong> new port construction for this ferry service</span>
 								<p>
@@ -830,6 +740,12 @@
 		line-height: 1.6;
 		display: block;
 	}
+	.metric strong.service-headline {
+		font-size: clamp(20px, 2.1vw, 29px);
+		line-height: 1.25;
+		letter-spacing: -0.6px;
+		overflow-wrap: anywhere;
+	}
 	.outdated .metric strong {
 		color: var(--muted-foreground);
 	}
@@ -846,76 +762,6 @@
 	}
 	.transport-card .section-heading > :global(svg) {
 		color: #437c8b;
-	}
-	.transport-report-layout {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 34px;
-		margin-top: 24px;
-	}
-	.transport-comparison {
-		display: grid;
-		gap: 19px;
-		align-content: start;
-	}
-	.transport-comparison .band-key {
-		margin-bottom: 0;
-	}
-	.transport-comparison-row > div:first-child {
-		display: flex;
-		justify-content: space-between;
-		gap: 14px;
-		margin-bottom: 9px;
-		font-size: 11px;
-	}
-	.transport-comparison-row strong {
-		font-weight: 550;
-		color: #50696f;
-	}
-	.transport-comparison-row > div > span {
-		font-variant-numeric: tabular-nums;
-		color: #315f6a;
-	}
-	.transport-service-list {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-	}
-	.transport-service-list article {
-		border: 1px solid #dce9eb;
-		padding: 15px;
-		border-radius: 12px;
-		background: #eff7f8;
-	}
-	.transport-service-list article > div {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		color: #346b79;
-		font-size: 12px;
-	}
-	.transport-service-list article strong {
-		font-weight: 600;
-	}
-	.transport-service-list article p {
-		font-size: 11px;
-		color: #607f87;
-		margin: 12px 0 6px;
-	}
-	.transport-service-list article b {
-		font-size: 21px;
-		letter-spacing: -0.5px;
-		color: #2c6473;
-		font-weight: 600;
-	}
-	.transport-service-list article > span {
-		font-size: 10px;
-		color: #5a8a7e;
-	}
-	.transport-service-list > p {
-		font-size: 12px;
-		line-height: 1.8;
-		color: #7a7c70;
 	}
 	.transport-cost-note {
 		display: flex;
@@ -1303,10 +1149,6 @@
 		}
 	}
 	@media (max-width: 700px) {
-		.transport-report-layout {
-			grid-template-columns: 1fr;
-			gap: 20px;
-		}
 		.transport-cost-note {
 			flex-direction: column;
 			align-items: flex-start;

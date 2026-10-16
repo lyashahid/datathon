@@ -26,6 +26,8 @@
 	import { api, subscribeApiInvalidation } from '#lib/api.js';
 	import DeliveryCalibration from '#lib/components/DeliveryCalibration.svelte';
 	import PlanningMap from '#lib/components/PlanningMap.svelte';
+	import TransportImpact from '#lib/components/TransportImpact.svelte';
+	import type { TransportImpactData } from '#lib/transport-impact.js';
 	import type { Coordinates, MapFeatures } from '#lib/types.js';
 	import type { CalibrationRecord, FleetResources, ResourceAudit } from '#lib/planning-delivery.js';
 
@@ -181,6 +183,7 @@
 		version_pins: unknown;
 		population_basis: string;
 		access_method: string;
+		transport_connectivity?: { impact?: TransportImpactData };
 	};
 	type Appointment = {
 		status: string;
@@ -2032,6 +2035,9 @@
 										></Card.Root
 									>{/each}
 							</div>
+							{#if !stale}<TransportImpact
+									impact={evaluation.transport_connectivity?.impact}
+								/>{/if}
 							<div class="policy-two-col">
 								<Card.Root
 									><Card.Content

@@ -2,6 +2,7 @@ import type { FeatureCollection } from 'geojson';
 import type { Coordinates } from './types.js';
 import type { PlanningOperation } from './planning-map.js';
 import type { PlanningEconomics } from './proposal-review.js';
+import type { TransportImpactData } from './transport-impact.js';
 export type BusConnectionDraft = {
 	status: 'ready' | 'evidence_needed';
 	candidates: {
@@ -36,6 +37,7 @@ export type BusConnectionDraft = {
 	} | null;
 	quote: {
 		economics: PlanningEconomics;
+		transport_connectivity?: { impact?: TransportImpactData };
 		budget: {
 			allowed: boolean;
 			reasons: string[];

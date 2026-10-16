@@ -28,6 +28,16 @@ Click an accepted route or ferry endpoint to inspect the proposed service and op
 
 ## Analysis and cost interpretation
 
+### Service benefits beyond walking access
+
+The map service preview, proposal panel, full impact review and PDF show **expected waiting time**, **dated departures** and **direct island connections** alongside walking access. A more frequent bus can therefore have a useful benefit even when no additional residents cross the walking-time target. Each changed line names its boarding and destination stops; scoped comparisons use a boarding stop on the selected island when possible.
+
+Expected waiting time assumes uniformly arriving passengers over the displayed operating interval and integrates the actual gaps in the dated timetable. A regular 20-minute interval gives a 10-minute expected wait. Before/after savings use the same overlapping interval and boarding locations. The next departure and its wait are calculated from the selected clock time. These are timetable estimates, not observed queues or a ridership forecast. Single departures, incompatible boarding locations and non-overlapping hours do not produce a saved-wait claim.
+
+Island connections are directional single-vehicle links between boarding and later arrival islands, including through stops. A return ferry shows two directions separately, with sailing times and departures on the selected date. Missing baseline service evidence appears as **No dated service in data**, rather than proof that no operator exists. New services show their expected wait without assigning a fictitious baseline wait. Departures at different terminals are not combined into an interchangeable waiting-time estimate. Transfer feasibility, capacity, cancellations and national door-to-door journeys require additional evidence.
+
+`POST /api/v1/planning/quote` includes `transport_connectivity.impact` for inexpensive service previews. `POST /api/v1/planning/evaluate` includes the same comparison beside the existing before/after transport summaries. Computing this comparison does not reroute residents or change walking-map colors.
+
 ### Compare access on the map
 
 The map has two proposal views: **Without proposal** and **With proposal**. They share one prepared hex mesh and the same journey target. Switching views updates colors without rebuilding geometry, sending GeoJSON again, or requesting another evaluation. Click the same hexagon in either view to inspect the corresponding journey evidence. The access selector above the comparison switches between walking access to public transport, healthcare and education.
@@ -48,3 +58,5 @@ Hexes cover the supplied resident footprints, rather than all land. Unshaded lan
 `POST /api/v1/planning/bus-connection` returns source-backed candidate geometry, stop/service operations and an authoritative quote. The endpoint reuses the baseline road graph; previews do not trigger a full resident evaluation. The frontend debounces changes, cancels obsolete requests and reuses an exact matching impact preview after confirmation.
 
 Verification: `npm run test:browser:map-comparison`, `node scripts/verify-map-transport-planning.mjs` and `npm run test:browser:proposal-experience` against the running production app. The comparison check uses real source-data improvements, before/after screenshot pixels, pending-preview cancellation, mobile layout and rapid switching under CPU throttling. Backend regressions are in `backend/tests/test_planning_map_comparison.py`.
+
+`node scripts/verify-transport-service-impact.mjs` verifies captured R1 waiting improvements, preview-to-review consistency, unchanged walking results, new ferry directions and the phone layout. Waiting methodology regressions are in `backend/tests/test_transport_impact.py`; PDF checks are in `backend/tests/test_planning_report.py`.

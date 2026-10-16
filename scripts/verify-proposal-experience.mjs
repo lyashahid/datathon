@@ -670,10 +670,13 @@ try {
 			await expect(
 				review.getByRole('heading', { name: 'What the bus service changes' })
 			).toBeVisible();
+			const serviceImpact = review.getByRole('region', { name: 'Transport service impact' });
 			await expect(
-				review.locator('.transport-service-list [data-service-mode="bus"]')
-			).toContainText('Outward and return trips included');
-			await expect(review).toContainText('Departures are planned trips');
+				serviceImpact.locator('.service-row').filter({ hasText: 'New service' })
+			).toHaveCount(2);
+			await expect(serviceImpact).toContainText('Dated departures');
+			await expect(serviceImpact).toContainText('Expected wait');
+			await expect(serviceImpact).toContainText('not observed passenger waits or ridership');
 			await expect(review.getByRole('button', { name: 'Save as PDF', exact: true })).toBeEnabled();
 			await page.screenshot({ path: path.join(output, 'bus-connection-review.png') });
 			await review.getByRole('button', { name: 'Close proposal review', exact: true }).click();

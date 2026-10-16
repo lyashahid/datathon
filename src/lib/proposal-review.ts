@@ -1,4 +1,5 @@
 import type { PlanningComparison, PlanningOperation } from './planning-map.js';
+import type { TransportImpactData } from './transport-impact.js';
 
 /** The report uses the same request and canonical evaluation as the map. */
 export type PlanningReviewRequest = {
@@ -63,6 +64,7 @@ export type PlanningEvaluation = {
 	transport_connectivity?: {
 		before: TransportConnectivitySummary;
 		after: TransportConnectivitySummary;
+		impact?: TransportImpactData;
 	};
 	warnings: string[];
 	coverage: { service_date?: string; bus_calendar?: string; meaning: string };

@@ -91,6 +91,35 @@ def compact_amount(value: Any) -> str:
     return f"{number:,.0f}"
 
 
+def minutes(value: Any) -> str:
+    number = finite(value)
+    return "Unavailable" if number is None else f"{number:,.1f}".removesuffix(".0") + " min"
+
+
+def clock_time(value: Any) -> str:
+    number = finite(value)
+    if number is None:
+        return "Unavailable"
+    hour, remainder = divmod(round(number * 60), 3600)
+    minute, second = divmod(remainder, 60)
+    return (
+        f"{hour % 24:02}:{minute:02}"
+        + (f":{second:02}" if second else "")
+        + (f" (+{hour // 24}d)" if hour >= 24 else "")
+    )
+
+
+def largest_wait_reduction(impact: dict[str, Any]) -> float | None:
+    values = [
+        value
+        for line in impact.get("lines", [])
+        if line.get("expected_wait_comparable") is True
+        and (value := finite(line.get("expected_wait_saved_minutes"))) is not None
+        and value > 0
+    ]
+    return max(values) if values else None
+
+
 def chart_text(
     drawing: Drawing,
     x: float,
@@ -125,6 +154,7 @@ def benefit_cards(
     width: float,
     ferry_services: list[dict[str, Any]] | None = None,
     ferry_departures: int = 0,
+    transport_impact: dict[str, Any] | None = None,
 ) -> Drawing:
     """Lead with the proposal's service outcome, keeping resident access separate."""
     drawing = Drawing(width, 185)
@@ -148,6 +178,17 @@ def benefit_cards(
             f"{ferry_departures} planned departures, including return sailings, "
             "on the selected date",
             9,
+            colors.white,
+        )
+    elif (wait_saved := largest_wait_reduction(transport_impact or {})) is not None:
+        chart_text(drawing, 20, 160, "SCHEDULED WAIT REDUCTION", 8, LIME, True)
+        chart_text(drawing, 18, 101, minutes(wait_saved), 40, colors.white, True)
+        chart_text(
+            drawing,
+            20,
+            81,
+            "Largest supported reduction among changed services; walking access is separate",
+            8.5,
             colors.white,
         )
     else:
@@ -199,6 +240,62 @@ def access_comparison(summary: dict[str, Any], width: float) -> Drawing:
             chart_text(drawing, width, y + 8, "Unavailable", 9, MUTED, anchor="end")
         chart_text(drawing, bar_x, y - 13, f"{amount(value)} residents", 8, MUTED)
     chart_text(drawing, 0, 3, "Share of the supported resident population within target", 8, MUTED)
+    return drawing
+
+
+def service_benefit_cards(impact: dict[str, Any], width: float) -> Drawing:
+    summary = impact.get("summary") or {}
+    drawing = Drawing(width, 76)
+    cell_width = (width - 20) / 3
+    values = (
+        (
+            "ISLAND SERVICE DEPARTURES",
+            f"{amount(summary.get('departures_before'))} to "
+            f"{amount(summary.get('departures_after'))}",
+        ),
+        ("NEW DIRECTED CONNECTIONS", amount(summary.get("added_connections"))),
+        ("CHANGED SERVICE LINES", amount(summary.get("changed_lines"))),
+    )
+    for index, (label, value) in enumerate(values):
+        x = index * (cell_width + 10)
+        card(drawing, x, 0, cell_width, 76)
+        chart_text(drawing, x + 10, 53, label, 6.6, MUTED, True)
+        chart_text(drawing, x + 10, 21, value, 20, TEAL, True)
+    return drawing
+
+
+def wait_comparison(lines: list[dict[str, Any]], width: float) -> Drawing:
+    """Comparable dated service waits, never a ridership-weighted network average."""
+    lines = [line for line in lines if line.get("expected_wait_comparable") is True][:3]
+    drawing = Drawing(width, 34 + 68 * len(lines))
+    values = [
+        finite((line.get(phase) or {}).get("expected_wait_minutes"))
+        for line in lines
+        for phase in ("before", "after")
+    ]
+    maximum = max([value for value in values if value is not None and value > 0] or [1])
+    bar_x, bar_width = 174.0, width - 246
+    for index, line in enumerate(lines):
+        y = drawing.height - 29 - index * 68
+        name = str(line.get("name") or "Service")
+        chart_text(drawing, 0, y + 1, name[:29] + ("..." if len(name) > 29 else ""), 8, INK, True)
+        chart_text(drawing, 0, y - 14, str(line.get("mode") or "").capitalize(), 7, MUTED)
+        for offset, phase, fill in ((0, "before", BEFORE), (-21, "after", TEAL)):
+            value = finite((line.get(phase) or {}).get("expected_wait_minutes"))
+            drawing.add(
+                Line(
+                    bar_x,
+                    y + offset + 4,
+                    width - 62,
+                    y + offset + 4,
+                    strokeColor=LINE,
+                    strokeWidth=0.4,
+                )
+            )
+            if value is not None and value > 0:
+                card(drawing, bar_x, y + offset, bar_width * value / maximum, 10, fill)
+            chart_text(drawing, width, y + offset + 1, minutes(value), 8, fill, True, "end")
+    chart_text(drawing, bar_x, 4, "Current services / with proposal", 7, MUTED)
     return drawing
 
 
@@ -578,6 +675,16 @@ def build_planning_report(
     delta = economics.get("delta") or {}
     budget = economics.get("budget") or {}
     bands = evaluation.get("travel_time_bands") or {}
+    transport = evaluation.get("transport_connectivity") or {}
+    transport_impact = transport.get("impact") or {}
+    show_transport_benefits = bool(transport_impact) and (
+        a.goal == "transport"
+        or (finite((transport_impact.get("summary") or {}).get("changed_lines")) or 0) > 0
+        or any(
+            connection.get("change") != "unchanged"
+            for connection in transport_impact.get("connections", [])
+        )
+    )
     proposed_ferries = [
         operation
         for operation in payload.operations
@@ -621,6 +728,9 @@ def build_planning_report(
             "Connect islands with a new ferry service using existing landing points. "
             "Review planned sailings and investment, with resident access measured separately."
             if proposed_ferries
+            else "More frequent services can reduce waiting even when walking access stays "
+            "the same. Compare dated departures, modeled waits and resident access separately."
+            if largest_wait_reduction(transport_impact) is not None
             else f"What changes when your proposal brings {goal} within "
             f"{a.target_minutes:g} minutes of more residents?"
         ),
@@ -633,8 +743,14 @@ def build_planning_report(
             sum(
                 len(service_day_trips(operation.service, a.date)) for operation in proposed_ferries
             ),
+            transport_impact,
         ),
-        p(f"Access to {goal}, before and after", "Section"),
+        p(
+            "Walking access to public transport, before and after"
+            if a.goal == "transport"
+            else f"Access to {goal}, before and after",
+            "Section",
+        ),
         access_comparison(summary, available),
         Spacer(1, 5),
         p(
@@ -816,13 +932,14 @@ def build_planning_report(
                 details.append(f"Map location: {lat:.6f} latitude, {lon:.6f} longitude")
             if operation.get("target_id") and operation["type"] != "use_existing_ferry_terminal":
                 details.append(f"Target: {operation['target_id']}")
+            if operation.get("headway_minutes") is not None:
+                details.append(f"Target headway: every {minutes(operation['headway_minutes'])}")
             if operation.get("opening_date"):
                 details.append(f"Opening date: {operation['opening_date']}")
             operation_rows.append([site_label, "\n".join(details)])
         story.append(table(operation_rows, [available * 0.11, available * 0.89]))
     else:
         story.append(p("No interventions. This report describes the unchanged baseline."))
-    transport = evaluation.get("transport_connectivity", {})
     if proposed_buses:
         rows = [["Bus connection", "Stops", "Assumed runtime", "Departures"]]
         for operation in proposed_buses:
@@ -933,9 +1050,160 @@ def build_planning_report(
             ),
         ]
     )
+    if show_transport_benefits:
+        changed_lines = [
+            line for line in transport_impact.get("lines", []) if line.get("change") != "unchanged"
+        ]
+        changed_connections = [
+            connection
+            for connection in transport_impact.get("connections", [])
+            if connection.get("change") != "unchanged"
+        ]
+        story.extend(
+            new_page(
+                "05",
+                "Transport service benefits",
+                "Less waiting. Better connections.",
+                f"Dated service comparison for {transport_impact.get('service_date', a.date)} "
+                f"at {clock_time(transport_impact.get('departure_minutes', a.departure_minutes))} "
+                "MVT. These benefits are separate from walking access to a boarding point.",
+            )
+        )
+        story.extend(
+            [
+                service_benefit_cards(transport_impact, available),
+                p(
+                    "Totals: current to proposal, across the selected island and edited routes. "
+                    "New or removed services have no paired waiting-time savings.",
+                    "Note",
+                ),
+                p(
+                    transport_impact.get("wait_method")
+                    or "Expected waits model arrival between scheduled departures. "
+                    "Next-departure waits use the selected date and time; neither is an "
+                    "observed passenger queue or a demand forecast.",
+                    "Note",
+                ),
+            ]
+        )
+        if any(line.get("expected_wait_comparable") is True for line in changed_lines):
+            story.extend(
+                [
+                    p("Expected waiting time", "Section"),
+                    wait_comparison(changed_lines, available),
+                    p(
+                        "Up to three changed services shown. Matched services use the same "
+                        "overlapping operating window. Full line values and comparison "
+                        "limitations follow; these are not population-weighted averages.",
+                        "Note",
+                    ),
+                ]
+            )
+
+        def service_values(metrics: dict[str, Any] | None) -> str:
+            if metrics is None:
+                return "No dated service in data"
+            multiple_boarding_stops = len(metrics.get("boarding_stop_ids") or []) > 1
+
+            def wait_value(key: str) -> str:
+                if multiple_boarding_stops and metrics.get(key) is None:
+                    return "Varies by boarding stop"
+                return minutes(metrics.get(key))
+
+            next_departure = (
+                "Varies by boarding stop"
+                if multiple_boarding_stops and metrics.get("next_departure_minutes") is None
+                else clock_time(metrics.get("next_departure_minutes"))
+            )
+            return (
+                f"{amount(metrics.get('departure_count'))} dated departures\n"
+                f"Expected wait: {wait_value('expected_wait_minutes')}\n"
+                f"Next departure: {next_departure}\n"
+                f"Wait from selected time: {wait_value('next_wait_minutes')}"
+            )
+
+        if changed_lines:
+            rows = [["Changed service", "Current services", "With proposal"]]
+            for line in changed_lines:
+                label = (
+                    f"{line.get('name') or 'Service'} ({line.get('mode', 'transport')})\n"
+                    f"{line.get('from_stop_name') or 'Start'} to "
+                    f"{line.get('to_stop_name') or 'End'}\n"
+                    f"Change: {line.get('change', 'changed')}"
+                )
+                saved = finite(line.get("expected_wait_saved_minutes"))
+                if line.get("expected_wait_comparable") is True and saved is not None:
+                    label += f"\nExpected wait: {minutes(abs(saved))} " + (
+                        "shorter" if saved > 0 else "longer" if saved < 0 else "change"
+                    )
+                    common = line.get("after") or {}
+                    label += (
+                        "\nCommon window: "
+                        f"{clock_time(common.get('expected_wait_window_start_minutes'))} to "
+                        f"{clock_time(common.get('expected_wait_window_end_minutes'))}"
+                    )
+                elif line.get("change") not in {"added", "removed"} and line.get(
+                    "expected_wait_comparison_reason"
+                ):
+                    label += f"\n{line['expected_wait_comparison_reason']}"
+                rows.append(
+                    [label, service_values(line.get("before")), service_values(line.get("after"))]
+                )
+            story.extend(
+                [
+                    p("Changed services", "Section"),
+                    table(rows, [available * 0.4, available * 0.3, available * 0.3]),
+                ]
+            )
+        else:
+            story.append(p("No dated service changes. Waiting times remain unchanged."))
+        story.append(p("Island-to-island connections", "Section"))
+        if changed_connections:
+            rows = [["Directed connection", "Current services", "With proposal"]]
+            for connection in changed_connections:
+                label = (
+                    f"{connection.get('from_island_name') or 'Origin island'} to "
+                    f"{connection.get('to_island_name') or 'Destination island'}\n"
+                    f"{connection.get('mode', 'transport')} - "
+                    f"{connection.get('change', 'changed')}"
+                )
+                if (
+                    connection.get("change") not in {"added", "removed"}
+                    and connection.get("expected_wait_comparable") is False
+                    and connection.get("expected_wait_comparison_reason")
+                ):
+                    label += f"\n{connection['expected_wait_comparison_reason']}"
+                saved = finite(connection.get("expected_wait_saved_minutes"))
+                if connection.get("expected_wait_comparable") is True and saved is not None:
+                    label += f"\nExpected wait: {minutes(abs(saved))} " + (
+                        "shorter" if saved > 0 else "longer" if saved < 0 else "change"
+                    )
+                values = []
+                for phase in ("before", "after"):
+                    metrics = connection.get(phase)
+                    values.append(
+                        service_values(metrics)
+                        + (
+                            f"\nOn-board time: {minutes(metrics.get('crossing_minutes'))}"
+                            if metrics
+                            else ""
+                        )
+                    )
+                rows.append([label, *values])
+            story.append(table(rows, [available * 0.4, available * 0.3, available * 0.3]))
+        else:
+            story.append(p("No change to the supported direct island-to-island connections."))
+        story.append(
+            p(
+                "Direct dated services only. Transfers, last-mile access, capacity, "
+                "cancellations and passenger demand remain unverified. Full transport "
+                "scope and limitations are in the evidence appendix.",
+                "Note",
+            )
+        )
     story.extend(
         new_page(
-            "05",
+            "06" if show_transport_benefits else "05",
             "Evidence appendix",
             "What the decision rests on.",
             "Review coverage, assumptions and source versions alongside the modeled benefits. "
@@ -959,6 +1227,20 @@ def build_planning_report(
             ),
         ]
     )
+    if show_transport_benefits:
+        story.extend(
+            [
+                p("Transport service scope", "Section"),
+                p(
+                    transport_impact.get("qualification")
+                    or transport.get("after", {}).get("qualification")
+                    or "Direct scheduled connections only; transfers, last-mile journeys, "
+                    "capacity and observed passenger demand are not established by this "
+                    "comparison.",
+                    "Note",
+                ),
+            ]
+        )
     warnings = (evaluation.get("warnings") or []) + (economics.get("warnings") or [])
     for warning in sorted(set(warnings)):
         story.append(p(f"- {warning}", "Note"))

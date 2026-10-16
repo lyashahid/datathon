@@ -182,6 +182,12 @@ class TransportPlanningService:
         self.terminals = terminal_catalogue(repository, routing, planning.repository.public_dir)
         self.water_corridors = WaterCorridorPlanner(repository.islands_by_id)
         planning.repository.ferry_terminals = self.terminals
+        planning.repository.island_names.update(
+            {
+                identity: feature["properties"].get("name") or identity
+                for identity, feature in repository.islands_by_id.items()
+            }
+        )
 
     @lru_cache(maxsize=256)
     def local_access(self, island_id: str) -> dict[str, Any]:

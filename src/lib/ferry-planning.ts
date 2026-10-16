@@ -2,6 +2,7 @@ import type { FeatureCollection } from 'geojson';
 import type { PlanningOperation } from './planning-map.js';
 import type { PlanningEconomics, PlanningReviewRequest } from './proposal-review.js';
 import type { Coordinates } from './types.js';
+import type { TransportImpactData } from './transport-impact.js';
 
 export type FerryTerminal = {
 	id: string;
@@ -62,6 +63,7 @@ export type FerryDraft = {
 	} | null;
 	quote: {
 		economics: PlanningEconomics;
+		transport_connectivity?: { impact?: TransportImpactData };
 		budget: { allowed: boolean; reasons: string[] };
 	} | null;
 	reasons: string[];

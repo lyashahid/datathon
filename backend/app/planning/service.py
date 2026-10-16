@@ -16,6 +16,7 @@ from app.planning.models import JourneyRequest, PlanningAssumptions, PlanningReq
 from app.planning.repository import IDENTITY_BRIDGE, PlanningRepository
 from app.planning.routing import JourneyRouter, WalkingNetwork, service_day_trips
 from app.planning.transport import transport_summary
+from app.planning.transport_impact import transport_impact
 from app.planning.world import apply_operations, baseline_world
 
 
@@ -200,6 +201,15 @@ class PlanningService:
         )
         return {
             "economics": financial,
+            "transport_connectivity": {
+                "impact": transport_impact(
+                    self._baseline_view(),
+                    world,
+                    request.assumptions,
+                    island_id=request.island_id,
+                    island_names=self.repository.island_names,
+                )
+            },
             "budget": {
                 "allowed": not over_budget and not unavailable,
                 "status": "over_budget"
@@ -445,6 +455,13 @@ class PlanningService:
             "transport_connectivity": {
                 "before": transport_summary(before_world, request.assumptions),
                 "after": transport_summary(after_world, request.assumptions),
+                "impact": transport_impact(
+                    before_world,
+                    after_world,
+                    request.assumptions,
+                    island_id=request.island_id,
+                    island_names=self.repository.island_names,
+                ),
             },
             "world": copy.deepcopy({k: after_world[k] for k in ("facilities", "stops", "patterns")})
             if request.assumptions.include_world

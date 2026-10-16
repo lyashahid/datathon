@@ -71,6 +71,8 @@
 	import type { FeatureCollection } from 'geojson';
 	import ProposalCostStrip from './ProposalCostStrip.svelte';
 	import ProposalForecastReview from './ProposalForecastReview.svelte';
+	import TransportImpact from './TransportImpact.svelte';
+	import { transportImpactHeadline, type TransportImpactData } from '#lib/transport-impact.js';
 
 	type Suggestion = {
 		id: string;
@@ -109,6 +111,7 @@
 	} | null;
 	type BudgetQuote = {
 		economics: PlanningEconomics;
+		transport_connectivity?: { impact?: TransportImpactData };
 		budget: {
 			allowed: boolean;
 			reasons: string[];
@@ -409,13 +412,6 @@
 	const ferryDestinationName = $derived(
 		national?.islands.find((island) => island.island_id === ferryDestination)?.name ??
 			'Choose a destination'
-	);
-	const draftedFerries = $derived(
-		operations.flatMap((operation) =>
-			operation.metadata?.ui_ferry_summary
-				? [operation.metadata.ui_ferry_summary as NonNullable<FerryDraft['summary']>]
-				: []
-		)
 	);
 	const draftItems = $derived(
 		operations.flatMap((operation, index) =>
@@ -833,6 +829,19 @@
 	);
 	const busSignature = $derived(JSON.stringify({ request, busPatternId, busHeadway }));
 	const busPreview = $derived(busQuote?.key === busSignature ? busQuote.value : null);
+	const visibleTransportImpact = $derived(
+		pending
+			? (pendingEvaluation?.transport_connectivity?.impact ??
+					quotedPlacement?.transport_connectivity?.impact)
+			: ferryOpen
+				? ferryPreview?.quote?.transport_connectivity?.impact
+				: busOpen
+					? busPreview?.transport_connectivity?.impact
+					: !stale
+						? evaluation?.transport_connectivity?.impact
+						: undefined
+	);
+	const transportBenefitHeadline = $derived(transportImpactHeadline(visibleTransportImpact));
 	const previewEconomics = $derived(
 		(busConnectionMode ? busConnection?.quote?.economics : quotedPlacement?.economics) ??
 			(ferryOpen ? ferryPreview?.quote?.economics : null) ??
@@ -2505,6 +2514,7 @@
 					<small>Preview · {comparisonGoalLabel} within {comparisonTarget} min</small>
 					{@render comparisonViews()}
 				</div>{/if}
+			<TransportImpact impact={visibleTransportImpact} compact preview />
 			<footer>
 				<Button
 					disabled={busConnectionMode
@@ -2656,6 +2666,7 @@
 								? pendingDecision?.reason
 								: busConnection?.quote?.budget.reasons.join(' ')}
 					</p>{/if}
+				<TransportImpact impact={visibleTransportImpact} compact preview />
 				<footer>
 					<Button disabled={!pendingDecision?.allowed || busConnectionChecking} onclick={confirm}
 						><Check size={15} />Accept stop & route</Button
@@ -2760,6 +2771,7 @@
 					Changes scheduled departures, waiting times, fleet and running costs. Walking distance to
 					a stop stays the same.
 				</p>
+				<TransportImpact impact={visibleTransportImpact} compact preview />
 				<footer>
 					<Button
 						disabled={!busPatternActive ||
@@ -2925,6 +2937,7 @@
 				{#if !budgetLimits.allowed}<p class="policy-budget-alert" role="alert">
 						{budgetLimits.reason}
 					</p>{/if}
+				<TransportImpact impact={visibleTransportImpact} compact preview />
 				<footer>
 					<Button disabled={!ferryAllowed} onclick={confirmFerry}
 						><Check size={15} />Accept ferry service</Button
@@ -3032,12 +3045,18 @@
 					{!comparisonHasJourneys
 						? 'Access change unavailable · no paired journeys'
 						: comparisonAssumptions?.goal === 'transport'
-							? 'Walking access unchanged · review onward trips for service benefits'
+							? 'Walking access unchanged'
 							: 'Journey times unchanged · no access gain'}
 				{:else}No additional residents within target{/if}
 				{#if Number(comparisonEvaluation.summary.unknown_residents) > 0}
 					<span> · Some areas lack routing evidence</span>
 				{/if}
+			</p>
+		{/if}
+		{#if transportBenefitHeadline && !calculating && !previewCalculating}
+			<p class="proposal-transport-result" aria-live="polite">
+				{transportBenefitHeadline}
+				<button onclick={() => open('proposal')}>Service details <ArrowRight size={12} /></button>
 			</p>
 		{/if}
 	</div>
@@ -3511,22 +3530,7 @@
 						</ol>{:else}<p class="policy-empty">
 							Your map is the canvas. Add a location or generate a draft to start comparing.
 						</p>{/if}
-					{#if draftedFerries.length}<div class="policy-ferry-outcome">
-							<Ship size={18} />
-							<div>
-								<strong
-									>{draftedFerries.length} ferry service{draftedFerries.length === 1 ? '' : 's'} in your
-									proposal</strong
-								>{#each draftedFerries as ferry, i (i)}<p>
-										{ferry.name} · {ferry.departures_each_direction} departures each way · {Math.round(
-											ferry.crossing_minutes
-										)} min estimated sailing
-									</p>{/each}<small
-									>The route is shown on the map. The forecast below measures walking to public
-									transport, healthcare or education separately from the island connection.</small
-								>
-							</div>
-						</div>{/if}
+					<TransportImpact impact={visibleTransportImpact} compact />
 					<div class="policy-forecast-goal">
 						<Label for="map-goal">Compare residents' access to</Label><select
 							id="map-goal"
@@ -3536,8 +3540,8 @@
 								value="healthcare">Healthcare</option
 							><option value="education">Education</option></select
 						><small
-							>Public transport measures walking to a mapped stop or ferry landing place.
-							Island-to-island service connections are reviewed separately.</small
+							>Public transport measures walking to a mapped stop or ferry landing place. Waiting
+							times and island connections appear in the service benefits above.</small
 						>
 					</div>
 					<details class="policy-evidence-note">
@@ -4059,6 +4063,27 @@
 		color: #456655;
 		font-size: 10px;
 	}
+	.proposal-transport-result {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 4px 10px;
+		margin: 3px 8px 5px;
+		max-width: 420px;
+		color: #165d52;
+		font-size: 11px;
+		font-weight: 600;
+		line-height: 1.5;
+	}
+	.proposal-transport-result button {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		font-size: 10px;
+		font-weight: 500;
+	}
 	.policy-evidence-note {
 		margin: 10px 0;
 		color: #617568;
@@ -4428,34 +4453,6 @@
 		font-size: 10px;
 		line-height: 1.5;
 		color: #5f7c83;
-	}
-	.policy-ferry-outcome {
-		display: flex;
-		gap: 10px;
-		align-items: flex-start;
-		padding: 12px;
-		background: #eef6f7;
-		border: 1px solid #d7e6e9;
-		border-radius: 10px;
-		color: #3a6974;
-	}
-	.policy-ferry-outcome > :global(svg) {
-		flex-shrink: 0;
-		margin-top: 2px;
-	}
-	.policy-ferry-outcome strong {
-		font-size: 11px;
-	}
-	.policy-ferry-outcome p {
-		font-size: 10px;
-		line-height: 1.7;
-		margin: 5px 0;
-	}
-	.policy-ferry-outcome small {
-		font-size: 9px;
-		line-height: 1.7;
-		color: #788e93;
-		display: block;
 	}
 	.policy-palette button {
 		display: flex;

@@ -19,6 +19,10 @@ class PlanningRepository:
     def __init__(self, public_dir: Path) -> None:
         self.public_dir = public_dir
         self.baseline = self._read("planning-baseline.json", {})
+        self.island_names = {
+            IDENTITY_BRIDGE.get(island["id"], island["id"]): island.get("name") or island["id"]
+            for island in self.baseline.get("islands", [])
+        }
         self.calendars = self._read("policy-evidence/service-calendars.json", {})
         # Populated from the normalized, tag-aware terminal catalogue at startup.
         # Scenario operations reference these source identities; they cannot
