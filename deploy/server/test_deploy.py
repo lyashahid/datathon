@@ -191,7 +191,10 @@ class ProtectionTests(unittest.TestCase):
 
     def test_layout_checks_every_ancestor_and_fixed_control_file(self):
         control = Path("/srv/datathon/control")
-        with patch.object(deploy, "assert_secure_path") as protect:
+        with (
+            patch.object(deploy, "assert_secure_path") as protect,
+            patch.object(deploy, "assert_secure_environment") as environment,
+        ):
             deploy.secure_layout(control)
         directory_calls = [
             call.args[0] for call in protect.call_args_list if call.kwargs["directory"]
@@ -200,7 +203,103 @@ class ProtectionTests(unittest.TestCase):
         file_calls = [
             call.args[0].name for call in protect.call_args_list if not call.kwargs["directory"]
         ]
-        self.assertEqual(file_calls, ["deploy.py", "compose.yaml", "frontend.env", "backend.env"])
+        self.assertEqual(file_calls, ["deploy.py", "compose.yaml"])
+        self.assertEqual(
+            [call.args[0] for call in environment.call_args_list],
+            [control / "frontend.env", control / "backend.env"],
+        )
+
+    def test_fixed_external_environment_checks_all_target_ancestors(self):
+        path = Path("/srv/apps/datathon/control/frontend.env")
+        target = deploy.EXTERNAL_ENVIRONMENT[path.name]
+
+        def metadata(item):
+            mode = stat.S_IFLNK | 0o777 if item == path else stat.S_IFREG | 0o600
+            return SimpleNamespace(st_mode=mode, st_uid=0)
+
+        with (
+            patch.object(Path, "is_symlink", return_value=True),
+            patch.object(Path, "lstat", autospec=True, side_effect=metadata),
+            patch.object(os, "readlink", return_value=str(target)),
+            patch.object(deploy, "assert_secure_path") as protect,
+        ):
+            deploy.assert_secure_environment(path)
+        self.assertEqual(
+            [call.args[0] for call in protect.call_args_list],
+            [target.parent, *target.parent.parents, target],
+        )
+
+    def test_external_environment_rejects_other_relative_or_swapped_targets(self):
+        path = Path("/srv/apps/datathon/control/frontend.env")
+        for target, owner in (
+            ("/etc/another-app.env", 0),
+            ("../../../../etc/server-apps/datathon.frontend.env", 0),
+            (str(deploy.EXTERNAL_ENVIRONMENT["backend.env"]), 0),
+            (str(deploy.EXTERNAL_ENVIRONMENT["frontend.env"]), 1000),
+        ):
+            with (
+                self.subTest(target=target, owner=owner),
+                patch.object(Path, "is_symlink", return_value=True),
+                patch.object(
+                    Path,
+                    "lstat",
+                    return_value=SimpleNamespace(st_mode=stat.S_IFLNK | 0o777, st_uid=owner),
+                ),
+                patch.object(os, "readlink", return_value=target),
+                self.assertRaises(deploy.DeployError),
+            ):
+                deploy.assert_secure_environment(path)
+
+    def test_environment_rejects_unsafe_targets_and_private_file_permissions(self):
+        path = Path("/srv/datathon/control/frontend.env")
+        for mode, owner in (
+            (stat.S_IFLNK | 0o777, 0),
+            (stat.S_IFREG | 0o644, 0),
+            (stat.S_IFREG | 0o660, 0),
+            (stat.S_IFREG | 0o600, 1000),
+        ):
+            with (
+                self.subTest(mode=mode, owner=owner),
+                patch.object(Path, "is_symlink", return_value=False),
+                patch.object(
+                    Path, "lstat", return_value=SimpleNamespace(st_mode=mode, st_uid=owner)
+                ),
+                self.assertRaises(deploy.DeployError),
+            ):
+                deploy.assert_secure_environment(path)
+
+    def test_external_environment_rejects_writable_parent(self):
+        path = Path("/srv/apps/datathon/control/backend.env")
+        target = deploy.EXTERNAL_ENVIRONMENT[path.name]
+
+        def metadata(item):
+            if item == path:
+                return SimpleNamespace(st_mode=stat.S_IFLNK | 0o777, st_uid=0)
+            if item == target.parent:
+                return SimpleNamespace(st_mode=stat.S_IFDIR | 0o775, st_uid=0)
+            return SimpleNamespace(st_mode=stat.S_IFREG | 0o600, st_uid=0)
+
+        with (
+            patch.object(Path, "is_symlink", return_value=True),
+            patch.object(Path, "lstat", autospec=True, side_effect=metadata),
+            patch.object(os, "readlink", return_value=str(target)),
+            self.assertRaisesRegex(deploy.DeployError, "protected from writes"),
+        ):
+            deploy.assert_secure_environment(path)
+
+    def test_mixed_environment_storage_is_rejected(self):
+        control = Path("/srv/apps/datathon/control")
+        with (
+            patch.object(deploy, "assert_secure_path"),
+            patch.object(
+                Path,
+                "is_symlink",
+                autospec=True,
+                side_effect=lambda path: path.name == "frontend.env",
+            ),
+            self.assertRaisesRegex(deploy.DeployError, "same protected storage layout"),
+        ):
+            deploy.secure_layout(control)
 
     def test_rejects_symlinks_writable_files_and_non_root_ownership(self):
         for mode, owner in [

@@ -4,11 +4,13 @@ set -euo pipefail
 umask 077
 
 [[ $EUID -eq 0 ]] || { echo 'Run this one-time installer with sudo.' >&2; exit 1; }
-[[ $# -eq 3 ]] || { echo 'Usage: sudo bash deploy/install-server.sh /srv/datathon EXISTING_USER /path/to/actions-key.pub' >&2; exit 1; }
+[[ $# -eq 3 || $# -eq 4 ]] || { echo 'Usage: sudo bash deploy/install-server.sh /srv/datathon EXISTING_USER /path/to/actions-key.pub [/etc/server-apps]' >&2; exit 1; }
 app_root=$1
 account=$2
 public_key_file=$3
-[[ "$app_root" =~ ^/(srv|opt)/[a-zA-Z0-9_-]+$ ]] || { echo 'Use a dedicated protected /srv/NAME or /opt/NAME folder.' >&2; exit 1; }
+external_env_dir=${4:-}
+[[ "$app_root" =~ ^/(srv|opt)(/[a-zA-Z0-9_-]+)+$ ]] || { echo 'Use a dedicated protected folder below /srv or /opt.' >&2; exit 1; }
+[[ -z "$external_env_dir" || "$external_env_dir" == /etc/server-apps ]] || { echo 'The only supported external env folder is /etc/server-apps.' >&2; exit 1; }
 [[ "$account" =~ ^[a-zA-Z_][a-zA-Z0-9_-]*$ ]] || exit 1
 [[ -f "$public_key_file" && ! -L "$public_key_file" ]] || exit 1
 getent passwd "$account" > /dev/null || { echo 'The named server account must already exist.' >&2; exit 1; }
@@ -22,7 +24,10 @@ fi
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 key=$(cat -- "$public_key_file")
-[[ "$key" =~ ^ssh-ed25519\ [A-Za-z0-9+/=]+(\ [a-zA-Z0-9@._-]+)?$ ]] || { echo 'Supply one plain Ed25519 public key, not a private key or authorized_keys options.' >&2; exit 1; }
+# Windows OpenSSH writes CRLF. Strip only that terminal CR; reject extra lines,
+# including blank lines that command substitution would otherwise discard.
+key=${key%$'\r'}
+[[ $(wc -l < "$public_key_file") -le 1 && "$key" =~ ^ssh-ed25519\ [A-Za-z0-9+/=]+(\ [a-zA-Z0-9@._-]+)?$ ]] || { echo 'Supply one plain Ed25519 public key, not a private key or authorized_keys options.' >&2; exit 1; }
 key_data=$(printf '%s' "$key" | awk '{print $2}')
 
 # Never adopt an unrelated application, follow a symlink, or repair unsafe ownership
@@ -35,13 +40,30 @@ protected_directory() {
     (( (8#$(stat -c %a "$directory") & 0022) == 0 )) || { echo 'Deployment parents must not be group/world writable.' >&2; exit 1; }
   fi
 }
-for directory in / "$(dirname -- "$app_root")" "$app_root" "$app_root/control" "$app_root/state"; do
+for directory in "$app_root/control" "$app_root/state"; do
   protected_directory "$directory"
 done
+directory=$app_root
+while :; do
+  protected_directory "$directory"
+  [[ "$directory" == / ]] && break
+  directory=$(dirname -- "$directory")
+done
+if [[ -n "$external_env_dir" ]]; then
+  for directory in "$external_env_dir" /etc /; do
+    protected_directory "$directory"
+  done
+fi
 if [[ -d "$app_root" && -n "$(ls -A -- "$app_root")" ]]; then
   [[ -f "$app_root/control/INSTALLATION" && ! -L "$app_root/control/INSTALLATION" ]] || { echo 'The target is not an installed Datathon folder. Choose a dedicated empty folder.' >&2; exit 1; }
   [[ $(cat -- "$app_root/control/INSTALLATION") == datathon-install-v1 ]] || exit 1
   for file in "$app_root/control/"*; do
+    if [[ -L "$file" ]]; then
+      name=$(basename -- "$file")
+      [[ -n "$external_env_dir" && ( "$name" == frontend.env || "$name" == backend.env ) &&
+         $(stat -c %u "$file") == 0 && $(readlink -- "$file") == "$external_env_dir/datathon.$name" ]] || { echo 'Unsafe deployment control symlink.' >&2; exit 1; }
+      continue
+    fi
     [[ -f "$file" && ! -L "$file" && $(stat -c %u "$file") == 0 ]] || { echo 'Unsafe existing deployment control file.' >&2; exit 1; }
     (( (8#$(stat -c %a "$file") & 0022) == 0 )) || exit 1
   done
@@ -53,14 +75,30 @@ for state in runtime live-cache live-raw forecast-issues; do
   [[ ! -L "$app_root/state/$state" ]] || exit 1
   install -d -o 10001 -g 10001 -m 0700 "$app_root/state/$state"
 done
+if [[ -n "$external_env_dir" && ! -d "$external_env_dir" ]]; then
+  install -d -o root -g root -m 0700 "$external_env_dir"
+fi
 install -o root -g root -m 0755 "$script_dir/server/deploy.py" "$app_root/control/deploy.py"
 install -o root -g root -m 0644 "$script_dir/server/compose.yaml" "$app_root/control/compose.yaml"
 
 # The internal API key is generated here; neither GitHub nor image builds need it.
-APP_CONTROL="$app_root/control" /usr/bin/python3 -I - <<'PY'
+APP_CONTROL="$app_root/control" DATATHON_EXTERNAL_ENV_DIR="$external_env_dir" /usr/bin/python3 -I - <<'PY'
 import os, pathlib, secrets, stat
 control = pathlib.Path(os.environ['APP_CONTROL'])
-front, back = control / 'frontend.env', control / 'backend.env'
+external = os.environ['DATATHON_EXTERNAL_ENV_DIR']
+links = [control / name for name in ('frontend.env', 'backend.env')]
+if external:
+    front, back = [pathlib.Path(external) / f'datathon.{link.name}' for link in links]
+    for link, target in zip(links, (front, back)):
+        if (link.exists() or link.is_symlink()) and (
+            not link.is_symlink() or os.readlink(link) != str(target)
+        ):
+            raise SystemExit('Existing environment layout differs; review it before changing storage.')
+else:
+    front, back = links
+for file in (front, back):
+    if file.is_symlink():
+        raise SystemExit('Environment targets must not be symlinks.')
 if front.exists() != back.exists():
     raise SystemExit('Both environment files must exist together; restore the missing one before retrying.')
 if not front.exists():
@@ -87,6 +125,10 @@ for file in (front, back):
     info = file.lstat()
     if not stat.S_ISREG(info.st_mode) or info.st_uid != 0 or info.st_mode & 0o077:
         raise SystemExit('Environment files must be root-owned regular files with mode0600.')
+if external:
+    for link, target in zip(links, (front, back)):
+        if not link.is_symlink():
+            link.symlink_to(target)
 PY
 
 # Validate the installed protected tree before granting the dedicated key access.

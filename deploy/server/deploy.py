@@ -22,6 +22,9 @@ BACKEND_IMAGE = "ghcr.io/lyashahid/datathon-backend"
 DIGEST = re.compile(r"sha256:[0-9a-f]{64}\Z")
 REVISION = re.compile(r"[0-9a-f]{40}\Z")
 REGISTRY_USER = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\Z")
+EXTERNAL_ENVIRONMENT = {
+    name: Path("/etc/server-apps") / f"datathon.{name}" for name in ("frontend.env", "backend.env")
+}
 
 
 class DeployError(Exception):
@@ -279,12 +282,33 @@ def assert_secure_path(path: Path, *, directory: bool) -> None:
         raise DeployError("Deployment control paths must be root-owned and protected from writes.")
 
 
+def assert_secure_environment(path: Path) -> None:
+    """Accept private local env files or the two fixed, protected server env targets."""
+    target = path
+    if path.is_symlink():
+        if path.lstat().st_uid != 0 or path.name not in EXTERNAL_ENVIRONMENT:
+            raise DeployError("Environment links must be root-owned and use the fixed targets.")
+        target = EXTERNAL_ENVIRONMENT[path.name]
+        if os.readlink(path) != str(target):
+            raise DeployError("Environment links must use the fixed server env targets.")
+        for directory in (target.parent, *target.parent.parents):
+            assert_secure_path(directory, directory=True)
+    assert_secure_path(target, directory=False)
+    if target.lstat().st_mode & 0o077:
+        raise DeployError("Environment files must be private to root (mode 0600).")
+
+
 def secure_layout(control: Path) -> None:
     # Checking every ancestor prevents replacing a protected folder through a writable parent.
     for directory in (control, *control.parents):
         assert_secure_path(directory, directory=True)
-    for name in ("deploy.py", "compose.yaml", "frontend.env", "backend.env"):
+    for name in ("deploy.py", "compose.yaml"):
         assert_secure_path(control / name, directory=False)
+    env_paths = [control / name for name in EXTERNAL_ENVIRONMENT]
+    if any(path.is_symlink() for path in env_paths) != all(path.is_symlink() for path in env_paths):
+        raise DeployError("Both environment files must use the same protected storage layout.")
+    for path in env_paths:
+        assert_secure_environment(path)
     for name in ("release.env", "deploy.lock"):
         if (control / name).exists() or (control / name).is_symlink():
             assert_secure_path(control / name, directory=False)

@@ -262,7 +262,7 @@ class Architecture(Flowable):
         items = [
             (0, 5, 151, "GitHub main", "Test + build images"),
             (177, 5, 151, "Restricted deploy key", "Fixed Datathon operation"),
-            (354, 5, 153, "Your existing server", "/srv/datathon only"),
+            (354, 5, 153, "Your existing server", "/srv/apps/datathon"),
         ]
         for x, y, width, title, subtitle in items:
             canvas.setFillColor(PALE)
@@ -325,7 +325,7 @@ def build() -> None:
             ["You complete once", "Every push to main does"],
             [
                 [
-                    "Install the protected deployment files. Add the verified server connection and host key in GitHub. Enable deployment after setup.",
+                    "Install app controls and separate environment files. Configure the verified server connection in GitHub. Enable deployment after setup.",
                     "Run tests. Build two Docker images. Deploy their exact digests. Wait for health checks and verify the public app.",
                 ],
             ],
@@ -334,7 +334,7 @@ def build() -> None:
     ]
     story += [
         p(
-            "Already prepared: the dedicated key has been generated, DATATHON_SSH_PRIVATE_KEY is saved in GitHub and DATATHON_DEPLOY_ENABLED is false. Server connection details and host verification are still required.",
+            "Confirmed target: yoosuf@169.58.6.224, SSH port 22. App folder: /srv/apps/datathon. Environment files: /etc/server-apps/datathon.*.env. The dedicated Actions private-key secret is already saved in GitHub.",
             "SmallBody",
         )
     ]
@@ -347,7 +347,7 @@ def build() -> None:
     story += [
         p("Before you start", "SubGuide"),
         p(
-            "Have administrator access to the GitHub repository, your existing server login, a verified SSH host fingerprint and administrator access for the one-time Docker/reverse-proxy setup. This guide does not contain or create a server password."
+            "Use the existing yoosuf server account and GitHub repository administration access. Verify the server host fingerprint for the one-time setup. Keep the existing apps and separate environment folders intact. No new server user or password is needed."
         ),
     ]
     story += [
@@ -396,7 +396,7 @@ def build() -> None:
     )
     story += [
         code(
-            "ssh-keyscan -p SSH_PORT SSH_HOST |\n  Set-Content -Encoding ascii artifacts/private/known_hosts\nssh-keygen -lf artifacts/private/known_hosts"
+            "ssh-keyscan -p 22 169.58.6.224 |\n  Set-Content -Encoding ascii artifacts/private/known_hosts\nssh-keygen -lf artifacts/private/known_hosts"
         )
     ]
     story += [
@@ -408,11 +408,11 @@ def build() -> None:
     story += step(
         "3",
         "Copy the setup files with your normal server login",
-        "Replace SSH_HOST, SSH_PORT and EXISTING_USER with the host/IP, SSH port and current account supplied by your server provider. These are placeholders, not values to paste literally. Run from your local repository folder. The destination ~/datathon-setup must not contain another project.",
+        "Run these commands from the local repository folder using the existing yoosuf login. The temporary destination ~/datathon-setup must not contain another project. Upload only the public key and the deployment scripts.",
     )
     story += [
         code(
-            "scp -P SSH_PORT artifacts/private/datathon-actions.pub `\n  EXISTING_USER@SSH_HOST:/tmp/datathon-actions.pub\nscp -P SSH_PORT -r deploy `\n  EXISTING_USER@SSH_HOST:datathon-setup"
+            "scp -P 22 artifacts/private/datathon-actions.pub `\n  yoosuf@169.58.6.224:/tmp/datathon-actions.pub\nscp -P 22 -r deploy `\n  yoosuf@169.58.6.224:datathon-setup"
         )
     ]
     story += [PageBreak()]
@@ -431,29 +431,29 @@ def build() -> None:
     story += step(
         "5",
         "Install the protected application gateway",
-        "Connect using your normal account. The installer only accepts a dedicated /srv/NAME or /opt/NAME folder and refuses to adopt an unrelated non-empty folder. Replace EXISTING_USER with that current server account.",
+        "Connect with ssh yoosuf@169.58.6.224. The app gets its own /srv/apps/datathon folder. The fourth argument places only its two environment files in the existing /etc/server-apps folder. Unrelated app files are preserved.",
     )
     story += [
         code(
-            'sudo bash "$HOME/datathon-setup/install-server.sh" \\\n  /srv/datathon EXISTING_USER /tmp/datathon-actions.pub'
+            'sudo bash "$HOME/datathon-setup/install-server.sh" \\\n  /srv/apps/datathon yoosuf /tmp/datathon-actions.pub \\\n  /etc/server-apps'
         )
     ]
     story += [
         p(
-            "The installer creates no user. It stores fixed, root-owned controls under /srv/datathon/control and Datathon-only writable application state under /srv/datathon/state. It adds a restricted public-key entry and, for a non-root account, a narrow sudo rule for the fixed gateway.",
+            "No user is created. Controls live in /srv/apps/datathon/control and app state in /srv/apps/datathon/state. The dedicated public key gets a forced command and a narrow sudo rule. Existing /srv/apps and /etc/server-apps ownership and other apps stay intact.",
             "SmallBody",
         )
     ]
     story += step(
         "6",
         "Add the Datathon location to your existing HTTPS site",
-        "Back up the current site configuration. Review deploy/nginx-location.conf and add its two location blocks inside the existing HTTPS server block for yoosufsayyid.com. The app keeps the /apps/datathon prefix and listens only on 127.0.0.1:18730. Retain all other routes. If your existing proxy is Caddy or Traefik, adapt this route there; do not install a second proxy.",
+        "Back up /etc/nginx/sites-available/yoosufsayyid.com. Install the reviewed locations as /etc/nginx/snippets/datathon.conf and include it in that site's existing HTTPS block. Keep all other routes and its apps-extra.conf include. The app listens only on 127.0.0.1:18730.",
     )
     story += [code("sudo nginx -t && sudo systemctl reload nginx")]
     story += [
         note(
             "Runtime environment files are already generated",
-            "The installer creates frontend.env and backend.env inside /srv/datathon/control with mode 0600. It generates a random shared internal VELA_API_KEY. Production forces MOBILITY_DATABASE_URL empty, disables PostgreSQL caching and enables background prewarming. Do not copy your local .env into production or GitHub.",
+            "The installer creates /etc/server-apps/datathon.frontend.env and datathon.backend.env with root-only access. Exact symlinks in control/ let Compose use them. A random internal VELA_API_KEY is generated automatically. Production disables PostgreSQL and prewarms local caches. Do not copy a local .env into production.",
         )
     ]
     story += [
@@ -506,7 +506,7 @@ def build() -> None:
                 ],
                 [
                     mono("DATATHON_SSH_KNOWN_HOSTS"),
-                    "<b>You still add this.</b> Paste verified contents of artifacts/private/known_hosts from page 2. This pins the server identity; do not paste an IP address alone.",
+                    "Paste verified contents of artifacts/private/known_hosts from page 2 if not already configured. This pins the server identity; do not paste an IP address alone.",
                 ],
             ],
             [BODY_W * 0.48, BODY_W * 0.52],
@@ -514,7 +514,7 @@ def build() -> None:
     ]
     story += [
         p(
-            "8. Add the missing known-hosts secret: enter its Name, paste its verified Secret value and click <b>Add secret</b>. Leave the existing private-key secret unchanged. GitHub does not show a secret's value again after it is saved."
+            "8. Add or update the known-hosts secret: enter its Name, paste the verified Secret value and click <b>Add secret</b> or <b>Update secret</b>. Leave the existing private-key secret unchanged. GitHub does not show saved secret values again."
         )
     ]
     story += [
@@ -536,19 +536,19 @@ def build() -> None:
             [
                 [
                     mono("DATATHON_SSH_HOST"),
-                    "Your verified SSH hostname or server IP only. No https://, path or :port suffix. Example shape: server.example.com.",
+                    "<b>169.58.6.224</b><br/>Server IP only, without https://, a path or a :port suffix.",
                 ],
                 [
                     mono("DATATHON_SSH_USER"),
-                    "The existing server username supplied to the installer. Do not create a new account for this workflow.",
+                    "<b>yoosuf</b><br/>The existing server account used by the installer. No new account is created.",
                 ],
                 [
                     mono("DATATHON_SSH_PORT"),
-                    "Your server's SSH port. Use 22 only if SSH actually listens on 22. The workflow defaults to 22 when omitted.",
+                    "<b>22</b><br/>The confirmed SSH port for this server.",
                 ],
                 [
                     mono("DATATHON_DEPLOY_ENABLED"),
-                    "<b>Already set to false.</b> Change it to <b>true</b> only after pages 2-4 and the reverse-proxy step are complete. Before then, production deployment stays skipped.",
+                    "Set <b>true</b> after the server installation, host verification and HTTPS route are complete. Keep <b>false</b> while setting up or intentionally pausing releases.",
                 ],
             ],
             [BODY_W * 0.48, BODY_W * 0.52],
@@ -556,12 +556,12 @@ def build() -> None:
     ]
     story += step(
         "9",
-        "Set up the production environment",
-        "Go to Settings &gt; Environments. Open or create <b>production</b>. In Deployment branches and tags, choose Selected branches and tags and add the <b>main</b> branch. This gives the workflow a production deployment record and limits this environment to main.",
+        "Let the workflow create its environment",
+        "The workflow automatically creates or references <b>production</b> and already limits deployment to <b>refs/heads/main</b>. No manual environment setup is required. A repository administrator may optionally add a main-only branch rule in Settings &gt; Environments &gt; production.",
     )
     story += [
         p(
-            "For automatic redeployment on every main push, leave required reviewers and wait timers disabled. If you choose approvals later, deployment will wait for that approval. Environment protection options depend on repository visibility and your GitHub plan; the workflow itself also checks refs/heads/main.",
+            "The optional environment rule is not configured by this setup: the available credential can manage secrets and variables, but cannot administer environment rules. For automatic releases, leave required reviewers and wait timers disabled. No extra user action is needed for the normal workflow.",
             "SmallBody",
         )
     ]
@@ -683,13 +683,13 @@ def build() -> None:
     )
     story += [
         code(
-            "sudo docker compose --project-name datathon \\\n  --project-directory /srv/datathon/control \\\n  --env-file /srv/datathon/control/release.env \\\n  --file /srv/datathon/control/compose.yaml ps\nsudo docker compose --project-name datathon \\\n  --project-directory /srv/datathon/control \\\n  --env-file /srv/datathon/control/release.env \\\n  --file /srv/datathon/control/compose.yaml \\\n  logs --tail 100 frontend backend"
+            "sudo docker compose --project-name datathon \\\n  --project-directory /srv/apps/datathon/control \\\n  --env-file /srv/apps/datathon/control/release.env \\\n  --file /srv/apps/datathon/control/compose.yaml ps\nsudo docker compose --project-name datathon \\\n  --project-directory /srv/apps/datathon/control \\\n  --env-file /srv/apps/datathon/control/release.env \\\n  --file /srv/apps/datathon/control/compose.yaml \\\n  logs --tail 100 frontend backend"
         )
     ]
     story += [
         note(
             "Keep controls protected",
-            "Changing application code does not change the fixed server gateway, Compose file or runtime environment files. Update these only through a reviewed administrator step. Keep backups of /srv/datathon/control and /srv/datathon/state private; do not commit them or print environment files in logs.",
+            "Code pushes cannot change the fixed gateway, Compose file or environment files. Keep private backups of /srv/apps/datathon/control, state/ and the two /etc/server-apps/datathon.*.env files. Preserve their ownership and exact symlinks on restore. Never print environment contents in logs.",
         )
     ]
     story += [PageBreak()]

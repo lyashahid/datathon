@@ -2,17 +2,26 @@
 
 Target: **https://yoosufsayyid.com/apps/datathon**. The deployment uses two Docker containers, a same-origin frontend proxy and an existing HTTPS reverse proxy. Local `npm start` continues to work at `/` without environment setup.
 
-## Prepared versus live
+## Deployment target and status
 
-The repository contains the Docker images, GitHub Actions workflow and restricted server installer. The dedicated Actions private key has already been added to the repository secret `DATATHON_SSH_PRIVATE_KEY`. `DATATHON_DEPLOY_ENABLED` is initially `false`, so a push can test and publish images without attempting an unconfigured deployment.
+The confirmed SSH target is `yoosuf@169.58.6.224` on port `22`. Datathon has its own folder below the existing applications directory, and its secrets use the server's separate environment directory:
 
-The server still needs its one-time installation, verified SSH host key and reverse-proxy route. Do not treat a successful image build as a successful server deployment. The final Actions job checks both the public page and its real backend health endpoint.
+| Purpose | Server path |
+| --- | --- |
+| App installation | `/srv/apps/datathon` |
+| Protected deployment controls | `/srv/apps/datathon/control` |
+| Writable application state | `/srv/apps/datathon/state` |
+| Frontend environment | `/etc/server-apps/datathon.frontend.env` |
+| Backend environment | `/etc/server-apps/datathon.backend.env` |
+| Datathon Nginx locations | `/etc/nginx/snippets/datathon.conf` |
+
+The dedicated Actions private key is already stored as repository secret `DATATHON_SSH_PRIVATE_KEY`. The steps below document installation and recovery; do not treat a successful image build as proof of a live release. The final Actions job checks both the public page and its real backend health endpoint. Keep `DATATHON_DEPLOY_ENABLED=false` until the one-time installation, verified SSH host key and HTTPS route are ready.
 
 ## Deployment boundary
 
 - The frontend publishes only `127.0.0.1:18730`. FastAPI has no host port. Existing HTTPS infrastructure forwards only `/apps/datathon` to this listener and preserves the path prefix.
 - Both containers run as UID/GID `10001`, with a read-only root filesystem, dropped capabilities, no privilege escalation, resource limits and bounded logs. No Docker socket or other application folders are mounted.
-- Mutable files live only below `/srv/datathon/state` by default. Root-owned deployment configuration and generated environment secrets live in `/srv/datathon/control`.
+- Mutable files live only below `/srv/apps/datathon/state`. Root-owned deployment configuration lives in `/srv/apps/datathon/control`; the two root-only environment files live separately under `/etc/server-apps`. The control folder contains only the two exact environment-file symlinks required by the fixed Compose configuration. The environment directory and other apps' files are never mounted into containers.
 - The dedicated SSH key has a forced command and cannot open a shell, SFTP, PTY or forwarding session. A fixed root-owned helper accepts only validated image digests for the two Datathon image repositories. It cannot receive a shell command, path, Compose file or environment override from Actions.
 - The installer uses an **existing server account**. It does not reduce that account's permissions when accessed through its other keys or password. The restriction applies specifically to the dedicated deployment key. Do not give Actions your personal administrative SSH key.
 - A one-time administrator must install the helper and add the HTTPS route. Actions never modifies Nginx, sudo rules, SSH configuration, unrelated applications or server users.
@@ -29,24 +38,24 @@ If you need to update source data, validate and accept it locally, commit the in
 
 The prepared server configuration assumes Linux with an x86-64 CPU, Python 3.10+, Docker Engine and Docker Compose 2.20+. Reserve approximately 4 GB available RAM and sufficient image/cache disk space. Inspect your existing server before installing or changing any shared service. If the server is ARM, change the build platforms before publishing.
 
-Use your ordinary administrator connection for these one-time steps. Substitute the actual SSH host, port and **existing** account. `/srv/datathon` must be a dedicated empty protected directory, or an earlier installation made by this installer; `/opt/NAME` is also supported. The installer refuses symlinked or unsafe paths and unrelated existing folders.
+Use the existing `yoosuf` administrator connection for these one-time steps. `/srv/apps/datathon` must be a dedicated empty protected directory, or an earlier installation made by this installer. The existing `/srv/apps` and `/etc/server-apps` directories are owned by `root:deploy` with mode `0750`; preserve those permissions and the other applications' contents. The installer refuses unsafe paths and unrelated existing app folders.
 
 From this checkout, upload only the public key and deployment files. The destination `~/datathon-setup` below must not already contain another project:
 
 ```sh
-scp -P PORT artifacts/private/datathon-actions.pub EXISTING_USER@HOST:/tmp/datathon-actions.pub
-scp -P PORT -r deploy EXISTING_USER@HOST:~/datathon-setup
-ssh -p PORT EXISTING_USER@HOST
-sudo bash ~/datathon-setup/install-server.sh /srv/datathon EXISTING_USER /tmp/datathon-actions.pub
+scp -P 22 artifacts/private/datathon-actions.pub yoosuf@169.58.6.224:/tmp/datathon-actions.pub
+scp -P 22 -r deploy yoosuf@169.58.6.224:~/datathon-setup
+ssh -p 22 yoosuf@169.58.6.224
+sudo bash ~/datathon-setup/install-server.sh /srv/apps/datathon yoosuf /tmp/datathon-actions.pub /etc/server-apps
 ```
 
 The ignored local private key is `artifacts/private/datathon-actions`. Its contents belong only in the GitHub secret already configured. Never upload it to the server or commit it. The installer appends the **public** key with command restrictions while preserving other authorized keys. It creates a narrow sudo rule for the fixed helper when using a non-root account; the account is not added to the Docker group. An existing incompatible Datathon sudo rule is refused for manual review.
 
-The installer generates a random internal `VELA_API_KEY`, writes the same value to `control/frontend.env` and `control/backend.env`, and sets root-only permissions. It preserves an existing pair on a rerun. No database password, server login password or persistent registry token is required by the deployment workflow. The examples in `deploy/server/*.env.example` contain no secrets.
+The fourth installer argument selects the existing separate environment directory. The installer generates a random internal `VELA_API_KEY`, writes the same value to `/etc/server-apps/datathon.frontend.env` and `/etc/server-apps/datathon.backend.env`, and sets root-only permissions. `control/frontend.env` and `control/backend.env` point only to those exact files; arbitrary symlinks are refused. An existing valid environment pair is preserved on a rerun. No database password, server login password or persistent registry token is required by the deployment workflow. The examples in `deploy/server/*.env.example` contain no secrets.
 
 ## HTTPS path
 
-Review `deploy/nginx-location.conf` and place those two location blocks inside the **existing HTTPS server block for yoosufsayyid.com**. Back up that existing site configuration first, run `sudo nginx -t`, then reload Nginx only if validation succeeds. Do not replace the site's complete configuration. If the server uses Caddy, Traefik or another proxy, adapt this route to that proxy rather than installing a second proxy.
+The existing site configuration is `/etc/nginx/sites-available/yoosufsayyid.com`. Review `deploy/nginx-location.conf`, install its two location blocks as `/etc/nginx/snippets/datathon.conf`, and include that file inside the **existing HTTPS server block for yoosufsayyid.com**. Preserve the site's existing `snippets/apps-extra.conf` include and all other routes. Back up the site configuration first, run `sudo nginx -t`, then reload Nginx only if validation succeeds. Do not replace the complete site configuration.
 
 The route must preserve `/apps/datathon` on upstream requests. In Nginx the provided `proxy_pass http://127.0.0.1:18730;` intentionally has no trailing slash. TLS and the existing domain certificate remain managed by your current reverse proxy. The route `/apps/datathon/api/backend/health` must return JSON with `"status":"ok"` after the first deployment.
 
@@ -54,19 +63,21 @@ The route must preserve `/apps/datathon` on upstream requests. In Nginx the prov
 
 Repository: https://github.com/lyashahid/datathon. Open **Settings → Secrets and variables → Actions**. Use repository secrets and repository variables consistently; the `production` environment is created/referenced by the workflow and does not require a second copy of these values.
 
+No manual environment-creation step is required. The workflow itself limits deployment to `refs/heads/main`. A repository administrator may optionally add a separate main-only deployment branch rule under **Settings → Environments → production**. That optional protection has not been configured by this setup: the available credential can manage deployment secrets and variables but cannot administer environment rules. Leave required reviewers and wait timers disabled for automatic redeployment on each push.
+
 | Type | Name | Value |
 | --- | --- | --- |
 | Secret | `DATATHON_SSH_PRIVATE_KEY` | Already configured with the dedicated private key. If rotating, paste the entire OpenSSH private key, including its begin/end lines. |
 | Secret | `DATATHON_SSH_KNOWN_HOSTS` | Verified SSH host-key line(s) for the actual host and port. See below. |
-| Variable | `DATATHON_SSH_HOST` | SSH hostname or IPv4 address, without `https://` or a path. |
-| Variable | `DATATHON_SSH_USER` | The existing server account supplied to the installer. |
-| Variable | `DATATHON_SSH_PORT` | Actual SSH port, normally `22`. |
+| Variable | `DATATHON_SSH_HOST` | `169.58.6.224` |
+| Variable | `DATATHON_SSH_USER` | `yoosuf` - the existing account; no new server user is needed. |
+| Variable | `DATATHON_SSH_PORT` | `22` |
 | Variable | `DATATHON_DEPLOY_ENABLED` | Keep `false` until server installation and the HTTPS route are ready; then set `true`. |
 
 To obtain a candidate known-hosts line locally:
 
 ```sh
-ssh-keyscan -p PORT HOST > datathon-known-hosts.txt
+ssh-keyscan -p 22 169.58.6.224 > datathon-known-hosts.txt
 ssh-keygen -lf datathon-known-hosts.txt
 ```
 
@@ -89,12 +100,12 @@ After setup, every push to `main` follows the same sequence automatically. Deplo
 Use your normal administrator login, not the Actions key, to inspect the app:
 
 ```sh
-sudo docker compose --project-name datathon --project-directory /srv/datathon/control --env-file /srv/datathon/control/release.env -f /srv/datathon/control/compose.yaml ps
-sudo docker compose --project-name datathon --project-directory /srv/datathon/control --env-file /srv/datathon/control/release.env -f /srv/datathon/control/compose.yaml logs --tail 100
+sudo docker compose --project-name datathon --project-directory /srv/apps/datathon/control --env-file /srv/apps/datathon/control/release.env -f /srv/apps/datathon/control/compose.yaml ps
+sudo docker compose --project-name datathon --project-directory /srv/apps/datathon/control --env-file /srv/apps/datathon/control/release.env -f /srv/apps/datathon/control/compose.yaml logs --tail 100
 curl --fail http://127.0.0.1:18730/apps/datathon/api/backend/health
 ```
 
-Logs may contain upstream data, so inspect them privately before sharing. Back up `state/` and the root-only `control/*.env` securely. Never run a global `docker system prune` as part of this deployment. If you need to reverse an already healthy release, revert the relevant Git commit and push to `main`; the usual workflow rebuilds and deploys that reviewed state. Re-running an older successful workflow is another option while its images remain available.
+Logs may contain upstream data, so inspect them privately before sharing. Securely back up `/srv/apps/datathon/state`, the protected control files and only the two `/etc/server-apps/datathon.*.env` files. Preserve symlinks and ownership when restoring. Never run a global `docker system prune` as part of this deployment. If you need to reverse an already healthy release, revert the relevant Git commit and push to `main`; the usual workflow rebuilds and deploys that reviewed state. Re-running an older successful workflow is another option while its images remain available.
 
 Changes to the protected Compose file, resource limits, app folder or helper require a deliberate administrator installation; a push cannot alter these protections. Read/review installer changes before rerunning it. This is intentional: repository automation can update app images, not server administration policy.
 
