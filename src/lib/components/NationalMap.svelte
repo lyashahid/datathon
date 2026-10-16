@@ -334,6 +334,28 @@
 	const hasPolicyOverlay = $derived(
 		gapFeatures.features.length > 0 || impactFeatures.features.length > 0
 	);
+	const localAccessDiagnostics = $derived.by(() => {
+		const cells: Record<string, number> = {};
+		const ranges: Record<string, { min: number | null; max: number | null }> = {};
+		const screening = new SvelteSet<string>();
+		for (const feature of gapFeatures.features) {
+			const properties = feature.properties;
+			const id = String(properties?.island_id ?? '');
+			if (!id) continue;
+			if (!properties?.origin_id) {
+				screening.add(id);
+				continue;
+			}
+			cells[id] = (cells[id] ?? 0) + 1;
+			const range = (ranges[id] ??= { min: null, max: null });
+			const gap = properties.overall_gap;
+			if (typeof gap === 'number' && Number.isFinite(gap)) {
+				range.min = range.min === null ? gap : Math.min(range.min, gap);
+				range.max = range.max === null ? gap : Math.max(range.max, gap);
+			}
+		}
+		return { cells, ranges, screening: [...screening] };
+	});
 	const policyHitLayers = $derived(
 		impactFeatures.features.length
 			? ['policy-current-fill', 'policy-impact-fill']
@@ -4269,6 +4291,10 @@
 	data-policy-service-editor={serviceEditor?.mode ?? ''}
 	data-island-picking={islandPicking}
 	data-policy-gap-cells={gapFeatures.features.length}
+	data-policy-local-islands={JSON.stringify(Object.keys(localAccessDiagnostics.cells))}
+	data-policy-local-cells={JSON.stringify(localAccessDiagnostics.cells)}
+	data-policy-screening-islands={JSON.stringify(localAccessDiagnostics.screening)}
+	data-policy-gap-ranges={JSON.stringify(localAccessDiagnostics.ranges)}
 	data-policy-hex-grid={gapFeatures.features.filter((feature) => feature.properties?.display_grid)
 		.length}
 	data-policy-impact-cells={impactFeatures.features.length}
@@ -4817,7 +4843,14 @@
 									? 'Shorter → at / beyond target'
 									: 'More evidence → review need'}</span
 							>
-							<small>Unshaded land: no resident estimate · Grey: unknown</small>
+							<small
+								>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
+									? 'Modeled journeys · Grey: missing evidence'
+									: 'Island-wide inventory check · not local journey times'}</small
+							>
+							{#if gapFeatures.features.some((feature) => feature.properties?.origin_id)}<small
+									>Unshaded: no local estimate · select an island to inspect</small
+								>{/if}
 						</div>{:else if impactFeatures.features.length}<div
 							class="policy-colour-key"
 							aria-label="Proposal impact colours"

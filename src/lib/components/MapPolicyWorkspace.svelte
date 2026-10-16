@@ -116,6 +116,12 @@
 			annual_operating?: { remaining_mvr: number | null };
 		};
 	};
+	type LocalGapDetail = {
+		gap_cells?: FeatureCollection;
+		features?: FeatureCollection;
+		hex_grid?: FeatureCollection;
+	};
+	const capitalIslandIds = ['island:1442', 'island:1443'];
 	let {
 		islandId,
 		islandName,
@@ -189,6 +195,10 @@
 	let baseline = $state.raw<MapBaseline | null>(null);
 	let gapCells = $state.raw<FeatureCollection>(emptyFeatures());
 	let displayGrid = $state.raw<FeatureCollection>(emptyFeatures());
+	let capitalGapMaps = $state.raw<Record<string, FeatureCollection>>({});
+	let nearbyGapVersion = $state(0);
+	let nearbyGapLoading = $state(false);
+	let nearbyGapError = $state('');
 	let loading = $state(false);
 	let scopeError = $state(false);
 	let scopeDirty = $state(false);
@@ -311,6 +321,9 @@
 			: 'Loading the island evidence before placing local construction…'
 	);
 	const scopedKey = $derived(islandId ?? '');
+	const nearbyIslandId = $derived(
+		capitalIslandIds.includes(scopedKey) ? capitalIslandIds.find((id) => id !== scopedKey)! : null
+	);
 	const costDefaults = $derived({
 		...(baseline?.cost_defaults ?? {}),
 		...(extraAssumptions.cost_overrides &&
@@ -676,18 +689,19 @@
 			})
 		};
 	});
-	const mapGaps = $derived({
-		type: 'FeatureCollection' as const,
-		features: [
-			...nationalScreening.features.filter(
-				(feature) =>
-					restoredScope !== scopedKey ||
-					!displayGrid.features.length ||
-					feature.properties?.island_id !== islandId
-			),
-			...(restoredScope === scopedKey ? gapCells.features : [])
-		]
-	} as FeatureCollection);
+	const mapGaps = $derived.by((): FeatureCollection => {
+		if (!islandId) return nationalScreening;
+		// A local journey map must not mix routed neighbourhood evidence with the
+		// island-level availability screening index. Unanalysed islands stay neutral.
+		return {
+			type: 'FeatureCollection',
+			features: capitalIslandIds.includes(islandId)
+				? capitalIslandIds.flatMap((id) => capitalGapMaps[id]?.features ?? [])
+				: restoredScope === scopedKey
+					? gapCells.features
+					: []
+		};
+	});
 	const serviceFeatures = $derived({
 		type: 'FeatureCollection' as const,
 		features:
@@ -1025,6 +1039,9 @@
 			baseline = null;
 			gapCells = emptyFeatures();
 			displayGrid = emptyFeatures();
+			capitalGapMaps = {};
+			nearbyGapVersion += 1;
+			nearbyGapError = '';
 			evaluation = null;
 			financialQuote = null;
 			evaluatedSignature = '';
@@ -1069,6 +1086,52 @@
 				dataError = cause instanceof Error ? cause.message : 'National evidence could not load.';
 		}
 	}
+	$effect(() => {
+		const scope = nearbyIslandId;
+		void nearbyGapVersion;
+		if (!mounted || !active || !scope || untrack(() => !!capitalGapMaps[scope])) {
+			untrack(() => {
+				nearbyGapLoading = false;
+				nearbyGapError = '';
+			});
+			return;
+		}
+		const controller = new AbortController();
+		untrack(() => {
+			nearbyGapLoading = true;
+			nearbyGapError = '';
+		});
+		// Only the small, cached local map is needed for the neighbouring island.
+		// Its baseline and proposal lifecycle remain exclusive to the selected island.
+		void api<LocalGapDetail>(
+			`planning/opportunities/${encodeURIComponent(scope)}`,
+			undefined,
+			controller.signal
+		)
+			.then((detail) => {
+				if (controller.signal.aborted) return;
+				const grid = detail.hex_grid ?? emptyFeatures();
+				const source = detail.gap_cells ?? detail.features ?? emptyFeatures();
+				capitalGapMaps = {
+					...capitalGapMaps,
+					[scope]: grid.features.length ? displayGapHexes(source, grid) : emptyFeatures()
+				};
+			})
+			.catch((cause) => {
+				if (!controller.signal.aborted)
+					nearbyGapError =
+						cause instanceof Error ? cause.message : 'Nearby neighborhood journeys could not load.';
+			})
+			.finally(() => {
+				if (!controller.signal.aborted) nearbyGapLoading = false;
+			});
+		return () => {
+			controller.abort();
+			untrack(() => {
+				nearbyGapLoading = false;
+			});
+		};
+	});
 	$effect(() => {
 		const scope = scopedKey;
 		if (!mounted || !scope || !active || (restoredScope === scope && !scopeDirty)) return;
@@ -1185,11 +1248,11 @@
 		}
 		try {
 			const [detail, data] = await Promise.all([
-				api<{
-					gap_cells?: FeatureCollection;
-					features?: FeatureCollection;
-					hex_grid?: FeatureCollection;
-				}>(`planning/opportunities/${encodeURIComponent(scope)}`, undefined, controller.signal),
+				api<LocalGapDetail>(
+					`planning/opportunities/${encodeURIComponent(scope)}`,
+					undefined,
+					controller.signal
+				),
 				api<MapBaseline>(
 					`planning/baseline?island_id=${encodeURIComponent(scope)}`,
 					undefined,
@@ -1202,6 +1265,8 @@
 			gapCells = displayGrid.features.length
 				? displayGapHexes(sourceCells, displayGrid)
 				: emptyFeatures();
+			if (capitalIslandIds.includes(scope))
+				capitalGapMaps = { ...capitalGapMaps, [scope]: gapCells };
 			if (!controller.signal.aborted) baseline = data;
 		} catch (cause) {
 			if (!controller.signal.aborted) {
@@ -2917,6 +2982,19 @@
 				onclick={() => open('needs')}><ChevronDown size={16} /></button
 			>
 		</div>
+		{#if scopeError || nearbyGapError}<p class="local-map-status" role="alert">
+				{scopeError ? 'Island journeys unavailable.' : 'Nearby journeys unavailable.'}
+				<button
+					onclick={() => {
+						if (scopeError) retryScope();
+						if (nearbyGapError) nearbyGapVersion += 1;
+					}}>Retry analysis</button
+				>
+			</p>
+		{:else if loading || nearbyGapLoading}<p class="local-map-status" role="status">
+				<RefreshCw size={12} class="spin" />Loading neighborhood journeys · unshaded areas are
+				pending
+			</p>{/if}
 		{#if impact.features.length && (previewCalculating || (!comparisonPreview && stale))}
 			<p class="proposal-map-result" role="status">Updating access · previous result shown</p>
 		{:else if impact.features.length && comparisonEvaluation}
@@ -2976,6 +3054,15 @@
 				{#if loading || !national}<p class="policy-working" role="status">
 						<RefreshCw size={15} class="spin" />Loading island evidence…
 					</p>{/if}
+				{#if nearbyGapLoading}<p class="policy-working" role="status">
+						<RefreshCw size={15} class="spin" />Loading nearby neighborhood journeys…
+					</p>{/if}
+				{#if nearbyGapError}<p class="policy-error" role="alert">
+						Nearby neighborhood journeys are unavailable. {nearbyGapError}<Button
+							variant="link"
+							onclick={() => (nearbyGapVersion += 1)}>Retry nearby journeys</Button
+						>
+					</p>{/if}
 				{#if boundaryError}<p class="policy-error" role="alert">
 						{boundaryError}<Button variant="link" onclick={onRetryBoundary}
 							>Retry map details</Button
@@ -3013,6 +3100,19 @@
 							<span><i style:background={GAP_PALETTE.unknown}></i>Unknown</span>
 						{/if}
 					</div>
+					{#if !impact.features.length}<p class="policy-evidence-note">
+							{#if !islandId}
+								Country colors screen mapped service availability and population pressure. Select an
+								island to inspect local journeys. Service frequency and capacity need verification.
+							{:else}
+								{capitalIslandIds.includes(islandId)
+									? 'Malé and Hulhumalé show'
+									: 'Where available, colors show'}
+								modeled neighborhood journeys: walking to public transport, or scheduled trips to healthcare
+								and schools. Red marks times at or beyond the target; grey means incomplete routing evidence.
+								Islands without local journey analysis stay unshaded.
+							{/if}
+						</p>{/if}
 					{#if impact.features.length}
 						<p class="policy-evidence-note">
 							Green means residents meet the {comparisonTarget}-minute target. Red means longer
@@ -3949,6 +4049,22 @@
 		box-shadow: 0 4px 22px #1a433f12;
 		backdrop-filter: blur(10px);
 	}
+	.local-map-status {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 5px;
+		margin: 3px 8px 5px;
+		font-size: 10px;
+		line-height: 1.5;
+		color: #62766c;
+	}
+	.local-map-status button {
+		color: #087e77;
+		font-weight: 650;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
 	.policy-lens-bar {
 		display: flex;
 		align-items: center;
@@ -4697,8 +4813,12 @@
 			bottom: 154px;
 			max-width: none;
 			flex-direction: row;
+			flex-wrap: wrap;
 			align-items: center;
 			gap: 2px;
+		}
+		.local-map-status {
+			flex-basis: 100%;
 		}
 		.policy-map-controls.comparing {
 			flex-direction: column;

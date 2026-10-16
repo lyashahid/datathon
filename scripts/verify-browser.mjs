@@ -8,6 +8,7 @@ const suites = [
 	'verify-capital-map-start.mjs',
 	'verify-restored-navigation.mjs',
 	'verify-nearby-bus-stops.mjs',
+	'verify-nearby-access-analysis.mjs',
 	'verify-map-floating-controls.mjs',
 	'verify-proposal-experience.mjs',
 	'verify-island-connections.mjs'
