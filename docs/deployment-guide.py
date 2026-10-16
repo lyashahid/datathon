@@ -447,7 +447,7 @@ def build() -> None:
     story += step(
         "6",
         "Add the Datathon location to your existing HTTPS site",
-        "Back up /etc/nginx/sites-available/yoosufsayyid.com. Install the reviewed locations as /etc/nginx/snippets/datathon.conf and include it in that site's existing HTTPS block. Keep all other routes and its apps-extra.conf include. The app listens only on 127.0.0.1:18730.",
+        "Back up the active /etc/nginx/sites-enabled/yoosufsayyid.com: it is a regular file on this server, not a symlink. Include the root-owned /etc/nginx/snippets/datathon.conf in its HTTPS block. Keep all other routes and apps-extra.conf. The sites-available copy is mirrored but inactive; editing it alone has no effect.",
     )
     story += [code("sudo nginx -t && sudo systemctl reload nginx")]
     story += [

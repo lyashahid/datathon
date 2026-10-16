@@ -55,7 +55,7 @@ The fourth installer argument selects the existing separate environment director
 
 ## HTTPS path
 
-The existing site configuration is `/etc/nginx/sites-available/yoosufsayyid.com`. Review `deploy/nginx-location.conf`, install its two location blocks as `/etc/nginx/snippets/datathon.conf`, and include that file inside the **existing HTTPS server block for yoosufsayyid.com**. Preserve the site's existing `snippets/apps-extra.conf` include and all other routes. Back up the site configuration first, run `sudo nginx -t`, then reload Nginx only if validation succeeds. Do not replace the complete site configuration.
+The active site configuration on this server is **`/etc/nginx/sites-enabled/yoosufsayyid.com`**, a regular root-owned file rather than a symlink. The copy in `sites-available` is mirrored for consistency but is not the active file; editing it alone does not change the running site. Review `deploy/nginx-location.conf`, install its two location blocks as the root-owned `/etc/nginx/snippets/datathon.conf`, and include that file inside the **existing HTTPS server block in the active configuration**. Preserve the site's existing `snippets/apps-extra.conf` include and all other routes. Back up the active file before editing, run `sudo nginx -t`, then reload Nginx only if validation succeeds. Do not replace the complete site configuration or assume that `sites-enabled` is a symlink.
 
 The route must preserve `/apps/datathon` on upstream requests. In Nginx the provided `proxy_pass http://127.0.0.1:18730;` intentionally has no trailing slash. TLS and the existing domain certificate remain managed by your current reverse proxy. The route `/apps/datathon/api/backend/health` must return JSON with `"status":"ok"` after the first deployment.
 
