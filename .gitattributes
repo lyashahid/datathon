@@ -2,4 +2,5 @@
 * text=auto
 /backend/data/** -text whitespace=cr-at-eol
 /data/** -text whitespace=cr-at-eol
+/backend/vendor/vela_api/data/** -text whitespace=cr-at-eol,-blank-at-eol
 *.sh text eol=lf

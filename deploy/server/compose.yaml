@@ -62,4 +62,3 @@ services:
 networks:
   datathon:
     driver: bridge
-
