@@ -65,8 +65,15 @@ try {
 		'page'
 	);
 	await expect(page.locator('.brand')).toHaveAttribute('href', `${mount.pathname}?view=overview`);
+	// SSR exposes the navigation before its client handlers are hydrated.
+	await expect(navigation).toHaveAttribute('data-selection-ready', '', { timeout: 60000 });
 	await navigation.getByRole('button', { name: 'Map & planning', exact: true }).click();
-	await expect(page.getByLabel('Service coverage map', { exact: true })).toBeVisible();
+	await expect(
+		navigation.getByRole('button', { name: 'Map & planning', exact: true })
+	).toHaveAttribute('aria-current', 'page');
+	await expect(page.getByLabel('Service coverage map', { exact: true })).toBeVisible({
+		timeout: 60000
+	});
 	await expect(page.locator('.national-map')).toHaveAttribute('aria-busy', 'false', {
 		timeout: 90000
 	});
