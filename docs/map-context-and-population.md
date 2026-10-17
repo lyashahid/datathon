@@ -2,7 +2,7 @@
 
 The map now uses a local, source-backed cartographic basemap. Roads, paths,
 building footprints and green spaces come from the captured nationwide
-OpenStreetMap/Geofabrik extract. They load for the current viewport, so this
+OpenStreetMap/Geofabrik extract. They load for the current area, so this
 works without a third-party tile subscription, API key or external tile request.
 Labels use captured road names; parks and buildings provide geographic context.
 The overlay switches let the user compare streets, buildings, public facilities
@@ -37,6 +37,15 @@ the source receipt. Requests must use a valid WGS84 rectangle at most one degree
 on each side. The response reports matching and returned counts, with a visible
 zoom-in message if the 30,000-feature limit truncates a view. A spatial index
 keeps the full national artifact on the server.
+
+The map requests one shared street area for Greater Malé, covering Malé,
+Hulhumalé, Hulhulé and Vilimalé. Selecting either city or panning between them
+retains that coverage. Elsewhere, requests include a 25% buffer on each side
+where the API's one-degree limit permits it. A complete response is reused
+while it covers the viewport; entering Greater Malé also requires coverage of
+the full shared capital area. Panning outside the loaded area or resizing the
+map refreshes coverage as needed. Existing streets remain visible while the
+next response loads, and obsolete requests are cancelled.
 
 To regenerate from the preserved source:
 

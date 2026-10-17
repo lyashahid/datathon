@@ -47,6 +47,11 @@
 	import { nearestPlacementRoad, placementLocationHint } from '#lib/map-placement-preview.js';
 	import { changedImpactCells } from '#lib/map-impact-feedback.js';
 	import { routeEndpointsMatch } from '#lib/map-location.js';
+	import {
+		canReuseStreetBounds,
+		streetContextBounds,
+		type StreetBounds
+	} from '#lib/map-street-context.js';
 	import { mobileServiceRoutePadding, serviceCardMaxHeight } from '#lib/map-service-layout.js';
 	import { shouldAnimateMotion } from '#lib/motion.js';
 	import type { MapPolicyState, PendingPlacementDecision, PlacementKind } from '#lib/map-policy.js';
@@ -462,7 +467,8 @@
 	let contextSummary = $state({ roads: 0, buildings: 0, truncated: false });
 	let contextRequest: AbortController | null = null;
 	let contextGeneration = 0;
-	let contextLoadedKey = '';
+	let contextLoadedKey = $state('');
+	let contextLoadedBounds: StreetBounds | null = null;
 	let contextLoadedError = '';
 	let contextPendingKey = '';
 	let contextTimer: ReturnType<typeof setTimeout> | undefined;
@@ -1561,12 +1567,24 @@
 			return;
 		}
 		const bounds = map.getBounds();
-		const bbox = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()];
-		if (bbox[2] - bbox[0] > 1 || bbox[3] - bbox[1] > 1) return;
+		const viewport: StreetBounds = [
+			bounds.getWest(),
+			bounds.getSouth(),
+			bounds.getEast(),
+			bounds.getNorth()
+		];
+		const bbox = streetContextBounds(viewport);
+		if (!bbox) return;
 		// MapLibre can emit move-end for an unchanged viewport with tiny rounding differences.
 		const key = bbox.map((coordinate) => coordinate.toFixed(6)).join(',');
 		if (key === contextPendingKey) return;
-		if (key === contextLoadedKey) {
+		if (
+			key === contextLoadedKey ||
+			(contextLoadedBounds &&
+				!contextSummary.truncated &&
+				!contextLoadedError &&
+				canReuseStreetBounds(contextLoadedBounds, viewport))
+		) {
 			contextGeneration++;
 			contextRequest?.abort();
 			contextPendingKey = '';
@@ -1589,6 +1607,7 @@
 			>(`map/context?bbox=${key}`, undefined, contextRequest.signal);
 			if (generation !== contextGeneration || !map) return;
 			contextLoadedKey = key;
+			contextLoadedBounds = bbox;
 			contextData = data;
 			contextSummary = data.summary;
 			contextReceipt = String(data.metadata?.retrieved_at ?? '').slice(0, 10);
@@ -3761,6 +3780,7 @@
 				instance.on('resize', schedulePlacementAnchor);
 				instance.on('resize', schedulePlacementPreview);
 				instance.on('resize', invalidateMapDiagnostics);
+				instance.on('resize', scheduleStreetContext);
 				instance.on('moveend', () => syncCameraView(instance));
 				instance.on('idle', () => {
 					if (!ready || !active) return;
@@ -4630,6 +4650,8 @@
 	data-policy-lens={gapLens}
 	data-context-roads={contextSummary.roads}
 	data-context-buildings={contextSummary.buildings}
+	data-context-bounds={contextLoadedKey}
+	data-context-loading={contextLoading}
 	data-zoom={zoomLevel}
 	style:--map-height={`${mapHeight}px`}
 >
