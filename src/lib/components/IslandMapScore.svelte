@@ -60,8 +60,8 @@
 		{#if assessment?.label}<p class="score-label">{assessment.label}</p>{/if}
 		{#if primaryReason}
 			<p class="reason-label">
-				Lowest component · {domains.find((domain) => domain.id === primaryReason.domain)?.label ??
-					primaryReason.domain}
+				Lowest service score · {domains.find((domain) => domain.id === primaryReason.domain)
+					?.label ?? primaryReason.domain}
 			</p>
 		{/if}
 		<p class="score-summary" data-testid="island-map-score-summary">
@@ -113,12 +113,12 @@
 					</ul>
 				{/if}
 				<p class="qualification">
-					Higher means better modeled access. Missing evidence can lower the score without proving
-					services are absent. This baseline index is separate from proposal results.
+					Higher scores mean better access. Missing data can lower a score. This score describes the
+					current network; proposal results show estimated changes separately.
 				</p>
 			</div>
 		</details>
-		<p class="score-footnote">Planning index · not the percentage of residents served</p>
+		<p class="score-footnote">Access index /100 · combines services and data coverage</p>
 	{:else if loading}
 		<p class="score-summary" role="status">Loading this island’s score and explanation…</p>
 	{:else if error}
@@ -138,11 +138,11 @@
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		padding: 16px;
-		border: 1px solid #dce5df;
+		border: 1px solid var(--theme-color-dce5df);
 		border-radius: 16px;
-		background: #fffffff5;
-		color: #26392f;
-		box-shadow: 0 4px 22px #1a433f12;
+		background: var(--theme-color-fffffff5);
+		color: var(--theme-color-26392f);
+		box-shadow: 0 4px 22px var(--theme-color-1a433f12);
 		pointer-events: auto;
 	}
 	.score-heading {
@@ -156,7 +156,7 @@
 		font-weight: 650;
 		letter-spacing: 1.4px;
 		text-transform: uppercase;
-		color: #617267;
+		color: var(--theme-color-617267);
 	}
 	h2 {
 		margin-top: 4px;
@@ -180,25 +180,25 @@
 	.score-number > span {
 		margin-left: 3px;
 		font-size: 11px;
-		color: #6a786f;
+		color: var(--theme-color-6a786f);
 	}
 	.score-label {
 		margin-top: 12px;
 		font-size: 11px;
 		font-weight: 650;
-		color: #365c48;
+		color: var(--theme-color-365c48);
 	}
 	.reason-label {
 		margin-top: 9px;
 		font-size: 10px;
 		font-weight: 550;
-		color: #617267;
+		color: var(--theme-color-617267);
 	}
 	.score-summary,
 	.score-details {
 		font-size: 12px;
 		line-height: 1.6;
-		color: #57695e;
+		color: var(--theme-color-57695e);
 	}
 	.score-summary {
 		margin-top: 5px;
@@ -213,13 +213,13 @@
 		cursor: pointer;
 		font-size: 11px;
 		font-weight: 650;
-		color: #276046;
+		color: var(--theme-color-276046);
 	}
 	summary::-webkit-details-marker {
 		display: none;
 	}
 	summary:focus-visible {
-		outline: 2px solid #087e77;
+		outline: 2px solid var(--theme-color-087e77);
 		outline-offset: 3px;
 		border-radius: 4px;
 	}
@@ -227,7 +227,7 @@
 		transform: rotate(180deg);
 	}
 	.score-details {
-		border-top: 1px solid #e3e9e5;
+		border-top: 1px solid var(--theme-color-e3e9e5);
 	}
 	.domain-reason,
 	.evidence-note {
@@ -240,7 +240,7 @@
 		margin-bottom: 4px;
 		font-size: 11px;
 		font-weight: 650;
-		color: #365344;
+		color: var(--theme-color-365344);
 	}
 	h3 span {
 		font-variant-numeric: tabular-nums;
@@ -248,7 +248,7 @@
 	h3 small {
 		margin-left: 2px;
 		font-weight: 400;
-		color: #6a786f;
+		color: var(--theme-color-6a786f);
 	}
 	ul {
 		margin: 12px 0;
@@ -264,7 +264,7 @@
 	.score-footnote {
 		font-size: 9px;
 		line-height: 1.5;
-		color: #6a786f;
+		color: var(--theme-color-6a786f);
 	}
 	@media (max-width: 700px) {
 		.island-map-score {

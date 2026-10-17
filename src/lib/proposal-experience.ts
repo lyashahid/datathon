@@ -56,7 +56,7 @@ export function explainImpactCell(
 				? 'Residents here (under 1 estimated)'
 				: `About ${number(population)} residents`;
 	const reasons: string[] = [];
-	let title = 'Impact needs more evidence';
+	let title = 'Impact is not yet available';
 	let summary =
 		'Some residents do not have a complete before-and-after journey. Their improvement is unknown.';
 	const view = values.view === 'before' || values.view === 'after' ? values.view : 'improvement';
@@ -82,12 +82,12 @@ export function explainImpactCell(
 				summary = `At least some residents have no complete modeled journey to ${goal} under these settings.`;
 				break;
 			default:
-				title = `${phase}: more evidence needed`;
+				title = `${phase}: details unavailable`;
 				summary =
-					'Journey or resident evidence is missing for part of this area. Missing data does not mean no access.';
+					'Journey or resident estimates are unavailable for part of this area. This does not mean residents have no access.';
 		}
 		if (time !== null && time >= 0)
-			reasons.push(`Average modeled journey: ${minutes(time)} minutes.`);
+			reasons.push(`Estimated average journey: ${minutes(time)} minutes.`);
 		const within = numeric(values.residents_within_target);
 		const beyond = numeric(values.residents_beyond_target);
 		if (within !== null && beyond !== null && within > 0 && beyond > 0)
@@ -101,7 +101,7 @@ export function explainImpactCell(
 				: 'No complete route with this proposal';
 		summary = `At least some residents have no complete modeled journey to ${goal} with these changes.`;
 		if (before !== null)
-			reasons.push(`Current average modeled journey: ${minutes(before)} minutes.`);
+			reasons.push(`Current estimated average journey: ${minutes(before)} minutes.`);
 	} else if (before !== null && after !== null && delta !== null) {
 		if (values.impact === 'gained') {
 			title = 'More residents meet the target';
@@ -155,7 +155,7 @@ export function explainImpactCell(
 		summary,
 		reasons,
 		qualification:
-			'Modeled journeys and allocated resident estimates, not observed trips. A hexagon may combine several residential locations.'
+			'Journey times and resident counts are estimates. A hexagon may combine several residential locations.'
 	};
 }
 

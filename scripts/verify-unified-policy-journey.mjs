@@ -233,7 +233,7 @@ try {
 		}
 	);
 	await check(
-		'Island needs are legible on a colored map and weather stays over that map',
+		'Island needs are legible on a colored map and weather is available in Directions',
 		async () => {
 			await expect(panel.locator('.policy-need-row')).toHaveCount(3);
 			await expect(panel.locator('.policy-population')).toBeVisible();
@@ -243,9 +243,10 @@ try {
 			await expect(atlas).toHaveAttribute('data-policy-lens', domain);
 			await page.screenshot({ path: path.join(output, 'service-gaps-desktop.png') });
 			await panel.getByRole('button', { name: 'Close island planning panel', exact: true }).click();
-			await page.getByRole('button', { name: 'Weather & traffic', exact: true }).click();
+			await page.getByRole('button', { name: 'Directions', exact: true }).click();
+			await page.locator('.journey-conditions > summary').click();
 			const weatherPanel = page.getByRole('region', {
-				name: 'Weather and traffic on this map',
+				name: 'Weather and traffic for this journey',
 				exact: true
 			});
 			await expect(weatherPanel).toBeVisible();
@@ -253,9 +254,7 @@ try {
 			await expect(page.locator('.map-workspace')).toBeVisible();
 			assert.equal(new URL(page.url()).searchParams.get('view'), 'map');
 			await page.screenshot({ path: path.join(output, 'weather-map-desktop.png') });
-			await weatherPanel
-				.getByRole('button', { name: 'Close weather and traffic', exact: true })
-				.click();
+			await page.getByRole('button', { name: 'Close directions', exact: true }).click();
 			return {
 				gapFeatures: Number(await atlas.getAttribute('data-policy-gap-cells')),
 				...(await noOverflow())

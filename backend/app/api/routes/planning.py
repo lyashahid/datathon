@@ -21,6 +21,7 @@ from app.planning.economics import COST_DEFAULTS
 from app.planning.models import JourneyRequest, PlanningRequest
 from app.planning.opportunities import BudgetSuggestionRequest, OpportunityService
 from app.planning.repository import PlanningRepository
+from app.planning.sea import SeaConnectionsRequest, SeaConnectionsService
 from app.planning.service import PlanningService
 from app.planning.transport import FerryServiceRequest, TransportPlanningService
 
@@ -117,6 +118,22 @@ def ferry_service(
 ) -> dict[str, Any]:
     try:
         return service.ferry_service(payload)
+    except (ValueError, KeyError, TypeError, IndexError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@router.post("/sea-connections")
+def sea_connections(
+    payload: SeaConnectionsRequest,
+    request: Request,
+    transport: TransportPlanningService = Depends(get_transport_planning),
+) -> dict[str, Any]:
+    service = getattr(request.app.state, "sea_connections", None)
+    if service is None or service.transport is not transport:
+        service = SeaConnectionsService(transport)
+        request.app.state.sea_connections = service
+    try:
+        return service.connections(payload)
     except (ValueError, KeyError, TypeError, IndexError) as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
 

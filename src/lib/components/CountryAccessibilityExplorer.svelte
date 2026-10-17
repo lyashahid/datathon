@@ -98,8 +98,8 @@
 	{#if loading && !scores}
 		<div class="status-content" role="status">
 			<p class="eyebrow">Maldives</p>
-			<h2>Reading the islands…</h2>
-			<p>Bringing together accessibility scores and mapped evidence.</p>
+			<h2>Loading island access…</h2>
+			<p>Loading services and accessibility scores.</p>
 		</div>
 	{:else if error && !scores}
 		<div class="status-content">
@@ -157,11 +157,11 @@
 				</p>
 			{:else if scope === 'island'}
 				<p class="score-basis">
-					{selectedIsland?.assessment?.label ?? 'Score evidence unavailable'}
+					{selectedIsland?.assessment?.label ?? 'Score details unavailable'}
 				</p>
 			{/if}
 			{#if scope === 'country' && !showDetails}
-				<p class="initial-note">Missing map data can lower this score.</p>
+				<p class="initial-note">Scores reflect service access and data coverage.</p>
 				<p class="country-introduction" data-testid="country-map-introduction">
 					Explore access to healthcare, schools and transport. Zoom in or select an island to see
 					its services, journeys and planning options.
@@ -195,9 +195,7 @@
 				{#if scope === 'country'}
 					<div id="national-score-explanation">
 						<h3>What shapes the score</h3>
-						<p class="section-intro">
-							An equal average of island scores, based on mapped services.
-						</p>
+						<p class="section-intro">The national score averages island scores equally.</p>
 						<dl class="component-scores">
 							{#each accessibilityDomains as domain (domain)}
 								<div>
@@ -208,13 +206,13 @@
 						</dl>
 						{#if accessibilityDomains.some((domain) => national.components[domain].scoredIslandCount !== national.scoredIslandCount)}
 							<p class="evidence-note">
-								Each area averages only islands with a recorded component score.
+								Each service average includes islands with a score for that service.
 							</p>
 						{/if}
 						<div class="evidence-summary">
 							<p>
 								<strong>{integer.format(national.mappedEvidenceIslandCount)}</strong> residential islands
-								have mapped evidence in at least one area.
+								have service data in at least one area.
 							</p>
 							<p>
 								<strong>{integer.format(national.populationUnknownIslandCount)}</strong> have unknown
@@ -222,15 +220,13 @@
 							</p>
 							{#if national.unknownEvidenceIslandCount > 0}
 								<p>
-									Evidence coverage is unavailable for {integer.format(
-										national.unknownEvidenceIslandCount
-									)} islands.
+									Data coverage is unknown for {integer.format(national.unknownEvidenceIslandCount)} islands.
 								</p>
 							{/if}
 						</div>
 						<p class="evidence-note">
-							A low score can reflect missing evidence. Missing map data does not mean services are
-							absent.
+							Missing data can lower a score. Open an island to see its services and score
+							explanation.
 						</p>
 						<div class="section-heading">
 							<h3>Explore an atoll</h3>
@@ -251,13 +247,11 @@
 									>
 									<strong>{formatScore(group.averageScore)}</strong><ChevronRight size={14} />
 								</Button>
-							{:else}<p class="evidence-note">Residential island records are unavailable.</p>{/each}
+							{:else}<p class="evidence-note">Residential islands could not be loaded.</p>{/each}
 						</div>
 					</div>
 				{:else if scope === 'atoll'}
-					<p class="evidence-note">
-						A low score can reflect missing mapped evidence, even where services exist.
-					</p>
+					<p class="evidence-note">Open an island to see the services and data behind its score.</p>
 					<div class="section-heading">
 						<h3>Residential islands</h3>
 						<span>Index /100</span>
@@ -274,13 +268,13 @@
 								<strong>{formatScore(island.score)}</strong><ChevronRight size={14} />
 							</Button>
 						{:else}<p class="evidence-note">
-								No residential island records are available for this atoll.
+								No residential islands are listed for this atoll.
 							</p>{/each}
 					</div>
 				{:else}
 					<dl class="resident-count">
 						<div>
-							<dt>Recorded residents{population?.year ? ` · ${population.year}` : ''}</dt>
+							<dt>Residents{population?.year ? ` · ${population.year}` : ''}</dt>
 							<dd>{residentCount === null ? 'Unknown' : integer.format(residentCount)}</dd>
 						</div>
 					</dl>
@@ -291,15 +285,15 @@
 							)}
 							<div>
 								<h3>{domainLabels[domain]}</h3>
-								<p>{reason?.text ?? 'An explanation for this area is not available yet.'}</p>
+								<p>{reason?.text ?? 'A score explanation is unavailable for this service.'}</p>
 							</div>
 						{/each}
 					</div>
 					<div class="island-evidence">
 						{#if selectedIsland?.assessment}<p>{selectedIsland.assessment.coverage.note}</p>{/if}
 						<p>
-							Missing map data does not mean services are absent. This index is not the percentage
-							of residents served.
+							The index combines service access and data coverage. It does not measure the
+							percentage of residents served.
 						</p>
 					</div>
 					<Button class="proposal-action" onclick={onPlan} disabled={!selectedIsland}
@@ -322,13 +316,13 @@
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
-		border: 1px solid #e2e6e3;
+		border: 1px solid var(--theme-color-e2e6e3);
 		border-radius: 20px;
-		background: #fff;
-		color: #26392f;
+		background: var(--theme-color-ffffff);
+		color: var(--theme-color-26392f);
 		box-shadow:
-			0 6px 24px #183b3212,
-			0 1px 3px #183b3208;
+			0 6px 24px var(--theme-color-183b3212),
+			0 1px 3px var(--theme-color-183b3208);
 		pointer-events: auto;
 	}
 	.explorer-heading {
@@ -347,7 +341,7 @@
 		letter-spacing: 1.8px;
 		line-height: 1.4;
 		text-transform: uppercase;
-		color: #617267;
+		color: var(--theme-color-617267);
 	}
 	.explorer-heading h2 {
 		margin-top: 7px;
@@ -359,7 +353,7 @@
 	}
 	.island-context {
 		margin-top: 4px;
-		color: #6a776e;
+		color: var(--theme-color-6a776e);
 		font-size: 11px;
 	}
 	.score-line {
@@ -378,7 +372,7 @@
 	.score-out-of {
 		font-size: 18px;
 		font-weight: 450;
-		color: #849087;
+		color: var(--theme-color-849087);
 	}
 	.score-out-of > span {
 		display: block;
@@ -386,25 +380,25 @@
 		font-size: 9px;
 		font-weight: 550;
 		letter-spacing: 0.35px;
-		color: #6a786f;
+		color: var(--theme-color-6a786f);
 	}
 	.score-basis {
 		margin-top: 10px;
 		font-size: 11px;
 		line-height: 1.55;
-		color: #57695e;
+		color: var(--theme-color-57695e);
 	}
 	.initial-note {
 		margin-top: 3px;
 		font-size: 11px;
 		line-height: 1.5;
-		color: #7c837e;
+		color: var(--theme-color-7c837e);
 	}
 	.country-introduction {
 		margin-top: 12px;
 		font-size: 12px;
 		line-height: 1.6;
-		color: #57695e;
+		color: var(--theme-color-57695e);
 	}
 	.explorer-heading .score-question {
 		margin-top: 19px;
@@ -420,14 +414,14 @@
 		padding-inline: 13px;
 		border-radius: 11px;
 		font-size: 12px;
-		background: #294e3e;
+		background: var(--theme-color-294e3e);
 	}
 	:global(.country-accessibility-explorer .search-action) {
 		display: flex;
 		margin: 7px auto -4px;
 		gap: 6px;
 		font-size: 11px;
-		color: #697a6f;
+		color: var(--theme-color-697a6f);
 	}
 	:global(.country-accessibility-explorer .explorer-back) {
 		min-height: 32px;
@@ -436,7 +430,7 @@
 		padding-inline: 8px;
 		gap: 6px;
 		font-size: 10px;
-		color: #63766b;
+		color: var(--theme-color-63766b);
 	}
 	.expanded .score-value {
 		font-size: 52px;
@@ -448,21 +442,21 @@
 		overscroll-behavior: contain;
 		padding: 0 20px 18px;
 		scrollbar-width: thin;
-		scrollbar-color: #d5ded7 transparent;
+		scrollbar-color: var(--theme-color-d5ded7) transparent;
 	}
 	.explorer-details > div:first-child {
-		border-top: 1px solid #edf0ed;
+		border-top: 1px solid var(--theme-color-edf0ed);
 		padding-top: 16px;
 	}
 	.explorer-details h3 {
-		color: #374b3e;
+		color: var(--theme-color-374b3e);
 		font-size: 12px;
 		font-weight: 600;
 		letter-spacing: -0.1px;
 	}
 	.section-intro {
 		margin-top: 5px;
-		color: #77827a;
+		color: var(--theme-color-77827a);
 		font-size: 11px;
 		line-height: 1.6;
 	}
@@ -480,19 +474,19 @@
 	.component-scores dt,
 	.resident-count dt {
 		font-size: 12px;
-		color: #607166;
+		color: var(--theme-color-607166);
 	}
 	.component-scores dd,
 	.resident-count dd {
 		margin: 0;
-		color: #304c39;
+		color: var(--theme-color-304c39);
 		font-size: 13px;
 		font-weight: 550;
 		font-variant-numeric: tabular-nums;
 	}
 	.component-scores dd span {
 		margin-left: 3px;
-		color: #98a098;
+		color: var(--theme-color-98a098);
 		font-size: 10px;
 		font-weight: 400;
 	}
@@ -501,21 +495,21 @@
 		gap: 5px;
 		margin: 12px 0 9px;
 		border-radius: 10px;
-		background: #f4f6f2;
+		background: var(--theme-color-f4f6f2);
 		padding: 11px 12px;
 	}
 	.evidence-summary p {
-		color: #6d786d;
+		color: var(--theme-color-6d786d);
 		font-size: 11px;
 		line-height: 1.6;
 	}
 	.evidence-summary strong {
 		font-weight: 600;
-		color: #415b45;
+		color: var(--theme-color-415b45);
 	}
 	.evidence-note {
 		font-size: 10px;
-		color: #7d857c;
+		color: var(--theme-color-7d857c);
 		line-height: 1.65;
 	}
 	.section-heading {
@@ -527,7 +521,7 @@
 	}
 	.section-heading > span {
 		font-size: 9px;
-		color: #97a196;
+		color: var(--theme-color-97a196);
 	}
 	.scope-list {
 		display: grid;
@@ -549,7 +543,7 @@
 	.scope-row-label {
 		min-width: 0;
 		flex: 1;
-		color: #52684f;
+		color: var(--theme-color-52684f);
 		font-size: 12px;
 		line-height: 1.4;
 	}
@@ -559,23 +553,23 @@
 	.scope-row-label small {
 		display: block;
 		margin-top: 2px;
-		color: #90988c;
+		color: var(--theme-color-90988c);
 		font-size: 9px;
 		font-weight: 400;
 	}
 	:global(.country-accessibility-explorer .scope-row strong) {
 		font-size: 12px;
-		color: #5b7055;
+		color: var(--theme-color-5b7055);
 		font-weight: 550;
 		font-variant-numeric: tabular-nums;
 	}
 	:global(.country-accessibility-explorer .scope-row svg) {
-		color: #9ba995;
+		color: var(--theme-color-9ba995);
 	}
 	.resident-count {
 		margin: 0 0 14px;
 		padding-top: 9px;
-		border-top: 1px solid #edf0ed;
+		border-top: 1px solid var(--theme-color-edf0ed);
 	}
 	.resident-count dt {
 		font-size: 10px;
@@ -589,7 +583,7 @@
 	}
 	.island-reasons p {
 		margin-top: 3px;
-		color: #738071;
+		color: var(--theme-color-738071);
 		font-size: 11px;
 		line-height: 1.65;
 	}
@@ -597,11 +591,11 @@
 		margin-top: 17px;
 		padding: 11px 12px;
 		border-radius: 10px;
-		background: #f4f6f2;
+		background: var(--theme-color-f4f6f2);
 	}
 	.island-evidence p {
 		font-size: 10px;
-		color: #7b8578;
+		color: var(--theme-color-7b8578);
 		line-height: 1.65;
 	}
 	.island-evidence p + p {
@@ -618,12 +612,12 @@
 		border-radius: 10px;
 	}
 	:global(.country-accessibility-explorer .proposal-action) {
-		background: #294e3e;
+		background: var(--theme-color-294e3e);
 	}
 	:global(.country-accessibility-explorer .analytics-action) {
 		margin-top: 12px;
-		color: #657b5b;
-		border-color: #e7ece1;
+		color: var(--theme-color-657b5b);
+		border-color: var(--theme-color-e7ece1);
 	}
 	.status-content {
 		display: grid;
@@ -636,7 +630,7 @@
 	}
 	.status-content p:not(.eyebrow) {
 		font-size: 12px;
-		color: #7b857a;
+		color: var(--theme-color-7b857a);
 	}
 	@media (max-width: 700px) {
 		.country-accessibility-explorer {

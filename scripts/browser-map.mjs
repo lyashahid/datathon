@@ -34,3 +34,24 @@ export function projectMapPoint(atlas, coordinates) {
 		};
 	}, coordinates);
 }
+
+/** Zoom through the visible canvas, using the same wheel gesture as the map UI.
+ * @param {import('@playwright/test').Page} page
+ * @param {import('@playwright/test').Locator} atlas
+ * @param {number} direction Positive zooms in; negative zooms out.
+ */
+export async function wheelMapZoom(page, atlas, direction) {
+	const point = await atlas.locator('.maplibregl-canvas').evaluate((canvas) => {
+		const box = canvas.getBoundingClientRect();
+		for (const xFraction of [0.55, 0.7, 0.4, 0.85, 0.25]) {
+			for (const yFraction of [0.45, 0.3, 0.6, 0.75]) {
+				const x = box.x + box.width * xFraction;
+				const y = box.y + box.height * yFraction;
+				if (document.elementFromPoint(x, y) === canvas) return { x, y };
+			}
+		}
+		throw new Error('No unobscured map area is available for the zoom gesture.');
+	});
+	await page.mouse.move(point.x, point.y);
+	await page.mouse.wheel(0, direction > 0 ? -800 : 800);
+}

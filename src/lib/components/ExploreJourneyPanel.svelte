@@ -1,11 +1,15 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import {
-		ArrowLeft,
-		ArrowLeftRight,
+		ArrowUpDown,
+		Bike,
+		Car,
+		CarTaxiFront,
 		ArrowRight,
 		Bus,
 		Footprints,
 		MapPin,
+		CloudSun,
 		Ship,
 		Clock,
 		X,
@@ -14,11 +18,12 @@
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
 	import { Label } from '#lib/components/ui/label/index.js';
-	import * as NativeSelect from '#lib/components/ui/native-select/index.js';
 	import { journeyClock } from '#lib/explore-journey.js';
 	import IslandConnectionsPanel from './IslandConnectionsPanel.svelte';
+	import MapConditionsPanel from './MapConditionsPanel.svelte';
 	import type { FeatureCollection } from 'geojson';
 	import type { Coordinates, MapFeatures, LandRoute } from '#lib/types.js';
+	type JourneyPlace = { id: string; name: string; coordinates: Coordinates; category?: string };
 	let {
 		start,
 		end,
@@ -33,7 +38,6 @@
 		onClear,
 		onReset,
 		onSwap,
-		onBack,
 		onFind,
 		onChange,
 		journeyKind = $bindable('local'),
@@ -43,7 +47,14 @@
 		onPickIsland,
 		onConnectionPreview,
 		onConnectionFocus,
-		onProposeFerry
+		onProposeFerry,
+		places = [],
+		picking = null,
+		onSelectPlace,
+		conditionsCoordinates,
+		islandName = 'Selected island',
+		onConditionRoute,
+		onNotices
 	}: {
 		start: Coordinates | null;
 		end: Coordinates | null;
@@ -58,7 +69,6 @@
 		onClear: (point: 'start' | 'end') => void;
 		onReset: () => void;
 		onSwap: () => void;
-		onBack: () => void;
 		onFind: () => void;
 		onChange: () => void;
 		journeyKind?: 'local' | 'islands';
@@ -69,29 +79,61 @@
 		onConnectionPreview: (features: FeatureCollection) => void;
 		onConnectionFocus: (bounds: [Coordinates, Coordinates]) => void;
 		onProposeFerry: (origin: string, destination: string, serviceDate: string) => void;
+		places?: JourneyPlace[];
+		picking?: 'start' | 'end' | null;
+		onSelectPlace?: (endpoint: 'start' | 'end', place: JourneyPlace) => void;
+		conditionsCoordinates?: Coordinates;
+		islandName?: string;
+		onConditionRoute?: (coordinates: Coordinates[]) => void;
+		onNotices?: () => void;
 	} = $props();
+	let queries = $state({ start: '', end: '' });
+	let activeSearch = $state<'start' | 'end' | null>(null);
+	let conditionsOpen = $state(false);
+	let searchInputs = $state<{ start: HTMLInputElement | null; end: HTMLInputElement | null }>({
+		start: null,
+		end: null
+	});
+	const travelModes = [
+		{ value: 'walk', label: 'Walk', icon: Footprints },
+		{ value: 'transit', label: 'Bus', icon: Bus },
+		{ value: 'bicycle', label: 'Bicycle', icon: Bike },
+		{ value: 'car', label: 'Car', icon: Car },
+		{ value: 'taxi', label: 'Taxi', icon: CarTaxiFront }
+	];
+	const matches = (endpoint: 'start' | 'end') => {
+		const query = queries[endpoint].trim().toLocaleLowerCase();
+		return query
+			? places.filter((place) => place.name.toLocaleLowerCase().includes(query)).slice(0, 6)
+			: [];
+	};
+	async function choosePlace(endpoint: 'start' | 'end', place: JourneyPlace) {
+		const focusDestination = endpoint === 'start' && !end;
+		onSelectPlace?.(endpoint, place);
+		queries[endpoint] = '';
+		activeSearch = null;
+		if (focusDestination) {
+			await tick();
+			searchInputs.end?.focus();
+		}
+	}
+	function chooseOnMap(endpoint: 'start' | 'end') {
+		activeSearch = null;
+		onPick(endpoint);
+	}
 	const journey = $derived(result?.journey);
 	const unavailable = $derived(journey?.reason ?? result?.reason);
 	const reasons: Record<string, string> = {
 		no_verified_service_date:
 			'There is no verified timetable for this date. Try the captured timetable on 10 October 2026.',
 		no_active_service: 'No scheduled service is available for this departure time.',
-		unreachable: 'These places are not connected in the available road or timetable data.',
-		no_path: 'These places are not connected in the available road data.',
-		no_graph: 'Road routing has not been mapped for this island yet.'
+		unreachable: 'No connecting journey was found on the road network or timetable.',
+		no_path: 'No connecting route was found on the road network.',
+		no_graph: 'Road routing is unavailable for this island.'
 	};
 </script>
 
 <section class="explore-journey" aria-label="Explore journey directions">
-	<div class="journey-heading">
-		<Button variant="ghost" size="sm" onclick={onBack}><ArrowLeft size={14} />Back to map</Button
-		><Button
-			variant="ghost"
-			size="sm"
-			disabled={!start && !end && !destinationIslandId}
-			onclick={onReset}><RotateCcw size={14} />Reset</Button
-		>
-	</div>
 	<div class="journey-kinds" aria-label="Journey type">
 		<Button
 			variant={journeyKind === 'local' ? 'secondary' : 'ghost'}
@@ -117,42 +159,155 @@
 			onPropose={onProposeFerry}
 		/>
 	{:else}
-		<h2>Where would you like to go?</h2>
-		<p>Choose places on the map, or click a stop or a service. Drag A or B to move it.</p>
-		<div class="journey-endpoints">
-			{#each ['start', 'end'] as endpoint (endpoint)}
-				{@const point = endpoint as 'start' | 'end'}
-				{@const chosen = point === 'start' ? start : end}
-				<div class="journey-endpoint" class:destination={point === 'end'}>
-					<span class="endpoint-letter">{point === 'start' ? 'A' : 'B'}</span><button
-						class="endpoint-choice"
-						onclick={() => onPick(point)}
-						><small>{point === 'start' ? 'Start' : 'Destination'}</small><span
-							>{point === 'start' ? startLabel : endLabel}</span
-						></button
-					><Button
-						variant="ghost"
-						size="icon-sm"
-						disabled={!chosen}
-						aria-label={point === 'start' ? 'Remove start point' : 'Remove destination point'}
-						onclick={() => onClear(point)}><X size={15} /></Button
-					>
-				</div>
+		<div class="travel-modes" role="group" aria-label="Travel mode">
+			{#each travelModes as travelMode (travelMode.value)}
+				<button
+					type="button"
+					class:active={mode === travelMode.value}
+					aria-pressed={mode === travelMode.value}
+					onclick={() => {
+						mode = travelMode.value;
+						onChange();
+					}}><travelMode.icon size={18} /><span>{travelMode.label}</span></button
+				>
 			{/each}
 		</div>
-		<Button variant="ghost" size="sm" disabled={!start || !end} onclick={onSwap}
-			><ArrowLeftRight size={14} />Swap start & destination</Button
-		>
-		<Label for="route-mode">Travel by</Label><NativeSelect.Root
-			id="route-mode"
-			bind:value={mode}
-			onchange={onChange}
-			><NativeSelect.Option value="walk">Walk</NativeSelect.Option><NativeSelect.Option
-				value="transit">Bus & public transport</NativeSelect.Option
-			><NativeSelect.Option value="bicycle">Bicycle</NativeSelect.Option><NativeSelect.Option
-				value="car">Car</NativeSelect.Option
-			><NativeSelect.Option value="taxi">Taxi</NativeSelect.Option></NativeSelect.Root
-		>
+		<div class="endpoint-layout">
+			<div class="journey-endpoints">
+				{#each ['start', 'end'] as endpoint (endpoint)}
+					{@const point = endpoint as 'start' | 'end'}
+					{@const chosen = point === 'start' ? start : end}
+					{@const pointLabel = point === 'start' ? startLabel : endLabel}
+					<div class="endpoint-group">
+						<div
+							class="journey-endpoint"
+							class:destination={point === 'end'}
+							class:picking={picking === point}
+						>
+							<span class="endpoint-letter" aria-hidden="true">{point === 'start' ? 'A' : 'B'}</span
+							>
+							{#if onSelectPlace}
+								<input
+									bind:this={searchInputs[point]}
+									id={`journey-${point}-search`}
+									value={activeSearch === point
+										? queries[point]
+										: chosen
+											? pointLabel
+											: queries[point]}
+									placeholder={point === 'start' ? 'Choose starting point' : 'Choose destination'}
+									autocomplete="off"
+									aria-label={point === 'start'
+										? 'Search start location'
+										: 'Search destination location'}
+									aria-controls={queries[point].trim() && activeSearch === point
+										? `journey-${point}-results`
+										: undefined}
+									onfocus={(event) => {
+										queries[point] = chosen ? pointLabel : queries[point];
+										activeSearch = point;
+										event.currentTarget.select();
+									}}
+									oninput={(event) => {
+										queries[point] = event.currentTarget.value;
+										activeSearch = point;
+									}}
+									onkeydown={(event) => {
+										if (event.key === 'Escape') {
+											event.preventDefault();
+											event.stopPropagation();
+											queries[point] = '';
+											activeSearch = null;
+										} else if (event.key === 'Enter' && matches(point)[0]) {
+											event.preventDefault();
+											void choosePlace(point, matches(point)[0]);
+										}
+									}}
+								/>
+							{:else}<span class="endpoint-fallback"
+									>{chosen
+										? pointLabel
+										: point === 'start'
+											? 'Choose starting point'
+											: 'Choose destination'}</span
+								>{/if}
+							<Button
+								variant={picking === point ? 'secondary' : 'ghost'}
+								size="icon-sm"
+								aria-label={point === 'start' ? 'Choose start on map' : 'Choose destination on map'}
+								title={point === 'start' ? 'Choose start on map' : 'Choose destination on map'}
+								aria-pressed={picking === point}
+								onclick={() => chooseOnMap(point)}><MapPin size={15} /></Button
+							>
+							{#if chosen}<Button
+									variant="ghost"
+									size="icon-sm"
+									aria-label={point === 'start' ? 'Remove start point' : 'Remove destination point'}
+									onclick={() => {
+										queries[point] = '';
+										activeSearch = null;
+										onClear(point);
+									}}><X size={14} /></Button
+								>{/if}
+						</div>
+						{#if onSelectPlace && activeSearch === point && queries[point].trim()}
+							<div
+								class="endpoint-results"
+								id={`journey-${point}-results`}
+								aria-label={point === 'start'
+									? 'Start location results'
+									: 'Destination location results'}
+							>
+								{#each matches(point) as place (place.id)}<button
+										type="button"
+										aria-label={place.name}
+										onclick={() => choosePlace(point, place)}
+										><MapPin size={13} /><span
+											>{place.name}{#if place.category}<small
+													>{place.category.replaceAll('_', ' ')}</small
+												>{/if}</span
+										></button
+									>{:else}<p>No places found. Choose a point on the map.</p>{/each}
+							</div>
+						{/if}
+					</div>
+				{/each}
+			</div>
+			<div class="endpoint-actions">
+				<Button
+					variant="ghost"
+					size="icon-sm"
+					class="swap-endpoints"
+					disabled={!start || !end}
+					aria-label="Swap start and destination"
+					title="Swap start and destination"
+					onclick={() => {
+						queries = { start: '', end: '' };
+						activeSearch = null;
+						onSwap();
+					}}><ArrowUpDown size={18} /></Button
+				>
+				<Button
+					variant="ghost"
+					size="icon-sm"
+					disabled={!start && !end && !queries.start && !queries.end}
+					aria-label="Reset directions"
+					title="Reset directions"
+					onclick={() => {
+						queries = { start: '', end: '' };
+						activeSearch = null;
+						onReset();
+					}}><RotateCcw size={16} /></Button
+				>
+			</div>
+		</div>
+		{#if picking}<p class="map-picking-hint" role="status">
+				<MapPin size={15} />{picking === 'start'
+					? 'Click the map to choose your starting point.'
+					: 'Click the map to choose your destination.'}
+			</p>{:else if !start || !end}<p class="endpoint-help">
+				Search a place or bus stop, or use <MapPin size={12} /> to choose on the map.
+			</p>{/if}
 		{#if mode === 'transit'}
 			<div class="timetable-scope">
 				<Bus size={16} /><span
@@ -252,7 +407,7 @@
 			{:else if result.status === 'ok'}
 				<div class="journey-summary" role="status">
 					<strong>{Math.round(result.distance_m ?? 0).toLocaleString()} m</strong><span
-						>Shortest mapped {mode === 'walk' ? 'walking' : mode === 'bicycle' ? 'cycling' : 'road'} route</span
+						>Shortest {mode === 'walk' ? 'walking' : mode === 'bicycle' ? 'cycling' : 'road'} route</span
 					><small>Road distance only. Travel time and live traffic are unavailable.</small>
 				</div>
 			{:else}<div class="journey-unavailable" role="status">
@@ -268,6 +423,25 @@
 						</details>{/if}
 				</div>{/if}
 		{/if}
+		<details class="journey-conditions" bind:open={conditionsOpen}>
+			<summary
+				><CloudSun size={16} /><span>Weather & traffic</span><small>For this journey</small
+				></summary
+			>
+			{#if conditionsOpen}
+				<MapConditionsPanel
+					embedded
+					coordinates={start ?? conditionsCoordinates}
+					{islandName}
+					{start}
+					{end}
+					{startLabel}
+					{endLabel}
+					onRoute={onConditionRoute}
+					{onNotices}
+				/>
+			{/if}
+		</details>
 	{/if}
 </section>
 
@@ -280,7 +454,7 @@
 	.journey-kinds {
 		display: flex;
 		padding: 4px;
-		border: 1px solid #dce7e1;
+		border: 1px solid var(--theme-color-dce7e1);
 		border-radius: 11px;
 		gap: 3px;
 	}
@@ -289,71 +463,190 @@
 		font-size: 11px;
 		padding-inline: 7px;
 	}
-	.journey-heading {
-		display: flex;
-		justify-content: space-between;
-		margin: -3px -8px 0;
-	}
-	h2 {
-		font-size: 21px;
-		line-height: 1.25;
-		margin: 0;
-		letter-spacing: -0.5px;
-	}
 	p {
 		margin: 0;
 		font-size: 12px;
 		line-height: 1.6;
-		color: #65746c;
+		color: var(--theme-color-65746c);
+	}
+	.travel-modes {
+		display: grid;
+		grid-template-columns: repeat(5, 1fr);
+		gap: 4px;
+		border-bottom: 1px solid var(--theme-color-dce7e1);
+		padding-bottom: 10px;
+	}
+	.travel-modes button {
+		display: grid;
+		justify-items: center;
+		align-content: center;
+		gap: 5px;
+		padding: 9px 3px;
+		border-radius: 9px;
+		color: var(--theme-color-65746c);
+		cursor: pointer;
+		font-size: 10px;
+	}
+	.travel-modes button.active {
+		background: var(--theme-color-eef7f2);
+		color: var(--theme-color-087f78);
+		font-weight: 600;
+	}
+	.travel-modes button:hover {
+		background: var(--theme-color-f2f5f2);
+	}
+	.travel-modes button:focus-visible {
+		outline: 2px solid var(--theme-color-087f78);
+		outline-offset: 2px;
+	}
+	.endpoint-layout {
+		display: flex;
+		align-items: flex-start;
+		gap: 5px;
+	}
+	.endpoint-actions {
+		display: grid;
+		gap: 5px;
+		padding-top: 19px;
+		flex-shrink: 0;
 	}
 	.journey-endpoints {
+		flex: 1;
+		min-width: 0;
 		display: grid;
-		gap: 8px;
+		gap: 10px;
+	}
+	.endpoint-group {
+		min-width: 0;
 	}
 	.journey-endpoint {
 		display: flex;
 		align-items: center;
-		gap: 9px;
-		padding: 8px;
-		border: 1px solid #dce7e1;
-		border-radius: 12px;
-		background: #f9fcfa;
+		gap: 6px;
+		min-height: 46px;
+		padding: 5px 6px;
+		border: 1px solid var(--theme-color-dce7e1);
+		border-radius: 9px;
+		background: var(--theme-color-f9fcfa);
+	}
+	.journey-endpoint.picking {
+		border-color: var(--theme-color-087f78);
+		box-shadow: 0 0 0 1px var(--theme-color-087f78);
+	}
+	.journey-endpoint:focus-within {
+		border-color: var(--theme-color-087f78);
+	}
+	.journey-endpoint input {
+		flex: 1;
+		width: 0;
+		min-width: 0;
+		padding: 7px 0;
+		font-size: 12px;
+		color: var(--theme-color-25272d);
+		background: transparent;
+		outline: none;
+	}
+	.journey-endpoint input::placeholder {
+		color: var(--theme-color-6a796f);
+	}
+	.journey-endpoint :global(button) {
+		flex-shrink: 0;
 	}
 	.endpoint-letter {
-		flex: 0 0 27px;
-		height: 27px;
+		flex: 0 0 19px;
+		height: 19px;
 		display: grid;
 		place-items: center;
+		border: 1px solid var(--theme-color-087f78);
 		border-radius: 50%;
-		background: #087f78;
-		color: white;
+		color: var(--theme-color-087f78);
 		font-weight: 700;
-		font-size: 12px;
-	}
-	.destination .endpoint-letter {
-		background: #b76c43;
-	}
-	.endpoint-choice {
-		display: grid;
-		gap: 2px;
-		flex: 1;
-		min-width: 0;
-		text-align: left;
-		cursor: pointer;
-	}
-	.endpoint-choice:focus-visible {
-		outline: 2px solid #087f78;
-		outline-offset: 4px;
-		border-radius: 3px;
-	}
-	.endpoint-choice small {
-		color: #6a796f;
 		font-size: 10px;
 	}
-	.endpoint-choice span {
+	.destination .endpoint-letter {
+		background: var(--theme-color-b76c43);
+		border-color: var(--theme-color-b76c43);
+		color: var(--theme-color-ffffff);
+	}
+	.endpoint-fallback {
+		flex: 1;
+		min-width: 0;
+		font-size: 12px;
+	}
+	.map-picking-hint {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		padding: 10px;
+		border-radius: 9px;
+		background: var(--theme-color-eef7f2);
+		color: var(--theme-color-087f78);
+		font-weight: 600;
+	}
+	.map-picking-hint :global(svg) {
+		flex-shrink: 0;
+	}
+	.endpoint-help {
+		font-size: 11px;
+	}
+	.endpoint-help :global(svg) {
+		display: inline-block;
+		vertical-align: -2px;
+	}
+	.endpoint-results {
+		margin-top: 5px;
+		display: grid;
+		gap: 2px;
+		border: 1px solid var(--theme-color-dce7e1);
+		padding: 4px;
+		border-radius: 8px;
+		background: var(--theme-color-ffffff);
+		max-height: 230px;
+		overflow-y: auto;
+	}
+	.endpoint-results button {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		text-align: left;
+		padding: 9px 7px;
+		border-radius: 5px;
+		cursor: pointer;
+		font-size: 11px;
+	}
+	.endpoint-results button:hover,
+	.endpoint-results button:focus-visible {
+		background: var(--theme-color-eef7f2);
+		outline: 1px solid var(--theme-color-087f78);
+	}
+	.endpoint-results button span {
+		display: grid;
+		gap: 2px;
+	}
+	.endpoint-results small {
+		font-size: 10px;
+		color: var(--theme-color-6a796f);
+		text-transform: capitalize;
+	}
+	.endpoint-results p {
+		padding: 8px;
+	}
+	.journey-conditions {
+		border-top: 1px solid var(--theme-color-dce7e1);
+		padding-top: 8px;
+	}
+	.journey-conditions > summary {
+		display: flex;
+		align-items: center;
+		gap: 8px;
 		font-size: 12px;
 		font-weight: 600;
-		overflow-wrap: anywhere;
+		padding: 10px 0;
+	}
+	.journey-conditions > summary small {
+		margin-left: auto;
+		font-size: 10px;
+		font-weight: 400;
 	}
 	.departure-fields {
 		display: grid;
@@ -376,8 +669,8 @@
 		gap: 9px;
 		padding: 12px;
 		border-radius: 10px;
-		background: #edf4fa;
-		color: #355679;
+		background: var(--theme-color-edf4fa);
+		color: var(--theme-color-355679);
 	}
 	.timetable-scope :global(svg) {
 		flex-shrink: 0;
@@ -401,8 +694,8 @@
 		gap: 5px;
 		border-radius: 12px;
 		padding: 16px;
-		background: #eef7f2;
-		border: 1px solid #d9e9df;
+		background: var(--theme-color-eef7f2);
+		border: 1px solid var(--theme-color-d9e9df);
 	}
 	.journey-summary strong {
 		font-size: 26px;
@@ -415,7 +708,7 @@
 	.journey-summary small {
 		font-size: 11px;
 		line-height: 1.6;
-		color: #62766a;
+		color: var(--theme-color-62766a);
 	}
 	.journey-itinerary {
 		list-style: none;
@@ -429,7 +722,7 @@
 		display: flex;
 		gap: 11px;
 		padding: 12px 0;
-		border-bottom: 1px solid #e5ece7;
+		border-bottom: 1px solid var(--theme-color-e5ece7);
 	}
 	.leg-icon {
 		display: grid;
@@ -437,13 +730,13 @@
 		width: 30px;
 		height: 30px;
 		flex: 0 0 30px;
-		background: #f2f5f2;
+		background: var(--theme-color-f2f5f2);
 		border-radius: 9px;
-		color: #647769;
+		color: var(--theme-color-647769);
 	}
 	.ride .leg-icon {
-		background: #e9f0ff;
-		color: #2563eb;
+		background: var(--theme-color-e9f0ff);
+		color: var(--theme-color-2563eb);
 	}
 	.journey-itinerary > li > div {
 		display: grid;
@@ -461,7 +754,7 @@
 	}
 	.journey-itinerary small {
 		font-size: 10px;
-		color: #738177;
+		color: var(--theme-color-738177);
 	}
 	.boarding-copy {
 		font-size: 11px;
@@ -469,7 +762,7 @@
 	}
 	details {
 		font-size: 11px;
-		color: #617567;
+		color: var(--theme-color-617567);
 	}
 	summary {
 		cursor: pointer;
@@ -492,11 +785,11 @@
 		display: grid;
 		gap: 8px;
 		padding: 14px;
-		background: #faf6ed;
-		border: 1px solid #eee0c8;
+		background: var(--theme-color-faf6ed);
+		border: 1px solid var(--theme-color-eee0c8);
 		border-radius: 12px;
 	}
 	.journey-unavailable :global(svg) {
-		color: #ad8246;
+		color: var(--theme-color-ad8246);
 	}
 </style>

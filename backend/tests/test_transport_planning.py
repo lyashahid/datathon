@@ -149,12 +149,42 @@ def test_local_bus_access_uses_available_national_resident_allocations(transport
     assert "Greater Malé" not in result["qualification"]
 
 
+def test_bus_stop_inventory_includes_tagged_stops_separately_from_routing_stops(transport):
+    for index, (category, tags) in enumerate(
+        [
+            ("bus_stop", {}),
+            ("bus_station", {}),
+            ("public_transport", {"bus": "yes"}),
+            ("public_transport", {"bus": "designated"}),
+            ("public_transport", {"highway": "bus_stop"}),
+            ("public_transport", {"amenity": "bus_station"}),
+        ]
+    ):
+        transport.repository.transport["features"].append(
+            {
+                "id": f"bus:{index}",
+                "island_id": "island:1442",
+                "category": category,
+                "tags": tags,
+            }
+        )
+    transport.repository.transport["features"].append(
+        {"id": "other-island", "island_id": "island:500", "category": "bus_stop", "tags": None}
+    )
+    result = transport.local_access("island:1442")
+    assert result["bus_stop_count"] == 6
+    assert result["planning_bus_stop_count"] == 1
+
+
 def test_missing_terminal_blocks_port_free_proposal_without_claiming_absence(transport):
     result = draft(transport, destination_island_id="island:501")
     assert result["status"] == "evidence_needed"
     assert result["operations"] == []
     assert result["quote"] is None
-    assert any("does not prove" in reason for reason in result["reasons"])
+    assert any(
+        "An existing port or service may still be available." in reason
+        for reason in result["reasons"]
+    )
 
 
 def test_directed_mapped_graph_is_not_a_verified_timetable(transport):

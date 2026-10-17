@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 from app.api.routes.planning import get_planning
 from app.models.coordinates import Coordinates
 from app.planning.repository import IDENTITY_BRIDGE
+from app.planning.routing import service_day_trips
 from app.planning.service import PlanningService
 from app.routing.engine import RoutingRepository
 from app.routing.journeys import route_journey
@@ -92,11 +93,19 @@ def transit_stops(
             for route in routes
         }
     )
+    scoped_stops = {
+        stop["id"]
+        for stop in stops
+        if (not scope or stop.get("islandId") == scope) and not stop.get("disabled")
+    }
+    reference_date = baseline.get("referenceDate")
+    selected_date = date.fromisoformat(reference_date) if reference_date else date.today()
     departures = [
-        trip["stopTimes"][0]["departureMinutes"]
+        trip["stopTimes"][index]["departureMinutes"]
         for pattern in patterns
-        for trip in pattern.get("timing", {}).get("trips", [])
-        if trip.get("stopTimes")
+        for index, stop_id in enumerate(pattern.get("stopIds", [])[:-1])
+        if stop_id in scoped_stops
+        for trip in service_day_trips(pattern, selected_date, stop_index=index)
     ]
     return {
         "stops": [
@@ -120,7 +129,7 @@ def transit_stops(
                 "timetable_status": stop.get("timetableStatus", "unavailable"),
             }
             for stop in stops
-            if (not scope or stop.get("islandId") == scope) and not stop.get("disabled")
+            if stop["id"] in scoped_stops
         ],
         "service_date": baseline.get("referenceDate"),
         "earliest_departure_minutes": min(departures) if departures else None,

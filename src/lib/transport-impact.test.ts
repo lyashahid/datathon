@@ -43,7 +43,7 @@ describe('proposal transport benefit presentation', () => {
 		expect(
 			comparableWaitSaving({ ...frequency, after: { expected_wait_minutes: null } })
 		).toBeNull();
-		expect(serviceWait(null)).toBe('No dated service in data');
+		expect(serviceWait(null)).toBe('No service listed for this date');
 		expect(serviceWait({ departure_count: 10, expected_wait_minutes: null })).toBe('Not estimated');
 	});
 
@@ -79,8 +79,10 @@ describe('proposal transport benefit presentation', () => {
 		};
 		expect(transportImpactHeadline(impact)).toBe('1 new island-to-island direction');
 		expect(serviceAvailability(impact.connections![0].after)).toBe('12 departures');
-		expect(serviceAvailability(impact.connections![0].before)).toBe('No dated service in data');
-		expect(serviceAvailability(undefined)).toBe('Service evidence unavailable');
+		expect(serviceAvailability(impact.connections![0].before)).toBe(
+			'No service listed for this date'
+		);
+		expect(serviceAvailability(undefined)).toBe('Service details unavailable');
 		expect(serviceTravelTime(null)).toBe('No service');
 		expect(serviceTravelTime({ departure_count: 12 })).toBe('Not estimated');
 	});
@@ -124,7 +126,7 @@ describe('proposal transport benefit presentation', () => {
 		const multiple = { departure_count: 100, boarding_stop_ids: ['terminal-a', 'terminal-b'] };
 		expect(serviceNextDeparture(multiple)).toBe('Varies by boarding stop');
 		expect(serviceNextWait(multiple)).toBe('Varies by boarding stop');
-		expect(serviceNextDeparture(null)).toBe('No dated service in data');
+		expect(serviceNextDeparture(null)).toBe('No service listed for this date');
 		expect(serviceNextDeparture({ departure_count: 2, next_departure_minutes: null })).toBe(
 			'No upcoming departure'
 		);

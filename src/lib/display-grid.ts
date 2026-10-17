@@ -1,3 +1,4 @@
+import { themeColors } from '#lib/theme.js';
 import type { Feature, FeatureCollection } from 'geojson';
 import { impactClass, impactColors } from './planning-map.js';
 import type { PlanningComparison, PlanningPlace } from './planning-map.js';
@@ -231,10 +232,10 @@ export function displayImpactHexes(
 }
 
 export const accessColors: Record<string, string> = {
-	within_target: '#16866e',
-	beyond_target: '#dd806b',
-	mixed: '#d9ad54',
-	unavailable: '#a6a5b5',
+	within_target: themeColors.color16866e,
+	beyond_target: themeColors.colordd806b,
+	mixed: themeColors.colord9ad54,
+	unavailable: themeColors.colora6a5b5,
 	unknown: GAP_PALETTE.unknown
 };
 

@@ -105,6 +105,31 @@ def terminal_catalogue(
                 "join_method": terminal["join_method"],
                 "join_distance_m": terminal["join_distance_m"],
             }
+        sea_path = public_dir / "sea-services.json"
+        sea_snapshot = json.loads(sea_path.read_text(encoding="utf8")) if sea_path.exists() else {}
+        sources = {source["id"]: source for source in sea_snapshot.get("sources", [])}
+        for terminal in sea_snapshot.get("additional_terminals", []):
+            island_id = terminal.get("national_island_id")
+            source = sources.get(terminal.get("source_id"))
+            if (
+                island_id not in repository.islands_by_id
+                or not source
+                or terminal.get("evidence") != "official_terminal_catalogue"
+                or terminal.get("join_method") != "explicit_official_route_endpoint"
+                or not terminal["id"].startswith("rtl:vessel-terminal:")
+            ):
+                continue
+            terminals[terminal["id"]] = {
+                "id": terminal["id"],
+                "name": terminal["name"],
+                "island_id": island_id,
+                "coordinates": terminal["coordinates"],
+                "source": source["url"],
+                "source_id": terminal["source_id"],
+                "evidence": terminal["evidence"],
+                "join_method": terminal["join_method"],
+                "route_codes": terminal["route_codes"],
+            }
     return terminals
 
 
@@ -207,8 +232,10 @@ class TransportPlanningService:
         mapped_count = sum(
             feature.get("island_id") == island_id
             and (
-                feature.get("category") == "bus_stop"
-                or feature.get("tags", {}).get("highway") == "bus_stop"
+                feature.get("category") in {"bus_stop", "bus_station"}
+                or (feature.get("tags") or {}).get("bus") in {"yes", "designated"}
+                or (feature.get("tags") or {}).get("highway") == "bus_stop"
+                or (feature.get("tags") or {}).get("amenity") == "bus_station"
             )
             for feature in self.repository.transport.get("features", [])
         )
@@ -403,30 +430,29 @@ class TransportPlanningService:
         if destination_id in dated_paths:
             status = "dated_service"
             reasons = [
-                "The selected date has captured service evidence connecting these islands. "
+                "A published service connects these islands on this date. "
                 "Check the published timetable and cancellations before travel."
             ]
         elif destination_id in all_paths:
             status = "mapped_route"
             reasons = [
-                "A ferry corridor is mapped, but an operating timetable and crossing "
-                "duration are not verified for this date."
+                "A ferry route connects these islands; its timetable and crossing "
+                "time are unconfirmed for this date."
             ]
         elif not terminals["origin"] or (destination_id and not terminals["destination"]):
             status = "terminal_evidence_needed"
             reasons = [
-                "Passenger ferry-terminal evidence is incomplete for this connection. "
-                "This does not prove that a terminal or service is absent."
+                "Port locations are incomplete for this connection. "
+                "An existing port or service may still be available."
             ]
         else:
             status = "no_verified_service"
             reasons = [
-                "Mapped passenger ferry terminals are available at both ends, but the supplied "
-                "schedules do not verify a connecting service. A new ferry-service scenario "
-                "can be tested using these terminals."
+                "Ports exist at both ends; no connecting timetable is confirmed. "
+                "You can test a new ferry service using these ports."
             ]
         reasons.append(
-            "Mapped terminals require operator confirmation of berth access, vessel "
+            "Ports require operator confirmation of berth access, vessel "
             "suitability and permission; no new port is included."
         )
         reachable = []

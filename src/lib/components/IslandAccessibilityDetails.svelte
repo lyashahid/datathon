@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { themeColors } from '#lib/theme.js';
 	import { ArrowRight, Bus, GraduationCap, HeartPulse } from '@lucide/svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Badge } from '#lib/components/ui/badge/index.js';
@@ -27,9 +28,9 @@
 	const decimal = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
 	const number = new Intl.NumberFormat('en-US');
 	const domains = [
-		{ id: 'health', name: 'Health', icon: HeartPulse, color: '#9471cf' },
-		{ id: 'education', name: 'Education', icon: GraduationCap, color: '#32ae89' },
-		{ id: 'transport', name: 'Transport', icon: Bus, color: '#d59a3e' }
+		{ id: 'health', name: 'Health', icon: HeartPulse, color: themeColors.color9471cf },
+		{ id: 'education', name: 'Education', icon: GraduationCap, color: themeColors.color32ae89 },
+		{ id: 'transport', name: 'Transport', icon: Bus, color: themeColors.colord59a3e }
 	];
 	const assessment = $derived(island.assessment);
 	let titleElement = $state<HTMLElement | null>(null);
@@ -71,11 +72,11 @@
 					>
 				</div>
 				<Badge variant="secondary">{assessment?.label ?? 'Assessment unavailable'}</Badge>
-				<p>{assessment?.summary ?? 'The accessibility assessment is not available yet.'}</p>
+				<p>{assessment?.summary ?? 'The accessibility assessment is unavailable.'}</p>
 			</div>
 			<div class="population-row">
 				<span
-					>Recorded residents {#if island.population?.year}<small>· {island.population.year}</small
+					>Residents {#if island.population?.year}<small>· {island.population.year}</small
 						>{/if}</span
 				>
 				<strong
@@ -113,8 +114,7 @@
 								<span style:width={`${Math.min(100, Math.max(0, component?.score ?? 0))}%`}></span>
 							</div>
 							{#if !loading && !error}<p>
-									{reason?.text ??
-										'There is not enough information to explain this part of the score.'}
+									{reason?.text ?? 'A score explanation is unavailable for this service.'}
 								</p>{/if}
 						</div>
 					{/each}
@@ -127,7 +127,8 @@
 				</div>
 			{/if}
 			<p class="score-qualification">
-				A planning score based on available data, not the percentage of residents served.
+				The score combines service access and data coverage. It does not measure the percentage of
+				residents served.
 			</p>
 			<details class="score-data-details">
 				<summary>Data details</summary>
@@ -142,14 +143,14 @@
 						<dd>{island.id}</dd>
 					</div>
 					<div>
-						<dt>Model confidence</dt>
+						<dt>Score confidence</dt>
 						<dd>
 							{island.confidence === null ? 'Not available' : decimal.format(island.confidence)}
 						</dd>
 					</div>
 				</dl>
 				{#if island.missingData?.length}<p class="technical-flags">
-						Model notes: {island.missingData.join(', ')}
+						Data notes: {island.missingData.join(', ')}
 					</p>{/if}
 			</details>
 			<div class="score-actions">
@@ -174,7 +175,7 @@
 		padding: 0;
 		gap: 0;
 		overflow: hidden;
-		color: #292535;
+		color: var(--theme-color-292535);
 		font-variant-numeric: tabular-nums;
 	}
 	.accessibility-content {
@@ -191,7 +192,7 @@
 		flex-shrink: 0;
 	}
 	.eyebrow {
-		color: #88709d;
+		color: var(--theme-color-88709d);
 		font-size: 10px;
 		font-weight: 650;
 		letter-spacing: 0.12em;
@@ -203,8 +204,8 @@
 		padding-right: 25px;
 	}
 	.score-overview {
-		background: #f5f2fb;
-		border: 1px solid #ece6f5;
+		background: var(--theme-color-f5f2fb);
+		border: 1px solid var(--theme-color-ece6f5);
 		border-radius: 20px;
 		padding: 24px;
 	}
@@ -222,13 +223,13 @@
 	}
 	.score-number > span {
 		font-size: 19px;
-		color: #8a7e99;
+		color: var(--theme-color-8a7e99);
 	}
 	.score-overview p {
 		font-size: 13px;
 		line-height: 1.6;
 		margin-top: 12px;
-		color: #655c73;
+		color: var(--theme-color-655c73);
 	}
 	.population-row,
 	.domain-heading,
@@ -243,7 +244,7 @@
 		flex-wrap: wrap;
 	}
 	.population-row small {
-		color: #827a8b;
+		color: var(--theme-color-827a8b);
 	}
 	.score-reasons h2 {
 		font-size: 17px;
@@ -253,7 +254,7 @@
 	.explanation-status {
 		font-size: 12px;
 		line-height: 1.6;
-		color: #71687e;
+		color: var(--theme-color-71687e);
 		padding: 12px 0;
 	}
 	.explanation-status p {
@@ -261,7 +262,7 @@
 	}
 	.domain-reason {
 		padding: 18px 0;
-		border-bottom: 1px solid #eeeaf2;
+		border-bottom: 1px solid var(--theme-color-eeeaf2);
 	}
 	.domain-heading {
 		font-size: 13px;
@@ -276,14 +277,14 @@
 	}
 	.domain-heading small {
 		font-size: 11px;
-		color: #8a8194;
+		color: var(--theme-color-8a8194);
 		margin-left: 3px;
 		font-weight: 400;
 	}
 	.domain-track {
 		height: 5px;
 		border-radius: 8px;
-		background: #f0edf4;
+		background: var(--theme-color-f0edf4);
 		overflow: hidden;
 	}
 	.domain-track > span {
@@ -294,13 +295,13 @@
 	}
 	.domain-reason p,
 	.coverage-notice p {
-		color: #71687e;
+		color: var(--theme-color-71687e);
 		font-size: 12px;
 		line-height: 1.6;
 		margin: 9px 0 0;
 	}
 	.coverage-notice {
-		background: #faf8f1;
+		background: var(--theme-color-faf8f1);
 		padding: 15px 17px;
 		border-radius: 14px;
 		font-size: 12px;
@@ -309,17 +310,17 @@
 		margin-top: 4px;
 	}
 	.score-qualification {
-		color: #81778d;
+		color: var(--theme-color-81778d);
 		font-size: 11px;
 		line-height: 1.5;
 	}
 	.score-data-details {
 		font-size: 12px;
-		color: #71687e;
+		color: var(--theme-color-71687e);
 	}
 	summary {
 		cursor: pointer;
-		color: #56456e;
+		color: var(--theme-color-56456e);
 		padding: 5px 0;
 	}
 	.score-data-details ul {

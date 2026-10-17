@@ -31,7 +31,8 @@
 		onChoosePoint,
 		onReset,
 		onRoute,
-		onNotices
+		onNotices,
+		embedded = false
 	}: {
 		coordinates?: Coordinates;
 		islandName: string;
@@ -39,11 +40,12 @@
 		end: Coordinates | null;
 		startLabel: string;
 		endLabel: string;
-		onClose: () => void;
-		onChoosePoint: (endpoint: 'start' | 'end') => void;
-		onReset: () => void;
-		onRoute: (coordinates: Coordinates[]) => void;
-		onNotices: () => void;
+		onClose?: () => void;
+		onChoosePoint?: (endpoint: 'start' | 'end') => void;
+		onReset?: () => void;
+		onRoute?: (coordinates: Coordinates[]) => void;
+		onNotices?: () => void;
+		embedded?: boolean;
 	} = $props();
 	let weather = $state.raw<Forecast | null>(null),
 		marine = $state.raw<Forecast | null>(null);
@@ -57,6 +59,7 @@
 	onDestroy(() => {
 		controller?.abort();
 		trafficController?.abort();
+		if (embedded) onRoute?.([]);
 	});
 	$effect(() => {
 		const point = coordinates,
@@ -106,7 +109,7 @@
 			traffic = null;
 			trafficLoading = false;
 			trafficError = '';
-			onRoute([]);
+			onRoute?.([]);
 		});
 	});
 	async function checkTraffic() {
@@ -130,12 +133,13 @@
 			);
 			if (!current.signal.aborted) {
 				traffic = result.data.routes[0] ?? null;
-				onRoute(traffic?.geometry?.coordinates ?? []);
+				onRoute?.(traffic?.geometry?.coordinates ?? []);
 				if (!traffic) trafficError = 'The provider returned no road route for these points.';
 			}
 		} catch (cause) {
 			if (!current.signal.aborted)
-				trafficError = cause instanceof Error ? cause.message : 'Traffic evidence is unavailable.';
+				trafficError =
+					cause instanceof Error ? cause.message : 'Traffic information is unavailable.';
 		} finally {
 			if (trafficController === current) trafficLoading = false;
 		}
@@ -150,39 +154,41 @@
 
 <section
 	class="map-conditions-panel"
-	aria-label="Weather and traffic on this map"
+	class:embedded
+	aria-label={embedded ? 'Weather and traffic for this journey' : 'Weather and traffic on this map'}
 	use:resizable={{
 		key: 'map-conditions',
 		minWidth: 360,
 		minHeight: 360,
 		maxWidth: 640,
 		edges: ['left', 'bottom', 'bottom-left'],
-		anchor: 'top-right'
+		anchor: 'top-right',
+		enabled: !embedded
 	}}
-	use:mapPanelLayout
+	use:mapPanelLayout={!embedded}
 	in:surfaceMotion
 	out:surfaceMotion={{ direction: 'out' }}
 >
-	<header>
-		<div>
-			<span class="eyebrow">ON THIS MAP</span>
-			<h2>Weather & traffic</h2>
-			<p>{islandName}</p>
-		</div>
-		<Button
-			variant="ghost"
-			size="icon-sm"
-			aria-label="Close weather and traffic"
-			onclick={() => {
-				controller?.abort();
-				trafficController?.abort();
-				onClose();
-			}}><X size={18} /></Button
-		>
-	</header>
+	{#if !embedded}<header>
+			<div>
+				<span class="eyebrow">ON THIS MAP</span>
+				<h2>Weather & traffic</h2>
+				<p>{islandName}</p>
+			</div>
+			<Button
+				variant="ghost"
+				size="icon-sm"
+				aria-label="Close weather and traffic"
+				onclick={() => {
+					controller?.abort();
+					trafficController?.abort();
+					onClose?.();
+				}}><X size={18} /></Button
+			>
+		</header>{/if}
 	<div class="conditions-scroll">
 		<div class="conditions-heading">
-			<h3>Conditions near this island</h3>
+			<h3>{embedded ? `Conditions near ${islandName}` : 'Conditions near this island'}</h3>
 			<Button
 				variant="ghost"
 				size="icon-sm"
@@ -208,29 +214,40 @@
 			</div>
 		</div>
 		{#if weatherError}<p class="conditions-error" role="status">{weatherError}</p>{/if}
-		{#if weather?.receipt}<p class="conditions-note">
-				Weather · {weather.receipt.stale ? 'Cached forecast · ' : 'Retrieved '}{new Date(
-					weather.receipt.retrieved_at
-				).toLocaleString()}<br />{weather.receipt.qualification}
-			</p>{/if}
-		{#if marine?.receipt}<p class="conditions-note">
-				Sea conditions · {marine.receipt.stale ? 'Cached forecast · ' : 'Retrieved '}{new Date(
-					marine.receipt.retrieved_at
-				).toLocaleString()}<br />{marine.receipt.qualification}
-			</p>{/if}
+		{#if weather?.receipt || marine?.receipt}<details class="forecast-details">
+				<summary>Forecast sources & update times</summary>
+				{#if weather?.receipt}<p class="conditions-note">
+						Weather · {weather.receipt.stale ? 'Cached forecast · ' : 'Retrieved '}{new Date(
+							weather.receipt.retrieved_at
+						).toLocaleString()}<br />{weather.receipt.qualification}
+					</p>{/if}
+				{#if marine?.receipt}<p class="conditions-note">
+						Sea conditions · {marine.receipt.stale ? 'Cached forecast · ' : 'Retrieved '}{new Date(
+							marine.receipt.retrieved_at
+						).toLocaleString()}<br />{marine.receipt.qualification}
+					</p>{/if}
+			</details>{/if}
 		<div class="conditions-heading">
-			<h3>Check a road journey</h3>
-			<Button variant="ghost" size="sm" onclick={onReset} disabled={!start && !end}>Reset</Button>
+			<h3>{embedded ? 'Traffic on your route' : 'Check a road journey'}</h3>
+			{#if !embedded}<Button variant="ghost" size="sm" onclick={onReset} disabled={!start && !end}
+					>Reset</Button
+				>{/if}
 		</div>
-		<p class="conditions-note">
-			Choose both points on this map. The same A and B markers are used for directions.
-		</p>
-		<button class="conditions-endpoint" onclick={() => onChoosePoint('start')}
-			><span>A</span><strong>{start ? startLabel : 'Choose start on the map'}</strong></button
-		>
-		<button class="conditions-endpoint" onclick={() => onChoosePoint('end')}
-			><span>B</span><strong>{end ? endLabel : 'Choose destination on the map'}</strong></button
-		>
+		{#if embedded}
+			<p class="conditions-note">
+				{start && end
+					? `${startLabel} → ${endLabel}. Traffic estimates are for driving.`
+					: 'Choose your start and destination above to check traffic for this journey.'}
+			</p>
+		{:else}<p class="conditions-note">
+				Choose both points on this map. The same A and B markers are used for directions.
+			</p>
+			<button class="conditions-endpoint" onclick={() => onChoosePoint?.('start')}
+				><span>A</span><strong>{start ? startLabel : 'Choose start on the map'}</strong></button
+			>
+			<button class="conditions-endpoint" onclick={() => onChoosePoint?.('end')}
+				><span>B</span><strong>{end ? endLabel : 'Choose destination on the map'}</strong></button
+			>{/if}
 		<Button disabled={!start || !end || trafficLoading} onclick={checkTraffic}
 			><Route size={15} />{trafficLoading
 				? 'Checking provider traffic…'
@@ -246,15 +263,16 @@
 				<small
 					>{traffic.traffic_seconds == null
 						? 'The provider has no current traffic duration. Typical time is kept separate.'
-						: 'Provider supplied traffic estimate; conditions can change.'}</small
+						: 'Traffic estimate; conditions can change.'}</small
 				>
 			</div>{/if}
 		{#if trafficError}<p class="conditions-error" role="alert">{trafficError}</p>{/if}
-		<p class="conditions-note">
-			Nearby buses, vessels and aircraft remain visible on the base map. Provider availability and
-			observation times are shown with each vehicle.
-		</p>
-		<Button variant="outline" onclick={onNotices}>Open notice evidence & disruption tools</Button>
+		{#if !embedded}<p class="conditions-note">
+				Nearby buses, vessels and aircraft remain visible on the base map. Provider availability and
+				observation times are shown with each vehicle.
+			</p>{/if}
+		{#if onNotices}<Button variant="outline" onclick={onNotices}>View notices & disruptions</Button
+			>{/if}
 	</div>
 </section>
 
@@ -266,13 +284,36 @@
 		bottom: 20px;
 		z-index: 8;
 		width: 370px;
-		border: 1px solid #dce5dd;
+		border: 1px solid var(--theme-color-dce5dd);
 		border-radius: 17px;
-		background: #fffffff9;
-		box-shadow: 0 12px 38px #1c3e3722;
+		background: var(--theme-color-fffffff9);
+		box-shadow: 0 12px 38px var(--theme-color-1c3e3722);
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
+	}
+	.map-conditions-panel.embedded {
+		position: static;
+		width: 100%;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
+		overflow: visible;
+		max-height: none;
+	}
+	.embedded .conditions-scroll {
+		padding: 4px 0 0;
+		overflow: visible;
+		gap: 12px;
+	}
+	.forecast-details summary {
+		cursor: pointer;
+		font-size: 10px;
+		color: var(--theme-color-849075);
+	}
+	.forecast-details p {
+		margin-top: 7px;
 	}
 	.map-conditions-panel > header {
 		display: flex;
@@ -282,7 +323,7 @@
 	}
 	.eyebrow {
 		font-size: 9px;
-		color: #7c8874;
+		color: var(--theme-color-7c8874);
 		letter-spacing: 1.3px;
 	}
 	h2 {
@@ -292,7 +333,7 @@
 	}
 	header p {
 		font-size: 12px;
-		color: #798371;
+		color: var(--theme-color-798371);
 		margin: 0;
 	}
 	.conditions-scroll {
@@ -320,40 +361,40 @@
 		gap: 7px;
 	}
 	.conditions-metrics > div {
-		background: #f1f5ec;
+		background: var(--theme-color-f1f5ec);
 		border-radius: 9px;
 		padding: 12px 7px;
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
-		color: #6b8157;
+		color: var(--theme-color-6b8157);
 	}
 	.conditions-metrics small {
 		font-size: 10px;
-		color: #8a937d;
+		color: var(--theme-color-8a937d);
 	}
 	.conditions-metrics strong {
 		font-size: 13px;
 		font-variant-numeric: tabular-nums;
-		color: #3f5935;
+		color: var(--theme-color-3f5935);
 	}
 	.conditions-note {
 		font-size: 11px;
-		color: #849075;
+		color: var(--theme-color-849075);
 		line-height: 1.65;
 		margin: 0;
 	}
 	.conditions-status {
 		font-size: 12px;
-		color: #7b8b6a;
+		color: var(--theme-color-7b8b6a);
 	}
 	.conditions-error {
 		font-size: 11px;
-		color: #a87556;
+		color: var(--theme-color-a87556);
 		line-height: 1.65;
 		padding: 10px;
 		border-radius: 8px;
-		background: #fff3e9;
+		background: var(--theme-color-fff3e9);
 		margin: 0;
 	}
 	.conditions-endpoint {
@@ -361,25 +402,25 @@
 		align-items: center;
 		gap: 12px;
 		text-align: left;
-		border: 1px solid #dbe4d3;
+		border: 1px solid var(--theme-color-dbe4d3);
 		border-radius: 9px;
 		padding: 12px;
 	}
 	.conditions-endpoint span {
-		background: #e3eedb;
+		background: var(--theme-color-e3eedb);
 		border-radius: 50%;
 		padding: 5px 8px;
-		color: #628147;
+		color: var(--theme-color-628147);
 		font-size: 11px;
 	}
 	.conditions-endpoint strong {
 		font-size: 12px;
 		font-weight: 500;
-		color: #647358;
+		color: var(--theme-color-647358);
 	}
 	.traffic-result {
 		padding: 14px;
-		background: #f1f4ed;
+		background: var(--theme-color-f1f4ed);
 		border-radius: 9px;
 		font-size: 12px;
 	}
@@ -391,35 +432,35 @@
 	}
 	.traffic-result span {
 		font-size: 10px;
-		color: #8b957e;
+		color: var(--theme-color-8b957e);
 	}
 	.traffic-result b {
 		display: block;
 		font-size: 17px;
-		color: #4f6940;
+		color: var(--theme-color-4f6940);
 		margin-top: 5px;
 		font-variant-numeric: tabular-nums;
 	}
 	.traffic-result small {
 		font-size: 10px;
-		color: #8a947c;
+		color: var(--theme-color-8a947c);
 		line-height: 1.6;
 	}
 	.conditions-scroll :global(button) {
 		font-size: 11px;
 	}
 	button:focus-visible {
-		outline: 2px solid #52834d;
+		outline: 2px solid var(--theme-color-52834d);
 		outline-offset: 3px;
 	}
 	@media (max-width: 1100px) {
-		.map-conditions-panel {
+		.map-conditions-panel:not(.embedded) {
 			top: calc(116px + var(--map-navigation-offset, 0px));
 			width: 340px;
 		}
 	}
 	@media (max-width: 640px) {
-		.map-conditions-panel {
+		.map-conditions-panel:not(.embedded) {
 			top: auto;
 			bottom: 10px;
 			left: 10px;
@@ -431,7 +472,7 @@
 		.map-conditions-panel > header {
 			padding: 15px 16px 8px;
 		}
-		.conditions-scroll {
+		.map-conditions-panel:not(.embedded) .conditions-scroll {
 			padding: 8px 16px 16px;
 		}
 		h2 {

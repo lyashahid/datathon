@@ -1,11 +1,12 @@
+import { themeColors } from '#lib/theme.js';
 import type { Feature, FeatureCollection } from 'geojson';
 
 /** Shared colours for the rendered gap scale, its legend and neighbourhood details. */
 export const GAP_PALETTE = {
-	shorter: '#16866e',
-	middle: '#edbf50',
-	longer: '#d65840',
-	unknown: '#8f9baa'
+	shorter: themeColors.color16866e,
+	middle: themeColors.coloredbf50,
+	longer: themeColors.colord65840,
+	unknown: themeColors.color8f9baa
 } as const;
 
 export const GAP_GRADIENT = `linear-gradient(90deg, ${GAP_PALETTE.shorter}, ${GAP_PALETTE.middle}, ${GAP_PALETTE.longer})`;

@@ -72,11 +72,26 @@ def route_journey(
     warnings = [
         f"Bus times are a captured remaining-departure timetable for {source_date_label}, "
         "not live arrival predictions or a verified recurring calendar.",
-        "Ferry crossings cannot be routed until crossing durations and stop IDs are verified.",
+        "Ferry crossings without verified crossing durations and stop IDs cannot be routed.",
     ]
     if selected_date.isoformat() != snapshot_date:
         warnings.append("No verified bus calendar is available on the selected date.")
-    active_services = sum(bool(trips) for trips in router.trips.values())
+    # A national timetable must not inflate a local journey's service metadata.
+    # Count patterns serving either endpoint island; the router still retains
+    # every supported pattern for any valid connecting journey.
+    endpoint_islands = {
+        router.network.nodes[snap[0]].get("islandId")
+        for point in (origin, destination)
+        if (snap := router.network.snap(point, assumptions.max_snap_m))
+    }
+    stop_islands = {stop["id"]: stop.get("islandId") for stop in world["stops"]}
+    active_services = sum(
+        bool(router.trips.get(pattern["id"]))
+        for pattern in world["patterns"]
+        if endpoint_islands.intersection(
+            stop_islands.get(stop_id) for stop_id in pattern.get("stopIds", [])
+        )
+    )
     legs = []
     stop_roles: dict[str, dict[str, Any]] = {}
     cursor = departure_minutes

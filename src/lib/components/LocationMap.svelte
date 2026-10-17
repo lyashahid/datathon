@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { themeColors } from '#lib/theme.js';
 	import { backendUrl } from '#lib/app-paths.js';
 	import { onMount, tick, untrack } from 'svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
@@ -57,7 +58,7 @@
 	let map = $state.raw<LibreMap | null>(null);
 	let ready = $state(false),
 		error = $state(''),
-		contextStatus = $state('Loading street snapshot…');
+		contextStatus = $state('Loading streets…');
 	let contextReceipt = $state('');
 	let centerKey = '';
 	let lastSelectedPoint: string | null = null;
@@ -355,7 +356,7 @@
 		const bounds = map.getBounds();
 		const bbox = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()];
 		if (bbox[2] - bbox[0] > 1 || bbox[3] - bbox[1] > 1) {
-			contextStatus = 'Zoom in to see the street snapshot';
+			contextStatus = 'Zoom in to see streets';
 			return;
 		}
 		const key = bbox.map((coordinate) => coordinate.toFixed(5)).join(',');
@@ -368,7 +369,7 @@
 			const response = await fetch(backendUrl(`map/context?bbox=${bbox.join(',')}`), {
 				signal: contextController.signal
 			});
-			if (!response.ok) throw new Error('Street snapshot unavailable');
+			if (!response.ok) throw new Error('Streets unavailable');
 			const data = await response.json();
 			if (disposed || generation !== contextGeneration) return;
 			contextData = data;
@@ -377,7 +378,7 @@
 			contextReceipt = String(data.metadata?.retrieved_at ?? '').slice(0, 10);
 			contextStatus =
 				data.summary?.status === 'unavailable'
-					? 'Street snapshot unavailable'
+					? 'Streets unavailable'
 					: 'OpenStreetMap streets & buildings';
 		} catch (cause) {
 			if (
@@ -385,7 +386,7 @@
 				!(cause instanceof DOMException && cause.name === 'AbortError')
 			) {
 				lastContext = '';
-				contextStatus = 'Street snapshot unavailable · move the map to retry';
+				contextStatus = 'Streets unavailable · move the map to retry';
 			}
 		}
 	}
@@ -475,16 +476,19 @@
 					style: {
 						version: 8,
 						sources: {},
-						layers: [{ id: 'water', type: 'background', paint: { 'background-color': '#cce5e6' } }]
+						layers: [
+							{
+								id: 'water',
+								type: 'background',
+								paint: { 'background-color': themeColors.colorcce5e6 }
+							}
+						]
 					},
 					center: validLocation(center) ? [center.longitude, center.latitude] : [73.51, 4.18],
 					zoom: 14,
 					attributionControl: false
 				});
 				map = instance;
-				instance.scrollZoom.disable();
-				instance.addControl(new library.NavigationControl({ showCompass: false }), 'top-right');
-				instance.addControl(new library.ScaleControl({ unit: 'metric' }), 'bottom-right');
 				instance.on('load', () => {
 					for (const id of ['location-islands', 'location-context', 'location-route'])
 						instance.addSource(id, { type: 'geojson', data: empty() });
@@ -492,27 +496,27 @@
 						id: 'location-land',
 						type: 'fill',
 						source: 'location-islands',
-						paint: { 'fill-color': '#f5f2e8' }
+						paint: { 'fill-color': themeColors.colorf5f2e8 }
 					});
 					instance.addLayer({
 						id: 'location-shore',
 						type: 'line',
 						source: 'location-islands',
-						paint: { 'line-color': '#a5c2b6', 'line-width': 1.5 }
+						paint: { 'line-color': themeColors.colora5c2b6, 'line-width': 1.5 }
 					});
 					instance.addLayer({
 						id: 'location-green',
 						type: 'fill',
 						source: 'location-context',
 						filter: ['==', ['get', 'kind'], 'green'],
-						paint: { 'fill-color': '#bcd4b5', 'fill-opacity': 0.6 }
+						paint: { 'fill-color': themeColors.colorbcd4b5, 'fill-opacity': 0.6 }
 					});
 					instance.addLayer({
 						id: 'location-buildings',
 						type: 'fill',
 						source: 'location-context',
 						filter: ['==', ['get', 'kind'], 'building'],
-						paint: { 'fill-color': '#c9cec7', 'fill-opacity': 0.85 }
+						paint: { 'fill-color': themeColors.colorc9cec7, 'fill-opacity': 0.85 }
 					});
 					instance.addLayer({
 						id: 'location-street-casing',
@@ -520,7 +524,7 @@
 						source: 'location-context',
 						filter: ['==', ['get', 'kind'], 'road'],
 						paint: {
-							'line-color': '#c2c7bc',
+							'line-color': themeColors.colorc2c7bc,
 							'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1, 16, 6]
 						}
 					});
@@ -530,7 +534,7 @@
 						source: 'location-context',
 						filter: ['==', ['get', 'kind'], 'road'],
 						paint: {
-							'line-color': '#fffdf7',
+							'line-color': themeColors.colorfffdf7,
 							'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.5, 16, 4.3]
 						}
 					});
@@ -539,14 +543,14 @@
 						type: 'line',
 						source: 'location-route',
 						layout: { 'line-cap': 'round', 'line-join': 'round' },
-						paint: { 'line-color': '#ffffff', 'line-width': 8, 'line-opacity': 0.7 }
+						paint: { 'line-color': themeColors.colorffffff, 'line-width': 8, 'line-opacity': 0.7 }
 					});
 					instance.addLayer({
 						id: 'location-route-line',
 						type: 'line',
 						source: 'location-route',
 						layout: { 'line-cap': 'round', 'line-join': 'round' },
-						paint: { 'line-color': '#326c75', 'line-width': 4 }
+						paint: { 'line-color': themeColors.color326c75, 'line-width': 4 }
 					});
 					ready = true;
 					if (mapFeatures) setIslands(mapFeatures);
@@ -683,10 +687,10 @@
 <style>
 	.location-map {
 		min-width: 0;
-		border: 1px solid #d9e2db;
+		border: 1px solid var(--theme-color-d9e2db);
 		border-radius: 16px;
 		overflow: hidden;
-		background: #fbfcf8;
+		background: var(--theme-color-fbfcf8);
 	}
 	.point-toolbar {
 		display: flex;
@@ -710,16 +714,16 @@
 		width: 22px;
 		height: 22px;
 		border-radius: 50%;
-		color: white;
+		color: var(--theme-color-ffffff);
 		font-size: 11px;
 		font-weight: 700;
 		flex-shrink: 0;
 	}
 	.a {
-		background: #2d626a;
+		background: var(--theme-color-2d626a);
 	}
 	.b {
-		background: #8761a7;
+		background: var(--theme-color-8761a7);
 	}
 	.location-map-stage {
 		position: relative;
@@ -734,7 +738,7 @@
 		cursor: crosshair;
 	}
 	.location-map-canvas:focus-visible {
-		outline: 3px solid #4b7a6f;
+		outline: 3px solid var(--theme-color-4b7a6f);
 		outline-offset: -3px;
 	}
 	.map-picking-hint {
@@ -745,14 +749,14 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		background: #fffdf5ee;
-		border: 1px solid #d4ded7;
+		background: var(--theme-color-fffdf5ee);
+		border: 1px solid var(--theme-color-d4ded7);
 		border-radius: 10px;
 		padding: 8px 11px;
 		font-size: 12px;
-		color: #38514d;
+		color: var(--theme-color-38514d);
 		max-width: 510px;
-		box-shadow: 0 2px 10px #263d3310;
+		box-shadow: 0 2px 10px var(--theme-color-263d3310);
 		pointer-events: none;
 	}
 	.map-picking-hint :global(button) {
@@ -774,9 +778,9 @@
 		left: 12px;
 		font-size: 11px;
 		border-radius: 7px;
-		background: #fffdf5ee;
+		background: var(--theme-color-fffdf5ee);
 		padding: 7px 10px;
-		color: #38514d;
+		color: var(--theme-color-38514d);
 		pointer-events: none;
 	}
 	.picking .route-caption {
@@ -786,7 +790,7 @@
 		position: absolute;
 		top: 65px;
 		left: 12px;
-		background: #fff0e8;
+		background: var(--theme-color-fff0e8);
 		padding: 8px 12px;
 		border-radius: 8px;
 		font-size: 12px;
@@ -798,45 +802,45 @@
 		gap: 5px 12px;
 		padding: 9px 12px;
 		font-size: 10px;
-		color: #6c7871;
+		color: var(--theme-color-6c7871);
 	}
 	.location-map :global(.location-endpoint) {
 		width: 38px;
 		height: 42px;
 		border-radius: 18px 18px 18px 3px;
-		border: 3px solid white;
-		color: white;
-		background: #2d626a;
-		box-shadow: 0 2px 8px #133b4259;
+		border: 3px solid var(--theme-color-ffffff);
+		color: var(--theme-color-ffffff);
+		background: var(--theme-color-2d626a);
+		box-shadow: 0 2px 8px var(--theme-color-133b4259);
 		font-family: inherit;
 		font-size: 16px;
 		font-weight: 700;
 		cursor: grab;
 	}
 	.location-map :global(.location-endpoint.destination) {
-		background: #8761a7;
+		background: var(--theme-color-8761a7);
 	}
 	.location-map :global(.location-endpoint[aria-pressed='true']) {
 		box-shadow:
-			0 0 0 5px #fff8,
-			0 2px 8px #133b4259;
+			0 0 0 5px var(--theme-color-ffffff88),
+			0 2px 8px var(--theme-color-133b4259);
 	}
 	.location-map :global(.location-endpoint:active) {
 		cursor: grabbing;
 	}
 	.location-map :global(.location-endpoint:focus-visible),
 	.location-map :global(.location-extra-point:focus-visible) {
-		outline: 3px solid #1d414b;
+		outline: 3px solid var(--theme-color-1d414b);
 		outline-offset: 3px;
 	}
 	.location-map :global(.location-extra-point) {
 		width: 27px;
 		height: 27px;
-		border: 2px solid #fff;
-		color: #345953;
-		background: #e8f2df;
+		border: 2px solid var(--theme-color-ffffff);
+		color: var(--theme-color-345953);
+		background: var(--theme-color-e8f2df);
 		border-radius: 50%;
-		box-shadow: 0 1px 5px #133b4233;
+		box-shadow: 0 1px 5px var(--theme-color-133b4233);
 		font-family: inherit;
 		font-size: 12px;
 		font-weight: 700;
@@ -845,18 +849,18 @@
 	.location-map :global(.location-extra-point.grouped) {
 		width: 33px;
 		height: 33px;
-		background: #355e5a;
-		color: white;
+		background: var(--theme-color-355e5a);
+		color: var(--theme-color-ffffff);
 		box-shadow:
-			0 0 0 4px #ffffff88,
-			0 1px 5px #133b4233;
+			0 0 0 4px var(--theme-color-ffffff88),
+			0 1px 5px var(--theme-color-133b4233);
 	}
 	.location-map :global(.location-extra-point.selected) {
-		background: #8761a7;
-		color: white;
+		background: var(--theme-color-8761a7);
+		color: var(--theme-color-ffffff);
 		box-shadow:
-			0 0 0 5px #fff,
-			0 0 0 8px #8761a777;
+			0 0 0 5px var(--theme-color-ffffff),
+			0 0 0 8px var(--theme-color-8761a777);
 		z-index: 2;
 	}
 	.nearby-place-choices {
@@ -867,10 +871,10 @@
 		max-height: calc(100% - 110px);
 		overflow: auto;
 		padding: 13px;
-		background: #fffdf8f5;
-		border: 1px solid #d3ded5;
+		background: var(--theme-color-fffdf8f5);
+		border: 1px solid var(--theme-color-d3ded5);
 		border-radius: 12px;
-		box-shadow: 0 8px 25px #25423622;
+		box-shadow: 0 8px 25px var(--theme-color-25423622);
 		display: grid;
 		gap: 7px;
 		font-size: 12px;
@@ -881,7 +885,7 @@
 		justify-content: space-between;
 	}
 	.nearby-place-choices p {
-		color: #67776f;
+		color: var(--theme-color-67776f);
 		font-size: 11px;
 		margin: 0 0 3px;
 	}
@@ -893,12 +897,12 @@
 	}
 	.location-map :global(.location-street-label) {
 		font-size: 10px;
-		color: #576761;
+		color: var(--theme-color-576761);
 		text-shadow:
-			0 1px 2px #fff,
-			0 -1px 2px #fff,
-			1px 0 2px #fff,
-			-1px 0 2px #fff;
+			0 1px 2px var(--theme-color-ffffff),
+			0 -1px 2px var(--theme-color-ffffff),
+			1px 0 2px var(--theme-color-ffffff),
+			-1px 0 2px var(--theme-color-ffffff);
 		pointer-events: none;
 		white-space: nowrap;
 	}

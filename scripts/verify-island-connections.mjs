@@ -179,9 +179,7 @@ async function openConnections(targetPage) {
 	});
 	await expect(targetConnections).toBeVisible();
 	await targetConnections.getByLabel('From island', { exact: true }).selectOption('island:1442');
-	await targetConnections
-		.getByLabel('Check service evidence for', { exact: true })
-		.fill(serviceDay);
+	await targetConnections.getByLabel('Travel date', { exact: true }).fill(serviceDay);
 	await targetConnections.getByLabel('To island', { exact: true }).selectOption('island:1443');
 	await expect(targetConnections).toHaveAttribute('aria-busy', 'false');
 	await expect(targetConnections.locator('.connection-verdict')).toBeVisible();
@@ -414,11 +412,9 @@ try {
 	await check(
 		'Plan a ferry service carries the chosen islands and evidence date into one proposal composer',
 		async () => {
-			await connections
-				.getByLabel('Check service evidence for', { exact: true })
-				.fill('2026-10-11');
+			await connections.getByLabel('Travel date', { exact: true }).fill('2026-10-11');
 			await expect(connections.locator('.connection-verdict')).toContainText(
-				'No verified service in the available data'
+				'Connecting timetable unconfirmed'
 			);
 			await connections.getByRole('button', { name: 'Plan a ferry service', exact: true }).click();
 			await expect(composer).toBeVisible();

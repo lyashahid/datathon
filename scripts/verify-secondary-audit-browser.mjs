@@ -165,17 +165,18 @@ try {
 			/** @param {import('@playwright/test').Request} request */ const capture = (request) =>
 				requests.push(new URL(request.url()).pathname);
 			page.on('request', capture);
-			await page.goto(`${baseURL}/?view=map&tool=live&island=island%3A1442`, {
+			await page.goto(`${baseURL}/?view=map&tool=explore&explorer=route&island=island%3A1442`, {
 				waitUntil: 'domcontentloaded'
 			});
-			const conditions = page.getByRole('region', { name: 'Weather and traffic on this map' });
+			await page.locator('.journey-conditions > summary').click();
+			const conditions = page.getByRole('region', { name: 'Weather and traffic for this journey' });
 			await expect(conditions.getByRole('button', { name: 'Refresh weather' })).toBeEnabled();
 			assert.equal(
 				requests.filter((value) => value === '/api/backend/operations/notices').length,
 				0
 			);
 			await conditions
-				.getByRole('button', { name: 'Open notice evidence & disruption tools', exact: true })
+				.getByRole('button', { name: 'View notices & disruptions', exact: true })
 				.click();
 			await expect(page).toHaveURL(/explorer=notices/);
 			const operations = page.locator('.operations-workspace');

@@ -39,6 +39,7 @@ class PlanningRepository:
         self.national_population = self._read("national-population-origins.json", {})
         self.national_infrastructure = self._read("national-planning-infrastructure.json", {})
         self._extend_national_snapshot()
+        self._extend_sea_snapshot()
         self.island_names = {
             IDENTITY_BRIDGE.get(island["id"], island["id"]): island.get("name") or island["id"]
             for island in self.baseline.get("islands", [])
@@ -55,6 +56,7 @@ class PlanningRepository:
             "national-planning-infrastructure.json",
             "island-context.json",
             "policy-evidence/service-calendars.json",
+            "sea-services.json",
         ):
             path = public_dir / name
             if path.exists():
@@ -65,6 +67,27 @@ class PlanningRepository:
                         "bytes": path.stat().st_size,
                     }
                 )
+
+    def _extend_sea_snapshot(self) -> None:
+        from app.planning.sea_data import planning_patterns
+
+        bundle = self._read("sea-services.json", {})
+        terminals = {
+            item["id"]: item
+            for item in self._read("policy-evidence/ferry-terminals.json", {}).get("terminals", [])
+        }
+        stops, patterns = planning_patterns(bundle, terminals, self.planning_id)
+        if not patterns:
+            return
+        transit = self.baseline.setdefault("transit", {})
+        existing = {item["id"] for item in transit.setdefault("stops", [])}
+        transit["stops"].extend(item for item in stops if item["id"] not in existing)
+        existing = {item["id"] for item in transit.setdefault("patterns", [])}
+        transit["patterns"].extend(item for item in patterns if item["id"] not in existing)
+        existing = {item["id"] for item in self.baseline.setdefault("sources", [])}
+        self.baseline["sources"].extend(
+            item for item in bundle.get("sources", []) if item["id"] not in existing
+        )
 
     def _extend_national_snapshot(self) -> None:
         """Append portable prepared evidence, preserving the calibrated capital model."""

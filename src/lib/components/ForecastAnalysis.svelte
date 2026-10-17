@@ -198,9 +198,9 @@
 	<Card.Root class="analysis-card">
 		<div class="analysis-heading">
 			<div>
-				<span class="eyebrow">SOURCE FITNESS BEFORE MODELLING</span>
+				<span class="eyebrow">DATA QUALITY</span>
 				<h2>What can the data support?</h2>
-				<p>Every bundled collection is checked at its own grain before it informs a decision.</p>
+				<p>Each dataset is checked for completeness, duplicates and consistency.</p>
 			</div>
 			<Button variant="outline" size="sm" disabled={loading} onclick={load}
 				><RefreshCw size={14} /> {loading ? 'Analysing…' : 'Refresh analysis'}</Button
@@ -212,9 +212,7 @@
 					<strong>{analysis.summary.availableCollections}</strong><span>available collections</span>
 				</div>
 				<div>
-					<strong>{analysis.summary.uniqueSourceArtifacts}</strong><span
-						>distinct source artifacts</span
-					>
+					<strong>{analysis.summary.uniqueSourceArtifacts}</strong><span>source files</span>
 				</div>
 				<div>
 					<strong>{analysis.summary.passengerObservations}</strong><span
@@ -327,8 +325,8 @@
 		<Card.Root class="analysis-card"
 			><div class="analysis-heading">
 				<div>
-					<span class="eyebrow">INSPECTABLE EVIDENCE</span>
-					<h2>Collection quality and modelling fitness</h2>
+					<span class="eyebrow">DATA AND METHODS</span>
+					<h2>Dataset quality and forecast suitability</h2>
 					<p>
 						{analysis.summary.collections} collections retain separate units, dates and source receipts.
 					</p>
@@ -341,7 +339,7 @@
 				>
 			</div>
 			<details class="audit-details">
-				<summary>Inspect all collections and their grain</summary>
+				<summary>View all datasets and what each record represents</summary>
 				<div class="table-scroll">
 					<table>
 						<thead
@@ -385,8 +383,8 @@
 				<h2>Review a new passenger publication</h2>
 				<p>
 					{sourceMutationsAllowed
-						? 'Stage a source snapshot, inspect its differences, then accept the version with a review note.'
-						: 'Prepare source updates locally, then deploy the reviewed snapshot.'}
+						? 'Upload a data update, review the changes, then accept it with a review note.'
+						: 'Prepare and review data updates locally before deployment.'}
 				</p>
 			</div>
 			<Button variant="outline" size="sm" onclick={template}
@@ -396,9 +394,9 @@
 		<p class="source-status">
 			Active source: {history?.activeReceipt.data_status === 'user_reviewed_import'
 				? 'Reviewed imported version'
-				: 'Bundled checked snapshot'}. Official publication URLs, SHA-256 receipts, continuous
-			months and unchanged category definitions are required. Validation does not independently
-			verify the publication contents.
+				: 'Published data'}. Official publication URLs, SHA-256 receipts, continuous months and
+			unchanged category definitions are required. Validation does not independently verify the
+			publication contents.
 		</p>
 		<div class="source-import">
 			<label for="passenger-source-file">Passenger source JSON</label><input
@@ -504,13 +502,13 @@
 		font-weight: 600;
 	}
 	p {
-		color: #706879;
+		color: var(--theme-color-706879);
 		font-size: 12px;
 		line-height: 1.75;
 	}
 	.eyebrow {
 		display: block;
-		color: #726781;
+		color: var(--theme-color-726781);
 		font-size: 10px;
 		letter-spacing: 1.2px;
 		font-weight: 650;
@@ -525,7 +523,7 @@
 		display: grid;
 		gap: 5px;
 		padding: 18px;
-		background: #f2eef8;
+		background: var(--theme-color-f2eef8);
 		border-radius: 14px;
 	}
 	.audit-metrics strong {
@@ -534,7 +532,7 @@
 		letter-spacing: -1px;
 	}
 	.audit-metrics span {
-		color: #726781;
+		color: var(--theme-color-726781);
 		font-size: 11px;
 	}
 	.analysis-insights {
@@ -546,19 +544,19 @@
 		align-items: flex-start;
 		gap: 13px;
 		padding: 13px 0;
-		border-bottom: 1px solid #eee9f4;
+		border-bottom: 1px solid var(--theme-color-eee9f4);
 	}
 	.analysis-insights :global(svg) {
 		flex-shrink: 0;
 		margin-top: 2px;
-		color: #8b76ac;
+		color: var(--theme-color-8b76ac);
 	}
 	.analysis-insights p {
 		margin-top: 4px;
 	}
 	.audit-details summary {
 		cursor: pointer;
-		color: #68527f;
+		color: var(--theme-color-68527f);
 		font-weight: 600;
 		font-size: 12px;
 		padding: 12px 0;
@@ -579,20 +577,20 @@
 	th {
 		padding: 11px;
 		text-align: left;
-		background: #f5f2f9;
+		background: var(--theme-color-f5f2f9);
 		font-size: 10px;
-		color: #746780;
+		color: var(--theme-color-746780);
 	}
 	td {
 		padding: 12px 11px;
-		border-bottom: 1px solid #ede8f4;
-		color: #554a62;
+		border-bottom: 1px solid var(--theme-color-ede8f4);
+		color: var(--theme-color-554a62);
 		vertical-align: top;
 	}
 	td small {
 		display: block;
 		max-width: 370px;
-		color: #84778f;
+		color: var(--theme-color-84778f);
 		line-height: 1.7;
 		margin-top: 4px;
 	}
@@ -612,7 +610,7 @@
 	}
 	.horizon-column > span {
 		font-size: 10px;
-		color: #776784;
+		color: var(--theme-color-776784);
 	}
 	.horizon-column b {
 		font-size: 11px;
@@ -623,11 +621,11 @@
 		align-items: flex-end;
 		flex: 1;
 		width: 100%;
-		border-bottom: 1px solid #cbbfda;
+		border-bottom: 1px solid var(--theme-color-cbbfda);
 	}
 	.bar-space i {
 		width: 100%;
-		background: #b7a3cf;
+		background: var(--theme-color-b7a3cf);
 		border-radius: 6px 6px 0 0;
 		min-height: 1px;
 	}
@@ -643,7 +641,7 @@
 		align-items: center;
 		gap: 6px;
 		font-size: 11px;
-		color: #715687;
+		color: var(--theme-color-715687);
 	}
 	.source-import {
 		display: flex;
@@ -654,7 +652,7 @@
 	.source-import label,
 	.staged-review label {
 		font-size: 12px;
-		color: #695674;
+		color: var(--theme-color-695674);
 	}
 	.source-import input {
 		max-width: 100%;
@@ -663,13 +661,13 @@
 	.staged-review {
 		display: grid;
 		gap: 14px;
-		background: #f4f0f9;
+		background: var(--theme-color-f4f0f9);
 		border-radius: 16px;
 		padding: 20px;
 	}
 	.staged-review article {
 		padding-bottom: 12px;
-		border-bottom: 1px solid #ded4ea;
+		border-bottom: 1px solid var(--theme-color-ded4ea);
 	}
 	.staged-review strong {
 		font-size: 13px;
@@ -687,12 +685,12 @@
 		border-radius: 12px;
 	}
 	.error {
-		color: #984137;
-		background: #fbeeed;
+		color: var(--theme-color-984137);
+		background: var(--theme-color-fbeeed);
 	}
 	.success {
-		color: #446538;
-		background: #e7f0df;
+		color: var(--theme-color-446538);
+		background: var(--theme-color-e7f0df);
 	}
 	@media (max-width: 700px) {
 		.analysis-workspace :global(.analysis-card) {

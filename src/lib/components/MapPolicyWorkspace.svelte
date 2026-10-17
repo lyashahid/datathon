@@ -159,6 +159,7 @@
 		onState,
 		onPickKind,
 		onCloseOthers,
+		onSeaImpact,
 		onFocus,
 		onFocusBounds,
 		ferryDestinationId = null,
@@ -194,6 +195,7 @@
 		onState: (value: MapPolicyState) => void;
 		onPickKind: (kind: PlacementKind | null) => void;
 		onCloseOthers: () => void;
+		onSeaImpact?: () => void;
 		onFocus: (coordinates: Coordinates) => void;
 		onFocusBounds?: (bounds: [Coordinates, Coordinates]) => void;
 		ferryDestinationId?: string | null;
@@ -346,8 +348,8 @@
 	);
 	const localConstructionReason = $derived(
 		current
-			? 'This island has no supported resident allocation for local construction estimates. Existing mapped landing places can still support a ferry proposal.'
-			: 'Loading the island evidence before placing local construction…'
+			? 'This island has no supported resident allocation for local construction estimates. Existing ferry landing places can still support a proposal.'
+			: 'Loading island data before placing construction…'
 	);
 	const scopedKey = $derived(islandId ?? '');
 	const inCapitalRegion = $derived(isCapitalIsland(scopedKey));
@@ -625,7 +627,7 @@
 						!checkingBudget,
 					reason:
 						loading || !baseline
-							? 'Loading the island cost and site evidence…'
+							? 'Loading island costs and site details…'
 							: !supported
 								? localConstructionReason
 								: !boundaryFeatures
@@ -645,10 +647,10 @@
 							? 'Stop only: no access gain until a connected bus service is added.'
 							: roadDistance !== null
 								? roadDistance <= 35
-									? 'Beside a mapped street. Review the access estimate before confirming.'
+									? 'Beside a street. Review the access estimate before confirming.'
 									: roadDistance <= 100
-										? `${Math.round(roadDistance)} m from a mapped street; within the model’s connection range.`
-										: 'More than 100 m from a mapped street. This site may have no modeled access.'
+										? `${Math.round(roadDistance)} m from a street; within the model’s connection range.`
+										: 'More than 100 m from a street. This site may have no modeled access.'
 								: pendingWithin === null
 									? 'Land boundary unavailable; verify this site before proceeding.'
 									: undefined,
@@ -909,7 +911,7 @@
 	);
 	const draftEconomics = $derived<PlanningEconomics>({
 		currency: 'MVR',
-		basis: 'Illustrative backend cost factors. Operating service cost requires a service plan.',
+		basis: 'Illustrative cost factors. Operating service cost requires a service plan.',
 		before: {},
 		after: {},
 		delta: { capital_mvr: costs.capital, annual_operating_mvr: costs.annual },
@@ -1489,6 +1491,7 @@
 	});
 	$effect(() => {
 		if (!active || !incomingOperation) return;
+		if (!baseline || loading || restoredScope !== scopedKey) return;
 		const incoming = incomingOperation;
 		if (incoming.type === 'compose_ferry_service') {
 			untrack(() => {
@@ -1501,7 +1504,6 @@
 			});
 			return;
 		}
-		if (!baseline || loading || restoredScope !== scopedKey) return;
 		untrack(() => {
 			if (typeof incoming.type !== 'string') {
 				error = 'This notice does not contain a supported planning change.';
@@ -1688,6 +1690,13 @@
 	});
 	$effect(() => {
 		const value: MapPolicyState = {
+			seaOriginIslandId: restoredScope === scopedKey ? islandId : null,
+			seaOperations:
+				restoredScope === scopedKey
+					? [...operations, ...(ferryOpen ? (ferryPreview?.operations ?? []) : [])]
+					: [],
+			seaAcceptedOperations: restoredScope === scopedKey ? operations : [],
+			seaAssumptions: restoredScope === scopedKey ? request.assumptions : {},
 			operations: displayOperations,
 			pending: restoredScope === scopedKey ? pending : null,
 			pendingDecision: restoredScope === scopedKey ? pendingDecision : null,
@@ -2699,8 +2708,8 @@
 						{@render comparisonViews()}
 					</div>{/if}
 				<p>
-					The suggested shuttle follows mapped roads in both directions. Choose another highlighted
-					stop to change its path.
+					The suggested shuttle follows roads in both directions. Choose another highlighted stop to
+					change its path.
 				</p>
 				{#if busConnectionChecking}<p class="service-progress" role="status">
 						<RefreshCw size={14} class="spin" />Finding a road connection and checking costs…
@@ -2969,7 +2978,7 @@
 				</header>
 				{@render serviceMapPreviewAction()}
 				<p>
-					From <strong>{islandName}</strong>. The boat snaps to an existing mapped landing place.
+					From <strong>{islandName}</strong>. The route connects to an existing ferry landing place.
 					Click a highlighted landing to change it.
 				</p>
 				{#if ferryLoading}<p class="service-progress" role="status">
@@ -2994,8 +3003,8 @@
 								value={terminal.id}>{terminal.name}</option
 							>{/each}</select
 					>{:else if connection}<p class="policy-budget-alert">
-						No verified ferry landing is mapped here. Choose another origin island before proposing
-						a service.
+						A confirmed ferry landing place is unavailable here. Choose another origin island before
+						proposing a service.
 					</p>
 					<Button variant="outline" onclick={() => onPickFerryOrigin(ferryDestination, date)}
 						>Choose origin on map</Button
@@ -3112,6 +3121,11 @@
 					</p>{/if}
 				<TransportImpact impact={visibleTransportImpact} compact preview />
 				<footer>
+					{#if onSeaImpact}<Button
+							variant="outline"
+							disabled={!ferryPreview?.operations.length}
+							onclick={onSeaImpact}>View sea impact</Button
+						>{/if}
 					<Button disabled={!ferryAllowed} onclick={confirmFerry}
 						><Check size={15} />Accept ferry service</Button
 					><Button variant="outline" onclick={closeFerry}>Cancel</Button>
@@ -3202,7 +3216,7 @@
 				class="local-map-status"
 				role="status"
 			>
-				Local journey estimates are unavailable for this island. Mapped services remain available.
+				Local journey estimates are unavailable for this island. Transport services remain visible.
 			</p>
 		{:else if islandId && evidence.approximate}<p class="local-map-status">
 				Approximate resident distribution · inspect a tile for its evidence.
@@ -3292,11 +3306,11 @@
 				{#if restorationWarning}<p class="policy-error" role="alert">{restorationWarning}</p>{/if}
 				{#if dataError}<p class="policy-error" role="alert">
 						{dataError}<Button variant="link" onclick={() => void loadNational()}
-							>Retry evidence</Button
+							>Reload data</Button
 						>
 					</p>{/if}
 				{#if loading || !national}<p class="policy-working" role="status">
-						<RefreshCw size={15} class="spin" />Loading island evidence…
+						<RefreshCw size={15} class="spin" />Loading island data…
 					</p>{/if}
 				{#if nearbyGapLoading}<p class="policy-working" role="status">
 						<RefreshCw size={15} class="spin" />Preparing Malé, Hulhumalé and Hulhulé…
@@ -3314,7 +3328,7 @@
 					</p>{/if}
 				{#if error}<p class="policy-error" role="alert">
 						{error}{#if scopeError}<Button variant="link" onclick={retryScope}
-								>Retry island evidence</Button
+								>Reload island data</Button
 							>{/if}
 					</p>{/if}
 				{#if section === 'needs' && cell}
@@ -3337,7 +3351,7 @@
 								</p>
 							{/each}
 							<details class="policy-cell-evidence">
-								<summary>Journey evidence</summary>
+								<summary>Journey details</summary>
 								{#each selectedExplanation.reasons as reason, i (i)}<p>{reason}</p>{/each}
 								<p>{selectedExplanation.qualification}</p>
 							</details>
@@ -3360,7 +3374,7 @@
 									>
 								</p>{/each}
 							{#if cell.display_grid}<details class="policy-cell-evidence">
-									<summary>Journey evidence</summary>
+									<summary>Journey details</summary>
 									<p>Journey times are resident-weighted averages for this tile.</p>
 									{#if selectedEvidence.population}<p>{selectedEvidence.population}</p>{/if}
 									{#if selectedEvidence.distribution}<p>{selectedEvidence.distribution}</p>{/if}
@@ -3395,7 +3409,7 @@
 								>
 							</p>
 							<details class="policy-cell-evidence">
-								<summary>Journey evidence</summary>
+								<summary>Journey details</summary>
 								<p>
 									{String(cell.impact).replaceAll('_', ' ')} · {cell.display_grid
 										? 'resident-weighted tile; overall totals use the original model'
@@ -3751,7 +3765,7 @@
 									value="healthcare">Healthcare</option
 								><option value="education">Education</option></select
 							><small
-								>Public transport measures walking to a mapped stop or ferry landing place. Waiting
+								>Public transport measures walking to a bus stop or ferry landing place. Waiting
 								times and island connections appear in the service benefits above.</small
 							>
 						</div>
@@ -3793,10 +3807,10 @@
 							bind:value={date}
 						/>
 						<p>
-							Uses the mapped walking network and modeled {String(
+							Uses the walking network and resident estimates for {String(
 								request.assumptions.population_year
-							)} residents. Scheduled services contribute only where dated evidence is available. This
-							is an access scenario, not a prediction of future demand.
+							)}. Scheduled services use timetables valid for the selected date. Results estimate
+							access, not future passenger demand.
 						</p>
 					</details>
 					<details class="policy-evidence-note">
@@ -3808,8 +3822,8 @@
 						{#if baseline?.coverage}<p>
 								{formatAmount(baseline.coverage.resident_origins)} resident areas · {formatAmount(
 									baseline.coverage.walking_edges
-								)} mapped walking links · {formatAmount(baseline.coverage.healthcare_destinations)} health
-								destinations · {formatAmount(baseline.coverage.education_destinations)} education destinations
+								)} walking links · {formatAmount(baseline.coverage.healthcare_destinations)} health destinations
+								· {formatAmount(baseline.coverage.education_destinations)} education destinations
 							</p>{/if}
 						{#each evidence.warnings as warning (warning)}<p>{warning}</p>{/each}
 						<p>
@@ -3943,7 +3957,7 @@
 		flex-direction: column;
 		gap: 12px;
 		padding: 18px;
-		color: #23433d;
+		color: var(--theme-color-23433d);
 		font-size: 12px;
 		line-height: 1.5;
 	}
@@ -3968,22 +3982,22 @@
 	}
 	.policy-service-popover small {
 		font-size: 11px;
-		color: #62786f;
+		color: var(--theme-color-62786f);
 		line-height: 1.5;
 	}
 	.policy-service-popover :global(label) {
 		font-size: 11px;
 		font-weight: 600;
 		line-height: 1.4;
-		color: #526c60;
+		color: var(--theme-color-526c60);
 	}
 	.policy-service-popover :global(input),
 	.policy-service-popover select {
 		width: 100%;
 		min-height: 36px;
-		border: 1px solid #d6e1da;
+		border: 1px solid var(--theme-color-d6e1da);
 		border-radius: 9px;
-		background: white;
+		background: var(--theme-color-ffffff);
 		padding: 8px 10px;
 		font-size: 12px;
 		box-sizing: border-box;
@@ -4003,11 +4017,11 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		color: #087e77;
+		color: var(--theme-color-087e77);
 	}
 	.service-options {
 		padding: 10px 12px;
-		background: #f5f8f5;
+		background: var(--theme-color-f5f8f5);
 		border-radius: 10px;
 	}
 	.service-options summary {
@@ -4028,16 +4042,16 @@
 		grid-template-columns: repeat(3, 1fr);
 		gap: 10px;
 		padding: 12px 0;
-		border-block: 1px solid #e5ece7;
+		border-block: 1px solid var(--theme-color-e5ece7);
 	}
 	.service-metrics span {
 		font-size: 10px;
-		color: #677e72;
+		color: var(--theme-color-677e72);
 	}
 	.service-metrics b {
 		display: block;
 		font-size: 17px;
-		color: #234f43;
+		color: var(--theme-color-234f43);
 		font-variant-numeric: tabular-nums;
 	}
 	.service-costs {
@@ -4045,26 +4059,26 @@
 		flex-direction: column;
 		gap: 3px;
 		padding: 12px;
-		background: #eff6f2;
-		border: 1px solid #d4e5d8;
+		background: var(--theme-color-eff6f2);
+		border: 1px solid var(--theme-color-d4e5d8);
 		border-radius: 10px;
 	}
 	.service-costs > span {
 		font-size: 10px;
-		color: #60786c;
+		color: var(--theme-color-60786c);
 	}
 	.service-costs strong {
 		font-size: 15px;
 	}
 	.service-access {
 		padding: 10px;
-		background: #eaf8f5;
+		background: var(--theme-color-eaf8f5);
 		border-radius: 9px;
 		font-size: 11px;
 	}
 	.service-note {
 		font-size: 11px;
-		color: #62786f;
+		color: var(--theme-color-62786f);
 	}
 	.policy-service-popover footer {
 		position: sticky;
@@ -4074,8 +4088,8 @@
 		gap: 8px;
 		flex-wrap: wrap;
 		padding: 12px 0;
-		border-top: 1px solid #e4ece6;
-		background: #fffefa;
+		border-top: 1px solid var(--theme-color-e4ece6);
+		background: var(--theme-color-fffefa);
 	}
 	.service-preview-map {
 		display: flex;
@@ -4083,7 +4097,7 @@
 		justify-content: center;
 		gap: 6px;
 		min-height: 32px;
-		color: #087e77;
+		color: var(--theme-color-087e77);
 		font-size: 11px;
 		font-weight: 600;
 	}
@@ -4099,11 +4113,11 @@
 		justify-content: space-between;
 		gap: 8px;
 		font-size: 10px;
-		color: #62786f;
+		color: var(--theme-color-62786f);
 	}
 	.service-budget-line button {
 		flex-shrink: 0;
-		color: #087e77;
+		color: var(--theme-color-087e77);
 		font-weight: 600;
 	}
 	.policy-service-popover footer :global(button:first-child) {
@@ -4120,25 +4134,25 @@
 		align-items: center;
 		gap: 4px;
 		font-size: 10px;
-		color: #087e77;
+		color: var(--theme-color-087e77);
 	}
 	.service-destination {
 		display: flex;
 		align-items: center;
 		gap: 8px;
 		padding: 10px 12px;
-		border: 1px solid #d4e3db;
+		border: 1px solid var(--theme-color-d4e3db);
 		border-radius: 9px;
 	}
 	.service-destination span {
 		margin-left: auto;
 		font-size: 11px;
-		color: #087e77;
+		color: var(--theme-color-087e77);
 	}
 	.service-destinations {
 		max-height: 170px;
 		overflow: auto;
-		border: 1px solid #e0e8e2;
+		border: 1px solid var(--theme-color-e0e8e2);
 		border-radius: 10px;
 	}
 	.service-destinations button {
@@ -4151,7 +4165,7 @@
 		text-align: left;
 	}
 	.service-destinations button:hover {
-		background: #eff7f3;
+		background: var(--theme-color-eff7f3);
 	}
 	.service-destinations small {
 		display: block;
@@ -4166,7 +4180,7 @@
 		margin: 0 0 -8px;
 		font-size: 11px;
 		font-weight: 600;
-		color: #52695b;
+		color: var(--theme-color-52695b);
 	}
 	.policy-service-tile {
 		display: flex;
@@ -4176,25 +4190,25 @@
 		min-width: 0;
 		min-height: 82px;
 		padding: 10px;
-		border: 1px dashed #bfd2c5;
+		border: 1px dashed var(--theme-color-bfd2c5);
 		border-radius: 12px;
-		background: #f3f8f5;
+		background: var(--theme-color-f3f8f5);
 		text-align: left;
 		cursor: grab;
 	}
 	.improve-lines .policy-service-tile {
 		cursor: pointer;
 		border-style: solid;
-		background: #fafbf7;
+		background: var(--theme-color-fafbf7);
 	}
 	.improve-lines [data-service-icon] {
-		background: #e5ede6;
-		color: #476c55;
+		background: var(--theme-color-e5ede6);
+		color: var(--theme-color-476c55);
 		box-shadow: none;
 		border-color: transparent;
 	}
 	.policy-service-tile:focus-visible {
-		outline: 2px solid #176c61;
+		outline: 2px solid var(--theme-color-176c61);
 		outline-offset: 3px;
 	}
 	.transport-unavailable {
@@ -4217,7 +4231,7 @@
 	}
 	.policy-service-tile small {
 		font-size: 11px;
-		color: #6a8073;
+		color: var(--theme-color-6a8073);
 	}
 	.policy-service-tile [data-service-icon] {
 		display: grid;
@@ -4226,25 +4240,25 @@
 		height: 36px;
 		flex-shrink: 0;
 		border-radius: 14px;
-		background: #14776b;
-		color: white;
-		border: 2px solid white;
-		box-shadow: 0 2px 7px #174c3320;
+		background: var(--theme-color-14776b);
+		color: var(--theme-color-ffffff);
+		border: 2px solid var(--theme-color-ffffff);
+		box-shadow: 0 2px 7px var(--theme-color-174c3320);
 	}
 	.service-stop-choice {
 		display: grid;
 		gap: 8px;
 		padding: 10px;
-		border: 1px solid #dce6de;
+		border: 1px solid var(--theme-color-dce6de);
 		border-radius: 10px;
 		font-size: 11px;
 		line-height: 1.5;
-		color: #53695c;
+		color: var(--theme-color-53695c);
 	}
 	.service-current-frequency {
 		font-size: 11px;
 		line-height: 1.5;
-		color: #617568;
+		color: var(--theme-color-617568);
 	}
 
 	.proposal-floating-budget {
@@ -4254,8 +4268,8 @@
 		width: 340px;
 		z-index: 6;
 		border-radius: 16px;
-		background: #fffffff5;
-		box-shadow: 0 10px 35px #183d3320;
+		background: var(--theme-color-fffffff5);
+		box-shadow: 0 10px 35px var(--theme-color-183d3320);
 	}
 	.proposal-open-draft {
 		display: flex;
@@ -4264,7 +4278,7 @@
 		width: 100%;
 		padding: 10px 16px;
 		font-size: 11px;
-		color: #22634f;
+		color: var(--theme-color-22634f);
 	}
 	.proposal-placement-status,
 	.proposal-action-feedback {
@@ -4277,17 +4291,17 @@
 		gap: 10px;
 		max-width: 340px;
 		padding: 12px 14px;
-		border: 1px solid #d7e2dc;
+		border: 1px solid var(--theme-color-d7e2dc);
 		border-radius: 12px;
-		background: #fffffff5;
-		box-shadow: 0 5px 22px #183d3312;
+		background: var(--theme-color-fffffff5);
+		box-shadow: 0 5px 22px var(--theme-color-183d3312);
 		font-size: 12px;
 	}
 	.proposal-placement-status small {
 		display: block;
 		margin-top: 3px;
 		font-size: 10px;
-		color: #617568;
+		color: var(--theme-color-617568);
 	}
 	.proposal-placement-status button,
 	.proposal-action-feedback button {
@@ -4296,7 +4310,7 @@
 		border-radius: 5px;
 	}
 	.proposal-action-feedback button {
-		color: #16735a;
+		color: var(--theme-color-16735a);
 		font-weight: 600;
 	}
 	.proposal-map-views {
@@ -4306,24 +4320,24 @@
 	.proposal-map-views button {
 		padding: 7px 10px;
 		border-radius: 7px;
-		color: #53635c;
+		color: var(--theme-color-53635c);
 		font-size: 12px;
 	}
 	.proposal-map-views button.active {
-		background: #dff0e8;
-		color: #185943;
+		background: var(--theme-color-dff0e8);
+		color: var(--theme-color-185943);
 		font-weight: 650;
 	}
 	.service-comparison-controls {
 		display: grid;
 		gap: 6px;
 		padding: 10px;
-		border: 1px solid #d9e2dd;
+		border: 1px solid var(--theme-color-d9e2dd);
 		border-radius: 9px;
-		background: #f7faf7;
+		background: var(--theme-color-f7faf7);
 	}
 	.service-comparison-controls small {
-		color: #617568;
+		color: var(--theme-color-617568);
 		font-size: 11px;
 	}
 	.service-comparison-controls .proposal-map-views button {
@@ -4334,16 +4348,16 @@
 		align-items: center;
 		gap: 5px;
 		padding: 4px 8px 2px;
-		color: #617568;
+		color: var(--theme-color-617568);
 		font-size: 11px;
 	}
 	.proposal-map-metric select {
 		min-width: 0;
 		padding: 4px 20px 4px 6px;
-		border: 1px solid #d9e2dd;
+		border: 1px solid var(--theme-color-d9e2dd);
 		border-radius: 6px;
-		background: #f5f8f3;
-		color: #185943;
+		background: var(--theme-color-f5f8f3);
+		color: var(--theme-color-185943);
 		font-size: inherit;
 	}
 	.proposal-map-metric span {
@@ -4351,7 +4365,7 @@
 	}
 	.proposal-map-result {
 		margin: 2px 8px 4px;
-		color: #456655;
+		color: var(--theme-color-456655);
 		font-size: 10px;
 	}
 	.proposal-transport-result {
@@ -4361,7 +4375,7 @@
 		gap: 4px 10px;
 		margin: 3px 8px 5px;
 		max-width: 420px;
-		color: #165d52;
+		color: var(--theme-color-165d52);
 		font-size: 11px;
 		font-weight: 600;
 		line-height: 1.5;
@@ -4377,7 +4391,7 @@
 	}
 	.policy-evidence-note {
 		margin: 10px 0;
-		color: #617568;
+		color: var(--theme-color-617568);
 		font-size: 11px;
 		line-height: 1.6;
 	}
@@ -4399,10 +4413,10 @@
 		align-items: flex-start;
 		max-width: calc(100% - var(--map-controls-right, 18px) - 88px);
 		padding: 4px;
-		border: 1px solid #d7e2dc;
+		border: 1px solid var(--theme-color-d7e2dc);
 		border-radius: 14px;
-		background: #fffffff5;
-		box-shadow: 0 4px 22px #1a433f12;
+		background: var(--theme-color-fffffff5);
+		box-shadow: 0 4px 22px var(--theme-color-1a433f12);
 		backdrop-filter: blur(10px);
 	}
 	.local-map-status {
@@ -4413,10 +4427,10 @@
 		margin: 3px 8px 5px;
 		font-size: 10px;
 		line-height: 1.5;
-		color: #62766c;
+		color: var(--theme-color-62766c);
 	}
 	.local-map-status button {
-		color: #087e77;
+		color: var(--theme-color-087e77);
 		font-weight: 650;
 		text-decoration: underline;
 		text-underline-offset: 2px;
@@ -4433,27 +4447,27 @@
 		gap: 6px;
 		align-items: center;
 		font-size: 11px;
-		color: #66756c;
+		color: var(--theme-color-66756c);
 		padding: 0 8px;
 	}
 	.policy-lens-bar button {
 		font-size: 12px;
 		border-radius: 7px;
 		padding: 7px 10px;
-		color: #53635c;
+		color: var(--theme-color-53635c);
 	}
 	.policy-lens-bar button.active {
-		background: #dff0e8;
-		color: #185943;
+		background: var(--theme-color-dff0e8);
+		color: var(--theme-color-185943);
 		font-weight: 650;
 	}
 	.policy-lens-bar select {
 		width: 74px;
 		padding: 6px;
-		border: 1px solid #d9e2dd;
+		border: 1px solid var(--theme-color-d9e2dd);
 		border-radius: 7px;
-		background: #f5f8f3;
-		color: #185943;
+		background: var(--theme-color-f5f8f3);
+		color: var(--theme-color-185943);
 		font-size: 11px;
 	}
 	.policy-lens-bar .compact-coverage-lens {
@@ -4468,10 +4482,10 @@
 		z-index: 7;
 		display: flex;
 		flex-direction: column;
-		border: 1px solid #dae3dc;
+		border: 1px solid var(--theme-color-dae3dc);
 		border-radius: 17px;
-		background: #fffffff9;
-		box-shadow: 0 12px 38px #1c3e3722;
+		background: var(--theme-color-fffffff9);
+		box-shadow: 0 12px 38px var(--theme-color-1c3e3722);
 		overflow: hidden;
 	}
 	.policy-map-panel > header {
@@ -4490,14 +4504,14 @@
 	}
 	.policy-map-panel .eyebrow {
 		font-size: 9px;
-		color: #6b7b70;
+		color: var(--theme-color-6b7b70);
 		letter-spacing: 1.3px;
 	}
 	.policy-panel-tabs {
-		--foreground: #245b40;
+		--foreground: var(--theme-color-245b40);
 		flex-shrink: 0;
 		display: flex;
-		border-bottom: 1px solid #e3e9e4;
+		border-bottom: 1px solid var(--theme-color-e3e9e4);
 		padding: 0 20px;
 		gap: 20px;
 	}
@@ -4506,16 +4520,16 @@
 		z-index: 1;
 		font-size: 13px;
 		padding: 10px 0;
-		color: #78847a;
+		color: var(--theme-color-78847a);
 		border-bottom: 2px solid transparent;
 	}
 	.policy-panel-tabs button.active {
-		color: #245b40;
+		color: var(--theme-color-245b40);
 		font-weight: 650;
 	}
 	.policy-panel-tabs button span {
 		border-radius: 5px;
-		background: #e8eee6;
+		background: var(--theme-color-e8eee6);
 		padding: 1px 5px;
 		margin-left: 4px;
 		font-size: 10px;
@@ -4536,7 +4550,7 @@
 	.policy-qualification {
 		font-size: 11px;
 		line-height: 1.65;
-		color: #7b8276;
+		color: var(--theme-color-7b8276);
 		margin: 0;
 	}
 	.policy-map-panel :global(.policy-primary) {
@@ -4552,7 +4566,7 @@
 	.policy-map-panel :global(label) {
 		font-size: 11px;
 		line-height: 1.4;
-		color: #68765f;
+		color: var(--theme-color-68765f);
 		font-weight: 550;
 	}
 	.policy-map-panel :global(input) {
@@ -4587,7 +4601,7 @@
 	.proposal-paths > button.active {
 		border-color: color-mix(in srgb, var(--chart-1) 45%, var(--border));
 		background: color-mix(in srgb, var(--chart-1) 6%, var(--card));
-		color: #245b40;
+		color: var(--theme-color-245b40);
 	}
 	.proposal-paths > button:focus-visible {
 		outline: 2px solid var(--ring);
@@ -4655,7 +4669,7 @@
 		line-height: 1.4;
 	}
 	.policy-priorities > span {
-		color: #7b8375;
+		color: var(--theme-color-7b8375);
 	}
 	.policy-priority-options {
 		display: flex;
@@ -4663,15 +4677,15 @@
 		gap: 6px;
 	}
 	.policy-priorities button {
-		border: 1px solid #dce4d7;
+		border: 1px solid var(--theme-color-dce4d7);
 		padding: 6px 10px;
 		border-radius: 6px;
-		color: #6b795f;
+		color: var(--theme-color-6b795f);
 	}
 	.policy-priorities button.active {
-		background: #edf4e6;
-		border-color: #b8cba8;
-		color: #476b35;
+		background: var(--theme-color-edf4e6);
+		border-color: var(--theme-color-b8cba8);
+		color: var(--theme-color-476b35);
 	}
 	.policy-place-heading h3,
 	.policy-draft-heading h3 {
@@ -4684,7 +4698,7 @@
 		display: block;
 		font-size: 11px;
 		line-height: 1.5;
-		color: #7c8674;
+		color: var(--theme-color-7c8674);
 	}
 	.policy-palette {
 		display: grid;
@@ -4696,13 +4710,13 @@
 		align-items: center;
 		flex-direction: column;
 		gap: 7px;
-		border: 1px dashed #b8c6b0;
+		border: 1px dashed var(--theme-color-b8c6b0);
 		padding: 12px 5px 9px;
-		background: #f5f8f1;
+		background: var(--theme-color-f5f8f1);
 		border-radius: 9px;
 		cursor: grab;
 		position: relative;
-		color: #4d6a3e;
+		color: var(--theme-color-4d6a3e);
 	}
 	.policy-palette button:active {
 		cursor: grabbing;
@@ -4712,11 +4726,11 @@
 		place-items: center;
 		width: 44px;
 		height: 44px;
-		border: 2px solid #fff;
+		border: 2px solid var(--theme-color-ffffff);
 		border-radius: 14px;
-		background: #176c61;
-		color: #fff;
-		box-shadow: 0 3px 8px #123d3429;
+		background: var(--theme-color-176c61);
+		color: var(--theme-color-ffffff);
+		box-shadow: 0 3px 8px var(--theme-color-123d3429);
 		flex-shrink: 0;
 	}
 	.policy-palette button:disabled {
@@ -4724,7 +4738,7 @@
 		opacity: 0.5;
 	}
 	.policy-palette button:focus-visible {
-		outline: 2px solid #176c61;
+		outline: 2px solid var(--theme-color-176c61);
 		outline-offset: 3px;
 	}
 	.policy-palette button > :global(svg:last-child) {
@@ -4743,21 +4757,21 @@
 		margin: 0;
 		padding: 10px 12px;
 		border-radius: 9px;
-		background: #edf5f0;
-		color: #315f51;
+		background: var(--theme-color-edf5f0);
+		color: var(--theme-color-315f51);
 	}
 	.policy-budget-alert {
-		background: #fff1ed;
-		color: #a14431;
+		background: var(--theme-color-fff1ed);
+		color: var(--theme-color-a14431);
 	}
 	.policy-map-panel select {
-		background: #fff;
-		border: 1px solid #d4dfca;
+		background: var(--theme-color-ffffff);
+		border: 1px solid var(--theme-color-d4dfca);
 		border-radius: 7px;
 		font-size: 12px;
 		padding: 8px;
 		width: 100%;
-		color: #4c6040;
+		color: var(--theme-color-4c6040);
 	}
 	.policy-draft-heading {
 		display: flex;
@@ -4775,7 +4789,7 @@
 	.policy-operation-list li {
 		display: flex;
 		align-items: center;
-		border: 1px solid #e5eadd;
+		border: 1px solid var(--theme-color-e5eadd);
 		border-radius: 8px;
 		padding: 5px;
 	}
@@ -4790,8 +4804,8 @@
 	.policy-operation-list li span {
 		font-size: 10px;
 		border-radius: 5px;
-		background: #edf1e6;
-		color: #667d50;
+		background: var(--theme-color-edf1e6);
+		color: var(--theme-color-667d50);
 		padding: 4px 7px;
 	}
 	.policy-operation-list strong {
@@ -4801,14 +4815,14 @@
 	}
 	.policy-evidence-note {
 		font-size: 11px;
-		color: #77836a;
-		border: 1px solid #e3e9dc;
+		color: var(--theme-color-77836a);
+		border: 1px solid var(--theme-color-e3e9dc);
 		border-radius: 8px;
 		padding: 11px;
 	}
 	.policy-evidence-note summary {
 		cursor: pointer;
-		color: #526347;
+		color: var(--theme-color-526347);
 		font-weight: 550;
 	}
 	.policy-evidence-note[open] {
@@ -4827,22 +4841,22 @@
 	}
 	.policy-error {
 		font-size: 12px;
-		background: #fff0e7;
+		background: var(--theme-color-fff0e7);
 		padding: 12px;
 		border-radius: 8px;
-		color: #9c5c44;
+		color: var(--theme-color-9c5c44);
 		line-height: 1.6;
 	}
 	.policy-working {
 		font-size: 12px;
-		color: #7b866f;
+		color: var(--theme-color-7b866f);
 		display: flex;
 		gap: 8px;
 		align-items: center;
 	}
 	.policy-suggestion {
-		background: #f0f5e8;
-		border: 1px solid #cdddb8;
+		background: var(--theme-color-f0f5e8);
+		border: 1px solid var(--theme-color-cdddb8);
 		border-radius: 10px;
 		padding: 12px;
 		display: flex;
@@ -4857,20 +4871,20 @@
 		align-items: center;
 		gap: 7px;
 		text-align: left;
-		color: #566f40;
+		color: var(--theme-color-566f40);
 		font-size: 12px;
 	}
 	.policy-suggestion small {
 		display: block;
 		font-size: 10px;
-		color: #82916c;
+		color: var(--theme-color-82916c);
 		margin-top: 4px;
 	}
 	.policy-suggestion p {
 		font-size: 10px;
 		line-height: 1.6;
 		margin: 0;
-		color: #7b846a;
+		color: var(--theme-color-7b846a);
 	}
 	.policy-suggestion > div {
 		display: flex;
@@ -4878,8 +4892,8 @@
 	}
 	.policy-map-panel > footer {
 		flex-shrink: 0;
-		border-top: 1px solid #dde5d6;
-		background: #f9fbf5;
+		border-top: 1px solid var(--theme-color-dde5d6);
+		background: var(--theme-color-f9fbf5);
 		padding: 16px 20px;
 	}
 	.policy-recalculating {
@@ -4892,17 +4906,17 @@
 		align-items: center;
 		gap: 10px;
 		padding: 12px 18px;
-		border: 1px solid #d0dfc1;
+		border: 1px solid var(--theme-color-d0dfc1);
 		border-radius: 12px;
-		background: #fffffff5;
-		color: #52713d;
-		box-shadow: 0 4px 16px #2c402014;
+		background: var(--theme-color-fffffff5);
+		color: var(--theme-color-52713d);
+		box-shadow: 0 4px 16px var(--theme-color-2c402014);
 		font-size: 12px;
 	}
 	.policy-recalculating small {
 		display: block;
 		font-size: 10px;
-		color: #8a977a;
+		color: var(--theme-color-8a977a);
 		margin-top: 3px;
 	}
 	:global(.policy-map-panel .spin),
@@ -4911,8 +4925,8 @@
 	}
 	.policy-selected-cell {
 		padding: 12px;
-		border: 1px solid #c8dcca;
-		background: #f2f8ef;
+		border: 1px solid var(--theme-color-c8dcca);
+		background: var(--theme-color-f2f8ef);
 		border-radius: 10px;
 		display: grid;
 		gap: 8px;
@@ -4921,7 +4935,7 @@
 		font-size: 12px;
 	}
 	.policy-selected-cell > span {
-		color: #687d60;
+		color: var(--theme-color-687d60);
 		font-size: 10px;
 		line-height: 1.5;
 	}
@@ -4940,10 +4954,10 @@
 		cursor: pointer;
 		font-size: 11px;
 		font-weight: 550;
-		color: #526347;
+		color: var(--theme-color-526347);
 	}
 	.policy-cell-evidence summary:focus-visible {
-		outline: 2px solid #4d7655;
+		outline: 2px solid var(--theme-color-4d7655);
 		outline-offset: 3px;
 		border-radius: 3px;
 	}
@@ -4951,26 +4965,26 @@
 		margin: 8px 0 0;
 		font-size: 11px;
 		line-height: 1.55;
-		color: #687d60;
+		color: var(--theme-color-687d60);
 	}
 	.policy-forecast-goal {
 		display: grid;
 		gap: 8px;
 		padding: 12px;
-		border: 1px solid #dce6d4;
+		border: 1px solid var(--theme-color-dce6d4);
 		border-radius: 10px;
 	}
 	.policy-forecast-goal select {
-		border: 1px solid #cedbc5;
+		border: 1px solid var(--theme-color-cedbc5);
 		padding: 8px 9px;
 		border-radius: 6px;
-		background: white;
+		background: var(--theme-color-ffffff);
 		font-size: 12px;
 	}
 	.policy-forecast-goal small {
 		font-size: 10px;
 		line-height: 1.5;
-		color: #7b8570;
+		color: var(--theme-color-7b8570);
 	}
 	:global(.policy-inspect-trigger) {
 		max-width: 100%;
@@ -4978,7 +4992,7 @@
 		height: 32px;
 		padding-inline: 10px;
 		font-size: 12px;
-		color: #48665d;
+		color: var(--theme-color-48665d);
 		background: transparent;
 		box-shadow: none;
 	}
@@ -4994,7 +5008,7 @@
 		}
 	}
 	button:focus-visible {
-		outline: 2px solid #4d7655;
+		outline: 2px solid var(--theme-color-4d7655);
 		outline-offset: 3px;
 	}
 	@media (max-width: 1100px) {

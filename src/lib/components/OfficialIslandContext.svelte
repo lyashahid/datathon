@@ -33,7 +33,7 @@
 		<p class="context-grain">Whole administrative island · Census {census.year}</p>
 		<dl>
 			<div>
-				<dt>Recorded residents</dt>
+				<dt>Residents</dt>
 				<dd>{displayCount(census.residents_total)}</dd>
 			</div>
 			{#each [2026, 2030] as year (year)}
@@ -86,7 +86,7 @@
 
 <style>
 	.official-island-context {
-		border: 1px solid #eeeaf2;
+		border: 1px solid var(--theme-color-eeeaf2);
 		border-radius: 14px;
 		padding: 17px;
 	}
@@ -98,7 +98,7 @@
 	.context-grain,
 	.context-note,
 	.context-sources {
-		color: #71687e;
+		color: var(--theme-color-71687e);
 		font-size: 11px;
 		line-height: 1.6;
 	}
@@ -130,7 +130,7 @@
 		gap: 3px 9px;
 	}
 	a {
-		color: #645080;
+		color: var(--theme-color-645080);
 		text-decoration: underline;
 		text-underline-offset: 3px;
 	}

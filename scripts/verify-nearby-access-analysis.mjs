@@ -1,5 +1,5 @@
 import { browserBaseURL } from './browser-config.mjs';
-import { projectMapPoint } from './browser-map.mjs';
+import { projectMapPoint, wheelMapZoom } from './browser-map.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -423,7 +423,7 @@ try {
 			await panTo([73.514746, 4.17001]);
 			while (Number(await atlas.getAttribute('data-zoom')) < 14.6) {
 				const priorZoom = Number(await atlas.getAttribute('data-zoom'));
-				await atlas.locator('.maplibregl-ctrl-zoom-in').click();
+				await wheelMapZoom(page, atlas, 1);
 				await expect
 					.poll(async () => Number(await atlas.getAttribute('data-zoom')))
 					.toBeGreaterThan(priorZoom + 0.5);

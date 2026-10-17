@@ -1,3 +1,4 @@
+import { themeColors } from '#lib/theme.js';
 import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import type { Coordinates } from './types.js';
 
@@ -53,14 +54,14 @@ export type PlanningOperation = {
 	headway_minutes?: number;
 };
 export const impactColors: Record<string, string> = {
-	gained: '#16866e',
-	improved: '#69bba5',
-	lost: '#c44e55',
-	slower: '#df9272',
-	unchanged: '#889ea1',
-	unavailable: '#a6a5b5',
-	disrupted: '#be9344',
-	uncomputed: '#b7c3c4'
+	gained: themeColors.color16866e,
+	improved: themeColors.color69bba5,
+	lost: themeColors.colorc44e55,
+	slower: themeColors.colordf9272,
+	unchanged: themeColors.color889ea1,
+	unavailable: themeColors.colora6a5b5,
+	disrupted: themeColors.colorbe9344,
+	uncomputed: themeColors.colorb7c3c4
 };
 export function impactClass(row: PlanningComparison): string {
 	if (row.became_unavailable) return 'disrupted';

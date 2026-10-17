@@ -192,6 +192,8 @@ def economics(
         facility_emissions_known, embodied_known = True, True
         unknown_facility_emissions, unknown_embodied = [], []
         available = True
+        unknown_distance_patterns = {}
+        world_stops = {stop["id"]: stop for stop in world["stops"]}
         for route in fleet["routes"]:
             kind = "ferry" if route["mode"] == "ferry" else route["fleet_type"]
             if kind == "ferry":
@@ -205,6 +207,28 @@ def economics(
             km = route["annual_vehicle_km"]
             if km is None:
                 available = False
+                active_patterns = sorted(
+                    (
+                        pattern
+                        for pattern in world["patterns"]
+                        if pattern["routeId"] == route["route_id"]
+                        and pattern["mode"] == route["mode"]
+                        and (
+                            pattern["mode"] == "ferry"
+                            or pattern.get("fleet", "diesel") == route["fleet_type"]
+                        )
+                        and service_day_trips(pattern, assumptions.date)
+                    ),
+                    key=lambda pattern: pattern["id"],
+                )
+                unknown_distance_patterns[route["activity_id"]] = {
+                    "patterns": active_patterns,
+                    "stops": {
+                        stop_id: world_stops[stop_id]
+                        for pattern in active_patterns
+                        for stop_id in pattern["stopIds"]
+                    },
+                }
             else:
                 operating += km * costs[f"{kind}_operating_mvr_per_km"]
                 emissions += km * costs[f"{kind}_kg_co2e_per_km"]
@@ -254,6 +278,9 @@ def economics(
                 embodied += facility_costs["embodied_kg_co2e"]
         unrounded.append(
             {
+                "known_operating_mvr": operating,
+                "known_fleet_operating_kg_co2e": emissions,
+                "unknown_distance_patterns": unknown_distance_patterns,
                 "annual_operating_mvr": operating if available else None,
                 "annual_operating_kg_co2e": emissions + facility_emissions
                 if available and facility_emissions_known
@@ -314,6 +341,35 @@ def economics(
     delta_emissions = subtract(
         unrounded[1]["annual_operating_kg_co2e"], unrounded[0]["annual_operating_kg_co2e"]
     )
+    delta_fleet_emissions = subtract(
+        unrounded[1]["annual_fleet_operating_kg_co2e"],
+        unrounded[0]["annual_fleet_operating_kg_co2e"],
+    )
+    # The same unknown operating distances cancel in a project comparison.
+    # Absolute totals remain unknown; changed or removed unknown-distance
+    # services still make the corresponding delta unavailable.
+    if (
+        unrounded[0]["unknown_distance_patterns"]
+        and unrounded[0]["unknown_distance_patterns"] == unrounded[1]["unknown_distance_patterns"]
+    ):
+        delta_operating = subtract(
+            unrounded[1]["known_operating_mvr"], unrounded[0]["known_operating_mvr"]
+        )
+        delta_fleet_emissions = subtract(
+            unrounded[1]["known_fleet_operating_kg_co2e"],
+            unrounded[0]["known_fleet_operating_kg_co2e"],
+        )
+        facility_delta = subtract(
+            unrounded[1]["annual_facility_operating_kg_co2e"],
+            unrounded[0]["annual_facility_operating_kg_co2e"],
+        )
+        delta_emissions = (
+            round(delta_fleet_emissions + facility_delta, 3) if facility_delta is not None else None
+        )
+        reasons.append(
+            "Identical services with unknown operating distances cancel from the project "
+            "change. Absolute operating cost and emissions totals remain unavailable."
+        )
     displaced = assumptions.displaced_passenger_km * costs["displaced_kg_co2e_per_passenger_km"]
     net_emissions = delta_emissions - displaced if delta_emissions is not None else None
     return {
@@ -327,10 +383,7 @@ def economics(
             "capital_mvr": round(capital, 2),
             "annual_operating_mvr": delta_operating,
             "annual_operating_kg_co2e": delta_emissions,
-            "annual_fleet_operating_kg_co2e": subtract(
-                unrounded[1]["annual_fleet_operating_kg_co2e"],
-                unrounded[0]["annual_fleet_operating_kg_co2e"],
-            ),
+            "annual_fleet_operating_kg_co2e": delta_fleet_emissions,
             "annual_facility_operating_kg_co2e": subtract(
                 unrounded[1]["annual_facility_operating_kg_co2e"],
                 unrounded[0]["annual_facility_operating_kg_co2e"],

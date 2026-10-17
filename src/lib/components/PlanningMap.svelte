@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { themeColors } from '#lib/theme.js';
 	import { backendUrl } from '#lib/app-paths.js';
 	import { onMount, untrack } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -223,7 +224,7 @@
 		if (id === 'return:destination') return selectedDestination?.name ?? 'Journey destination';
 		return (
 			[...origins, ...facilities, ...stops].find((place) => place.id === id)?.name ??
-			(id.startsWith('wp:') ? 'Modeled resident area' : 'Mapped connection point')
+			(id.startsWith('wp:') ? 'Residential area' : 'Connection point')
 		);
 	}
 	const selectedDestination = $derived(
@@ -544,7 +545,7 @@
 			receipt = String(data.metadata?.retrieved_at ?? '').slice(0, 10);
 			contextStatus =
 				data.summary?.status === 'unavailable'
-					? 'Street snapshot unavailable'
+					? 'Streets unavailable'
 					: `${Number(data.summary?.roads ?? 0).toLocaleString()} street features · ${Number(data.summary?.buildings ?? 0).toLocaleString()} buildings`;
 		} catch (cause) {
 			if (!controller.signal.aborted) {
@@ -568,7 +569,7 @@
 				ontarget(String(target.properties.id));
 				selectedInfo =
 					targetMode === 'road'
-						? 'Mapped road segment selected. Add the closure to your option.'
+						? 'Road selected. Add the closure to your proposal.'
 						: `Service selected · ${target.properties.name}`;
 				return;
 			}
@@ -671,7 +672,7 @@
 		map.setPaintProperty(
 			'hex-fill',
 			'fill-color',
-			status === 'latest' ? ['get', 'color'] : '#a4b2b5'
+			status === 'latest' ? ['get', 'color'] : themeColors.colora4b2b5
 		);
 	});
 	$effect(() => {
@@ -835,16 +836,19 @@
 					style: {
 						version: 8,
 						sources: {},
-						layers: [{ id: 'water', type: 'background', paint: { 'background-color': '#cce6e6' } }]
+						layers: [
+							{
+								id: 'water',
+								type: 'background',
+								paint: { 'background-color': themeColors.colorcce6e6 }
+							}
+						]
 					},
 					center: [73.517, 4.19],
 					zoom: 12.5,
 					attributionControl: false
 				});
 				map = instance;
-				instance.scrollZoom.disable();
-				instance.addControl(new library.NavigationControl({ showCompass: false }), 'top-right');
-				instance.addControl(new library.ScaleControl({ unit: 'metric' }), 'bottom-right');
 				instance.on('load', () => {
 					for (const [id, data] of Object.entries(atlasSymbols()))
 						instance.addImage(id, data, { pixelRatio: 2 });
@@ -864,27 +868,27 @@
 						id: 'land',
 						type: 'fill',
 						source: 'islands',
-						paint: { 'fill-color': '#f4f1e8' }
+						paint: { 'fill-color': themeColors.colorf4f1e8 }
 					});
 					instance.addLayer({
 						id: 'shore',
 						type: 'line',
 						source: 'islands',
-						paint: { 'line-color': '#aac8bd', 'line-width': 1.5 }
+						paint: { 'line-color': themeColors.coloraac8bd, 'line-width': 1.5 }
 					});
 					instance.addLayer({
 						id: 'green',
 						type: 'fill',
 						source: 'context',
 						filter: ['==', ['get', 'kind'], 'green'],
-						paint: { 'fill-color': '#bad2b4', 'fill-opacity': 0.55 }
+						paint: { 'fill-color': themeColors.colorbad2b4, 'fill-opacity': 0.55 }
 					});
 					instance.addLayer({
 						id: 'buildings',
 						type: 'fill',
 						source: 'context',
 						filter: ['==', ['get', 'kind'], 'building'],
-						paint: { 'fill-color': '#d0d4cd', 'fill-opacity': 0.8 }
+						paint: { 'fill-color': themeColors.colord0d4cd, 'fill-opacity': 0.8 }
 					});
 					instance.addLayer({
 						id: 'streets-casing',
@@ -892,7 +896,7 @@
 						source: 'context',
 						filter: ['==', ['get', 'kind'], 'road'],
 						paint: {
-							'line-color': '#c6c8bb',
+							'line-color': themeColors.colorc6c8bb,
 							'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1, 16, 5]
 						}
 					});
@@ -902,7 +906,7 @@
 						source: 'context',
 						filter: ['==', ['get', 'kind'], 'road'],
 						paint: {
-							'line-color': '#fffdf5',
+							'line-color': themeColors.colorfffdf5,
 							'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.5, 16, 3.7]
 						}
 					});
@@ -910,20 +914,24 @@
 						id: 'hex-fill',
 						type: 'fill',
 						source: 'hexes',
-						paint: { 'fill-color': '#a4b2b5', 'fill-opacity': 0.2 }
+						paint: { 'fill-color': themeColors.colora4b2b5, 'fill-opacity': 0.2 }
 					});
 					instance.addLayer({
 						id: 'hex-outline',
 						type: 'line',
 						source: 'hexes',
-						paint: { 'line-color': '#ffffff', 'line-width': 0.8, 'line-opacity': 0.75 }
+						paint: {
+							'line-color': themeColors.colorffffff,
+							'line-width': 0.8,
+							'line-opacity': 0.75
+						}
 					});
 					instance.addLayer({
 						id: 'hex-selected',
 						type: 'line',
 						source: 'hexes',
 						filter: ['==', ['get', 'id'], originId],
-						paint: { 'line-color': '#153c42', 'line-width': 3 }
+						paint: { 'line-color': themeColors.color153c42, 'line-width': 3 }
 					});
 					for (const direction of ['outward', 'return']) {
 						instance.addLayer({
@@ -932,7 +940,7 @@
 							source: direction,
 							layout: { 'line-cap': 'round', 'line-join': 'round' },
 							paint: {
-								'line-color': '#ffffff',
+								'line-color': themeColors.colorffffff,
 								'line-width': direction === 'return' ? 5 : 8,
 								'line-opacity': 0.75
 							}
@@ -945,8 +953,16 @@
 							paint: {
 								'line-color':
 									direction === 'return'
-										? '#8567b1'
-										: ['match', ['get', 'mode'], 'bus', '#d18c34', 'ferry', '#2689b2', '#22796d'],
+										? themeColors.color8567b1
+										: [
+												'match',
+												['get', 'mode'],
+												'bus',
+												themeColors.colord18c34,
+												'ferry',
+												themeColors.color2689b2,
+												themeColors.color22796d
+											],
 								'line-width': direction === 'return' ? 2.5 : 4,
 								...(direction === 'return' ? { 'line-dasharray': [2, 1.5] } : {})
 							}
@@ -957,7 +973,11 @@
 						type: 'line',
 						source: 'draft',
 						filter: ['==', ['geometry-type'], 'LineString'],
-						paint: { 'line-color': '#db6956', 'line-width': 4, 'line-dasharray': [2, 1.3] }
+						paint: {
+							'line-color': themeColors.colordb6956,
+							'line-width': 4,
+							'line-dasharray': [2, 1.3]
+						}
 					});
 					instance.moveLayer('draft-lines', 'outward-casing');
 					instance.moveLayer('return-casing', 'outward-line');
@@ -987,10 +1007,10 @@
 						source: 'draft',
 						filter: ['==', ['geometry-type'], 'Point'],
 						paint: {
-							'circle-color': '#e2745d',
+							'circle-color': themeColors.colore2745d,
 							'circle-radius': 22,
 							'circle-opacity': 0.23,
-							'circle-stroke-color': '#d46d58',
+							'circle-stroke-color': themeColors.colord46d58,
 							'circle-stroke-width': 1.2,
 							'circle-stroke-opacity': 0.7
 						}
@@ -999,14 +1019,18 @@
 						id: 'road-pick',
 						type: 'line',
 						source: 'road-targets',
-						paint: { 'line-color': '#bb7352', 'line-width': 10, 'line-opacity': 0.28 },
+						paint: {
+							'line-color': themeColors.colorbb7352,
+							'line-width': 10,
+							'line-opacity': 0.28
+						},
 						layout: { visibility: 'none' }
 					});
 					instance.addLayer({
 						id: 'service-pick',
 						type: 'line',
 						source: 'service-targets',
-						paint: { 'line-color': '#637abd', 'line-width': 8, 'line-opacity': 0.38 },
+						paint: { 'line-color': themeColors.color637abd, 'line-width': 8, 'line-opacity': 0.38 },
 						layout: { visibility: 'none' }
 					});
 					instance.addLayer({
@@ -1019,7 +1043,7 @@
 							'icon-size': 1.05,
 							'icon-allow-overlap': true
 						},
-						paint: { 'icon-color': '#db6956' }
+						paint: { 'icon-color': themeColors.colordb6956 }
 					});
 					ready = true;
 					scheduleContext();
@@ -1277,9 +1301,9 @@
 		{#if error}<div class="map-error" role="alert">{error}</div>{/if}
 		<div class="planning-map-insight">
 			{#if selectedComparison}<strong
-					>Selected resident area · {selectedOrigin?.name ?? 'Modeled area'} · {Number(
+					>Selected resident area · {selectedOrigin?.name ?? 'Residential area'} · {Number(
 						selectedComparison.population
-					).toLocaleString(undefined, { maximumFractionDigits: 0 })} modeled residents</strong
+					).toLocaleString(undefined, { maximumFractionDigits: 0 })} estimated residents</strong
 				><span
 					>Before {minuteLabel(selectedComparison.before.minutes)}
 					<ArrowRight size={13} /> After {minuteLabel(selectedComparison.after.minutes)}</span
@@ -1311,11 +1335,12 @@
 				>
 			</div>
 			<div class="planning-map-legend">
-				<span class="legend-item"><i style:background="#22796d"></i>Walking</span><span
-					class="legend-item"><i style:background="#d18c34"></i>Bus</span
-				><span class="legend-item"><i style:background="#2689b2"></i>Ferry</span><span
-					class="legend-item"><i class="return"></i>Return route</span
-				><span class="legend-item"><i class="proposal"></i>Draft change / connector</span>
+				<span class="legend-item"><i style:background="var(--theme-color-22796d)"></i>Walking</span
+				><span class="legend-item"><i style:background="var(--theme-color-d18c34)"></i>Bus</span
+				><span class="legend-item"><i style:background="var(--theme-color-2689b2)"></i>Ferry</span
+				><span class="legend-item"><i class="return"></i>Return route</span><span
+					class="legend-item"><i class="proposal"></i>Draft change / connector</span
+				>
 			</div>
 			<div class="planning-map-footnote">
 				{#if selectedOrigin}<small
@@ -1339,9 +1364,8 @@
 			aria-label="Resident impact legend"
 		>
 			{#each [['gained', 'Gained target access'], ['improved', 'Faster'], ['lost', 'Lost target access'], ['slower', 'Slower'], ['unchanged', 'Unchanged'], ['disrupted', 'Became unavailable'], ['unavailable', 'Evidence unavailable']] as [key, name] (key)}<span
-					><i style:background={status === 'latest' ? impactColors[key] : '#a4b2b5'}></i>{name}<b
-						>{impacts[key] ?? 0}</b
-					></span
+					><i style:background={status === 'latest' ? impactColors[key] : themeColors.colora4b2b5}
+					></i>{name}<b>{impacts[key] ?? 0}</b></span
 				>{/each}
 		</div>{/if}
 	{#if outward?.path.length}
@@ -1408,12 +1432,12 @@
 
 <style>
 	.planning-map {
-		border: 1px solid #d7e1dc;
+		border: 1px solid var(--theme-color-d7e1dc);
 		border-radius: 19px;
-		background: #fffefa;
+		background: var(--theme-color-fffefa);
 		overflow: hidden;
 		min-width: 0;
-		box-shadow: 0 7px 24px #243c3710;
+		box-shadow: 0 7px 24px var(--theme-color-243c3710);
 		display: flex;
 		flex-direction: column;
 	}
@@ -1436,23 +1460,23 @@
 		align-items: center;
 		gap: 9px;
 		padding: 9px 18px;
-		background: #eff4ed;
-		color: #3b6657;
+		background: var(--theme-color-eff4ed);
+		color: var(--theme-color-3b6657);
 		font-size: 12px;
-		border-top: 1px solid #e8ede5;
+		border-top: 1px solid var(--theme-color-e8ede5);
 	}
 	.status-light {
 		width: 7px;
 		height: 7px;
 		border-radius: 100%;
-		background: #369f7b;
+		background: var(--theme-color-369f7b);
 	}
 	.stale {
-		color: #946837;
-		background: #faf2e7;
+		color: var(--theme-color-946837);
+		background: var(--theme-color-faf2e7);
 	}
 	.stale .status-light {
-		background: #c29149;
+		background: var(--theme-color-c29149);
 	}
 	.calculating .status-light {
 		animation: pulse 950ms ease-in-out infinite;
@@ -1473,11 +1497,11 @@
 		max-width: calc(100% - 70px);
 	}
 	.planning-map-tools :global(button) {
-		background: #fffef9ed;
-		box-shadow: 0 2px 7px #234c3a14;
+		background: var(--theme-color-fffef9ed);
+		box-shadow: 0 2px 7px var(--theme-color-234c3a14);
 	}
 	.planning-map-tools :global(button[aria-pressed='true']) {
-		background: #e4eee3;
+		background: var(--theme-color-e4eee3);
 	}
 	.planning-location-tools {
 		position: absolute;
@@ -1490,14 +1514,14 @@
 		gap: 5px;
 		padding: 7px;
 		border-radius: 12px;
-		background: #fffef9ed;
-		border: 1px solid #d7e2d6;
+		background: var(--theme-color-fffef9ed);
+		border: 1px solid var(--theme-color-d7e2d6);
 		max-width: calc(100% - 30px);
-		box-shadow: 0 2px 7px #234c3a14;
+		box-shadow: 0 2px 7px var(--theme-color-234c3a14);
 	}
 	.planning-location-tools span {
 		font-size: 10px;
-		color: #667b6b;
+		color: var(--theme-color-667b6b);
 		padding: 0 5px;
 	}
 	.planning-location-tools :global(button) {
@@ -1513,10 +1537,10 @@
 		max-height: calc(100% - 16px);
 		overflow-y: auto;
 		padding: 12px;
-		border: 1px solid #d5dfd5;
+		border: 1px solid var(--theme-color-d5dfd5);
 		border-radius: 14px;
-		background: #fffefa;
-		box-shadow: 0 8px 30px #213e3729;
+		background: var(--theme-color-fffefa);
+		box-shadow: 0 8px 30px var(--theme-color-213e3729);
 		display: grid;
 		gap: 9px;
 		animation: popover-in 160ms cubic-bezier(0.23, 1, 0.32, 1);
@@ -1551,7 +1575,7 @@
 	.placement-popover small {
 		font-size: 11px;
 		line-height: 1.5;
-		color: #68796c;
+		color: var(--theme-color-68796c);
 	}
 	.placement-popover-actions,
 	.placement-kind-options {
@@ -1568,9 +1592,9 @@
 		align-items: center;
 		gap: 8px;
 		padding: 7px 11px;
-		background: #fffefa;
+		background: var(--theme-color-fffefa);
 		border-radius: 10px;
-		border: 1px solid #d5dfd5;
+		border: 1px solid var(--theme-color-d5dfd5);
 		font-size: 12px;
 		max-width: calc(100% - 30px);
 	}
@@ -1592,15 +1616,15 @@
 	.drop-location-hint {
 		position: absolute;
 		inset: 125px 30px 80px;
-		border: 2px dashed #2f8363;
+		border: 2px dashed var(--theme-color-2f8363);
 		border-radius: 15px;
-		background: #e8f6e96b;
+		background: var(--theme-color-e8f6e96b);
 		display: grid;
 		place-items: center;
 		pointer-events: none;
 		font-size: 14px;
 		font-weight: 600;
-		color: #2a6c53;
+		color: var(--theme-color-2a6c53);
 		z-index: 4;
 	}
 	.target-picking-hint {
@@ -1609,8 +1633,8 @@
 		left: 15px;
 		z-index: 3;
 		font-size: 11px;
-		color: #805d39;
-		background: #fff8e8ed;
+		color: var(--theme-color-805d39);
+		background: var(--theme-color-fff8e8ed);
 		padding: 10px 13px;
 		border-radius: 10px;
 		max-width: calc(100% - 90px);
@@ -1618,13 +1642,13 @@
 	}
 	.planning-map-key {
 		flex-shrink: 0;
-		border-top: 1px solid #dce5da;
+		border-top: 1px solid var(--theme-color-dce5da);
 	}
 	.planning-map-key summary {
 		padding: 10px 18px;
 		cursor: pointer;
 		font-size: 11px;
-		color: #586f5f;
+		color: var(--theme-color-586f5f);
 	}
 	.planning-map-insight {
 		position: absolute;
@@ -1634,12 +1658,12 @@
 		display: grid;
 		gap: 7px;
 		max-width: min(410px, calc(100% - 85px));
-		background: #fffefaed;
+		background: var(--theme-color-fffefaed);
 		padding: 13px 16px;
-		border: 1px solid #e1e9df;
+		border: 1px solid var(--theme-color-e1e9df);
 		border-radius: 12px;
 		pointer-events: none;
-		box-shadow: 0 3px 16px #34473f12;
+		box-shadow: 0 3px 16px var(--theme-color-34473f12);
 	}
 	.planning-map-insight strong {
 		font-size: 12px;
@@ -1653,7 +1677,7 @@
 	}
 	.planning-map-insight small {
 		font-size: 11px;
-		color: #567268;
+		color: var(--theme-color-567268);
 	}
 	.planning-map-legend,
 	.impact-legend {
@@ -1662,7 +1686,7 @@
 		flex-wrap: wrap;
 		gap: 12px 22px;
 		font-size: 11px;
-		border-bottom: 1px solid #e7ece5;
+		border-bottom: 1px solid var(--theme-color-e7ece5);
 	}
 	.planning-place-key {
 		display: flex;
@@ -1689,11 +1713,11 @@
 		border-radius: 3px;
 	}
 	i.return {
-		border-bottom: 3px dashed #8567b1;
+		border-bottom: 3px dashed var(--theme-color-8567b1);
 		height: 0;
 	}
 	i.proposal {
-		border-bottom: 3px dashed #db6956;
+		border-bottom: 3px dashed var(--theme-color-db6956);
 		height: 0;
 	}
 	.impact-legend i {
@@ -1702,13 +1726,13 @@
 		border-radius: 3px;
 	}
 	.impact-legend b {
-		color: #6f8177;
+		color: var(--theme-color-6f8177);
 		font-weight: 600;
 	}
 	.journey-playback {
 		padding: 12px 18px;
-		background: #f5f6f0;
-		border-bottom: 1px solid #e7ece5;
+		background: var(--theme-color-f5f6f0);
+		border-bottom: 1px solid var(--theme-color-e7ece5);
 		display: grid;
 		gap: 8px;
 		flex-shrink: 0;
@@ -1722,7 +1746,7 @@
 	}
 	.playback-title span {
 		font-size: 11px;
-		color: #6c796f;
+		color: var(--theme-color-6c796f);
 	}
 	.playback-controls {
 		display: flex;
@@ -1733,7 +1757,7 @@
 	.playback-controls input {
 		min-width: 100px;
 		flex: 1;
-		accent-color: #44876c;
+		accent-color: var(--theme-color-44876c);
 		cursor: pointer;
 	}
 	.playback-time {
@@ -1743,17 +1767,17 @@
 	}
 	.journey-playback p {
 		margin: 0;
-		color: #687870;
+		color: var(--theme-color-687870);
 		font-size: 11px;
 		overflow-wrap: anywhere;
 	}
 	.journey-playback p.playback-stale {
-		color: #956831;
+		color: var(--theme-color-956831);
 	}
 	.playback-qualification {
 		font-size: 11px;
 		line-height: 1.5;
-		color: #6c766f;
+		color: var(--theme-color-6c766f);
 	}
 	.planning-map-footnote {
 		padding: 9px 18px;
@@ -1763,10 +1787,10 @@
 	.planning-map-footnote p {
 		font-size: 12px;
 		margin: 0;
-		color: #4e6d61;
+		color: var(--theme-color-4e6d61);
 	}
 	.planning-map-footnote small {
-		color: #7c857c;
+		color: var(--theme-color-7c857c);
 		font-size: 10px;
 		line-height: 1.7;
 	}
@@ -1780,10 +1804,10 @@
 		left: 20px;
 		right: 20px;
 		padding: 16px;
-		background: #fff1ee;
+		background: var(--theme-color-fff1ee);
 		border-radius: 10px;
 		font-size: 13px;
-		color: #924d40;
+		color: var(--theme-color-924d40);
 	}
 	.recalibration {
 		position: absolute;
@@ -1791,12 +1815,12 @@
 		inset: 0;
 		z-index: 1;
 		overflow: hidden;
-		background: #eef8ef25;
+		background: var(--theme-color-eef8ef25);
 	}
 	.recalibration span {
 		position: absolute;
 		inset: -60%;
-		border: 1px solid #31866b55;
+		border: 1px solid var(--theme-color-31866b55);
 		border-radius: 50%;
 		animation: recalibrate 2.4s linear infinite;
 	}
@@ -1825,11 +1849,11 @@
 		display: flex;
 		align-items: center;
 		gap: 6px;
-		background: #fffef9;
+		background: var(--theme-color-fffef9);
 		padding: 6px 10px 6px 6px;
 		border-radius: 25px;
-		border: 1px solid #417c6650;
-		box-shadow: 0 3px 10px #253c3025;
+		border: 1px solid var(--theme-color-417c6650);
+		box-shadow: 0 3px 10px var(--theme-color-253c3025);
 		font:
 			600 11px Inter,
 			sans-serif;
@@ -1841,11 +1865,11 @@
 		width: 25px;
 		height: 25px;
 		border-radius: 50%;
-		background: #216f5c;
-		color: #fff;
+		background: var(--theme-color-216f5c);
+		color: var(--theme-color-ffffff);
 	}
 	:global(.planning-pin.end b) {
-		background: #df735b;
+		background: var(--theme-color-df735b);
 	}
 	:global(.planning-pin span) {
 		white-space: nowrap;
@@ -1856,13 +1880,13 @@
 		z-index: 4;
 		padding: 8px 12px;
 		border-radius: 22px;
-		border: 1.5px dashed #d4735b;
-		background: #fff7ec;
+		border: 1.5px dashed var(--theme-color-d4735b);
+		background: var(--theme-color-fff7ec);
 		font:
 			600 11px Inter,
 			sans-serif;
-		color: #a25642;
-		box-shadow: 0 3px 10px #503c3020;
+		color: var(--theme-color-a25642);
+		box-shadow: 0 3px 10px var(--theme-color-503c3020);
 		max-width: 240px;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -1873,19 +1897,19 @@
 		cursor: grabbing;
 	}
 	:global(.planning-preview:focus-visible) {
-		outline: 3px solid #2e886b;
+		outline: 3px solid var(--theme-color-2e886b);
 		outline-offset: 3px;
 	}
 	:global(.planning-traveller) {
 		border-radius: 50%;
-		background: #fffefa;
-		color: #236e62;
-		border: 2px solid #428d78;
+		background: var(--theme-color-fffefa);
+		color: var(--theme-color-236e62);
+		border: 2px solid var(--theme-color-428d78);
 		width: 40px;
 		height: 40px;
 		display: grid;
 		place-items: center;
-		box-shadow: 0 3px 13px #32614c35;
+		box-shadow: 0 3px 13px var(--theme-color-32614c35);
 	}
 	.picking :global(.maplibregl-canvas) {
 		cursor: crosshair;
@@ -1928,9 +1952,9 @@
 			z-index: 8;
 			max-height: 150px;
 			overflow-y: auto;
-			background: #fffefa;
-			border-top: 1px solid #dce5da;
-			box-shadow: 0 -6px 22px #34473f16;
+			background: var(--theme-color-fffefa);
+			border-top: 1px solid var(--theme-color-dce5da);
+			box-shadow: 0 -6px 22px var(--theme-color-34473f16);
 		}
 		.planning-map > .planning-map-footnote {
 			display: none;
@@ -2009,7 +2033,7 @@
 			animation: none;
 		}
 		.recalibration {
-			background: #e1f1e326;
+			background: var(--theme-color-e1f1e326);
 		}
 	}
 </style>

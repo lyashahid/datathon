@@ -373,10 +373,9 @@ try {
 				.getByRole('button', { name: 'Back to Explore', exact: true })
 				.click();
 			async function openNotices() {
-				await page.getByRole('button', { name: 'Weather & traffic', exact: true }).click();
-				await page
-					.getByRole('button', { name: 'Open notice evidence & disruption tools', exact: true })
-					.click();
+				await page.getByRole('button', { name: 'Directions', exact: true }).click();
+				await page.locator('.journey-conditions > summary').click();
+				await page.getByRole('button', { name: 'View notices & disruptions', exact: true }).click();
 				await page.getByRole('tab', { name: /Public notices/ }).click();
 			}
 			async function mapDraft() {

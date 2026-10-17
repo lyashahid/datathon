@@ -132,21 +132,20 @@ async function islandControls() {
 	const searchBounds = await fullyVisible(islandSearch, 'Island search');
 	assert.ok(searchBounds.y < 140, 'Search is close to the top of the map');
 	await clickable(islandSearch, 'Island search');
-	const weather = page.getByRole('button', { name: 'Weather & traffic', exact: true });
-	const weatherBounds = await fullyVisible(weather, 'Weather & traffic');
-	assert.ok(weatherBounds.y < 200, 'Weather and traffic stay near the search');
-	await clickable(weather, 'Weather & traffic');
-	await clickable(page.locator('.movement-settings > summary'), 'Nearby updates');
+	for (const name of ['Weather & traffic', 'Sea connections', 'Nationwide schedules'])
+		await expect(page.getByRole('button', { name, exact: true })).toHaveCount(0);
+	await expect(page.locator('.movement-settings')).toHaveCount(0);
+	await expect(atlas.locator('.maplibregl-ctrl-zoom-in')).toHaveCount(0);
+	await expect(atlas.locator('.maplibregl-ctrl-zoom-out')).toHaveCount(0);
+	await expect(atlas.locator('.maplibregl-ctrl-scale')).toHaveCount(0);
 	const lens = page.getByLabel('Service coverage map', { exact: true });
 	const location = page.locator('.policy-inspect-trigger');
-	const zoom = atlas.locator('.maplibregl-ctrl-zoom-in');
 	/** @type {Record<string, {x:number,y:number,width:number,height:number}>} */
 	const bottom = {};
 	/** @type {Array<[string, import('@playwright/test').Locator]>} */
 	const controls = [
 		['Service coverage', lens],
-		['Island location', location],
-		['Zoom', zoom]
+		['Island location', location]
 	];
 	for (const [name, element] of controls) {
 		const bounds = await fullyVisible(element, name);
@@ -154,7 +153,6 @@ async function islandControls() {
 		bottom[name] = bounds;
 	}
 	await clickable(location, 'Island details');
-	await clickable(zoom, 'Zoom in');
 	for (const button of await lens.getByRole('button').all())
 		await clickable(button, 'Service coverage option');
 	const coverageSelect = lens.getByRole('combobox', { name: 'Service coverage', exact: true });
@@ -186,13 +184,11 @@ async function islandControls() {
 		['Service controls', page.locator('.policy-map-controls')],
 		['Map key', atlas.locator('.map-information-card')],
 		['Map layers and view', atlas.locator('.map-toolbar')],
-		['Map actions', actionDock],
-		['Zoom controls', atlas.locator('.maplibregl-ctrl-group')],
-		['Map scale', atlas.locator('.maplibregl-ctrl-scale')]
+		['Map actions', actionDock]
 	];
 	await separateControls(lowerGroups);
 	await noOverflow();
-	return { search: searchBounds, weather: weatherBounds, bottom };
+	return { search: searchBounds, bottom, removedMapClutter: true };
 }
 
 try {
@@ -211,9 +207,7 @@ try {
 		await expect(explorer).toHaveAttribute('aria-busy', 'false');
 		await expect(atlas).toHaveAttribute('aria-busy', 'false');
 		const controls = await separateControls([
-			['Country layers and view', atlas.locator('.map-toolbar')],
-			['Country zoom controls', atlas.locator('.maplibregl-ctrl-group')],
-			['Country map scale', atlas.locator('.maplibregl-ctrl-scale')]
+			['Country layers and view', atlas.locator('.map-toolbar')]
 		]);
 		const countrySearch = explorer.getByRole('button', { name: 'Find an island', exact: true });
 		await countrySearch.press('Enter');
@@ -291,7 +285,7 @@ try {
 			return { selectedIsland: target.id, atoll: target.atoll };
 		}
 	);
-	await check('Desktop separates top search and live tools from bottom map controls', async () => {
+	await check('Desktop keeps search and map controls clear of removed shortcuts', async () => {
 		const boxes = await islandControls();
 		await page.screenshot({ path: path.join(output, 'island-controls-desktop.png') });
 		return boxes;

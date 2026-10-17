@@ -88,9 +88,9 @@ try {
 			await expect
 				.poll(async () => Number(await atlas.getAttribute('data-center-latitude')))
 				.toBeLessThan(4);
-			await expect(page.locator('.explore-journey .journey-endpoint.destination')).toContainText(
-				'Maafushi Hospital'
-			);
+			await expect(
+				page.getByRole('textbox', { name: 'Search destination location', exact: true })
+			).toHaveValue('Maafushi Hospital');
 			await expect(atlas).toHaveAttribute('data-context-roads', /[1-9]/);
 			await expect(atlas).toHaveAttribute('data-rendered-roads', /[1-9]/);
 			await expect(atlas).toHaveAttribute('aria-busy', 'false');

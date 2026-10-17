@@ -1,4 +1,5 @@
 import { browserBaseURL } from './browser-config.mjs';
+import { wheelMapZoom } from './browser-map.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -221,7 +222,7 @@ try {
 	await check('Evidence uses the same top navigation and returns directly to the map', async () => {
 		await header.getByRole('button', { name: 'Evidence', exact: true }).click();
 		await expect(
-			page.getByRole('heading', { name: 'Evidence, with the edges visible.', exact: true })
+			page.getByRole('heading', { name: 'Data and sources', exact: true })
 		).toBeVisible();
 		await expect(header.getByRole('button', { name: 'Evidence', exact: true })).toHaveAttribute(
 			'aria-current',
@@ -365,18 +366,12 @@ try {
 			await expect(explorer).not.toBeVisible();
 			await expect(page.getByLabel('Service coverage map', { exact: true })).toBeVisible();
 			await floatingNavigation();
-			const zoomIn = atlas.locator('.maplibregl-ctrl-zoom-in');
-			await expect(zoomIn).toBeEnabled();
-			assert.equal(
-				await zoomIn.evaluate((element) => {
-					const rect = element.getBoundingClientRect();
-					return element.contains(
-						document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)
-					);
-				}),
-				true,
-				'Island information leaves the native zoom control clickable'
-			);
+			await expect(atlas.locator('.maplibregl-ctrl-zoom-in')).toHaveCount(0);
+			const zoomBefore = Number(await atlas.getAttribute('data-zoom'));
+			await wheelMapZoom(page, atlas, 1);
+			await expect
+				.poll(async () => Number(await atlas.getAttribute('data-zoom')))
+				.toBeGreaterThan(zoomBefore + 0.5);
 			await noOverflow();
 			await page.screenshot({ path: path.join(output, 'island-tablet.png') });
 			await returnToAnalytics();

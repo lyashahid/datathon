@@ -38,6 +38,22 @@ npm run dev:frontend -- --host 127.0.0.1
 
 API documentation: http://127.0.0.1:8000/docs. The imported cache is included under `backend/data/cache/{normalized,graphs,derived}` and requires no acquisition step. Source originals are retained locally in the ignored `backend/data/cache/raw` folder. Avoid rerunning acquisition just to start the app.
 
+## Edit the colour theme
+
+Edit the named `themePalette` colours at the top of [`src/lib/theme.ts`](src/lib/theme.ts).
+This single file controls the interface, charts, map layers, heatmaps and map symbols.
+For example, change `brand` for the main interface colour, `accent` for secondary
+highlights, `text` and `surface` for panels, or `sea`, `mapWater` and `mapLand` for
+the sea view. `success`, `warning`, `danger` and `unknown` control status colours.
+The existing lighter shades and transparency follow their palette colour
+automatically; the default palette preserves the current appearance.
+
+Use opaque hex colours such as `'#087f78'`. Changes reload during `npm run dev`;
+rebuild with `npm run build` for a production preview or deployment. Tailwind
+utilities and CSS variables receive the same palette as the JavaScript map and
+chart code. No Tailwind configuration or component edits are needed to change
+the palette.
+
 The committed [.env.example](.env.example) and [backend/.env.example](backend/.env.example) document **optional overrides only**. Credentials belong in ignored local files; they are unnecessary for the default local workflow. `MOBILITY_BACKEND_URL` and `VELA_API_KEY` stay server-side. Backend settings and their precedence are documented in [backend/README.md](backend/README.md). Live weather, traffic, ships, aircraft and provider search require internet access and depend on upstream coverage; empty or unavailable feeds are shown explicitly. RTL live bus positions remain disabled by default.
 
 ## What changed

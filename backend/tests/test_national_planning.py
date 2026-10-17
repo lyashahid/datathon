@@ -54,8 +54,14 @@ def test_both_hithadhoos_have_conserved_hex_models_and_real_routes(national, ide
     summary = repository.summary(identity)
     assert summary["counts"]["nodes"] == detail["coverage"]["walking_nodes"]
     assert summary["counts"]["nodes"] < len(repository.baseline["network"]["nodes"])
-    assert detail["coverage"]["scheduled_patterns"] == 0
-    assert detail["coverage"]["timetable_status"] == "unavailable"
+    if identity == "island:1152":
+        assert detail["coverage"]["scheduled_patterns"] == 0
+        assert detail["coverage"]["timetable_status"] == "unavailable"
+    else:
+        # L. Hithadhoo has the published RTL Z4R17 timetable; S. Hithadhoo
+        # has only the historical S610 route evidence and remains untimed.
+        assert detail["coverage"]["scheduled_patterns"] == 2
+        assert detail["coverage"]["timetable_status"] == "available"
     island = next(i for i in repository.baseline["islands"] if i["id"] == identity)
     evaluation = service.evaluate(PlanningRequest(island_id=identity))
     assert evaluation["summary"]["population"] == pytest.approx(island["population2026"], abs=0.001)

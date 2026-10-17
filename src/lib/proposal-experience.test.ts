@@ -93,7 +93,7 @@ describe('selected proposal impact explanations', () => {
 		expect(explanation.summary).toBe(
 			'About 120 residents are within the 10-minute target for public transport.'
 		);
-		expect(explanation.reasons).toEqual(['Average modeled journey: 8 minutes.']);
+		expect(explanation.reasons).toEqual(['Estimated average journey: 8 minutes.']);
 	});
 
 	it('explains mixed cells and never describes a weighted average as everyone meeting the target', () => {

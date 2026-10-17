@@ -1,0 +1,69 @@
+{
+  "sources": [
+    {
+      "id": "rtl-zone-101-timetable",
+      "title": "RTL Zone 1 published ferry schedules",
+      "url": "https://bo.rtl.mv:4455/maldives/api/booking/v2/ferryTrip/allSchedules/101",
+      "publisher": "RTL / MTCC",
+      "retrieved_at": "2026-10-17T07:19:38.986241+00:00",
+      "sha256": "8dfe4d295a94c092683e78910a68d6498ccab1a8c2cef2606f7375fa06581249",
+      "pdf_sha256": "c6665e64c67b764d3dd4a5b8081f740fa83ae16367bf5b4f4dd33bcbbbf2c943",
+      "bytes": 75673,
+      "raw_path": "data/raw/sea-source-research/rtl-zone101-schedules.json",
+      "pdf_path": "data/raw/sea-source-research/rtl-zone101-schedules.pdf",
+      "license_status": "Public operator publication; explicit reuse licence not stated."
+    },
+    {
+      "id": "rtl-zone-102-timetable",
+      "title": "RTL Zone 2 published ferry schedules",
+      "url": "https://bo.rtl.mv:4455/maldives/api/booking/v2/ferryTrip/allSchedules/102",
+      "publisher": "RTL / MTCC",
+      "retrieved_at": "2026-10-17T07:19:39.919411+00:00",
+      "sha256": "85ebca198bd7101292565433db462a6e34459d78349a3d61c563455432e8a625",
+      "pdf_sha256": "13b97d74b5b9d8282c9ef5e98b56fa7477d5c40e13cb2f4b738e6ca01ac5fddd",
+      "bytes": 83401,
+      "raw_path": "data/raw/sea-source-research/rtl-zone102-schedules.json",
+      "pdf_path": "data/raw/sea-source-research/rtl-zone102-schedules.pdf",
+      "license_status": "Public operator publication; explicit reuse licence not stated."
+    },
+    {
+      "id": "rtl-zone-104-timetable",
+      "title": "RTL Zone 4 published ferry schedules",
+      "url": "https://bo.rtl.mv:4455/maldives/api/booking/v2/ferryTrip/allSchedules/104",
+      "publisher": "RTL / MTCC",
+      "retrieved_at": "2026-10-17T07:19:40.693386+00:00",
+      "sha256": "f88baa5f89822a7ac0cfa56f8e381c8624616b29e80257e49dc495e7ea2646dc",
+      "pdf_sha256": "80bcaeef6d09a9636b399bd1d7a2ac9f869c7d78acf70c212cdaeac0b5f01bbf",
+      "bytes": 59799,
+      "raw_path": "data/raw/sea-source-research/rtl-zone104-schedules.json",
+      "pdf_path": "data/raw/sea-source-research/rtl-zone104-schedules.pdf",
+      "license_status": "Public operator publication; explicit reuse licence not stated."
+    },
+    {
+      "id": "rtl-zone-105-timetable",
+      "title": "RTL Zone 5 published ferry schedules",
+      "url": "https://bo.rtl.mv:4455/maldives/api/booking/v2/ferryTrip/allSchedules/105",
+      "publisher": "RTL / MTCC",
+      "retrieved_at": "2026-10-17T07:19:41.313441+00:00",
+      "sha256": "cb1111352a5ef2cd53c3c9f3912766c85d40c67a5b33149477d2c7482baca275",
+      "pdf_sha256": "43c7e19a90a5c1f06e4611544bcfef2c6f7b4bdc739fa2c58e0144b1913f0cb8",
+      "bytes": 47970,
+      "raw_path": "data/raw/sea-source-research/rtl-zone105-schedules.json",
+      "pdf_path": "data/raw/sea-source-research/rtl-zone105-schedules.pdf",
+      "license_status": "Public operator publication; explicit reuse licence not stated."
+    },
+    {
+      "id": "rtl-zone-106-timetable",
+      "title": "RTL Zone 6 published ferry schedules",
+      "url": "https://bo.rtl.mv:4455/maldives/api/booking/v2/ferryTrip/allSchedules/106",
+      "publisher": "RTL / MTCC",
+      "retrieved_at": "2026-10-17T07:19:41.442185+00:00",
+      "sha256": "1c93ba107be6a544582eb65a4e3335b91b9403ddb956d1a67362666a811ad418",
+      "pdf_sha256": "c492c3e4515d8657bd7e4f34be98a4f714d7aa282681b2abde21a62760fc8a58",
+      "bytes": 7014,
+      "raw_path": "data/raw/sea-source-research/rtl-zone106-schedules.json",
+      "pdf_path": "data/raw/sea-source-research/rtl-zone106-schedules.pdf",
+      "license_status": "Public operator publication; explicit reuse licence not stated."
+    }
+  ]
+}

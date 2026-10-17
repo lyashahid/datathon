@@ -1,4 +1,5 @@
 import { browserBaseURL } from './browser-config.mjs';
+import { wheelMapZoom } from './browser-map.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -150,13 +151,12 @@ try {
 				await expect
 					.poll(async () => Number(await atlas.getAttribute('data-vessel-groups')))
 					.toBeGreaterThan(0);
-				const zoomOut = page.getByRole('button', { name: 'Zoom out', exact: true });
 				for (
 					let attempts = 0;
 					attempts < 8 && Number(await atlas.getAttribute('data-zoom')) > 11.9;
 					attempts++
 				) {
-					await zoomOut.click();
+					await wheelMapZoom(page, atlas, -1);
 					await page.waitForTimeout(350);
 				}
 				await expect

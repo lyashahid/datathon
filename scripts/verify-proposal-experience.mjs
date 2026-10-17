@@ -1,4 +1,4 @@
-import { projectMapPoint } from './browser-map.mjs';
+import { projectMapPoint, wheelMapZoom } from './browser-map.mjs';
 import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -748,7 +748,7 @@ try {
 			for (let attempt = 0; attempt < 5; attempt += 1) {
 				if (await visibleIslandPoint(destinationLocations)) break;
 				const previousZoom = Number(await atlas.getAttribute('data-zoom'));
-				await page.getByRole('button', { name: 'Zoom out', exact: true }).click();
+				await wheelMapZoom(page, atlas, -1);
 				await expect
 					.poll(async () => Number(await atlas.getAttribute('data-zoom')))
 					.toBeLessThan(previousZoom - 0.8);

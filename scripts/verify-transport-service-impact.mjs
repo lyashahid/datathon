@@ -388,7 +388,7 @@ try {
 	await journey.getByRole('button', { name: 'Island connections', exact: true }).click();
 	const connections = journey.getByRole('region', { name: 'Island connections', exact: true });
 	await connections.getByLabel('From island', { exact: true }).selectOption('island:1442');
-	await connections.getByLabel('Check service evidence for', { exact: true }).fill('2026-10-11');
+	await connections.getByLabel('Travel date', { exact: true }).fill('2026-10-11');
 	await connections.getByLabel('To island', { exact: true }).selectOption('island:1443');
 	await expect(connections).toHaveAttribute('aria-busy', 'false');
 	await expect(connections.locator('.connection-verdict')).toBeVisible();
@@ -435,7 +435,7 @@ try {
 			await ferryImpact.getByText('Route and island connection details', { exact: true }).click();
 			await expect(ferryImpact).toContainText('Hulhumalé → Malé');
 			await expect(ferryImpact).toContainText('Malé → Hulhumalé');
-			await expect(ferryImpact).toContainText('No dated service in data');
+			await expect(ferryImpact).toContainText('No service listed for this date');
 			await expect(ferryImpact).toContainText('Sailing time');
 			await expect(ferryImpact).not.toContainText('shorter expected wait');
 			await assertDatedDepartures(ferryImpact, ferryPreview);

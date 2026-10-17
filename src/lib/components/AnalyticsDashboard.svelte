@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { themeColors } from '#lib/theme.js';
 	import { downloadText } from '#lib/download.js';
 	import { onMount, tick, untrack } from 'svelte';
 	import {
@@ -313,10 +314,10 @@
 				'Island',
 				'Atoll',
 				'Category',
-				'Official facility records',
-				'Records with coordinates',
-				'Modeled access score /100',
-				'Model confidence',
+				'Facilities',
+				'Facilities with map locations',
+				'Access score /100',
+				'Score confidence',
 				'Missing data flags'
 			],
 			...matchedRows.map((row) => [
@@ -408,9 +409,9 @@
 		</div>
 		<div class="snapshot-controls">
 			<div class="snapshot-note">
-				<span class="snapshot-dot"></span> Supplied data snapshot
+				<span class="snapshot-dot"></span> Maldives service overview
 				<span class="snapshot-divider">/</span>
-				{summary ? `${number(summary.island_count)} island records` : 'Loading island catalogue…'}
+				{summary ? `${number(summary.island_count)} islands` : 'Loading islands…'}
 			</div>
 			<div class="refresh-state" role="status" aria-live="polite">
 				{#if loading}<span>{initialLoading ? 'Loading analysis…' : 'Updating analysis…'}</span>
@@ -424,7 +425,7 @@
 					variant="ghost"
 					size="icon-sm"
 					aria-label="Reload national analytics"
-					title="Reload the available analysis"
+					title="Refresh analysis"
 					disabled={loading}
 					onclick={load}><RefreshCw size={13} class={loading ? 'refresh-icon' : ''} /></Button
 				>
@@ -443,7 +444,7 @@
 				<p>
 					{accessibility && infrastructure
 						? 'The previous results remain visible. Retry to check for updates.'
-						: 'Try again to load the service records and island scores.'}
+						: 'Try again to load services and island scores.'}
 				</p>
 				<details>
 					<summary>Error details</summary>
@@ -461,7 +462,7 @@
 			<div class="card-heading">
 				<div>
 					<h2>Service footprint</h2>
-					<p>Official facility inventory · {scopeLabel}</p>
+					<p>Health facilities, schools and airports · {scopeLabel}</p>
 				</div>
 				<Badge variant="secondary"
 					>{!infrastructure || !features ? 'Loading' : `${number(scopeRows.length)} islands`}</Badge
@@ -474,7 +475,7 @@
 						format={number}
 						context={`${cohort}:${selectedAtoll}`}
 					/></strong
-				><span>official facility records</span>
+				><span>facilities</span>
 			</div>
 			<div class="chart-tabs" aria-label="Facility chart categories">
 				{#each [{ id: 'all' as const, label: 'All services' }, { id: 'health' as const, label: 'Health' }, { id: 'education' as const, label: 'Education' }, { id: 'airports' as const, label: 'Airports' }] as metric (metric.id)}
@@ -490,7 +491,7 @@
 			<div class="chart-context">Geographic comparison · leading atolls and your selection</div>
 			<div
 				class="atoll-chart"
-				aria-label="Facility records by atoll, showing leading atolls and the current selection"
+				aria-label="Facilities by atoll, showing leading atolls and the current selection"
 			>
 				<div class="chart-gridlines" aria-hidden="true">
 					<span>{number(chartMaximum)}</span><span>{number(Math.round(chartMaximum / 2))}</span
@@ -503,7 +504,7 @@
 								variant="ghost"
 								class={selectedAtoll === atoll.name ? 'atoll-bar selected' : 'atoll-bar'}
 								aria-pressed={selectedAtoll === atoll.name}
-								aria-label={`${atoll.name}: ${atoll.facilityCount} assigned facility records. Filter by this atoll.`}
+								aria-label={`${atoll.facilityCount} facilities in ${atoll.name}. Filter by this atoll.`}
 								title={`${atoll.name}: health ${atoll.health}, education ${atoll.education}, airports ${atoll.airports}`}
 								onmouseenter={() => (hoveredAtoll = atoll.name)}
 								onmouseleave={() => (hoveredAtoll = null)}
@@ -544,14 +545,14 @@
 				</div>
 			</div>
 			<div class="chart-caption" aria-live="polite">
-				{#if activeAtoll}<strong>{activeAtoll.name}</strong> · {number(activeAtoll.facilityCount)} records
-					/ {number(activeAtoll.islandCount)} islands{:else}Compare atolls with linked records.
-					Select a bar to focus the dashboard.{/if}
+				{#if activeAtoll}<strong>{activeAtoll.name}</strong> · {number(activeAtoll.facilityCount)} facilities
+					on {number(activeAtoll.islandCount)} islands{:else}Select an atoll to explore its
+					services.{/if}
 			</div>
 			<div class="chart-legend">
-				<span><i style:background="#9072dd"></i> Health</span><span
-					><i style:background="#32ae89"></i> Education</span
-				><span><i style:background="#efa84b"></i> Airports</span>
+				<span><i style:background="var(--theme-color-9072dd)"></i> Health</span><span
+					><i style:background="var(--theme-color-32ae89)"></i> Education</span
+				><span><i style:background="var(--theme-color-efa84b)"></i> Airports</span>
 			</div>
 		</Card.Root>
 
@@ -559,7 +560,7 @@
 			<div class="card-heading">
 				<div>
 					<h2>Facility mix</h2>
-					<p>How the service inventory is composed</p>
+					<p>Services by category · {scopeLabel}</p>
 				</div>
 			</div>
 			<div class="facility-mix-chart">
@@ -568,13 +569,20 @@
 					role="img"
 					aria-label={`Facility category proportions for ${scopeLabel}: ${categories.map(([category, count]) => `${facilityLabels[category] ?? category} ${count}`).join(', ')}`}
 				>
-					<circle cx="110" cy="110" r="82" fill="none" stroke="#f0edf6" stroke-width="25" />
+					<circle
+						cx="110"
+						cy="110"
+						r="82"
+						fill="none"
+						stroke={themeColors.colorf0edf6}
+						stroke-width="25"
+					/>
 					{#each mixSegments as segment (segment.category)}<circle
 							cx="110"
 							cy="110"
 							r="82"
 							fill="none"
-							stroke={facilityColors[segment.category] ?? '#9072dd'}
+							stroke={facilityColors[segment.category] ?? themeColors.color9072dd}
 							stroke-width="25"
 							pathLength="100"
 							stroke-dasharray={`${segment.share} ${100 - segment.share}`}
@@ -596,7 +604,7 @@
 							format={number}
 							context={`${cohort}:${selectedAtoll}`}
 						/></strong
-					><span>facility records</span>
+					><span>facilities</span>
 				</div>
 			</div>
 			<div class="category-list">
@@ -608,9 +616,8 @@
 						onclick={() => filterRows(category)}
 					>
 						<span class="category-label"
-							><i style:background={facilityColors[category] ?? '#9072dd'}></i>{facilityLabels[
-								category
-							] ?? category}</span
+							><i style:background={facilityColors[category] ?? themeColors.color9072dd}
+							></i>{facilityLabels[category] ?? category}</span
 						><span class="category-share">{percentage(count, scopeInventory.length)}%</span><strong
 							>{number(count)}</strong
 						>{#if tableFilter === category}<Check size={13} />{:else}<ArrowRight size={13} />{/if}
@@ -624,7 +631,7 @@
 						onclick={openRecords}
 						>View islands with {facilityLabels[tableFilter]?.toLowerCase()}
 						<ArrowRight size={13} /></Button
-					>{:else}Select a category to explore its island records.{/if}
+					>{:else}Select a category to explore its islands.{/if}
 			</p>
 		</Card.Root>
 		<div class="mobility-pulse-slot"><MobilityPulse {onForecast} {active} /></div>
@@ -632,8 +639,8 @@
 		<Card.Root class="analytics-card coverage-card">
 			<div class="card-heading">
 				<div>
-					<h2>Mapping coverage</h2>
-					<p>Facility records with coordinates</p>
+					<h2>Facility locations</h2>
+					<p>Facilities with a location on the map</p>
 				</div>
 				<Button
 					variant="ghost"
@@ -648,19 +655,19 @@
 				<svg
 					viewBox="0 0 220 124"
 					role="img"
-					aria-label={`${locatedPercent} percent of scoped facility records have coordinates`}
+					aria-label={`${locatedPercent} percent of facilities in this selection have map locations`}
 				>
 					<path
 						d="M 22 110 A 88 88 0 0 1 198 110"
 						fill="none"
-						stroke="#eaf5ef"
+						stroke={themeColors.coloreaf5ef}
 						stroke-width="7"
 						stroke-linecap="round"
 					/>
 					<path
 						d="M 22 110 A 88 88 0 0 1 198 110"
 						fill="none"
-						stroke="#32ae89"
+						stroke={themeColors.color32ae89}
 						stroke-width="7"
 						stroke-linecap="round"
 						pathLength="100"
@@ -674,28 +681,28 @@
 							format={(value) => `${value}%`}
 							context={`${cohort}:${selectedAtoll}`}
 						/></strong
-					><span>{number(locatedCount)} of {number(scopeInventory.length)} records</span>
+					><span>{number(locatedCount)} of {number(scopeInventory.length)} facilities</span>
 				</div>
 			</div>
 			<div class="coverage-breakdown">
 				<div>
-					<span><i class="located-dot"></i> Coordinates present</span><strong
+					<span><i class="located-dot"></i> Located on the map</span><strong
 						>{number(locatedCount)}</strong
 					>
 				</div>
 				<div>
-					<span><i class="context-dot"></i> Island context only</span><strong
+					<span><i class="context-dot"></i> Island known, location missing</span><strong
 						>{number(contextCount)}</strong
 					>
 				</div>
 				<div>
-					<span><i class="unlocated-dot"></i> Other unlocated records</span><strong
+					<span><i class="unlocated-dot"></i> Location unavailable</span><strong
 						>{number(scopeInventory.length - locatedCount - contextCount)}</strong
 					>
 				</div>
 			</div>
 			<p class="coverage-note">
-				Coordinates can be provisional. Inspect the source and match quality before choosing a site.
+				Some locations are approximate. Check the facility's location before choosing a site.
 			</p>
 		</Card.Root>
 
@@ -716,17 +723,14 @@
 					/></strong
 				><span>average across {number(scoredRows.length)} islands</span>
 			</div>
-			<div
-				class="distribution-chart"
-				aria-label="Distribution of modeled island accessibility scores"
-			>
+			<div class="distribution-chart" aria-label="Distribution of island accessibility scores">
 				{#each distribution.bins as bin, index (bin.label)}
 					<div class="distribution-column">
 						<span class="distribution-count">{number(bin.count)}</span>
 						<div class="distribution-track">
 							<span
 								style:height={`${(bin.count / distributionMax) * 100}%`}
-								style:background={index === 0 ? '#c5b4e6' : '#32ae89'}
+								style:background={index === 0 ? themeColors.colorc5b4e6 : themeColors.color32ae89}
 							></span>
 						</div>
 						<span class="distribution-label">{bin.label}</span>
@@ -745,19 +749,18 @@
 	{#if showMethod}
 		<Card.Root class="analytics-card methodology-card" id="analytics-methodology"
 			><div>
-				<h2>Read these numbers with their sources.</h2>
+				<h2>How these numbers are calculated</h2>
 				<p>
-					Facility counts include official records from HEMS, education and airport sources. Atoll
-					bars show the eight atolls with the most island-linked records; unassigned facilities stay
-					in national totals and are excluded from geographic comparisons. The accessibility index
-					uses the backend’s cached default model, with missing inputs contributing zero. It is an
-					unweighted island mean, not a population-weighted measure or a service forecast.
+					Facility counts come from official health, education and airport sources. The chart shows
+					the eight atolls with the most facilities, plus your selection. Facilities without a known
+					island contribute to national totals only. The accessibility score averages island scores
+					equally. Missing inputs contribute zero; population size does not change an island's
+					weight.
 				</p>
 				<p>
-					Coordinates indicate geometry availability, including provisional matches. These inventory
-					and index views do not verify passenger ferry calendars, approved budgets, observed time
-					trends or causal impact. Use proposal review to inspect cost assumptions and modeled
-					access changes.
+					Some facility locations are approximate. This overview describes service locations and
+					access scores. Open a proposal to review its estimated costs and changes in access, or
+					check island connections for ferry timetables.
 				</p>
 			</div>
 			<Button variant="ghost" size="sm" onclick={() => (showMethod = false)}>Close</Button
@@ -776,7 +779,7 @@
 		<div class="data-gap-grid">
 			<Card.Root class="analytics-card mini-card"
 				><span class="mini-icon purple"><MapPin size={17} /></span>
-				<h2>Unassigned records</h2>
+				<h2>Island unknown</h2>
 				<strong>{infrastructure ? number(unassignedCount) : '—'}</strong>
 				<p>Facilities without an island match</p></Card.Root
 			>
@@ -818,11 +821,11 @@
 					aria-label="Island screening filter"
 					bind:value={tableFilter}
 					onchange={() => (page = 0)}
-					><NativeSelect.Option value="all">All island records</NativeSelect.Option
-					><NativeSelect.Option value="zero">Score of zero</NativeSelect.Option><NativeSelect.Option
-						value="missing">Incomplete information</NativeSelect.Option
+					><NativeSelect.Option value="all">All islands</NativeSelect.Option><NativeSelect.Option
+						value="zero">Score of zero</NativeSelect.Option
+					><NativeSelect.Option value="missing">Incomplete information</NativeSelect.Option
 					>{#each Object.entries(facilityLabels) as [category, name] (category)}<NativeSelect.Option
-							value={category}>{name} recorded</NativeSelect.Option
+							value={category}>{name}</NativeSelect.Option
 						>{/each}</NativeSelect.Root
 				>
 			</div>
@@ -918,7 +921,7 @@
 						: 'No island results'} <span class="footer-divider">·</span>
 					{zeroScoreCount
 						? `${number(zeroScoreCount)} zero scores in this list`
-						: 'Current data snapshot'}</span
+						: 'Island access overview'}</span
 				>
 				<div class="pagination">
 					<Button
@@ -966,7 +969,7 @@
 		max-width: 1510px;
 		margin: 0 auto;
 		padding: 32px 36px 36px;
-		color: #292535;
+		color: var(--theme-color-292535);
 		font-variant-numeric: tabular-nums;
 	}
 	.overview-heading {
@@ -984,21 +987,21 @@
 		margin: 0 0 8px;
 	}
 	.heading-period {
-		color: #9674d9;
+		color: var(--theme-color-9674d9);
 	}
 	.overview-heading p {
 		font-size: 12px;
-		color: #777181;
+		color: var(--theme-color-777181);
 	}
 	:global(.analytics-dashboard .overview-map-button) {
-		background: #7960bc;
+		background: var(--theme-color-7960bc);
 		border-radius: 11px;
 		min-height: 40px;
 		font-size: 12px;
-		box-shadow: 0 3px 6px #7053a51c;
+		box-shadow: 0 3px 6px var(--theme-color-7053a51c);
 	}
 	:global(.analytics-dashboard .overview-map-button:hover) {
-		background: #6d50b2;
+		background: var(--theme-color-6d50b2);
 	}
 	.overview-filters {
 		display: flex;
@@ -1011,7 +1014,7 @@
 		display: flex;
 		align-items: center;
 		gap: 9px;
-		color: #756b83;
+		color: var(--theme-color-756b83);
 	}
 	.scope-controls > :global(svg) {
 		margin-right: 2px;
@@ -1022,7 +1025,7 @@
 	.scope-controls :global(select) {
 		height: 37px;
 		min-width: 159px;
-		border-color: #e1ddea;
+		border-color: var(--theme-color-e1ddea);
 		border-radius: 9px;
 		font-size: 11px;
 	}
@@ -1031,7 +1034,7 @@
 		align-items: center;
 		gap: 7px;
 		font-size: 10px;
-		color: #777181;
+		color: var(--theme-color-777181);
 	}
 	.snapshot-controls {
 		display: flex;
@@ -1045,7 +1048,7 @@
 		gap: 5px;
 		min-height: 24px;
 		font-size: 10px;
-		color: #6b7973;
+		color: var(--theme-color-6b7973);
 	}
 	.refresh-state :global(button) {
 		height: 24px;
@@ -1065,7 +1068,7 @@
 	.analytics-grid.initial-loading .distribution-chart {
 		position: relative;
 		border-radius: 12px;
-		background: #f6f3f9;
+		background: var(--theme-color-f6f3f9);
 	}
 	.analytics-grid.initial-loading .atoll-chart > *,
 	.analytics-grid.initial-loading .facility-mix-chart > *,
@@ -1093,12 +1096,12 @@
 	.snapshot-dot {
 		width: 6px;
 		height: 6px;
-		background: #29a783;
+		background: var(--theme-color-29a783);
 		border-radius: 50%;
-		box-shadow: 0 0 0 3px #2ba78212;
+		box-shadow: 0 0 0 3px var(--theme-color-2ba78212);
 	}
 	.snapshot-divider {
-		color: #bbb3c6;
+		color: var(--theme-color-bbb3c6);
 		margin: 0 2px;
 	}
 	.analytics-grid {
@@ -1112,13 +1115,13 @@
 		padding: 24px;
 		gap: 0;
 		min-width: 0;
-		border: 1px solid #e4dfed;
+		border: 1px solid var(--theme-color-e4dfed);
 		border-radius: 21px;
-		background: #fff;
+		background: var(--theme-color-ffffff);
 		box-shadow:
-			0 4px 8px #3c315803,
-			0 12px 30px #3c315804;
-		--tw-ring-shadow: 0 0 #0000;
+			0 4px 8px var(--theme-color-3c315803),
+			0 12px 30px var(--theme-color-3c315804);
+		--tw-ring-shadow: 0 0 var(--theme-color-00000000);
 	}
 	:global(.analytics-dashboard .footprint-card) {
 		grid-column: 1;
@@ -1131,7 +1134,7 @@
 	:global(.analytics-dashboard .coverage-card) {
 		grid-column: 3;
 		grid-row: 1;
-		background: linear-gradient(160deg, #fff 50%, #f5fbf8);
+		background: linear-gradient(160deg, var(--theme-color-ffffff) 50%, var(--theme-color-f5fbf8));
 	}
 	.mobility-pulse-slot {
 		grid-column: 1 / span 2;
@@ -1158,7 +1161,7 @@
 		margin-top: 5px;
 		font-size: 10px;
 		line-height: 1.5;
-		color: #81778c;
+		color: var(--theme-color-81778c);
 	}
 	.card-heading :global([data-slot='badge']) {
 		font-size: 9px;
@@ -1181,15 +1184,15 @@
 	}
 	.inventory-metric > span {
 		font-size: 10px;
-		color: #81778c;
+		color: var(--theme-color-81778c);
 	}
 	.chart-tabs {
 		display: flex;
 		gap: 2px;
 		margin: 19px 0 12px;
 		padding: 3px;
-		background: #f7f5fa;
-		border: 1px solid #efebf5;
+		background: var(--theme-color-f7f5fa);
+		border: 1px solid var(--theme-color-efebf5);
 		border-radius: 8px;
 		width: fit-content;
 	}
@@ -1198,17 +1201,17 @@
 		padding: 0 8px;
 		font-size: 9px;
 		font-weight: 500;
-		color: #7a7086;
+		color: var(--theme-color-7a7086);
 		border-radius: 5px;
 	}
 	:global(.analytics-dashboard .chart-tab.active) {
-		background: #fff;
-		color: #7956bf;
-		box-shadow: 0 1px 3px #5b427a12;
+		background: var(--theme-color-ffffff);
+		color: var(--theme-color-7956bf);
+		box-shadow: 0 1px 3px var(--theme-color-5b427a12);
 	}
 	.chart-context {
 		font-size: 9px;
-		color: #81778c;
+		color: var(--theme-color-81778c);
 		margin-bottom: 14px;
 	}
 	.atoll-chart {
@@ -1229,12 +1232,12 @@
 		display: flex;
 		align-items: center;
 		gap: 10px;
-		color: #8a8195;
+		color: var(--theme-color-8a8195);
 		font-size: 8px;
 	}
 	.chart-gridlines > span::after {
 		content: '';
-		border-top: 1px dashed #e9e4f0;
+		border-top: 1px dashed var(--theme-color-e9e4f0);
 		flex: 1;
 	}
 	.chart-bars {
@@ -1265,10 +1268,10 @@
 	}
 	:global(.analytics-dashboard .atoll-bar:hover),
 	:global(.analytics-dashboard .atoll-bar.selected) {
-		background: #eee8fa;
+		background: var(--theme-color-eee8fa);
 	}
 	:global(.analytics-dashboard .atoll-bar.selected) {
-		box-shadow: inset 0 -2px #8c66d0;
+		box-shadow: inset 0 -2px var(--theme-color-8c66d0);
 	}
 	.bar-group {
 		display: flex;
@@ -1285,13 +1288,13 @@
 		min-height: 0;
 	}
 	.bar-health {
-		background: #9072dd;
+		background: var(--theme-color-9072dd);
 	}
 	.bar-education {
-		background: #32ae89;
+		background: var(--theme-color-32ae89);
 	}
 	.bar-airports {
-		background: #efa84b;
+		background: var(--theme-color-efa84b);
 	}
 	.atoll-label {
 		display: flex;
@@ -1300,7 +1303,7 @@
 		height: 28px;
 		width: 100%;
 		font-size: 8px;
-		color: #81778c;
+		color: var(--theme-color-81778c);
 		text-align: center;
 		line-height: 1.25;
 		overflow: hidden;
@@ -1314,10 +1317,10 @@
 		pointer-events: none;
 		width: 150px;
 		padding: 11px 12px;
-		border: 1px solid #e5dfed;
+		border: 1px solid var(--theme-color-e5dfed);
 		border-radius: 10px;
-		background: #fff;
-		box-shadow: 0 6px 24px #3c31581c;
+		background: var(--theme-color-ffffff);
+		box-shadow: 0 6px 24px var(--theme-color-3c31581c);
 		font-size: 10px;
 	}
 	.atoll-tooltip > strong {
@@ -1339,7 +1342,7 @@
 		align-items: center;
 		gap: 5px;
 		margin-top: 4px;
-		color: #756a81;
+		color: var(--theme-color-756a81);
 	}
 	.atoll-tooltip i {
 		width: 5px;
@@ -1348,18 +1351,18 @@
 	}
 	.atoll-tooltip b {
 		margin-left: auto;
-		color: #3c3150;
+		color: var(--theme-color-3c3150);
 		font-weight: 500;
 	}
 	.chart-caption {
 		font-size: 9px;
-		color: #81778c;
+		color: var(--theme-color-81778c);
 		line-height: 1.5;
 		min-height: 27px;
 		margin-top: 9px;
 	}
 	.chart-caption strong {
-		color: #6e528f;
+		color: var(--theme-color-6e528f);
 		font-weight: 600;
 	}
 	.chart-legend {
@@ -1367,7 +1370,7 @@
 		align-items: center;
 		flex-wrap: wrap;
 		gap: 14px;
-		color: #756b80;
+		color: var(--theme-color-756b80);
 		font-size: 9px;
 		margin-top: 12px;
 	}
@@ -1413,7 +1416,7 @@
 	}
 	.mix-centre > span {
 		font-size: 9px;
-		color: #8a7f97;
+		color: var(--theme-color-8a7f97);
 		margin-top: 2px;
 	}
 	.category-list {
@@ -1431,7 +1434,7 @@
 		padding: 4px 5px;
 		border-radius: 6px;
 		font-size: 10px;
-		color: #776b84;
+		color: var(--theme-color-776b84);
 		font-weight: 450;
 	}
 	.category-label {
@@ -1439,29 +1442,29 @@
 		min-width: 0;
 	}
 	.category-share {
-		color: #94889f;
+		color: var(--theme-color-94889f);
 		text-align: right;
 		font-size: 9px;
 	}
 	:global(.analytics-dashboard .category-row strong) {
 		text-align: right;
-		color: #4f425f;
+		color: var(--theme-color-4f425f);
 		font-size: 11px;
 		font-weight: 550;
 	}
 	:global(.analytics-dashboard .category-selected) {
-		background: #f1ebfb;
+		background: var(--theme-color-f1ebfb);
 	}
 	.mix-note {
 		margin-top: 13px;
-		color: #8a7f97;
+		color: var(--theme-color-8a7f97);
 		font-size: 9px;
 		line-height: 1.6;
 	}
 	.mix-note :global(button) {
 		height: auto;
 		padding: 0;
-		color: #7d5ab6;
+		color: var(--theme-color-7d5ab6);
 		font-size: 10px;
 		white-space: normal;
 		text-align: left;
@@ -1495,7 +1498,7 @@
 	.gauge-value > span {
 		display: block;
 		font-size: 10px;
-		color: #7c7587;
+		color: var(--theme-color-7c7587);
 		margin-top: 4px;
 	}
 	.coverage-breakdown {
@@ -1509,7 +1512,7 @@
 		justify-content: space-between;
 		gap: 8px;
 		font-size: 10px;
-		color: #7b7287;
+		color: var(--theme-color-7b7287);
 	}
 	.coverage-breakdown > div > span {
 		display: flex;
@@ -1518,7 +1521,7 @@
 	}
 	.coverage-breakdown strong {
 		font-size: 11px;
-		color: #4f425f;
+		color: var(--theme-color-4f425f);
 		font-weight: 550;
 	}
 	.coverage-breakdown i {
@@ -1527,19 +1530,19 @@
 		border-radius: 50%;
 	}
 	.located-dot {
-		background: #32ae89;
+		background: var(--theme-color-32ae89);
 	}
 	.context-dot {
-		background: #ac93df;
+		background: var(--theme-color-ac93df);
 	}
 	.unlocated-dot {
-		background: #efa84b;
+		background: var(--theme-color-efa84b);
 	}
 	.coverage-note {
-		border-top: 1px solid #edf0ed;
+		border-top: 1px solid var(--theme-color-edf0ed);
 		padding-top: 13px;
 		margin-top: 19px;
-		color: #80768b;
+		color: var(--theme-color-80768b);
 		font-size: 9px;
 		line-height: 1.65;
 	}
@@ -1551,7 +1554,7 @@
 		margin-top: 23px;
 	}
 	.access-metric > span {
-		color: #8a7e96;
+		color: var(--theme-color-8a7e96);
 		font-size: 10px;
 	}
 	.distribution-chart {
@@ -1568,7 +1571,7 @@
 		min-width: 0;
 	}
 	.distribution-count {
-		color: #867791;
+		color: var(--theme-color-867791);
 		font-size: 9px;
 		height: 19px;
 	}
@@ -1578,7 +1581,7 @@
 		align-items: flex-end;
 		width: 100%;
 		height: 94px;
-		border-bottom: 1px solid #eee9f3;
+		border-bottom: 1px solid var(--theme-color-eee9f3);
 	}
 	.distribution-track > span {
 		width: 100%;
@@ -1586,7 +1589,7 @@
 		border-radius: 5px 5px 0 0;
 	}
 	.distribution-label {
-		color: #867791;
+		color: var(--theme-color-867791);
 		font-size: 8px;
 		margin-top: 9px;
 	}
@@ -1596,9 +1599,9 @@
 		gap: 7px;
 		margin-top: 21px;
 		padding: 12px;
-		background: #f8f5fc;
+		background: var(--theme-color-f8f5fc);
 		border-radius: 9px;
-		color: #7a6a89;
+		color: var(--theme-color-7a6a89);
 		font-size: 10px;
 		line-height: 1.6;
 	}
@@ -1608,11 +1611,11 @@
 		border-radius: 50%;
 		flex-shrink: 0;
 		margin-top: 5px;
-		background: #ac91d6;
+		background: var(--theme-color-ac91d6);
 	}
 	.inventory-disclosure {
 		margin-top: 25px;
-		border-top: 1px solid #ddd6e9;
+		border-top: 1px solid var(--theme-color-ddd6e9);
 		padding-top: 22px;
 	}
 	.inventory-disclosure > summary {
@@ -1631,7 +1634,7 @@
 		font-size: 17px;
 	}
 	.inventory-disclosure > summary p {
-		color: #80748e;
+		color: var(--theme-color-80748e);
 		font-size: 11px;
 		margin-top: 6px;
 	}
@@ -1639,7 +1642,7 @@
 		display: flex;
 		align-items: center;
 		gap: 9px;
-		color: #7b5caf;
+		color: var(--theme-color-7b5caf);
 		font-size: 11px;
 		white-space: nowrap;
 	}
@@ -1669,12 +1672,12 @@
 		border-radius: 12px;
 	}
 	.mini-icon.purple {
-		background: #eee7fa;
-		color: #9571cf;
+		background: var(--theme-color-eee7fa);
+		color: var(--theme-color-9571cf);
 	}
 	.mini-icon.green {
-		background: #e7f6ef;
-		color: #30a982;
+		background: var(--theme-color-e7f6ef);
+		color: var(--theme-color-30a982);
 	}
 	:global(.analytics-dashboard .mini-card h2) {
 		font-size: 11px;
@@ -1689,7 +1692,7 @@
 	}
 	:global(.analytics-dashboard .mini-card p) {
 		font-size: 10px;
-		color: #82748e;
+		color: var(--theme-color-82748e);
 	}
 	:global(.analytics-dashboard .mini-action) {
 		grid-column: 2;
@@ -1697,7 +1700,7 @@
 		font-size: 10px;
 		height: 22px;
 		padding: 0;
-		color: #7c5ab1;
+		color: var(--theme-color-7c5ab1);
 	}
 	:global(.analytics-dashboard .methodology-card) {
 		display: flex;
@@ -1710,7 +1713,7 @@
 	:global(.analytics-dashboard .methodology-card p) {
 		margin-top: 8px;
 		font-size: 11px;
-		color: #80748e;
+		color: var(--theme-color-80748e);
 		line-height: 1.8;
 	}
 	:global(.analytics-dashboard .screening-card) {
@@ -1731,14 +1734,14 @@
 	}
 	.screening-heading p {
 		font-size: 11px;
-		color: #80748e;
+		color: var(--theme-color-80748e);
 		margin-top: 6px;
 	}
 	.eyebrow {
 		font-size: 9px;
 		letter-spacing: 0.12em;
 		font-weight: 600;
-		color: #a08cb4;
+		color: var(--theme-color-a08cb4);
 		margin-bottom: 6px;
 	}
 	.table-toolbar {
@@ -1753,7 +1756,7 @@
 		width: 280px;
 		display: flex;
 		align-items: center;
-		color: #8b7b9a;
+		color: var(--theme-color-8b7b9a);
 	}
 	.table-search > :global(svg) {
 		position: absolute;
@@ -1764,7 +1767,7 @@
 		padding-left: 33px;
 		height: 35px;
 		font-size: 11px;
-		background: #fbfafd;
+		background: var(--theme-color-fbfafd);
 	}
 	.table-toolbar :global([data-slot='native-select-wrapper']) {
 		width: 220px;
@@ -1786,14 +1789,14 @@
 		font-size: 11px;
 	}
 	th {
-		background: #faf8fd;
-		color: #897c97;
+		background: var(--theme-color-faf8fd);
+		color: var(--theme-color-897c97);
 		font-size: 10px;
 		font-weight: 500;
 		height: 43px;
 		padding: 0 16px;
 		white-space: nowrap;
-		border-block: 1px solid #f0ebf6;
+		border-block: 1px solid var(--theme-color-f0ebf6);
 	}
 	th:first-child,
 	td:first-child {
@@ -1808,44 +1811,44 @@
 		height: 28px;
 		margin-left: -9px;
 		font-size: 10px;
-		color: #897c97;
+		color: var(--theme-color-897c97);
 		font-weight: 500;
 	}
 	td {
-		border-bottom: 1px solid #f2edf7;
+		border-bottom: 1px solid var(--theme-color-f2edf7);
 		padding: 15px 16px;
-		color: #82748e;
+		color: var(--theme-color-82748e);
 		white-space: nowrap;
 	}
 	td > strong {
 		font-size: 12px;
 		font-weight: 550;
-		color: #5e4e6e;
+		color: var(--theme-color-5e4e6e);
 	}
 	.island-name {
 		font-size: 12px;
-		color: #44354f;
+		color: var(--theme-color-44354f);
 		font-weight: 560;
 	}
 	.island-type,
 	.table-subline {
 		display: block;
 		font-size: 9px;
-		color: #998ba3;
+		color: var(--theme-color-998ba3);
 		margin-top: 4px;
 	}
 	.score-value {
-		color: #6c537d;
+		color: var(--theme-color-6c537d);
 		font-size: 14px;
 	}
 	.score-value small {
-		color: #a294ad;
+		color: var(--theme-color-a294ad);
 		font-size: 9px;
 		margin-left: 3px;
 	}
 	:global(.analytics-dashboard .row-explore) {
 		font-size: 11px;
-		color: #8761b8;
+		color: var(--theme-color-8761b8);
 	}
 	.table-empty {
 		text-align: center !important;
@@ -1858,7 +1861,7 @@
 		align-items: center;
 		gap: 15px;
 		padding: 17px 24px;
-		color: #897b97;
+		color: var(--theme-color-897b97);
 		font-size: 10px;
 	}
 	.pagination {
@@ -1873,12 +1876,12 @@
 		align-items: center;
 		gap: 12px;
 		margin-top: 18px;
-		color: #8c7b9d;
+		color: var(--theme-color-8c7b9d);
 		font-size: 10px;
 	}
 	.analytics-footer :global(button) {
 		font-size: 10px;
-		color: #8a6eab;
+		color: var(--theme-color-8a6eab);
 	}
 	.analysis-error {
 		display: flex;
@@ -1887,10 +1890,10 @@
 		gap: 20px;
 		padding: 18px 22px;
 		margin-bottom: 22px;
-		border: 1px solid #ebc8d1;
-		background: #fff5f7;
+		border: 1px solid var(--theme-color-ebc8d1);
+		background: var(--theme-color-fff5f7);
 		border-radius: 14px;
-		color: #914e60;
+		color: var(--theme-color-914e60);
 	}
 	.analysis-error strong {
 		font-size: 13px;

@@ -12,7 +12,6 @@
 		Map as MapIcon,
 		FlaskConical,
 		Sparkles,
-		Radio,
 		BookOpen,
 		Search,
 		ArrowUpRight,
@@ -43,16 +42,16 @@
 		MapPin,
 		PanelRightClose,
 		Maximize2,
-		Minimize2,
-		CalendarDays
+		Minimize2
 	} from '@lucide/svelte';
-	import { CloudSun } from '@lucide/svelte';
 	import CountryAccessibilityExplorer from '#lib/components/CountryAccessibilityExplorer.svelte';
 	import IslandMapScore from '#lib/components/IslandMapScore.svelte';
 	import type { NationalAccessibility } from '#lib/analytics.js';
 	import { emptyFeatures, type MapPolicyState, type PlacementKind } from '#lib/map-policy.js';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
 	import type { FeatureCollection } from 'geojson';
+	import type { PlanningOperation } from '#lib/planning-map.js';
+	import type { SeaMapState, SeaMapSelection } from '#lib/sea-connectivity.js';
 	import { api, subscribeApiInvalidation } from '#lib/api.js';
 	import { downloadJson } from '#lib/download.js';
 	import { MovementSession, movementScope } from '#lib/movement.js';
@@ -94,7 +93,8 @@
 		atlas: () => import('#lib/components/NationalMap.svelte'),
 		mapPolicy: () => import('#lib/components/MapPolicyWorkspace.svelte'),
 		journey: () => import('#lib/components/ExploreJourneyPanel.svelte'),
-		mapConditions: () => import('#lib/components/MapConditionsPanel.svelte'),
+		seaLayer: () => import('#lib/components/SeaConnectionsLayer.svelte'),
+		sea: () => import('#lib/components/SeaConnectionsPanel.svelte'),
 		evidence: () => import('#lib/components/EvidenceWorkspace.svelte')
 	};
 	type WorkspaceKey = keyof typeof workspaceLoaders;
@@ -112,7 +112,8 @@
 		atlas: 'island map',
 		mapPolicy: 'map proposal tools',
 		journey: 'journey planner',
-		mapConditions: 'nearby conditions',
+		seaLayer: 'sea connections layer',
+		sea: 'sea connections',
 		evidence: 'evidence workspace'
 	};
 	// Keep visited workspaces mounted so drafts and filters survive navigation.
@@ -176,6 +177,50 @@
 	});
 	let conditionRoute = $state<Coordinates[]>([]);
 	let connectionFeatures = $state.raw<FeatureCollection>(emptyFeatures());
+	let seaMap = $state.raw<SeaMapState | null>(null);
+	let seaLayerMap = $state.raw<SeaMapState | null>(null);
+	let seaLayerEnabled = $state(false);
+	function setSeaLayer(enabled: boolean) {
+		seaLayerEnabled = enabled;
+		if (enabled && !selectedId) selectIsland(defaultMapIslandId, false);
+		if (!enabled) closeSeaConnections();
+		writeLocation(true);
+	}
+	let seaSelection = $state<SeaMapSelection | null>(null);
+	let seaOperations = $state.raw<PlanningOperation[]>([]);
+	let seaAssumptions = $state.raw<Record<string, unknown>>({});
+	let seaInitialMode = $state<'baseline' | 'scenario'>('baseline');
+	function openSeaConnections(withDraft = false) {
+		seaInitialMode = withDraft ? 'scenario' : 'baseline';
+		seaLayerEnabled = true;
+		if (!selectedId) selectIsland(defaultMapIslandId, false);
+		const matchingOrigin = policyState.seaOriginIslandId === selectedId;
+		seaOperations = matchingOrigin
+			? withDraft
+				? (policyState.seaOperations ?? policyState.operations)
+				: (policyState.seaAcceptedOperations ?? [])
+			: [];
+		seaAssumptions =
+			matchingOrigin && (withDraft || seaOperations.length)
+				? (policyState.seaAssumptions ?? {})
+				: {};
+		seaMap = null;
+		seaSelection = null;
+		go('explore', false);
+		exploreView = 'sea';
+		panelOpen = false;
+		pickMode = null;
+		islandPick = null;
+		accessExplorerOpen = false;
+		writeLocation(true);
+	}
+	function closeSeaConnections() {
+		exploreView = 'map';
+		seaMap = null;
+		focusBounds = null;
+		focusVersion += 1;
+		writeLocation(true);
+	}
 	let connectionOriginId = $state('island:1442');
 	let connectionDestinationId = $state('');
 	let journeyKind = $state<'local' | 'islands'>('local');
@@ -194,17 +239,12 @@
 	}
 	function openIslandConnections(islandId?: string) {
 		if (islandId) selectIsland(islandId, false);
-		go('explore', false);
-		exploreView = 'map';
-		journeyKind = 'islands';
-		connectionOriginId = selectedId ?? defaultMapIslandId;
-		profileView = 'route';
-		panelOpen = true;
-		policyAction('close');
-		writeLocation(true);
+		openSeaConnections();
 	}
 	function proposeFerry(origin: string, destination: string, serviceDate: string) {
 		selectIsland(origin, false);
+		exploreView = 'map';
+		seaMap = null;
 		panelOpen = false;
 		islandPick = null;
 		connectionFeatures = emptyFeatures();
@@ -239,6 +279,7 @@
 	let profileView = $state('baseline');
 	let overviewView = $state('national');
 	let exploreView = $state('map');
+	const seaActive = $derived(tab === 'explore' && exploreView === 'sea');
 	const mapTool = $derived(
 		tab === 'scenarios' || tab === 'recommendations' ? 'proposals' : 'explore'
 	);
@@ -248,18 +289,18 @@
 				? 'forecast'
 				: overviewView === 'data'
 					? 'studio'
-					: 'national'
+					: overviewView === 'timetables'
+						? 'schedules'
+						: 'national'
 			: tab === 'evidence'
 				? 'evidence'
 				: (tab === 'scenarios' || tab === 'recommendations') && proposalView === 'advanced'
 					? 'policy'
 					: tab === 'explore' && exploreView === 'places'
 						? 'places'
-						: tab === 'explore' && exploreView === 'schedules'
-							? 'schedules'
-							: tab === 'explore' && exploreView === 'notices'
-								? 'conditions'
-								: 'atlas'
+						: tab === 'explore' && exploreView === 'notices'
+							? 'conditions'
+							: 'atlas'
 	);
 	let incomingOperation = $state<Record<string, unknown> | null>(null);
 	let incomingPlacement = $state<{
@@ -318,6 +359,37 @@
 				return true;
 			})
 		};
+	});
+	const journeyPlaces = $derived.by(() => {
+		const seen = new SvelteSet<string>();
+		const places: { id: string; name: string; coordinates: Coordinates; category?: string }[] = [];
+		for (const feature of features?.features ?? []) {
+			const properties = feature.properties;
+			if (!properties?.name || !feature.geometry || !properties.island_id) continue;
+			const coordinates =
+				feature.geometry.type === 'Point' ? feature.geometry.coordinates : properties.centroid;
+			if (
+				!Array.isArray(coordinates) ||
+				coordinates.length !== 2 ||
+				!coordinates.every(Number.isFinite)
+			)
+				continue;
+			const id = String(
+				properties.id ?? feature.id ?? `${properties.name}:${coordinates.join(',')}`
+			);
+			if (seen.has(id)) continue;
+			seen.add(id);
+			places.push({
+				id,
+				name: properties.name,
+				coordinates: coordinates as Coordinates,
+				category: properties.category
+			});
+		}
+		for (const stop of transitStops) {
+			if (!seen.has(stop.id)) places.push({ ...stop, category: 'Bus stop' });
+		}
+		return places.sort((a, b) => a.name.localeCompare(b.name));
 	});
 	let summary = $state.raw<NationalSummary | null>(null);
 	let profile = $state.raw<IslandProfile | null>(null);
@@ -402,7 +474,6 @@
 	let liveObservedScope = $state<string | null>(null);
 	let liveBusy = $state(false);
 	let liveError = $state('');
-	let exploreMovementEnabled = $state(true);
 	let documentVisible = $state(true);
 	let controller: AbortController | undefined;
 	let profileController: AbortController | undefined;
@@ -467,7 +538,8 @@
 		)
 			untrack(() => void loadWorkspace('mapPolicy'));
 		if (profileView === 'route') untrack(() => void loadWorkspace('journey'));
-		if (exploreView === 'conditions') untrack(() => void loadWorkspace('mapConditions'));
+		if (seaLayerEnabled) untrack(() => void loadWorkspace('seaLayer'));
+		if (seaActive) untrack(() => void loadWorkspace('sea'));
 	});
 	let lastDetailVersion = 0;
 	$effect(() => {
@@ -613,9 +685,7 @@
 			}
 		}
 	}
-	const movementVisible = $derived(
-		initialized && !loading && documentVisible && isMapWorkspace && exploreMovementEnabled
-	);
+	const movementVisible = $derived(initialized && !loading && documentVisible && isMapWorkspace);
 	const selectedMovementKey = $derived(
 		selectedId && selectedCoordinates ? `${selectedId}:${selectedCoordinates.join(':')}` : null
 	);
@@ -844,6 +914,8 @@
 			return;
 		}
 		selectedId = id;
+		seaMap = null;
+		seaSelection = null;
 		islandSearchOpen = false;
 		pickMode = null;
 		error = '';
@@ -898,14 +970,14 @@
 			routeStartLabel = 'Start selected on map';
 			route = null;
 			pickMode = routeEnd ? null : 'end';
-			panelOpen = exploreView === 'conditions' ? false : !!routeEnd;
+			panelOpen = true;
 			return;
 		}
 		if (pickMode === 'end') {
 			routeEnd = coordinates;
 			routeEndLabel = 'Destination selected on map';
 			route = null;
-			panelOpen = exploreView !== 'conditions';
+			panelOpen = true;
 		}
 		pickMode = null;
 	}
@@ -979,7 +1051,7 @@
 	function chooseJourneyPoint(endpoint: 'start' | 'end') {
 		setProfileView('route');
 		pickMode = endpoint;
-		panelOpen = false;
+		panelOpen = true;
 	}
 	function clearJourneyPoint(endpoint: 'start' | 'end') {
 		cancelAction();
@@ -1173,9 +1245,6 @@
 			(result) => (recommendations = result)
 		);
 	}
-	async function refreshLive() {
-		await movementSession.refresh();
-	}
 	onMount(() => {
 		try {
 			const saved = localStorage.getItem('mobility-v2-scenario');
@@ -1232,14 +1301,14 @@
 				? (requestedLens as PolicyLens)
 				: 'overall';
 			panelOpen ||= profileView === 'route';
-			overviewView = ['passengers', 'data'].includes(params.get('analytics') ?? '')
+			overviewView = ['passengers', 'data', 'timetables'].includes(params.get('analytics') ?? '')
 				? params.get('analytics')!
 				: 'national';
 			exploreView =
-				tool === 'places' || params.get('explorer') === 'places'
-					? 'places'
-					: params.get('explorer') === 'schedules'
-						? 'schedules'
+				params.get('explorer') === 'sea'
+					? 'sea'
+					: tool === 'places' || params.get('explorer') === 'places'
+						? 'places'
 						: params.get('explorer') === 'notices'
 							? 'notices'
 							: params.get('explorer') === 'conditions' ||
@@ -1247,6 +1316,16 @@
 										params.get('context') !== 'positions')
 								? 'conditions'
 								: 'map';
+			seaLayerEnabled = params.get('sea') === '1' || exploreView === 'sea';
+			if (exploreView === 'conditions') {
+				exploreView = 'map';
+				profileView = 'route';
+				panelOpen = true;
+			}
+			if (params.get('explorer') === 'schedules') {
+				tab = 'overview';
+				overviewView = 'timetables';
+			}
 		};
 		restoreView();
 		initialized = true;
@@ -1288,7 +1367,8 @@
 		}
 		if (next === 'live') {
 			next = 'explore';
-			exploreView = 'conditions';
+			exploreView = 'map';
+			profileView = 'route';
 		}
 		if (!['overview', 'explore', 'scenarios', 'recommendations', 'live', 'evidence'].includes(next))
 			next = 'explore';
@@ -1326,6 +1406,8 @@
 		if (tab === 'overview' && overviewView !== 'national')
 			url.searchParams.set('analytics', overviewView);
 		else url.searchParams.delete('analytics');
+		if (isMapWorkspace && seaLayerEnabled) url.searchParams.set('sea', '1');
+		else url.searchParams.delete('sea');
 		if (tab === 'explore' && exploreView !== 'map') url.searchParams.set('explorer', exploreView);
 		else url.searchParams.delete('explorer');
 		if (isMapWorkspace && policyLens !== 'overall') url.searchParams.set('lens', policyLens);
@@ -1501,7 +1583,9 @@
 					><Tabs.List aria-label="Analytics workspace"
 						><Tabs.Trigger value="national">National dashboard</Tabs.Trigger><Tabs.Trigger
 							value="passengers">Passenger outlook</Tabs.Trigger
-						><Tabs.Trigger value="data">Data studio</Tabs.Trigger></Tabs.List
+						><Tabs.Trigger value="data">Data studio</Tabs.Trigger><Tabs.Trigger value="timetables"
+							>Timetables</Tabs.Trigger
+						></Tabs.List
 					></Tabs.Root
 				><span>Understand demand and the evidence behind it</span>
 			</div>
@@ -1584,10 +1668,7 @@
 						useJourneyPoint([place.longitude, place.latitude], endpoint, place.name)}
 				/>
 			</div>{/if}
-		{#if workspaces.schedules}<div class="map-tool-sheet" hidden={activeWorkspace !== 'schedules'}>
-				<Button class="map-tool-close" variant="outline" onclick={returnToExplore}
-					><X size={16} />Back to map</Button
-				>
+		{#if workspaces.schedules}<div class="analytics-page" hidden={activeWorkspace !== 'schedules'}>
 				<workspaces.schedules
 					mode="schedules"
 					islandId={selectedId ?? 'island:1443'}
@@ -1616,10 +1697,10 @@
 			class:panel-expanded={panelExpanded && panelOpen}
 			class:policy-panel-open={policyState.panelOpen}
 			class:placing-proposal={!!policyPickKind || !!policyState.pending}
-			class:conditions-panel-open={tab === 'explore' && exploreView === 'conditions'}
 			class:access-exploring={showAccessExplorer}
 			class:country-overview={!selectedId}
 			class:showing-island-score={showIslandScore}
+			class:sea-connections-open={tab === 'explore' && seaActive}
 			hidden={!isMapWorkspace || activeWorkspace === 'policy'}
 		>
 			<div class="map-region" aria-label="National planning map">
@@ -1631,26 +1712,37 @@
 						atollScope={countryAtoll}
 						scopeBounds={capitalRegion ? capitalBounds : null}
 						{focusBounds}
-						{connectionFeatures}
+						connectionFeatures={seaActive ? emptyPolicyMap : connectionFeatures}
+						seaState={seaActive ? seaMap : seaLayerEnabled ? seaLayerMap : null}
+						seaView={seaLayerEnabled || seaActive}
+						{seaLayerEnabled}
+						seaInspectorOpen={seaActive}
+						onSeaLayerChange={setSeaLayer}
+						onSeaSelect={(selection) => {
+							if (!seaActive) openSeaConnections();
+							seaSelection = { ...selection, key: ++policySequence };
+						}}
 						islandPicking={!!islandPick}
 						accessibilityScores={displayedScores}
 						onnational={showCountry}
 						onfocusisland={focusSelectedIsland}
 						{focusVersion}
 						{focusPoint}
-						{conditionRoute}
-						policyServiceFeatures={accessExplorerOpen
+						conditionRoute={seaActive ? [] : conditionRoute}
+						policyServiceFeatures={accessExplorerOpen || seaActive
 							? emptyPolicyMap
 							: policyState.serviceFeatures}
-						serviceEditor={accessExplorerOpen ? null : policyState.serviceEditor}
+						serviceEditor={accessExplorerOpen || seaActive ? null : policyState.serviceEditor}
 						serviceEditorContent={islandPick ? undefined : policyState.serviceEditorContent}
 						onserviceplace={(placement) =>
 							(servicePlacement = { ...placement, id: ++policySequence })}
 						onservicelanding={(landing) => (serviceLanding = { ...landing, id: ++policySequence })}
 						onservicecandidate={(stopId) => (serviceCandidate = { stopId, id: ++policySequence })}
 						oncancelservice={() => policyAction('cancel-service')}
-						gapFeatures={accessExplorerOpen ? emptyPolicyMap : policyState.gapFeatures}
-						impactFeatures={accessExplorerOpen ? emptyPolicyMap : policyState.impactFeatures}
+						gapFeatures={accessExplorerOpen || seaActive ? emptyPolicyMap : policyState.gapFeatures}
+						impactFeatures={accessExplorerOpen || seaActive
+							? emptyPolicyMap
+							: policyState.impactFeatures}
 						policyComparisonView={policyState.policyComparisonView}
 						comparisonPreview={policyState.comparisonPreview}
 						policyEvaluationId={policyState.policyEvaluationId}
@@ -1658,9 +1750,13 @@
 							policyState.stale ||
 							!!policyState.comparisonPreview}
 						gapLens={policyLens}
-						policyOperations={accessExplorerOpen ? emptyOperations : policyState.operations}
-						pendingProposal={accessExplorerOpen ? null : policyState.pending}
-						pendingPlacementDecision={accessExplorerOpen ? null : policyState.pendingDecision}
+						policyOperations={accessExplorerOpen || seaActive
+							? emptyOperations
+							: policyState.operations}
+						pendingProposal={accessExplorerOpen || seaActive ? null : policyState.pending}
+						pendingPlacementDecision={accessExplorerOpen || seaActive
+							? null
+							: policyState.pendingDecision}
 						placementKind={policyPickKind}
 						placementRoads={policyState.placementRoads ?? []}
 						onconfirmproposal={() => policyAction('confirm')}
@@ -1686,13 +1782,13 @@
 						onroutepoint={useJourneyPoint}
 						onmovejourneypoint={chooseJourneyPoint}
 						onclearjourneypoint={clearJourneyPoint}
-						{transitStops}
+						transitStops={seaActive ? [] : transitStops}
 						picking={pickMode !== null}
-						draft={scenario.operations}
-						{route}
-						{routeStart}
+						draft={seaActive ? [] : scenario.operations}
+						route={seaActive ? null : route}
+						routeStart={seaActive ? null : routeStart}
 						{journeyFocusVersion}
-						{routeEnd}
+						routeEnd={seaActive ? null : routeEnd}
 						liveEvents={liveSnapshot?.events ?? emptyLiveEvents}
 						liveStatus={displayedLiveStatus}
 					/>
@@ -1764,6 +1860,7 @@
 						else if (pickMode === 'proposal') pickMode = null;
 					}}
 					onCloseOthers={() => (panelOpen = false)}
+					onSeaImpact={() => openSeaConnections(true)}
 					onFocus={focusPolicyPoint}
 					onFocusBounds={focusConnection}
 					{ferryDestinationId}
@@ -1779,25 +1876,37 @@
 					onDetails={() => setProfileView('baseline')}
 					onAdvanced={() => setProposalView('advanced')}
 				/>{/if}
-			{#if workspaces.mapConditions && tab === 'explore' && exploreView === 'conditions' && !pickMode}<workspaces.mapConditions
-					coordinates={selectedCoordinates}
-					islandName={selected?.properties.name ?? 'Selected island'}
-					start={routeStart}
-					end={routeEnd}
-					startLabel={routeStartLabel}
-					endLabel={routeEndLabel}
-					onClose={returnToExplore}
-					onChoosePoint={(endpoint) => {
-						panelOpen = false;
-						pickMode = endpoint;
-					}}
-					onReset={resetJourney}
-					onRoute={(coordinates) => (conditionRoute = coordinates)}
-					onNotices={() => {
-						void loadWorkspace('conditions');
-						setExploreView('notices');
-					}}
-				/>{/if}
+			{#if tab === 'explore' && seaActive && selectedId}
+				<div class="sea-connections-overlay">
+					{#if workspaces.sea}
+						<workspaces.sea
+							selectedIslandId={selectedId}
+							islandName={selected?.properties.name ?? 'Selected island'}
+							operations={seaOperations}
+							assumptions={seaAssumptions}
+							initialMode={seaInitialMode}
+							serviceDate={typeof seaAssumptions.date === 'string'
+								? seaAssumptions.date
+								: undefined}
+							initialDepartureMinutes={typeof seaAssumptions.departure_minutes === 'number'
+								? seaAssumptions.departure_minutes
+								: undefined}
+							mapSelection={seaSelection}
+							onMapChange={(state) => (seaMap = state)}
+							onExplore={openIslandConnections}
+							onFocus={focusConnection}
+							onPropose={proposeFerry}
+							onClose={closeSeaConnections}
+						/>
+					{:else if workspaceErrors.sea}
+						<div class="workspace-state" role="alert">
+							<p>{workspaceErrors.sea}</p>
+							<Button onclick={() => void loadWorkspace('sea')}>Retry sea connections</Button
+							><Button variant="ghost" onclick={closeSeaConnections}>Close</Button>
+						</div>
+					{:else}<div class="workspace-state" role="status">Loading sea connections…</div>{/if}
+				</div>
+			{/if}
 			{#if !showAccessExplorer}<div class="map-search-dock">
 					<Button
 						variant="outline"
@@ -1815,58 +1924,27 @@
 						aria-label="Focus selected island"
 						onclick={focusSelectedIsland}><LocateFixed size={17} /></Button
 					>
-					<Button
-						variant="outline"
-						size="icon"
-						title="Nationwide schedules"
-						aria-label="Nationwide schedules"
-						onclick={() => {
-							go('explore', false);
-							setExploreView('schedules');
-						}}><CalendarDays size={17} /></Button
-					>
 				</div>{/if}
-			{#if tab === 'explore' && selectedId && !showAccessExplorer && !pickMode}<div
-					class="nearby-movement-controls"
-					aria-label="Explore supporting tools"
-				>
-					<Button variant="outline" size="sm" onclick={() => setExploreView('conditions')}
-						><CloudSun size={14} />Weather & traffic</Button
-					>
-					<details class="movement-settings">
-						<summary
-							><Radio size={14} />{exploreMovementEnabled
-								? 'Nearby updates on'
-								: 'Nearby updates paused'}</summary
-						>
-						<div>
-							<Button
-								variant="ghost"
-								size="sm"
-								aria-pressed={exploreMovementEnabled}
-								onclick={() => (exploreMovementEnabled = !exploreMovementEnabled)}
-								>{exploreMovementEnabled ? 'Pause nearby updates' : 'Resume nearby updates'}</Button
-							><Button
-								variant="ghost"
-								size="sm"
-								disabled={!movementVisible || liveBusy}
-								onclick={refreshLive}
-								><RefreshCw size={14} />{liveBusy ? 'Checking nearby' : 'Refresh nearby'}</Button
-							>
-						</div>
-					</details>
-					{#if showIslandScore}
-						{#key selectedId}
-							<IslandMapScore
-								islandName={selected?.properties.name ?? 'Selected island'}
-								accessibility={selectedAccessibility}
-								loading={profileLoading || loading}
-								error={profileError}
-								onRetry={() => selectedId && loadProfile(selectedId)}
-							/>
-						{/key}
-					{/if}
-				</div>{/if}
+			{#if seaLayerEnabled && !seaActive && selectedId && workspaces.seaLayer}
+				<div class="island-score-overlay" class:layer-card-hidden={!showIslandScore}>
+					<workspaces.seaLayer
+						islandId={selectedId}
+						islandName={selected?.properties.name ?? 'Selected island'}
+						onMapChange={(state) => (seaLayerMap = state)}
+						onExplore={() => openSeaConnections()}
+					/>
+				</div>
+			{:else if showIslandScore && !seaLayerEnabled}
+				<div class="island-score-overlay">
+					{#key selectedId}<IslandMapScore
+							islandName={selected?.properties.name ?? 'Selected island'}
+							accessibility={selectedAccessibility}
+							loading={profileLoading || loading}
+							error={profileError}
+							onRetry={() => selectedId && loadProfile(selectedId)}
+						/>{/key}
+				</div>
+			{/if}
 			{#if islandPick}<div class="pick-banner" role="status">
 					<MapPin size={18} /><span
 						>Choose {islandPick === 'origin' || islandPick === 'ferry-origin'
@@ -1906,9 +1984,14 @@
 					<Card.Root class="context-card">
 						<div class="context-location">
 							<span
-								><MapPin size={14} />{selected
-									? islandName(selected.properties.name, selected.properties.id)
-									: 'Select an island'}<small>{selected?.properties.atoll ?? 'Maldives'}</small
+								><MapPin size={14} />{profileView === 'route'
+									? 'Directions'
+									: selected
+										? islandName(selected.properties.name, selected.properties.id)
+										: 'Select an island'}<small
+									>{profileView === 'route'
+										? (selected?.properties.name ?? 'Selected island')
+										: (selected?.properties.atoll ?? 'Maldives')}</small
 								></span
 							>
 							<div class="context-window-actions">
@@ -1926,8 +2009,10 @@
 								><Button
 									variant="ghost"
 									size="icon-sm"
-									onclick={() => (panelOpen = false)}
-									aria-label="Collapse island details"><PanelRightClose size={17} /></Button
+									onclick={() => (profileView === 'route' ? closeJourney() : (panelOpen = false))}
+									aria-label={profileView === 'route'
+										? 'Close directions'
+										: 'Collapse island details'}><PanelRightClose size={17} /></Button
 								>
 							</div>
 						</div>
@@ -1948,143 +2033,20 @@
 								>
 							</div>{/if}
 						{#if tab === 'explore'}
-							<Tabs.Root bind:value={profileView} onValueChange={setProfileView}>
-								<Tabs.List class="context-tabs">
-									<Tabs.Trigger value="baseline">Island details</Tabs.Trigger>
-									<Tabs.Trigger value="route">Directions</Tabs.Trigger>
-								</Tabs.List>
-								<Tabs.Content value="baseline" class="context-tab-content">
-									{#if profileLoading}<p class="loading-text">
-											Loading island profile…
-										</p>{:else if profile}
-										<div class="panel-intro">
-											<span class="eyebrow">ISLAND PROFILE</span>
-											<h2>{islandName(profile.island.name, profile.island.id)}</h2>
-											<p>The people, services, and connections that shape this place.</p>
-										</div>
-										<div class="profile-stats">
-											<div>
-												<small>Residents · Census 2022</small><strong
-													class:no-census={profile.population.total == null}
-													>{profile.population.total == null
-														? 'No census count'
-														: fmt(profile.population.total)}</strong
-												><span
-													>{profile.population.year
-														? 'Census ' + profile.population.year
-														: 'Outside linked census coverage'}</span
-												>
-											</div>
-											<div>
-												<small>Official facilities</small><strong
-													>{fmt(profile.infrastructure.total)}</strong
-												><span>{fmt(profile.transport.total)} OSM transport features</span>
-											</div>
-										</div>
-										{#if profile.population.qualification}<p class="population-context">
-												{profile.population.qualification}
-											</p>{/if}
-										<section class="panel-section">
-											<div class="section-title">
-												<h3>Accessibility</h3>
-												<span class="soft-tag">BASELINE</span>
-											</div>
-											{#if profile.accessibility}<div class="access-score">
-													<strong>{profile.accessibility.score.toFixed(1)}<span>/100</span></strong
-													><small
-														>Confidence indicator<br /><b
-															>{Math.round(profile.accessibility.confidence * 100)}%</b
-														></small
-													>
-												</div>
-												{#each Object.entries(profile.accessibility.domains) as [domain, value] (domain)}<div
-														class="score-row"
-													>
-														<span>{label(domain)}</span>
-														<div>
-															<span style={'width:' + Math.min(100, Math.max(0, value.score)) + '%'}
-															></span>
-														</div>
-														<b>{value.score.toFixed(1)}</b>
-													</div>{/each}
-												<p class="fine-print">
-													A distance and data coverage score. Zero can reflect missing evidence.
-													This score is not recalculated by scenario simulation.
-												</p>
-												<details>
-													<summary
-														>{profile.accessibility.missing_data.length} data limitations</summary
-													>
-													<ul class="plain-list">
-														{#each profile.accessibility.missing_data as item, index (index)}<li>
-																{label(item)}
-															</li>{/each}
-													</ul>
-												</details>
-											{:else}<p class="empty-state">
-													No accessibility result for this island.
-												</p>{/if}
-										</section>
-										<section class="panel-section">
-											<div class="section-title">
-												<h3>Services & infrastructure</h3>
-												<span>{profile.infrastructure.total}</span>
-											</div>
-											{#each profile.infrastructure.items.slice(0, 8) as facility (facility.id)}<div
-													class="facility-row"
-												>
-													<span class="facility-symbol"
-														>{facility.category === 'school'
-															? 'E'
-															: facility.category === 'airport'
-																? 'T'
-																: 'H'}</span
-													>
-													<div>
-														<strong>{facility.name || label(facility.category)}</strong><small
-															>{label(facility.category)} · {facility.geometry
-																? label(facility.match_status ?? 'Mapped')
-																: 'Location unavailable'}</small
-														>
-													</div>
-												</div>{/each}
-											{#if !profile.infrastructure.total}<p class="empty-state">
-													No linked official facilities in this cache.
-												</p>{/if}
-											<details>
-												<summary>Inspect source records and IDs</summary>
-												<div class="record-list">
-													{#each [...profile.infrastructure.items, ...profile.transport.items] as record, index (record.id + '-' + index)}<div
-														>
-															<strong>{record.name || label(record.category)}</strong><code
-																>{record.id}</code
-															><small
-																>{record.source ?? 'OSM'} · {label(
-																	record.match_status ?? 'source geometry'
-																)}</small
-															>
-														</div>{/each}
-												</div>
-											</details>
-										</section>
-										{#if profile.data_quality.warnings.length}<div class="callout">
-												<strong>Know the coverage</strong>
-												<p>{profile.data_quality.warnings.join('. ')}.</p>
-												<p>
-													{fmt(profile.data_quality.unresolved_facility_count)} facilities have uncertain
-													or missing locations.
-												</p>
-											</div>{/if}
-										<Button variant="outline" class="wide" onclick={() => setProposalView('policy')}
-											>Test a proposal here<ArrowUpRight size={16} /></Button
-										>
-									{:else if !loading}<p class="empty-state">
-											Select an island to inspect its baseline.
-										</p>{/if}
-								</Tabs.Content>
-								<Tabs.Content value="route" class="context-tab-content">
+							{#if profileView === 'route'}<section
+									class="context-tab-content"
+									aria-label="Directions"
+								>
 									{#if workspaces.journey}<workspaces.journey
 											start={routeStart}
+											places={journeyPlaces}
+											picking={pickMode === 'start' || pickMode === 'end' ? pickMode : null}
+											onSelectPlace={(endpoint, place) =>
+												useJourneyPoint(place.coordinates, endpoint, place.name)}
+											conditionsCoordinates={selectedCoordinates}
+											islandName={selected?.properties.name ?? 'Selected island'}
+											onConditionRoute={(coordinates) => (conditionRoute = coordinates)}
+											onNotices={() => setExploreView('notices')}
 											islands={overviewFeatures}
 											bind:journeyKind
 											bind:originIslandId={connectionOriginId}
@@ -2105,15 +2067,152 @@
 											onClear={clearJourneyPoint}
 											onReset={resetJourney}
 											onSwap={swapJourney}
-											onBack={closeJourney}
 											onFind={requestRoute}
 											onChange={() => {
 												cancelAction();
 												route = null;
 											}}
 										/>{:else}<p class="empty-state" role="status">Opening journey planner…</p>{/if}
-								</Tabs.Content>
-							</Tabs.Root>
+								</section>{:else}<Tabs.Root bind:value={profileView} onValueChange={setProfileView}>
+									<Tabs.List class="context-tabs">
+										<Tabs.Trigger value="baseline">Island details</Tabs.Trigger>
+										<Tabs.Trigger value="route">Directions</Tabs.Trigger>
+									</Tabs.List>
+									<Tabs.Content value="baseline" class="context-tab-content">
+										{#if profileLoading}<p class="loading-text">
+												Loading island profile…
+											</p>{:else if profile}
+											<div class="panel-intro">
+												<span class="eyebrow">ISLAND PROFILE</span>
+												<h2>{islandName(profile.island.name, profile.island.id)}</h2>
+												<p>The people, services, and connections that shape this place.</p>
+											</div>
+											<div class="profile-stats">
+												<div>
+													<small>Residents · Census 2022</small><strong
+														class:no-census={profile.population.total == null}
+														>{profile.population.total == null
+															? 'No census count'
+															: fmt(profile.population.total)}</strong
+													><span
+														>{profile.population.year
+															? 'Census ' + profile.population.year
+															: 'Census count unavailable'}</span
+													>
+												</div>
+												<div>
+													<small>Official facilities</small><strong
+														>{fmt(profile.infrastructure.total)}</strong
+													><span>{fmt(profile.transport.total)} transport locations</span>
+												</div>
+											</div>
+											{#if profile.population.qualification}<p class="population-context">
+													{profile.population.qualification}
+												</p>{/if}
+											<section class="panel-section">
+												<div class="section-title">
+													<h3>Accessibility</h3>
+													<span class="soft-tag">BASELINE</span>
+												</div>
+												{#if profile.accessibility}<div class="access-score">
+														<strong
+															>{profile.accessibility.score.toFixed(1)}<span>/100</span></strong
+														><small
+															>Confidence indicator<br /><b
+																>{Math.round(profile.accessibility.confidence * 100)}%</b
+															></small
+														>
+													</div>
+													{#each Object.entries(profile.accessibility.domains) as [domain, value] (domain)}<div
+															class="score-row"
+														>
+															<span>{label(domain)}</span>
+															<div>
+																<span
+																	style={'width:' + Math.min(100, Math.max(0, value.score)) + '%'}
+																></span>
+															</div>
+															<b>{value.score.toFixed(1)}</b>
+														</div>{/each}
+													<p class="fine-print">
+														A distance and data coverage score. Zero can reflect missing evidence.
+														This score is not recalculated by scenario simulation.
+													</p>
+													<details>
+														<summary
+															>{profile.accessibility.missing_data.length} data limitations</summary
+														>
+														<ul class="plain-list">
+															{#each profile.accessibility.missing_data as item, index (index)}<li>
+																	{label(item)}
+																</li>{/each}
+														</ul>
+													</details>
+												{:else}<p class="empty-state">
+														No accessibility result for this island.
+													</p>{/if}
+											</section>
+											<section class="panel-section">
+												<div class="section-title">
+													<h3>Services & infrastructure</h3>
+													<span>{profile.infrastructure.total}</span>
+												</div>
+												{#each profile.infrastructure.items.slice(0, 8) as facility (facility.id)}<div
+														class="facility-row"
+													>
+														<span class="facility-symbol"
+															>{facility.category === 'school'
+																? 'E'
+																: facility.category === 'airport'
+																	? 'T'
+																	: 'H'}</span
+														>
+														<div>
+															<strong>{facility.name || label(facility.category)}</strong><small
+																>{label(facility.category)} · {facility.geometry
+																	? label(facility.match_status ?? 'Located')
+																	: 'Location unavailable'}</small
+															>
+														</div>
+													</div>{/each}
+												{#if !profile.infrastructure.total}<p class="empty-state">
+														No facilities listed for this island.
+													</p>{/if}
+												<details>
+													<summary>Inspect source records and IDs</summary>
+													<div class="record-list">
+														{#each [...profile.infrastructure.items, ...profile.transport.items] as record, index (record.id + '-' + index)}<div
+															>
+																<strong>{record.name || label(record.category)}</strong><code
+																	>{record.id}</code
+																><small
+																	>{record.source ?? 'OSM'} · {label(
+																		record.match_status ?? 'source geometry'
+																	)}</small
+																>
+															</div>{/each}
+													</div>
+												</details>
+											</section>
+											{#if profile.data_quality.warnings.length}<div class="callout">
+													<strong>Data details</strong>
+													<p>{profile.data_quality.warnings.join('. ')}.</p>
+													<p>
+														{fmt(profile.data_quality.unresolved_facility_count)} facilities have uncertain
+														or missing locations.
+													</p>
+												</div>{/if}
+											<Button
+												variant="outline"
+												class="wide"
+												onclick={() => setProposalView('policy')}
+												>Test a proposal here<ArrowUpRight size={16} /></Button
+											>
+										{:else if !loading}<p class="empty-state">
+												Select an island to explore its services.
+											</p>{/if}
+									</Tabs.Content>
+								</Tabs.Root>{/if}
 						{:else if tab === 'scenarios' || tab === 'recommendations'}
 							<div class="proposal-header">
 								<span class="eyebrow">YOUR POLICY WORKSPACE</span>
@@ -2449,9 +2548,7 @@
 									<div class="review-heading">
 										<span class="eyebrow">DECISION REVIEW</span>
 										<h2>What changes with your option?</h2>
-										<p>
-											Compare the modeled network changes, then inspect the evidence before sharing.
-										</p>
+										<p>Compare how each proposal changes access, travel times and costs.</p>
 									</div>
 									{#if simulation}<section class="panel-section simulation-result">
 											<div class="section-title">
@@ -2546,7 +2643,7 @@
 					</Card.Root>
 				</div>
 			</aside>
-			{#if tab === 'explore' && selectedId && !showAccessExplorer && !pickMode && !panelOpen}<div
+			{#if tab === 'explore' && !seaActive && selectedId && !showAccessExplorer && !pickMode && !panelOpen}<div
 					class="map-action-dock"
 				>
 					<span class="dock-label">EXPLORE THIS PLACE</span><Button
@@ -2647,7 +2744,7 @@
 					>{/each}
 			</NativeSelect.Root>
 			<div class="list-heading" aria-live="polite">
-				<span>{loading ? 'Loading national coverage…' : `${fmt(filtered.length)} islands`}</span>
+				<span>{loading ? 'Loading islands…' : `${fmt(filtered.length)} islands`}</span>
 				{#if atoll || search}<Button
 						variant="ghost"
 						class="text-button"

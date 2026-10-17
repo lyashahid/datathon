@@ -20,7 +20,7 @@ describe('planning evidence capabilities', () => {
 		expect(evidence.approximate).toBe(true);
 		expect(evidence.population).toContain('Official island projections (2026)');
 		expect(evidence.distribution).toContain('potentially uninhabited land');
-		expect(evidence.timetable).toContain('does not establish whether transport services operate');
+		expect(evidence.timetable).toContain('service times need confirmation');
 	});
 
 	it('keeps screened raster weights modeled and accepts legacy/camel case metadata', () => {
@@ -31,7 +31,7 @@ describe('planning evidence capabilities', () => {
 			populationYear: 2030
 		});
 		expect(evidence.approximate).toBe(false);
-		expect(evidence.distribution).toContain('not observed neighbourhood counts');
+		expect(evidence.distribution).toContain('Neighbourhood counts are estimates');
 		expect(evidence.population).toContain('2030');
 		expect(planningEvidence('Source-backed allocation').qualification).toBe(
 			'Source-backed allocation'
@@ -41,10 +41,10 @@ describe('planning evidence capabilities', () => {
 	it('uses explicit timetable status, never the existence of stops or route patterns', () => {
 		expect(
 			planningEvidence(null, { transport_stops: 70, scheduled_patterns: 3 }).timetable
-		).toContain('require dated service evidence');
+		).toContain('require a timetable valid for the selected date');
 		expect(
 			planningEvidence(null, { scheduled_patterns: 3, timetable_status: 'unavailable' }).timetable
-		).toContain('No dated timetable');
+		).toContain('A timetable is unavailable');
 		expect(planningEvidence(null, { timetable_status: 'available' }).timetable).toContain(
 			'valid for the selected date'
 		);
@@ -79,6 +79,6 @@ describe('planning evidence capabilities', () => {
 			spatial_quality: 'mixed_including_coarse_assumption'
 		});
 		expect(evidence.approximate).toBe(true);
-		expect(evidence.distribution).toContain('some islands use approximate spatial assumptions');
+		expect(evidence.distribution).toContain('Some islands use approximate allocations');
 	});
 });

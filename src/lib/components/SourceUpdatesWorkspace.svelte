@@ -257,7 +257,7 @@
 	<div class="heading">
 		<div>
 			<span class="eyebrow"
-				>{mode === 'schedules' ? 'CONNECTING ISLANDS' : 'KEEP THE EVIDENCE CURRENT'}</span
+				>{mode === 'schedules' ? 'CONNECTING ISLANDS' : 'KEEP DATA UP TO DATE'}</span
 			>
 			<h2>{mode === 'schedules' ? 'Nationwide timetables' : 'Official source updates'}</h2>
 			<p>
@@ -273,7 +273,7 @@
 		>
 	</div>
 	{#if error}<div role="alert" class="error">{error}</div>{/if}
-	{#if busy === 'load'}<p class="empty" role="status">Loading source receipts…</p>{/if}
+	{#if busy === 'load'}<p class="empty" role="status">Loading source details…</p>{/if}
 	{#if mode === 'evidence'}
 		<div class="receipts">
 			{#each sourceData?.sources ?? [] as source (source.id)}
@@ -316,7 +316,7 @@
 			<div><strong>{services.length}</strong><span>Reviewed timed services</span></div>
 			<div>
 				<strong>{catalogue?.snapshots?.filter((item) => item.accepted).length ?? 0}</strong><span
-					>Accepted source snapshots</span
+					>Accepted timetable versions</span
 				>
 			</div>
 		</div>
@@ -417,7 +417,7 @@
 				<p>
 					{sourceMutationsAllowed
 						? 'Import departures, arrivals, weekdays and validity dates linked to OneMap island IDs. Review the source and assumptions before accepting it.'
-						: 'Prepare source updates locally, then deploy the reviewed snapshot.'}
+						: 'Prepare and review data updates locally before deployment.'}
 				</p>
 				<div class="actions">
 					<Button
@@ -435,8 +435,8 @@
 					onchange={upload}
 				/>
 				<p class="qualification">
-					Original source files stay preserved. Accepted snapshots remain versioned locally; a newer
-					snapshot replaces matching service IDs without erasing its predecessor.
+					Original files and accepted timetable versions are preserved. Updates replace matching
+					services and keep the previous version in history.
 				</p>
 				{#if staged}<div class="review">
 						<h4>{staged.snapshot.title}</h4>
@@ -475,12 +475,11 @@
 			</Card.Root>
 		</div>
 		{#if scopedServices.length}<Card.Root class="calendar-card"
-				><h3>Reviewed services touching this island</h3>
+				><h3>Timetables for this island</h3>
 				<div class="table-scroll">
 					<table>
 						<thead
-							><tr
-								><th>Route</th><th>Depart → arrive</th><th>Validity</th><th>Timing evidence</th></tr
+							><tr><th>Route</th><th>Depart → arrive</th><th>Validity</th><th>Timing basis</th></tr
 							></thead
 						><tbody
 							>{#each scopedServices as service (service.id)}<tr
@@ -497,7 +496,7 @@
 			>{/if}
 		<div class="calendar-heading">
 			<h3>Published ferry departure calendars</h3>
-			<p>Preserved official evidence, with the boundaries of what each document establishes.</p>
+			<p>Official departure schedules, with dates and service details.</p>
 		</div>
 		<div class="calendars">
 			{#each catalogue?.published_calendars ?? [] as calendar (calendar.id)}{@const source =
@@ -573,14 +572,14 @@
 	}
 	.heading p,
 	.calendar-heading p {
-		color: #747183;
+		color: var(--theme-color-747183);
 		font-size: 12px;
 		max-width: 650px;
 		margin-top: 10px;
 		line-height: 1.7;
 	}
 	.eyebrow {
-		color: #827299;
+		color: var(--theme-color-827299);
 		font-size: 9px;
 		letter-spacing: 1.5px;
 	}
@@ -603,7 +602,7 @@
 		display: flex;
 		gap: 10px;
 		align-items: center;
-		color: #5e7b69;
+		color: var(--theme-color-5e7b69);
 	}
 	.source-updates :global(.receipt a),
 	.source-link {
@@ -611,7 +610,7 @@
 		gap: 6px;
 		align-items: center;
 		font-size: 12px;
-		color: #526e62;
+		color: var(--theme-color-526e62);
 	}
 	.source-updates :global(.receipt p),
 	.source-updates :global(.import-card > p),
@@ -620,28 +619,28 @@
 	details p {
 		font-size: 11px;
 		line-height: 1.8;
-		color: #767582;
+		color: var(--theme-color-767582);
 	}
 	.status {
 		align-self: flex-start;
 		font-size: 10px;
 		padding: 6px 9px;
 		border-radius: 6px;
-		background: #f1edf7;
-		color: #7c668f;
+		background: var(--theme-color-f1edf7);
+		color: var(--theme-color-7c668f);
 	}
 	.status.known {
-		background: #edf4e8;
-		color: #557447;
+		background: var(--theme-color-edf4e8);
+		color: var(--theme-color-557447);
 	}
 	details {
-		border-top: 1px solid #edeaf1;
+		border-top: 1px solid var(--theme-color-edeaf1);
 		padding-top: 12px;
 		font-size: 11px;
 	}
 	summary {
 		cursor: pointer;
-		color: #71687e;
+		color: var(--theme-color-71687e);
 	}
 	code {
 		font-size: 9px;
@@ -652,14 +651,14 @@
 	.qualification {
 		font-size: 11px;
 		line-height: 1.8;
-		color: #898494;
+		color: var(--theme-color-898494);
 		margin-top: 15px;
 	}
 	.schedule-summary {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 16px;
-		background: #ebe6f4;
+		background: var(--theme-color-ebe6f4);
 		padding: 22px 26px;
 		border-radius: 16px;
 		margin-bottom: 24px;
@@ -667,12 +666,12 @@
 	.schedule-summary strong {
 		font-size: 30px;
 		font-weight: 500;
-		color: #75628e;
+		color: var(--theme-color-75628e);
 		display: block;
 	}
 	.schedule-summary span {
 		font-size: 11px;
-		color: #81718d;
+		color: var(--theme-color-81718d);
 		display: block;
 		margin-top: 5px;
 	}
@@ -708,23 +707,23 @@
 		align-items: flex-start;
 		font-size: 11px;
 		line-height: 1.7;
-		color: #716f7d;
+		color: var(--theme-color-716f7d);
 	}
 	.check-row input {
-		accent-color: #7d6797;
+		accent-color: var(--theme-color-7d6797);
 		margin-top: 3px;
 	}
 	.empty {
-		background: #f5f2f9;
-		color: #80718e;
+		background: var(--theme-color-f5f2f9);
+		color: var(--theme-color-80718e);
 		padding: 15px;
 		border-radius: 10px;
 		font-size: 11px;
 		line-height: 1.9;
 	}
 	.error {
-		background: #fbebea;
-		color: #a94a46;
+		background: var(--theme-color-fbebea);
+		color: var(--theme-color-a94a46);
 		padding: 15px;
 		border-radius: 10px;
 		margin: 15px 0;
@@ -743,7 +742,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
-		background: #f4f1f8;
+		background: var(--theme-color-f4f1f8);
 		padding: 18px;
 		border-radius: 12px;
 	}
@@ -752,18 +751,18 @@
 		flex-direction: column;
 		gap: 5px;
 		padding-top: 14px;
-		border-top: 1px solid #eae6f0;
+		border-top: 1px solid var(--theme-color-eae6f0);
 		font-size: 11px;
 	}
 	.snapshot span,
 	.snapshot small {
-		color: #857b91;
+		color: var(--theme-color-857b91);
 	}
 	.journey-leg {
 		display: flex;
 		gap: 12px;
 		padding-top: 12px;
-		border-top: 1px solid #e1dce9;
+		border-top: 1px solid var(--theme-color-e1dce9);
 	}
 	.journey-leg div {
 		display: flex;
@@ -772,7 +771,7 @@
 		font-size: 11px;
 	}
 	.journey-leg small {
-		color: #84798f;
+		color: var(--theme-color-84798f);
 	}
 	.calendar-heading {
 		margin: 32px 0 20px;
@@ -790,16 +789,16 @@
 	td {
 		padding: 10px;
 		text-align: left;
-		border-bottom: 1px solid #eeebf3;
+		border-bottom: 1px solid var(--theme-color-eeebf3);
 	}
 	th {
 		font-weight: 500;
-		color: #8b8296;
+		color: var(--theme-color-8b8296);
 		white-space: nowrap;
 	}
 	td small {
 		display: block;
-		color: #8b8296;
+		color: var(--theme-color-8b8296);
 		margin-top: 4px;
 	}
 	@media (max-width: 850px) {

@@ -66,33 +66,33 @@
 		{
 			icon: Globe2,
 			title: 'National island atlas',
-			detail: 'Island search, source geometry, public facilities and population context.'
+			detail: 'Find islands, public facilities and population totals across the Maldives.'
 		},
 		{
 			icon: ShieldCheck,
-			title: 'Static accessibility screening',
-			detail: 'Island scores based on distance, source quality and declared assumptions.'
+			title: 'Island accessibility scores',
+			detail: 'Compare access to essential services, with the scoring method shown.'
 		},
 		{
 			icon: Route,
 			title: 'Shortest-distance routes',
-			detail: 'Land routes and marine graph geometry, with explicit permissions and eligibility.'
+			detail: 'Explore road and sea connections between destinations.'
 		},
 		{
 			icon: FlaskConical,
-			title: 'Structural scenario comparisons',
-			detail: 'Transport edits, graph and feature changes, and ranked screening recommendations.'
+			title: 'Compare proposals',
+			detail: 'Test transport and facility changes, compare results, and prioritise investments.'
 		},
 		{
 			icon: Radio,
-			title: 'Optional live positions',
-			detail: 'Provider status and vehicle positions when a configured feed is available.'
+			title: 'Live vehicle positions',
+			detail: 'See current vehicle positions where a live feed is available.'
 		},
 		{
 			icon: Users,
 			title: 'Passenger outlooks and backtests',
 			detail:
-				'Chronological model comparisons, empirical ranges, frozen forecast issues and source histories.'
+				'Compare forecasting methods, review past accuracy, and save forecasts for later evaluation.'
 		},
 		{
 			icon: BusFront,
@@ -104,19 +104,18 @@
 			icon: Hospital,
 			title: 'Resident access and investment',
 			detail:
-				'Island resident travel bands, gained/lost access, hospital and school proposals, costs, budgets and emissions, with each island’s coverage and allocation method shown.'
+				'Compare residents’ travel times, test hospitals and schools, and review costs, budgets and emissions.'
 		},
 		{
 			icon: Database,
 			title: 'Dataset and notice workspaces',
-			detail:
-				'Source-backed multi-dataset charts and exports; durable public-notice import, mapping and review.'
+			detail: 'Compare datasets, create charts, export findings, and review public notices.'
 		},
 		{
 			icon: Globe2,
 			title: 'Places, weather and traffic',
 			detail:
-				'Full Vela place discovery, details, photos, reviews, directions and Street View; current model weather and sea forecasts.'
+				'Find places, photos, reviews, directions and Street View; check weather and sea forecasts.'
 		}
 	];
 	const missing = [
@@ -128,7 +127,7 @@
 		{
 			title: 'Nationwide scheduled coverage',
 			detail:
-				'Local walking access uses mapped roads, facilities and stops. Scheduled journeys require verified departure times, runtimes and dated calendars; availability varies by island.'
+				'Walking times use roads, facilities and stops. Scheduled journeys require departure times, journey durations and valid timetables; availability varies by island.'
 		},
 		{
 			title: 'Verified ferry arrivals and service exceptions',
@@ -197,7 +196,7 @@
 			category: 'Transport',
 			href: 'https://www.openstreetmap.org/copyright',
 			detail:
-				'Transport objects and graph inputs. Mapped routes or terminals do not verify a passenger timetable.'
+				'Roads, routes, stops and terminals. Passenger journey times also require a valid timetable.'
 		}
 	];
 </script>
@@ -205,9 +204,9 @@
 <div class="evidence-page">
 	<div class="page-heading">
 		<div>
-			<span class="eyebrow">UNDERSTAND THE FOUNDATION</span>
-			<h1>Evidence, with the edges visible.</h1>
-			<p>See the source coverage and the limits behind every planning result.</p>
+			<span class="eyebrow">DATA AND METHODOLOGY</span>
+			<h1>Data and sources</h1>
+			<p>See the datasets, sources and methods behind each planning result.</p>
 		</div>
 		<Button variant="outline" onclick={onExplore}
 			>Back to planning map <ArrowUpRight size={16} /></Button
@@ -222,14 +221,12 @@
 					<h3>The national inventory</h3>
 				</div>
 				<Badge variant="secondary" class="evidence-badge"
-					>{summary ? 'Backend records' : 'Loading'}</Badge
+					>{summary ? 'Current inventory' : 'Loading'}</Badge
 				>
 			</div>
 			<div class="inventory-grid" aria-live="polite">
 				<div>
-					<Globe2 size={16} /><strong>{count(summary?.island_count)}</strong><span
-						>Island geometries</span
-					>
+					<Globe2 size={16} /><strong>{count(summary?.island_count)}</strong><span>Islands</span>
 				</div>
 				<div>
 					<Hospital size={16} /><strong>{count(summary?.facility_count)}</strong><span
@@ -282,9 +279,7 @@
 					<h3>Official facility matching</h3>
 				</div>
 			</div>
-			<p class="card-intro">
-				Keep the match status alongside the record before using a location in a decision.
-			</p>
+			<p class="card-intro">See how each official facility is linked to its location.</p>
 			{#if matching.length}<div class="matching-list">
 					{#each matching as [status, amount] (status)}<div
 							class="matching-row"
@@ -301,9 +296,7 @@
 								></span>
 							</div>
 						</div>{/each}
-				</div>{:else}<p class="summary-loading">
-					The backend inventory summary has not loaded yet.
-				</p>{/if}
+				</div>{:else}<p class="summary-loading">Loading the national inventory…</p>{/if}
 			<div class="evidence-note">
 				<Info size={13} /><span
 					>An identity match does not prove an exact entrance, audited service suitability, capacity
@@ -316,9 +309,9 @@
 				<div class="heading-icon green"><Check size={19} /></div>
 				<div>
 					<span class="card-eyebrow">AVAILABLE TODAY</span>
-					<h3>What the app can support</h3>
+					<h3>What you can do</h3>
 				</div>
-				<Badge variant="secondary" class="evidence-badge">Implemented</Badge>
+				<Badge variant="secondary" class="evidence-badge">Available</Badge>
 			</div>
 			<div class="capability-list">
 				{#each available as capability (capability.title)}<div>
@@ -332,7 +325,7 @@
 			<div class="evidence-note">
 				<Layers size={13} /><span
 					>Each workspace keeps source receipts, coverage and assumptions attached to its results.
-					Resident access results identify each island’s spatial method, mapped coverage and
+					Resident access results identify each island’s distribution method, road coverage and
 					timetable availability.</span
 				>
 			</div>
@@ -342,12 +335,11 @@
 				<div class="heading-icon lavender"><CircleDashed size={19} /></div>
 				<div>
 					<span class="card-eyebrow">DATA AND OPERATIONAL LIMITS</span>
-					<h3>What still needs stronger evidence</h3>
+					<h3>Data limitations</h3>
 				</div>
 			</div>
 			<p class="card-intro">
-				The requested workflows are implemented. These inputs would improve their reach and
-				reliability.
+				These inputs affect the detail and reliability of planning estimates.
 			</p>
 			<div class="missing-list">
 				{#each missing as feature (feature.title)}<div>
@@ -369,10 +361,10 @@
 		<div class="provenance-heading">
 			<div>
 				<span class="card-eyebrow">TRACE THE FOUNDATION</span>
-				<h3>Source families and their boundaries</h3>
+				<h3>Dataset sources</h3>
 				<p>
-					The atlas uses the supplied cache. Source links below identify its origin, and do not
-					imply a fresh live download.
+					The atlas uses versioned datasets from these sources. Live feeds are identified
+					separately.
 				</p>
 			</div>
 			<Button
@@ -380,7 +372,7 @@
 				size="sm"
 				href={backendUrl('national/summary')}
 				target="_blank"
-				rel="noopener noreferrer">Inspect returned summary <ExternalLink size={14} /></Button
+				rel="noopener noreferrer">View inventory summary <ExternalLink size={14} /></Button
 			>
 		</div>
 		<div class="provenance-grid">
@@ -401,7 +393,7 @@
 			<h3>Keep the decision and its evidence together.</h3>
 			<p>
 				{canExport
-					? 'Export the proposal, returned scenario result, comparison and source limitations.'
+					? 'Export the proposal, results, comparison and methodology.'
 					: 'Run a proposal in the planning workspace to create a decision brief.'}
 			</p>
 		</div>
@@ -430,7 +422,7 @@
 	}
 	.card-eyebrow {
 		display: block;
-		color: #9793a6;
+		color: var(--theme-color-9793a6);
 		font-size: 9px;
 		font-weight: 550;
 		letter-spacing: 1.2px;
@@ -444,17 +436,17 @@
 		flex-shrink: 0;
 	}
 	.heading-icon.green {
-		color: #709267;
-		background: #eef3e9;
+		color: var(--theme-color-709267);
+		background: var(--theme-color-eef3e9);
 	}
 	.heading-icon.lavender {
-		color: #8d7aa3;
-		background: #f1edf8;
+		color: var(--theme-color-8d7aa3);
+		background: var(--theme-color-f1edf8);
 	}
 	.evidence-page :global(.evidence-badge) {
 		font-size: 9px;
-		color: #8f8a9c;
-		background: #f3f1f7;
+		color: var(--theme-color-8f8a9c);
+		background: var(--theme-color-f3f1f7);
 		padding: 4px 8px;
 		height: auto;
 	}
@@ -462,7 +454,7 @@
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 0;
-		border: 1px solid #eae8f0;
+		border: 1px solid var(--theme-color-eae8f0);
 		border-radius: 13px;
 		overflow: hidden;
 	}
@@ -471,20 +463,20 @@
 		position: relative;
 	}
 	.inventory-grid > div:nth-child(odd) {
-		border-right: 1px solid #eeecf3;
+		border-right: 1px solid var(--theme-color-eeecf3);
 	}
 	.inventory-grid > div:nth-child(-n + 2) {
-		border-bottom: 1px solid #eeecf3;
+		border-bottom: 1px solid var(--theme-color-eeecf3);
 	}
 	.inventory-grid :global(svg) {
 		position: absolute;
 		right: 17px;
 		top: 19px;
-		color: #b7afc7;
+		color: var(--theme-color-b7afc7);
 	}
 	.inventory-grid strong {
 		display: block;
-		color: #3f3b4c;
+		color: var(--theme-color-3f3b4c);
 		font-size: 28px;
 		line-height: 1.2;
 		font-weight: 530;
@@ -494,7 +486,7 @@
 	.inventory-grid span {
 		display: block;
 		margin-top: 7px;
-		color: #9691a3;
+		color: var(--theme-color-9691a3);
 		font-size: 10px;
 	}
 	.population-linking {
@@ -504,29 +496,29 @@
 		display: flex;
 		justify-content: space-between;
 		gap: 14px;
-		color: #878294;
+		color: var(--theme-color-878294);
 		font-size: 11px;
 	}
 	.population-linking strong {
-		color: #80966f;
+		color: var(--theme-color-80966f);
 		font-weight: 550;
 		font-variant-numeric: tabular-nums;
 	}
 	.coverage-track {
 		height: 5px;
 		border-radius: 9px;
-		background: #eff1ea;
+		background: var(--theme-color-eff1ea);
 		margin: 10px 0;
 		overflow: hidden;
 	}
 	.coverage-track span {
 		display: block;
 		height: 100%;
-		background: #acc799;
+		background: var(--theme-color-acc799);
 		border-radius: inherit;
 	}
 	.population-linking p {
-		color: #a09aa9;
+		color: var(--theme-color-a09aa9);
 		font-size: 10px;
 		line-height: 1.7;
 	}
@@ -537,23 +529,23 @@
 		margin-top: 17px;
 	}
 	.evidence-page :global(.category-badge) {
-		color: #928ba0;
+		color: var(--theme-color-928ba0);
 		font-size: 9px;
 		height: auto;
 		padding: 4px 7px;
 		text-transform: capitalize;
 		gap: 7px;
-		background: #fcfbfd;
-		border-color: #ece8f1;
+		background: var(--theme-color-fcfbfd);
+		border-color: var(--theme-color-ece8f1);
 	}
 	.category-tags span {
-		color: #64616e;
+		color: var(--theme-color-64616e);
 		font-variant-numeric: tabular-nums;
 	}
 	.card-intro {
 		font-size: 11px;
 		line-height: 1.7;
-		color: #9691a3;
+		color: var(--theme-color-9691a3);
 		margin: -4px 0 20px;
 	}
 	.matching-list {
@@ -566,10 +558,10 @@
 		justify-content: space-between;
 		gap: 15px;
 		font-size: 11px;
-		color: #817c8b;
+		color: var(--theme-color-817c8b);
 	}
 	.matching-row strong {
-		color: #6e697b;
+		color: var(--theme-color-6e697b);
 		font-size: 11px;
 		font-weight: 550;
 		font-variant-numeric: tabular-nums;
@@ -577,39 +569,39 @@
 	.match-track {
 		margin-top: 7px;
 		height: 4px;
-		background: #f3f1f7;
+		background: var(--theme-color-f3f1f7);
 		border-radius: 10px;
 		overflow: hidden;
 	}
 	.match-track span {
 		display: block;
 		height: 100%;
-		background: #b4c9a4;
+		background: var(--theme-color-b4c9a4);
 		border-radius: inherit;
 	}
 	.needs-review .match-track span {
-		background: #bca9d4;
+		background: var(--theme-color-bca9d4);
 	}
 	.evidence-note {
 		margin-top: 21px;
 		padding-top: 16px;
-		border-top: 1px solid #efedf3;
+		border-top: 1px solid var(--theme-color-efedf3);
 		display: flex;
 		align-items: flex-start;
 		gap: 8px;
-		color: #a39cac;
+		color: var(--theme-color-a39cac);
 		font-size: 10px;
 		line-height: 1.7;
 	}
 	.evidence-note :global(svg) {
 		flex-shrink: 0;
-		color: #ada3bc;
+		color: var(--theme-color-ada3bc);
 		margin-top: 2px;
 	}
 	.summary-loading {
 		padding: 22px 0;
 		font-size: 12px;
-		color: #9d96a8;
+		color: var(--theme-color-9d96a8);
 	}
 	.capability-list,
 	.missing-list {
@@ -623,7 +615,7 @@
 		gap: 11px;
 	}
 	.capability-icon {
-		color: #91a881;
+		color: var(--theme-color-91a881);
 		margin-top: 2px;
 		flex-shrink: 0;
 	}
@@ -632,34 +624,34 @@
 		display: block;
 		font-size: 12px;
 		font-weight: 550;
-		color: #64606f;
+		color: var(--theme-color-64606f);
 	}
 	.capability-list p,
 	.missing-list p {
 		margin: 4px 0 0;
-		color: #a09aaa;
+		color: var(--theme-color-a09aaa);
 		font-size: 11px;
 		line-height: 1.7;
 	}
 	.evidence-page :global(.missing-card) {
-		background: #f7f4fc;
-		border-color: #eae3f3;
+		background: var(--theme-color-f7f4fc);
+		border-color: var(--theme-color-eae3f3);
 	}
 	.missing-list {
 		gap: 15px;
 	}
 	.missing-list :global(svg) {
-		color: #b1a0c4;
+		color: var(--theme-color-b1a0c4);
 		margin-top: 3px;
 		flex-shrink: 0;
 	}
 	.scope-note {
 		margin-top: 20px;
 		padding: 13px 15px;
-		border: 1px solid #e9e1f2;
+		border: 1px solid var(--theme-color-e9e1f2);
 		border-radius: 10px;
-		background: #f0eaf8;
-		color: #9484a6;
+		background: var(--theme-color-f0eaf8);
+		color: var(--theme-color-9484a6);
 		font-size: 10px;
 		line-height: 1.7;
 	}
@@ -683,7 +675,7 @@
 	.provenance-heading p {
 		margin-top: 8px;
 		font-size: 11px;
-		color: #a19aaa;
+		color: var(--theme-color-a19aaa);
 	}
 	.provenance-grid {
 		display: grid;
@@ -691,15 +683,15 @@
 		gap: 24px 32px;
 		margin-top: 25px;
 		padding-top: 24px;
-		border-top: 1px solid #efedf4;
+		border-top: 1px solid var(--theme-color-efedf4);
 	}
 	.evidence-page :global(.source-badge) {
-		border-color: #e8e1f0;
-		color: #a298ae;
+		border-color: var(--theme-color-e8e1f0);
+		color: var(--theme-color-a298ae);
 		font-size: 8px;
 		height: auto;
 		padding: 3px 7px;
-		background: #fbf9fd;
+		background: var(--theme-color-fbf9fd);
 	}
 	.provenance-grid a {
 		display: flex;
@@ -708,16 +700,16 @@
 		gap: 10px;
 		margin-top: 11px;
 		font-size: 12px;
-		color: #716780;
+		color: var(--theme-color-716780);
 		font-weight: 520;
 	}
 	.provenance-grid a :global(svg) {
-		color: #b1a4bd;
+		color: var(--theme-color-b1a4bd);
 		flex-shrink: 0;
 	}
 	.provenance-grid p {
 		margin-top: 8px;
-		color: #a09aab;
+		color: var(--theme-color-a09aab);
 		font-size: 10px;
 		line-height: 1.8;
 	}

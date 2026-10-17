@@ -113,22 +113,17 @@
 	<div class="connection-intro">
 		<Ship size={20} />
 		<div>
-			<h2>Can I reach another island?</h2>
-			<p>
-				Check public transport and ferry landing places, then plan a service where one is needed.
-			</p>
+			<h2>Island connections</h2>
+			<p>Explore public transport and ferry ports, then plan new connections.</p>
 		</div>
 	</div>
 	<div class="connection-date">
-		<Label for="connection-date">Check service evidence for</Label><Input
+		<Label for="connection-date">Travel date</Label><Input
 			id="connection-date"
 			type="date"
 			bind:value={serviceDate}
 		/>
-		<p>
-			Available bus service evidence is captured on 10 October 2026. Other dates may have less
-			verified coverage.
-		</p>
+		<p>Bus timetables are for 10 October 2026. Services on other dates may be unconfirmed.</p>
 	</div>
 	{#each ['origin', 'destination'] as endpoint (endpoint)}
 		{@const from = endpoint === 'origin'}
@@ -173,7 +168,7 @@
 			Choose a different island to check an inter-island journey.
 		</p>{/if}
 	{#if loading}<p class="connection-note" role="status">
-			Checking connections and landing places…
+			Checking connections and ports…
 		</p>{:else if error}<div class="connection-note" role="alert">
 			<p>{error}</p>
 			<Button variant="outline" size="sm" onclick={() => (retry += 1)}
@@ -181,6 +176,7 @@
 			>
 		</div>{:else if connection}
 		{#if connection.local_transport}{@const access = connection.local_transport}
+			{@const busStops = access.bus_stop_count || access.planning_bus_stop_count}
 			<section class="local-transport" aria-label="Public transport walking access">
 				<span class="access-eyebrow">Public transport in {connection.origin.name}</span>
 				<div>
@@ -190,17 +186,17 @@
 							: `${Math.round(access.resident_coverage_pct)}%`}</strong
 					><span
 						>{access.resident_coverage_pct == null
-							? 'Resident walking coverage is outside the detailed model.'
-							: `of allocated residents within a ${access.walk_target_minutes}-minute walk of a bus stop`}</span
+							? 'Walking access has not been calculated for this island.'
+							: `of estimated residents within a ${access.walk_target_minutes}-minute walk of a bus stop`}</span
 					>
 				</div>
 				<p>
-					{access.planning_bus_stop_count || access.bus_stop_count} mapped bus stops · {access.ferry_terminal_count}
-					ferry landing places
+					{busStops} bus stop{busStops === 1 ? '' : 's'} in {connection.origin.name}
+					· {access.ferry_terminal_count} ferry port{access.ferry_terminal_count === 1 ? '' : 's'}
 				</p>
 				<p>
-					Walking distance measures physical access. It does not guarantee a departing service or
-					available seats.
+					Walking access shows how close residents are to a stop. Check the timetable for
+					departures.
 				</p>
 			</section>{/if}
 		{#if connection.destination}
@@ -221,21 +217,21 @@
 						<Ship size={15} /><span
 							><strong>{endpoint.island.name}</strong><small
 								>{endpoint.terminals.length
-									? `${endpoint.terminals.length} mapped ferry landing ${endpoint.terminals.length === 1 ? 'place' : 'places'}`
-									: 'Landing place needs verification'}</small
+									? `${endpoint.terminals.length} ferry ${endpoint.terminals.length === 1 ? 'port' : 'ports'}`
+									: 'Port location unavailable'}</small
 							></span
 						>
 					</div>
 				{/each}
 			</div>
 			{#if connection.links.length}<details class="service-evidence">
-					<summary>Connection evidence</summary>{#each connection.links as link (link.id)}<div>
+					<summary>Routes and timetables</summary>{#each connection.links as link (link.id)}<div>
 							<strong>{link.name}</strong>
 							<p>
 								{link.mode === 'ferry' ? 'Ferry' : 'Bus'} · {link.evidence === 'dated_service'
-									? 'Dated service evidence'
-									: 'Mapped route; schedule unverified'}{link.departure_count != null
-									? ` · ${link.departure_count} departures in source`
+									? 'Published timetable for this date'
+									: 'Timetable unconfirmed'}{link.departure_count != null
+									? ` · ${link.departure_count} departures`
 									: ''}
 							</p>
 						</div>{/each}
@@ -247,17 +243,15 @@
 				><Ship size={16} />Plan a ferry service</Button
 			>
 			<p class="connection-note">
-				Use existing landing places. Your proposal adds a service and its vessel costs; it does not
-				build a port. Landing permission and suitability still need confirmation.
+				Your proposal uses existing ports and includes vessel costs. Port permission and suitability
+				need confirmation before the service can run.
 			</p>
 		{:else}
 			<div class="connection-overview">
-				<strong>{connection.reachable_islands.length}</strong><span
-					>islands connected in the available network</span
-				>
+				<strong>{connection.reachable_islands.length}</strong><span>connected islands</span>
 				<p>
-					Choose a destination to check its service evidence and ferry infrastructure. A mapped
-					connection alone is not a confirmed journey.
+					Choose a destination to see its routes, timetables and ports. A route needs a confirmed
+					timetable before it can be used for a journey.
 				</p>
 			</div>
 			{#if connection.reachable_islands.length}<div
@@ -272,15 +266,14 @@
 				</div>{/if}
 		{/if}
 		<details class="service-evidence">
-			<summary>What this check can tell you</summary>
+			<summary>About these connections</summary>
 			<p>
-				Terminal locations, mapped routes and available dated services are checked separately.
-				Missing evidence does not prove there is no real-world service. Crossing times, current
-				operations and passenger capacity require operator verification.
+				Port locations, routes and timetables are checked separately. An unconfirmed connection may
+				still have a service. Check with the operator for crossing times and passenger capacity.
 			</p>
 			<p>
-				Local transport coverage measures walking access to a mapped stop. Island connections show
-				whether the available network links islands.
+				Local transport access measures walking distance to a stop. Island connections show which
+				islands the network links.
 			</p>
 		</details>
 	{/if}
@@ -298,7 +291,7 @@
 		align-items: flex-start;
 	}
 	.connection-intro > :global(svg) {
-		color: #087f78;
+		color: var(--theme-color-087f78);
 		flex-shrink: 0;
 		margin-top: 3px;
 	}
@@ -314,7 +307,7 @@
 		margin: 0;
 	}
 	p {
-		color: #65746c;
+		color: var(--theme-color-65746c);
 		font-size: 11px;
 		line-height: 1.65;
 		margin: 0;
@@ -348,22 +341,22 @@
 	}
 	.connection-note {
 		font-size: 11px;
-		color: #65746c;
+		color: var(--theme-color-65746c);
 		line-height: 1.6;
 	}
 	.connection-verdict {
 		padding: 14px;
-		background: #faf6ed;
-		border: 1px solid #eee0c8;
+		background: var(--theme-color-faf6ed);
+		border: 1px solid var(--theme-color-eee0c8);
 		border-radius: 12px;
 		display: grid;
 		gap: 8px;
-		color: #946630;
+		color: var(--theme-color-946630);
 	}
 	.connection-verdict.verified {
-		background: #edf7f1;
-		border-color: #d7e9df;
-		color: #087f78;
+		background: var(--theme-color-edf7f1);
+		border-color: var(--theme-color-d7e9df);
+		color: var(--theme-color-087f78);
 	}
 	.landing-checks {
 		display: grid;
@@ -374,8 +367,8 @@
 		gap: 9px;
 		align-items: center;
 		padding-bottom: 10px;
-		border-bottom: 1px solid #e3ebe6;
-		color: #087f78;
+		border-bottom: 1px solid var(--theme-color-e3ebe6);
+		color: var(--theme-color-087f78);
 	}
 	.landing-checks span {
 		display: grid;
@@ -383,15 +376,15 @@
 	}
 	.landing-checks strong {
 		font-size: 12px;
-		color: #29483e;
+		color: var(--theme-color-29483e);
 	}
 	.landing-checks small {
 		font-size: 11px;
-		color: #65746c;
+		color: var(--theme-color-65746c);
 	}
 	.service-evidence {
 		font-size: 11px;
-		color: #617567;
+		color: var(--theme-color-617567);
 	}
 	.service-evidence summary {
 		cursor: pointer;
@@ -405,14 +398,14 @@
 		display: grid;
 		gap: 9px;
 		padding: 14px;
-		background: #eef6f4;
-		border: 1px solid #d5e6de;
+		background: var(--theme-color-eef6f4);
+		border: 1px solid var(--theme-color-d5e6de);
 		border-radius: 12px;
 	}
 	.access-eyebrow {
 		font-size: 10px;
 		font-weight: 650;
-		color: #587367;
+		color: var(--theme-color-587367);
 	}
 	.local-transport > div {
 		display: grid;
@@ -421,30 +414,30 @@
 	.local-transport strong {
 		font-size: 28px;
 		letter-spacing: -0.7px;
-		color: #087f78;
+		color: var(--theme-color-087f78);
 	}
 	.local-transport > div > span {
 		font-size: 11px;
 		line-height: 1.6;
-		color: #38584c;
+		color: var(--theme-color-38584c);
 	}
 	.connection-overview {
 		padding: 15px;
-		border: 1px solid #dce8e2;
-		background: #f5faf7;
+		border: 1px solid var(--theme-color-dce8e2);
+		background: var(--theme-color-f5faf7);
 		border-radius: 12px;
 		display: grid;
 		gap: 6px;
 	}
 	.connection-overview strong {
 		font-size: 32px;
-		color: #087f78;
+		color: var(--theme-color-087f78);
 		line-height: 1.1;
 	}
 	.connection-overview span {
 		font-size: 12px;
 		font-weight: 600;
-		color: #29483e;
+		color: var(--theme-color-29483e);
 	}
 	.reachable-islands {
 		display: flex;

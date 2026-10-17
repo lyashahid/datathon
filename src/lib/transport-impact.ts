@@ -164,16 +164,16 @@ export function transportImpactHeadline(
 }
 
 export function serviceAvailability(metrics: TransportServiceMetrics | null | undefined): string {
-	if (metrics === null) return 'No dated service in data';
+	if (metrics === null) return 'No service listed for this date';
 	const count = impactNumber(metrics?.departure_count);
-	if (count === null) return 'Service evidence unavailable';
-	if (count === 0) return 'No dated service in data';
+	if (count === null) return 'Service details unavailable';
+	if (count === 0) return 'No service listed for this date';
 	return `${formatImpactCount(count)} ${count === 1 ? 'departure' : 'departures'}`;
 }
 
 export function serviceWait(metrics: TransportServiceMetrics | null | undefined): string {
 	if (metrics === null || impactNumber(metrics?.departure_count) === 0)
-		return 'No dated service in data';
+		return 'No service listed for this date';
 	return formatImpactMinutes(metrics?.expected_wait_minutes);
 }
 
@@ -184,16 +184,16 @@ export function serviceTravelTime(metrics: TransportServiceMetrics | null | unde
 
 export function serviceNextDeparture(metrics: TransportServiceMetrics | null | undefined): string {
 	if (metrics === null || impactNumber(metrics?.departure_count) === 0)
-		return 'No dated service in data';
-	if (!metrics) return 'Service evidence unavailable';
+		return 'No service listed for this date';
+	if (!metrics) return 'Service details unavailable';
 	if ((metrics.boarding_stop_ids?.length ?? 0) > 1) return 'Varies by boarding stop';
 	return formatImpactClock(metrics.next_departure_minutes);
 }
 
 export function serviceNextWait(metrics: TransportServiceMetrics | null | undefined): string {
 	if (metrics === null || impactNumber(metrics?.departure_count) === 0)
-		return 'No dated service in data';
-	if (!metrics) return 'Service evidence unavailable';
+		return 'No service listed for this date';
+	if (!metrics) return 'Service details unavailable';
 	if ((metrics.boarding_stop_ids?.length ?? 0) > 1) return 'Varies by boarding stop';
 	return formatImpactMinutes(metrics.next_wait_minutes, 'No upcoming departure');
 }

@@ -278,7 +278,7 @@
 		padding: 16px;
 		border-color: color-mix(in srgb, var(--border) 85%, transparent);
 		background: color-mix(in srgb, var(--card) 97%, transparent);
-		box-shadow: 0 8px 28px #173e3915;
+		box-shadow: 0 8px 28px var(--theme-color-173e3915);
 	}
 	.embedded {
 		padding: 0;
@@ -312,7 +312,7 @@
 		line-height: 1.4;
 	}
 	.compact .resident-value strong {
-		color: #176c61;
+		color: var(--theme-color-176c61);
 	}
 	.compact .resident-value strong.reduced,
 	.benefit-detail.reduced {
@@ -331,10 +331,10 @@
 		line-height: 1.5;
 	}
 	.benefit-detail {
-		color: #176c61;
+		color: var(--theme-color-176c61);
 	}
 	.benefit-guardrail {
-		color: #8b5424;
+		color: var(--theme-color-8b5424);
 	}
 	.compact .resident-value strong.updating {
 		font-size: 12px;

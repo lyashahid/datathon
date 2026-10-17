@@ -61,7 +61,7 @@ try {
 					response.url().includes('/api/backend/conditions/weather?') &&
 					Number(new URL(response.url()).searchParams.get('latitude')) > 4.2
 			);
-			await page.goto(`${baseURL}/?view=map&tool=live&context=conditions&island=island%3A1442`);
+			await page.goto(`${baseURL}/?view=map&tool=explore&explorer=notices&island=island%3A1442`);
 			const workspace = page.locator('.operations-workspace');
 			await expect(workspace).toBeVisible();
 			await expect(

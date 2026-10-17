@@ -81,9 +81,9 @@ export type FerryServiceSettings = {
 export function ferryConnectionLabel(status: FerryConnectivity['status']) {
 	return {
 		dated_service: 'A published service connects these islands',
-		mapped_route: 'A connection is mapped; its timetable needs verification',
-		no_verified_service: 'No verified service in the available data',
-		terminal_evidence_needed: 'Check the landing places before planning a service'
+		mapped_route: 'Ferry connection · timetable unavailable',
+		no_verified_service: 'Connecting timetable unconfirmed',
+		terminal_evidence_needed: 'Port locations needed'
 	}[status];
 }
 

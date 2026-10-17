@@ -1,4 +1,4 @@
-import { projectMapPoint } from './browser-map.mjs';
+import { projectMapPoint, wheelMapZoom } from './browser-map.mjs';
 import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -96,16 +96,17 @@ async function check(name, work) {
 async function pick(endpoint, coordinates) {
 	const map = page.locator('.national-map');
 	const endpointsBefore = Number(await map.getAttribute('data-journey-endpoints'));
-	// Choosing A automatically arms B; its panel is intentionally closed until B is placed.
+	// Choosing A automatically arms B and keeps the endpoint controls available.
 	const autoChoosingEnd =
 		endpoint === 'end' &&
 		endpointsBefore === 1 &&
 		(await map.getAttribute('class'))?.includes('is-picking');
 	if (!autoChoosingEnd)
 		await page
-			.locator(
-				`.explore-journey .journey-endpoint${endpoint === 'end' ? '.destination' : ':not(.destination)'} .endpoint-choice`
-			)
+			.getByRole('button', {
+				name: endpoint === 'start' ? 'Choose start on map' : 'Choose destination on map',
+				exact: true
+			})
 			.click();
 	await expect(map).toHaveClass(/is-picking/);
 	const point = await project(coordinates);
@@ -124,10 +125,14 @@ async function pick(endpoint, coordinates) {
 async function project(position, targetPage = page) {
 	return projectMapPoint(targetPage.locator('.national-map'), position);
 }
-async function openMovementSettings() {
-	const settings = page.locator('.movement-settings');
-	if (!(await settings.evaluate((element) => element.hasAttribute('open'))))
-		await settings.locator(':scope > summary').click();
+async function refreshMovementThroughNavigation() {
+	const navigation = page.getByRole('navigation', { name: 'Workspace', exact: true });
+	await navigation.getByRole('button', { name: 'Analytics', exact: true }).click();
+	const snapshot = page.waitForResponse((response) =>
+		response.url().includes('/api/backend/live/snapshot?')
+	);
+	await navigation.getByRole('button', { name: 'Map & planning', exact: true }).click();
+	await snapshot;
 }
 try {
 	await page.goto(`${baseURL}/?view=map&tool=explore&island=island%3A1443`, {
@@ -241,19 +246,23 @@ try {
 		}
 	);
 	await check(
-		'Reduced motion updates samples directly and paused positions remain qualified',
+		'Reduced motion updates samples directly and the movement layer hides positions',
 		async () => {
-			await openMovementSettings();
 			fixtureVersion++;
-			await page.getByRole('button', { name: 'Refresh nearby', exact: true }).click();
+			await refreshMovementThroughNavigation();
 			await expect(page.locator('.national-map')).toHaveAttribute(
 				'data-movement-transition',
 				'false'
 			);
-			await page.getByRole('button', { name: 'Pause nearby updates', exact: true }).click();
-			await expect(page.locator('.map-movement-status')).toContainText('Updates paused');
+			await page.getByRole('button', { name: 'Layers', exact: false }).click();
+			const movement = page.getByRole('button', { name: /^Observed movement/ });
+			await movement.click();
+			await expect(movement).toHaveAttribute('aria-pressed', 'false');
+			await expect(page.locator('.national-map')).toHaveAttribute('data-rendered-movement', '0');
 			await expect(page.locator('.national-map')).toHaveAttribute('data-movement-positions', '3');
-			await page.getByRole('button', { name: 'Resume nearby updates', exact: true }).click();
+			await movement.click();
+			await expect(movement).toHaveAttribute('aria-pressed', 'true');
+			await page.getByRole('button', { name: 'Close map controls', exact: true }).click();
 		}
 	);
 	await check('Infrastructure clusters show grouped counts while zooming out', async () => {
@@ -261,18 +270,17 @@ try {
 		await expect
 			.poll(async () => Number(await page.locator('.national-map').getAttribute('data-zoom')))
 			.toBeGreaterThan(13);
-		const zoomOut = page.getByRole('button', { name: 'Zoom out', exact: true });
 		for (let attempts = 0; attempts < 8; attempts++) {
 			const zoom = Number(await page.locator('.national-map').getAttribute('data-zoom'));
 			if (zoom <= 11.9) break;
-			await zoomOut.click();
+			await wheelMapZoom(page, page.locator('.national-map'), -1);
 			await expect
 				.poll(async () => Number(await page.locator('.national-map').getAttribute('data-zoom')))
 				.toBeLessThan(zoom - 0.5);
 		}
 		assert.ok(
 			Number(await page.locator('.national-map').getAttribute('data-zoom')) <= 11.9,
-			'Zoom controls must reach the infrastructure-cluster range'
+			'Wheel zoom reaches the infrastructure-cluster range'
 		);
 		await expect
 			.poll(async () =>
@@ -288,7 +296,6 @@ try {
 	});
 	await check('Normal motion smoothly connects newer observed samples and then stops', async () => {
 		await page.emulateMedia({ reducedMotion: 'no-preference' });
-		await openMovementSettings();
 		await page.locator('.national-map').evaluate((element) => {
 			document.documentElement.dataset.qaTransitionSeen = 'false';
 			const observer = new MutationObserver(() => {
@@ -301,7 +308,7 @@ try {
 			});
 		});
 		fixtureVersion++;
-		await page.getByRole('button', { name: 'Refresh nearby', exact: true }).click();
+		await refreshMovementThroughNavigation();
 		await expect(page.locator('html')).toHaveAttribute('data-qa-transition-seen', 'true');
 		await expect(page.locator('.national-map')).toHaveAttribute(
 			'data-movement-transition',
@@ -415,7 +422,7 @@ try {
 		}
 	);
 	await check('Mobile map key stays compact, opens its full meanings and closes', async () => {
-		await page.getByRole('button', { name: 'Back to map', exact: true }).click();
+		await page.getByRole('button', { name: 'Close directions', exact: true }).click();
 		await expect(page.locator('.explore-journey')).toBeHidden();
 		await page.setViewportSize({ width: 390, height: 844 });
 		const toggle = page

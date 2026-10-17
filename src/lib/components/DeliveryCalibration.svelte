@@ -112,7 +112,7 @@
 			: Array.isArray(item)
 				? item.map((id) => stopNames.get(id) ?? id).join(', ')
 				: item == null
-					? 'Not supplied'
+					? 'Not entered'
 					: String(item);
 	const currentActivity = $derived(activities.find((item) => item.id === activityId));
 	const energyFactors = $derived(factors.filter((item) => item.illustrative_default == null));
@@ -304,7 +304,7 @@
 	><Card.Content>
 		<div class="delivery-heading">
 			<div>
-				<p class="delivery-eyebrow">Local delivery evidence</p>
+				<p class="delivery-eyebrow">Operating costs and resources</p>
 				<h3>Can this proposal operate?</h3>
 			</div>
 			<FileCheck size={22} />
@@ -341,7 +341,7 @@
 							· {record.valid_from}{record.valid_to ? `–${record.valid_to}` : ' onward'}
 						</p>
 						<p>{record.basis}</p>
-						<Badge variant="outline">User supplied · {label(record.evidence_type)}</Badge
+						<Badge variant="outline">Your input · {label(record.evidence_type)}</Badge
 						>{#if selection[record.factor] === record.id}<Badge>Selected</Badge
 							>{/if}{#if record.valid_from > serviceDate || (record.valid_to && record.valid_to < serviceDate) || record.published_date > serviceDate}<p
 								class="delivery-error"
@@ -466,7 +466,7 @@
 				<summary>Energy calculation inputs</summary>
 				<p class="delivery-note">
 					Electric emissions = battery kWh/km ÷ charging efficiency × grid factor. Operating cost
-					adds a separately supplied non-energy cost. Diesel uses litres/km × fuel price or carbon
+					includes a separate non-energy cost input. Diesel uses litres/km × fuel price or carbon
 					factor. Complete input sets replace per-km illustrations; direct per-km overrides take
 					precedence.
 				</p>
@@ -478,7 +478,7 @@
 								min="0"
 								step="any"
 								value={energy[item.key]}
-								placeholder={selection[item.key] ? 'Selected evidence' : 'Not supplied'}
+								placeholder={selection[item.key] ? 'Selected evidence' : 'Not entered'}
 								oninput={(event) => {
 									const next = { ...energy };
 									if (event.currentTarget.value === '') delete next[item.key];
@@ -546,7 +546,7 @@
 								>
 								<p>
 									With fuel adjustment: {tariffResult.added_charge_with_fuel_adjustment_mvr === null
-										? 'Unknown until supplied'
+										? 'Not entered'
 										: `MVR ${number(tariffResult.added_charge_with_fuel_adjustment_mvr)}`}
 								</p>
 								<p>
@@ -632,7 +632,7 @@
 					<div class="delivery-full">
 						<Label for="resource-depot">Depot terminal · no assumed deadhead</Label
 						><NativeSelect.Root id="resource-depot" bind:value={depot}
-							><NativeSelect.Option value="">Not supplied</NativeSelect.Option
+							><NativeSelect.Option value="">Not entered</NativeSelect.Option
 							>{#each stops as stop (stop.id)}<NativeSelect.Option value={stop.id}
 									>{stop.name || stop.id}</NativeSelect.Option
 								>{/each}</NativeSelect.Root

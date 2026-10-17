@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { themeColors } from '#lib/theme.js';
 	import { backendUrl } from '#lib/app-paths.js';
 	import { downloadText as download } from '#lib/download.js';
 	import {
@@ -168,14 +169,14 @@
 				: String(value);
 	const compact = (value: number) => compactFormatter.format(value);
 	const colors = [
-		'#8fa976',
-		'#a99acc',
-		'#dfb997',
-		'#7d9ea3',
-		'#d7a0b5',
-		'#a8b5cd',
-		'#c6b56f',
-		'#7baf9c'
+		themeColors.color8fa976,
+		themeColors.colora99acc,
+		themeColors.colordfb997,
+		themeColors.color7d9ea3,
+		themeColors.colord7a0b5,
+		themeColors.colora8b5cd,
+		themeColors.colorc6b56f,
+		themeColors.color7baf9c
 	];
 	const legend = $derived(
 		[...new Set((chart?.items ?? []).map((item) => item.series ?? chartSeriesLabel))].map(
@@ -566,7 +567,7 @@
 		const svg = plotElement.cloneNode(true) as SVGSVGElement;
 		svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 		const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-		style.textContent = 'text{font-family:Inter,Arial,sans-serif;font-size:11px;fill:#716879}';
+		style.textContent = `text{font-family:Inter,Arial,sans-serif;font-size:11px;fill:${themeColors.color716879}}`;
 		svg.prepend(style);
 		download(new XMLSerializer().serializeToString(svg), `${datasetId}-chart.svg`, 'image/svg+xml');
 	}
@@ -754,12 +755,12 @@
 	/>
 	<header class="studio-heading">
 		<div>
-			<span class="eyebrow">FROM EVIDENCE TO A DATA STORY</span>
+			<span class="eyebrow">EXPLORE AND COMPARE</span>
 			<h1>Data studio</h1>
-			<p>Explore the source records, build a comparison, and save what you learned.</p>
+			<p>Explore the data, compare results, and save your findings.</p>
 		</div>
 		<Badge variant="secondary"
-			><Database size={13} />{catalogue.filter((item) => item.status === 'available').length} source collections</Badge
+			><Database size={13} />{catalogue.filter((item) => item.status === 'available').length} datasets</Badge
 		>
 	</header>
 	{#if error}<div class="feedback error" role="alert">{error}</div>{/if}{#if message}<div
@@ -770,13 +771,13 @@
 		</div>{/if}
 	{#if loading}<Card.Root class="loading-state" role="status"
 			><Database size={25} />
-			<h2>Opening the source catalogue…</h2>
-			<p>Each collection keeps its original grain, dates and evidence limits.</p></Card.Root
+			<h2>Loading datasets…</h2>
+			<p>Each dataset includes its dates, units and methodology.</p></Card.Root
 		>{:else if dataset}
 		<Card.Root class="collection-card"
 			><div class="collection-header">
 				<div>
-					<label for="studio-collection" class="eyebrow">1 · CHOOSE YOUR EVIDENCE</label
+					<label for="studio-collection" class="eyebrow">1 · CHOOSE A DATASET</label
 					><NativeSelect.Root
 						id="studio-collection"
 						value={datasetId}
@@ -1058,7 +1059,7 @@
 										><title>{chartLabel}</title><rect
 											width={plot.width}
 											height={plot.height}
-											fill="white"
+											fill={themeColors.colorffffff}
 										/>
 										{#if chartType === 'heatmap'}{#each plot.entries as series, seriesIndex (series.name)}<text
 													x={plot.left - 10}
@@ -1074,10 +1075,10 @@
 														height={Math.min(55, 190 / plot.entries.length)}
 														rx="3"
 														fill={point.value === null
-															? '#f1eef5'
+															? themeColors.colorf1eef5
 															: point.value < 0
-																? '#a99acc'
-																: '#83a96c'}
+																? themeColors.colora99acc
+																: themeColors.color83a96c}
 														fill-opacity={point.value === null
 															? 1
 															: 0.15 +
@@ -1096,7 +1097,7 @@
 													x2={plot.width - 22}
 													y1={plot.top + (1 - fraction) * plot.plotHeight}
 													y2={plot.top + (1 - fraction) * plot.plotHeight}
-													stroke="#eeebf3"
+													stroke={themeColors.coloreeebf3}
 												/><text
 													x={plot.left - 12}
 													y={plot.top + 4 + (1 - fraction) * plot.plotHeight}
@@ -1113,7 +1114,7 @@
 													cy={plot.top +
 														((plot.yMax - pair.y) / (plot.yMax - plot.yMin)) * plot.plotHeight}
 													r="5"
-													fill="#a99acc"
+													fill={themeColors.colora99acc}
 													fill-opacity=".85"
 													><title>{pair.group}: {number(pair.x)} / {number(pair.y)}</title></circle
 												>{/each}<text
@@ -1132,7 +1133,7 @@
 													x2={plot.width - 22}
 													y1={plot.y(plot.minimum + (plot.maximum - plot.minimum) * fraction)}
 													y2={plot.y(plot.minimum + (plot.maximum - plot.minimum) * fraction)}
-													stroke="#eeebf3"
+													stroke={themeColors.coloreeebf3}
 												/><text
 													x={plot.left - 12}
 													y={plot.y(plot.minimum + (plot.maximum - plot.minimum) * fraction) + 4}
@@ -1243,7 +1244,7 @@
 						>
 						{#if chartSources.length}<Card.Root class="source-card"
 								><details>
-									<summary>Source receipts and evidence limits</summary
+									<summary>Sources and methodology</summary
 									>{#each chartSources as source, index (`${source.id}-${index}`)}<article>
 											<h3>{source.title}</h3>
 											<p>{source.qualification}</p>
@@ -1480,7 +1481,7 @@
 	}
 	.eyebrow {
 		font-size: 10px;
-		color: #726781;
+		color: var(--theme-color-726781);
 		letter-spacing: 1.4px;
 		font-weight: 650;
 		display: block;
@@ -1513,17 +1514,17 @@
 		display: flex;
 		flex-direction: column;
 		gap: 5px;
-		color: #786e83;
+		color: var(--theme-color-786e83);
 		font-size: 10px;
 	}
 	.collection-stats strong {
-		color: #36303d;
+		color: var(--theme-color-36303d);
 		font-size: 25px;
 		font-weight: 550;
 		letter-spacing: -0.8px;
 	}
 	.qualification {
-		color: #716879;
+		color: var(--theme-color-716879);
 		font-size: 11px;
 		line-height: 1.8;
 	}
@@ -1565,7 +1566,7 @@
 	}
 	.field label {
 		font-size: 11px;
-		color: #74697f;
+		color: var(--theme-color-74697f);
 		font-weight: 500;
 	}
 	.field :global([data-slot='native-select-wrapper']) {
@@ -1578,21 +1579,21 @@
 	}
 	.settings-note {
 		font-size: 10px;
-		color: #786c84;
+		color: var(--theme-color-786c84);
 		line-height: 1.8;
 	}
 	.comparison-settings {
 		padding-top: 17px;
-		border-top: 1px solid #e8e3ef;
+		border-top: 1px solid var(--theme-color-e8e3ef);
 		display: grid;
 		gap: 13px;
 	}
 	.comparison-settings p {
 		font-size: 10px;
-		color: #776783;
+		color: var(--theme-color-776783);
 	}
 	.filter-details {
-		border-top: 1px solid #ece7f2;
+		border-top: 1px solid var(--theme-color-ece7f2);
 		padding-top: 15px;
 	}
 	.filter-details summary {
@@ -1604,7 +1605,7 @@
 		cursor: pointer;
 	}
 	.filter-details summary span {
-		background: #eee7f7;
+		background: var(--theme-color-eee7f7);
 		padding: 2px 6px;
 		border-radius: 5px;
 	}
@@ -1624,11 +1625,11 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		background: #eee8f5;
+		background: var(--theme-color-eee8f5);
 		padding: 4px 8px;
 		border-radius: 8px;
 		font-size: 10px;
-		color: #766083;
+		color: var(--theme-color-766083);
 		overflow-wrap: anywhere;
 	}
 	.story-preview {
@@ -1665,13 +1666,13 @@
 	}
 	.plot-wrap text {
 		font-size: 10px;
-		fill: #776b82;
+		fill: var(--theme-color-776b82);
 	}
 	.chart-legend {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 10px 20px;
-		color: #706178;
+		color: var(--theme-color-706178);
 		font-size: 10px;
 		margin: 10px 0 20px;
 	}
@@ -1697,8 +1698,8 @@
 		margin-top: 18px;
 	}
 	.chart-warning {
-		background: #fbf2e4;
-		color: #8f6c37;
+		background: var(--theme-color-fbf2e4);
+		color: var(--theme-color-8f6c37);
 		padding: 12px;
 		margin-bottom: 16px;
 		font-size: 11px;
@@ -1729,7 +1730,7 @@
 		border-radius: 8px;
 		padding: 11px;
 		color: var(--foreground);
-		background: white;
+		background: var(--theme-color-ffffff);
 		line-height: 1.7;
 	}
 	textarea:focus-visible {
@@ -1744,18 +1745,18 @@
 	.data-studio :global(.source-card article) {
 		margin-top: 17px;
 		padding-top: 17px;
-		border-top: 1px solid #ebe6f1;
+		border-top: 1px solid var(--theme-color-ebe6f1);
 	}
 	.data-studio :global(.source-card article p) {
 		font-size: 11px;
-		color: #75677e;
+		color: var(--theme-color-75677e);
 		margin-top: 9px;
 	}
 	.data-studio :global(.source-card article small) {
 		display: block;
 		font-size: 9px;
 		overflow-wrap: anywhere;
-		color: #8a7b96;
+		color: var(--theme-color-8a7b96);
 		margin-top: 12px;
 	}
 	.source-links {
@@ -1770,7 +1771,7 @@
 		gap: 4px;
 		font-size: 10px;
 		text-decoration: underline;
-		color: #6e587e;
+		color: var(--theme-color-6e587e);
 	}
 	.feedback {
 		margin: 16px 0;
@@ -1779,12 +1780,12 @@
 		font-size: 12px;
 	}
 	.feedback.error {
-		color: #95473d;
-		background: #f9ebe9;
+		color: var(--theme-color-95473d);
+		background: var(--theme-color-f9ebe9);
 	}
 	.feedback.success {
-		color: #566b45;
-		background: #e7efdf;
+		color: var(--theme-color-566b45);
+		background: var(--theme-color-e7efdf);
 	}
 	.data-studio :global(.loading-state),
 	.empty-chart {
@@ -1795,7 +1796,7 @@
 		text-align: center;
 		padding: 50px 25px;
 		gap: 13px;
-		color: #796b87;
+		color: var(--theme-color-796b87);
 	}
 	.empty-chart p {
 		font-size: 12px;
@@ -1820,7 +1821,7 @@
 		flex: 1;
 		min-width: 180px;
 		gap: 9px;
-		border: 1px solid #e2dbe9;
+		border: 1px solid var(--theme-color-e2dbe9);
 		padding-left: 12px;
 		border-radius: 9px;
 	}
@@ -1834,7 +1835,7 @@
 	}
 	.column-selector summary {
 		font-size: 11px;
-		color: #776582;
+		color: var(--theme-color-776582);
 		cursor: pointer;
 	}
 	.column-selector > div {
@@ -1856,13 +1857,13 @@
 	.column-selector label small {
 		width: 100%;
 		padding-left: 20px;
-		color: #84748e;
+		color: var(--theme-color-84748e);
 		font-size: 9px;
 	}
 	.column-selector input {
 		width: 13px;
 		height: 13px;
-		accent-color: #8b74aa;
+		accent-color: var(--theme-color-8b74aa);
 	}
 	.records-scroll {
 		overflow: auto;
@@ -1876,19 +1877,19 @@
 		text-align: left;
 	}
 	th {
-		color: #81738d;
+		color: var(--theme-color-81738d);
 		font-weight: 500;
 		font-size: 10px;
 		padding: 13px;
-		background: #f8f5fc;
-		border-bottom: 1px solid #e7e0ee;
+		background: var(--theme-color-f8f5fc);
+		border-bottom: 1px solid var(--theme-color-e7e0ee);
 		white-space: nowrap;
 	}
 	td {
 		max-width: 300px;
 		min-width: 95px;
 		padding: 14px 13px;
-		border-bottom: 1px solid #efebf4;
+		border-bottom: 1px solid var(--theme-color-efebf4);
 		line-height: 1.6;
 	}
 	td > span {
@@ -1900,13 +1901,13 @@
 		overflow-wrap: anywhere;
 	}
 	.missing {
-		color: #95849e;
+		color: var(--theme-color-95849e);
 		font-style: italic;
 	}
 	.table-empty {
 		padding: 35px;
 		text-align: center;
-		color: #83738c;
+		color: var(--theme-color-83738c);
 	}
 	.records-footer {
 		display: flex;
@@ -1914,7 +1915,7 @@
 		justify-content: space-between;
 		gap: 20px;
 		margin: 18px 0;
-		color: #83718d;
+		color: var(--theme-color-83718d);
 		font-size: 10px;
 	}
 	.records-footer > div {
@@ -1927,7 +1928,7 @@
 		align-items: flex-start;
 		justify-content: space-between;
 		padding: 23px 0;
-		border-top: 1px solid #e8e0f0;
+		border-top: 1px solid var(--theme-color-e8e0f0);
 		gap: 25px;
 	}
 	.saved-story h3 {
@@ -1935,14 +1936,14 @@
 		margin-top: 11px;
 	}
 	.saved-story p {
-		color: #756381;
+		color: var(--theme-color-756381);
 		font-size: 12px;
 		margin: 8px 0;
 		white-space: pre-wrap;
 	}
 	.saved-story small {
 		font-size: 10px;
-		color: #92819c;
+		color: var(--theme-color-92819c);
 	}
 	.saved-actions {
 		display: flex;

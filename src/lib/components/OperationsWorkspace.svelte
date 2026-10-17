@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { themeColors } from '#lib/theme.js';
 	import { onMount, tick, untrack } from 'svelte';
 	import {
 		CloudSun,
@@ -508,7 +509,7 @@
 			await refreshNotices();
 			message =
 				decision === 'approved'
-					? 'Reviewed and mapped. Add it to a proposal to calculate its effect.'
+					? 'Ready to add to a proposal and calculate its effect.'
 					: 'Notice dismissed.';
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
@@ -710,14 +711,14 @@
 								viewBox="0 0 900 165"
 								role="img"
 								aria-label={`Hourly temperature forecast ranges from ${Math.min(...temperatures)} to ${Math.max(...temperatures)} degrees Celsius`}
-								><line x1="20" y1="145" x2="880" y2="145" stroke="#e7e6ee" /><path
+								><line x1="20" y1="145" x2="880" y2="145" stroke={themeColors.colore7e6ee} /><path
 									d={points}
 									fill="none"
-									stroke="#9170c6"
+									stroke={themeColors.color9170c6}
 									stroke-width="3"
-								/><text x="20" y="162" fill="#676778" font-size="12"
+								/><text x="20" y="162" fill={themeColors.color676778} font-size="12"
 									>{weatherSamples[0]?.time.replace('T', ' ')} UTC</text
-								><text x="660" y="162" fill="#676778" font-size="12"
+								><text x="660" y="162" fill={themeColors.color676778} font-size="12"
 									>{weatherSamples.at(-1)?.time.replace('T', ' ')} UTC</text
 								></svg
 							>{:else}<p class="muted">
@@ -971,7 +972,7 @@
 		</Tabs.Content>
 		<Tabs.Content value="notices"
 			>{#if noticesLoading}<p role="status" class="notice-context-status">
-					Loading notices and their mapped targets…
+					Loading notices and affected locations…
 				</p>{/if}
 			{#if noticesError}<p role="alert" class="error">
 					{noticesError}<Button
@@ -1070,7 +1071,7 @@
 						{#if focused.proposed_operation && focused.status === 'approved'}<div
 								class="review-result"
 							>
-								<b>Mapped and reviewed</b>
+								<b>Location reviewed</b>
 								<p>
 									Only applies inside its validity window. Add this operation to your editable
 									proposal, then evaluate resident impacts.
@@ -1113,7 +1114,7 @@
 		max-width: 1480px;
 		margin: auto;
 		padding: 22px 28px 48px;
-		color: #282b35;
+		color: var(--theme-color-282b35);
 	}
 	.operations-workspace :global(.heading) {
 		display: flex;
@@ -1126,7 +1127,7 @@
 		font-size: 10px;
 		letter-spacing: 0.12em;
 		font-weight: 700;
-		color: #767387;
+		color: var(--theme-color-767387);
 	}
 	.operations-workspace :global(h1) {
 		font-size: clamp(22px, 2vw, 28px);
@@ -1142,15 +1143,15 @@
 	}
 	.operations-workspace :global(p) {
 		font-size: 13px;
-		color: #747483;
+		color: var(--theme-color-747483);
 		line-height: 1.65;
 		margin: 8px 0;
 	}
 	.operations-workspace :global(.scope),
 	.operations-workspace :global(.pill) {
 		font-size: 11px;
-		background: #ece7f5;
-		color: #68578d;
+		background: var(--theme-color-ece7f5);
+		color: var(--theme-color-68578d);
 		border-radius: 20px;
 		padding: 8px 12px;
 	}
@@ -1191,13 +1192,13 @@
 		letter-spacing: -0.04em;
 	}
 	.operations-workspace :global(.temperature) {
-		background: #f0e7fa;
+		background: var(--theme-color-f0e7fa);
 	}
 	.operations-workspace :global(.wind) {
-		background: #e8f0dc;
+		background: var(--theme-color-e8f0dc);
 	}
 	.operations-workspace :global(.sea) {
-		background: #e2eef7;
+		background: var(--theme-color-e2eef7);
 	}
 	.operations-workspace :global(.chart),
 	.operations-workspace :global(.traffic-card),
@@ -1205,7 +1206,7 @@
 	.operations-workspace :global(.notice-review),
 	.operations-workspace :global(.receipt) {
 		padding: 24px;
-		border-color: #e6e4ee;
+		border-color: var(--theme-color-e6e4ee);
 		box-shadow: none;
 		gap: 12px;
 	}
@@ -1219,7 +1220,7 @@
 	.operations-workspace :global(.muted),
 	.operations-workspace :global(small) {
 		font-size: 11px;
-		color: #747483;
+		color: var(--theme-color-747483);
 	}
 	.operations-workspace :global(.chart svg) {
 		width: 100%;
@@ -1239,12 +1240,12 @@
 	}
 	.operations-workspace :global(.receipt a),
 	.operations-workspace :global(.notice-review > a) {
-		color: #70569c;
+		color: var(--theme-color-70569c);
 		text-decoration: underline;
 	}
 	.operations-workspace :global(details) {
 		padding: 18px;
-		background: #f2f1f6;
+		background: var(--theme-color-f2f1f6);
 		border-radius: 14px;
 		font-size: 12px;
 	}
@@ -1259,7 +1260,7 @@
 	}
 	.operations-workspace :global(.alerts > div) {
 		padding: 10px;
-		background: white;
+		background: var(--theme-color-ffffff);
 		border-radius: 8px;
 	}
 	.operations-workspace :global(.traffic-card) {
@@ -1279,7 +1280,7 @@
 	.operations-workspace :global(.traffic-results) {
 		padding: 22px;
 		gap: 14px;
-		border-color: #dbe3dc;
+		border-color: var(--theme-color-dbe3dc);
 		box-shadow: none;
 		min-width: 0;
 	}
@@ -1308,12 +1309,12 @@
 		height: 23px;
 		flex-shrink: 0;
 		border-radius: 50%;
-		background: #2d626a;
-		color: white;
+		background: var(--theme-color-2d626a);
+		color: var(--theme-color-ffffff);
 		font-size: 11px;
 	}
 	.operations-workspace :global(.endpoint-letter.destination) {
-		background: #8761a7;
+		background: var(--theme-color-8761a7);
 	}
 	.operations-workspace :global(.traffic-results) {
 		margin: 18px 0;
@@ -1327,30 +1328,30 @@
 		display: grid;
 		gap: 7px;
 		padding: 15px;
-		border: 1px solid #dce4dd;
+		border: 1px solid var(--theme-color-dce4dd);
 		border-radius: 12px;
-		background: #fbfcf9;
+		background: var(--theme-color-fbfcf9);
 		text-align: left;
 		cursor: pointer;
 		font-size: 12px;
 	}
 	.operations-workspace :global(.traffic-alternatives button.selected) {
-		background: #eef5ee;
-		border-color: #6f9a8b;
+		background: var(--theme-color-eef5ee);
+		border-color: var(--theme-color-6f9a8b);
 	}
 	.operations-workspace :global(.traffic-alternatives button:focus-visible) {
-		outline: 2px solid #356659;
+		outline: 2px solid var(--theme-color-356659);
 		outline-offset: 2px;
 	}
 	.operations-workspace :global(.advanced-coordinates) {
 		padding: 12px;
-		background: #f5f6f1;
-		border: 1px solid #e4e8df;
+		background: var(--theme-color-f5f6f1);
+		border: 1px solid var(--theme-color-e4e8df);
 		border-radius: 10px;
 	}
 	.operations-workspace :global(.advanced-coordinates summary) {
 		font-size: 11px;
-		color: #6b756f;
+		color: var(--theme-color-6b756f);
 	}
 	.operations-workspace :global(.coordinate-grid) {
 		display: grid;
@@ -1376,11 +1377,11 @@
 	.operations-workspace :global(td) {
 		text-align: left;
 		padding: 15px 12px;
-		border-bottom: 1px solid #eceaf1;
+		border-bottom: 1px solid var(--theme-color-eceaf1);
 	}
 	.operations-workspace :global(th) {
 		font-weight: 500;
-		color: #777482;
+		color: var(--theme-color-777482);
 	}
 	.operations-workspace :global(.notice-layout) {
 		display: grid;
@@ -1404,14 +1405,14 @@
 		font: inherit;
 		font-size: 13px;
 		width: 100%;
-		border: 1px solid #dad7e3;
+		border: 1px solid var(--theme-color-dad7e3);
 		border-radius: 8px;
 		padding: 10px;
 		resize: vertical;
-		background: white;
+		background: var(--theme-color-ffffff);
 	}
 	.operations-workspace :global(textarea:focus-visible) {
-		outline: 2px solid #a98bd4;
+		outline: 2px solid var(--theme-color-a98bd4);
 		outline-offset: 2px;
 	}
 	.operations-workspace :global(.notice-list) {
@@ -1420,7 +1421,7 @@
 		margin-top: 12px;
 	}
 	.operations-workspace :global(.notice-list > button) {
-		border: 1px solid #e9e6ef;
+		border: 1px solid var(--theme-color-e9e6ef);
 		border-radius: 10px;
 		padding: 13px;
 		text-align: left;
@@ -1428,24 +1429,24 @@
 		flex-direction: column;
 		gap: 7px;
 		cursor: pointer;
-		background: #faf9fc;
+		background: var(--theme-color-faf9fc);
 	}
 	.operations-workspace :global(.notice-list > button.active) {
-		border-color: #b79bcf;
-		background: #f2edf8;
+		border-color: var(--theme-color-b79bcf);
+		background: var(--theme-color-f2edf8);
 	}
 	.operations-workspace :global(.notice-list b) {
 		font-size: 13px;
 	}
 	.operations-workspace :global(.notice-list span) {
 		font-size: 10px;
-		color: #747483;
+		color: var(--theme-color-747483);
 	}
 	.operations-workspace :global(blockquote) {
 		font-size: 13px;
 		line-height: 1.8;
-		background: #f5f2f9;
-		border-left: 3px solid #bc9ada;
+		background: var(--theme-color-f5f2f9);
+		border-left: 3px solid var(--theme-color-bc9ada);
 		padding: 16px;
 		border-radius: 0 10px 10px 0;
 		margin: 8px 0;
@@ -1456,7 +1457,7 @@
 		flex-wrap: wrap;
 	}
 	.operations-workspace :global(.review-result) {
-		background: #edf3e6;
+		background: var(--theme-color-edf3e6);
 		padding: 18px;
 		border-radius: 12px;
 	}
@@ -1470,12 +1471,12 @@
 		margin: 14px 0;
 	}
 	.operations-workspace :global(.error) {
-		background: #fbe9e8;
-		color: #9c3328;
+		background: var(--theme-color-fbe9e8);
+		color: var(--theme-color-9c3328);
 	}
 	.operations-workspace :global(.success) {
-		background: #edf4e4;
-		color: #3d6633;
+		background: var(--theme-color-edf4e4);
+		color: var(--theme-color-3d6633);
 	}
 	.operations-workspace :global([data-slot='tabs-list']) {
 		max-width: 100%;
@@ -1642,10 +1643,10 @@
 			padding: 10px;
 			overflow-y: auto;
 			overscroll-behavior: contain;
-			background: #fffdf8;
-			border: 1px solid #cad8cf;
+			background: var(--theme-color-fffdf8);
+			border: 1px solid var(--theme-color-cad8cf);
 			border-radius: 18px;
-			box-shadow: 0 -8px 40px #24403433;
+			box-shadow: 0 -8px 40px var(--theme-color-24403433);
 		}
 		.weather-inspector.expanded,
 		.traffic-inspector.expanded {
@@ -1661,9 +1662,9 @@
 			position: sticky;
 			top: -10px;
 			z-index: 1;
-			background: #fffdf8;
+			background: var(--theme-color-fffdf8);
 			padding: 5px 3px 9px;
-			border-bottom: 1px solid #e0e7dd;
+			border-bottom: 1px solid var(--theme-color-e0e7dd);
 			font-size: 13px;
 		}
 		.mobile-inspector-heading > div {

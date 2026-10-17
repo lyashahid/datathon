@@ -663,7 +663,7 @@
 			}
 		} catch (cause) {
 			if (current === sequence && !baselineController.signal.aborted)
-				error = cause instanceof Error ? cause.message : 'Planning snapshot failed to load';
+				error = cause instanceof Error ? cause.message : 'Planning data could not load';
 		} finally {
 			if (current === sequence) loading = false;
 		}
@@ -1036,7 +1036,7 @@
 					}
 				}
 			} else {
-				if (!targetId) throw new Error('Choose a target from the source snapshot');
+				if (!targetId) throw new Error('Choose a destination or service');
 				operation.target_id = targetId;
 			}
 			if (operationType === 'set_frequency') operation.headway_minutes = Number(serviceHeadway);
@@ -1280,8 +1280,7 @@
 	</div>
 	{#if error}<p class="policy-error" role="alert">{error}</p>{/if}
 	{#if loading}<Card.Root
-			><Card.Content><p aria-live="polite">Loading the audited planning snapshot…</p></Card.Content
-			></Card.Root
+			><Card.Content><p aria-live="polite">Loading planning data…</p></Card.Content></Card.Root
 		>
 	{:else if baseline?.status === 'outside_snapshot'}
 		<Card.Root
@@ -1411,7 +1410,7 @@
 							} else serviceTo = id;
 							openStep('design');
 						} else
-							mapNotice = `Bus stop · ${serviceStops.find((stop) => stop.id === id)?.name ?? 'Mapped boarding location'}`;
+							mapNotice = `Bus stop · ${serviceStops.find((stop) => stop.id === id)?.name ?? 'Boarding location'}`;
 					}}
 					onorigin={(id) => {
 						originId = id;
@@ -1660,10 +1659,10 @@
 													role="status"
 												>
 													{siteDistance === null
-														? 'This site has no located network evidence. Access is confirmed only after evaluation.'
+														? 'This site has no road network location. Evaluate the proposal to check access.'
 														: siteDistance > 100
-															? `This site is about ${number(siteDistance)} m from the supplied network. It may be outside the connected planning area; journey and resident access can remain unavailable.`
-															: `About ${number(siteDistance)} m from the mapped network. Evaluate to confirm connectivity and resident access.`}
+															? `This site is about ${number(siteDistance)} m from the road network. It may be outside the connected planning area; journey and resident access can remain unavailable.`
+															: `About ${number(siteDistance)} m from the road network. Evaluate to confirm connectivity and resident access.`}
 												</p>{/if}
 											<details>
 												<summary>Precise coordinates (optional)</summary>
@@ -1729,8 +1728,8 @@
 												</details>
 											{/if}
 											<p class="policy-note">
-												Coordinates start at a mapped resident area. The model snaps within 100 m of
-												the walking graph. Capacity, staffing and admissions need a delivery plan.
+												Coordinates start at a residential area. The model snaps within 100 m of the
+												walking graph. Capacity, staffing and admissions need a delivery plan.
 											</p>
 										{:else if operationType === 'add_service'}
 											<div class="policy-service-pickers">
@@ -1865,17 +1864,15 @@
 													id="policy-service-json"
 													bind:value={serviceJson}
 													rows="8"
-													placeholder="Paste a complete source-backed bus or ferry service pattern"
-												></textarea>
+													placeholder="Paste a complete bus or ferry timetable"></textarea>
 												<p class="policy-note">
 													JSON replaces the form above. Full stop chains, dated exceptions and exact
 													scheduled arrival/departure pairs are supported.
 												</p>
 											</details>
 											<p class="policy-note">
-												Use source stop IDs or add reconciled stops first. Supply real
-												crossing/runtime and routed distance. Imports are labeled assumptions and
-												checked on the backend.
+												Use existing stop IDs or add matching stops first. Include journey times and
+												route distances. Imports are validated and labelled as proposal assumptions.
 											</p>
 											<Button
 												variant="outline"
@@ -1895,16 +1892,17 @@
 														operationType === 'road_closure'
 															? 'Click a highlighted street segment to select its closure.'
 															: operationType === 'disable_facility'
-																? 'Click a mapped destination icon to select it.'
+																? 'Click a destination icon to select it.'
 																: operationType === 'disable_stop'
 																	? 'Click a boarding icon to select its closure.'
-																	: 'Click a highlighted service line to select the source pattern.';
+																	: 'Click a highlighted line to select the service.';
 												}}><MapPin size={14} />Choose target on map</Button
 											>
-											<Label for="policy-target-id">Source target</Label><NativeSelect.Root
+											<Label for="policy-target-id">Destination or service</Label><NativeSelect.Root
 												id="policy-target-id"
 												bind:value={targetId}
-												><NativeSelect.Option value="">Choose a source record</NativeSelect.Option
+												><NativeSelect.Option value=""
+													>Choose a destination or service</NativeSelect.Option
 												>{#each targets as item (item.id)}<NativeSelect.Option value={item.id}
 														>{item.name}</NativeSelect.Option
 													>{/each}</NativeSelect.Root
@@ -2223,7 +2221,7 @@
 							<Card.Root
 								><Card.Content
 									><h3>Can a resident get there and home?</h3>
-									<Label for="policy-origin">Mapped resident area</Label><NativeSelect.Root
+									<Label for="policy-origin">Residential area</Label><NativeSelect.Root
 										id="policy-origin"
 										bind:value={originId}
 										><NativeSelect.Option value=""
@@ -2548,7 +2546,7 @@
 						<Card.Root
 							><Card.Content
 								><div class="policy-table-heading">
-									<h3>Scheduled bus and ferry evidence</h3>
+									<h3>Bus and ferry timetables</h3>
 									<Button variant="outline" disabled={busy} onclick={loadTimetable}
 										>Load selected-date timetable</Button
 									>
@@ -2596,7 +2594,7 @@
 									{#each timetable.official_ferry_calendars as calendar (calendar.id)}<details>
 											<summary
 												>{label(calendar.route)} · crossing time {calendar.crossingMinutes == null
-													? 'not supplied'
+													? 'unavailable'
 													: `${calendar.crossingMinutes} min`}</summary
 											>{#each calendar.dayTypes as day (day.label)}<p>
 													<strong>{day.label}</strong>{day.noScheduledService
@@ -2619,7 +2617,7 @@
 												</p>{/each}
 										</details>{/each}{:else}<p class="policy-note">
 										View official direction-specific ferry departures, day types and the dated RTL
-										bus snapshot. Departure columns are not arrival times.
+										bus timetable. Departure columns are not arrival times.
 									</p>{/if}</Card.Content
 							></Card.Root
 						>
@@ -2637,7 +2635,7 @@
 		gap: 12px;
 		max-width: 1900px;
 		margin: 0 auto;
-		color: #23252b;
+		color: var(--theme-color-23252b);
 	}
 	.policy-map-layout {
 		position: relative;
@@ -2667,10 +2665,10 @@
 		overflow: auto;
 		overscroll-behavior: contain;
 		padding: 0 12px 14px;
-		background: #fffefaf7;
-		border: 1px solid #d9e4d9;
+		background: var(--theme-color-fffefaf7);
+		border: 1px solid var(--theme-color-d9e4d9);
 		border-radius: 16px;
-		box-shadow: 0 7px 30px #203f3824;
+		box-shadow: 0 7px 30px var(--theme-color-203f3824);
 		animation: inspector-enter 180ms cubic-bezier(0.23, 1, 0.32, 1);
 	}
 	.policy-editor[hidden] {
@@ -2686,9 +2684,9 @@
 		position: sticky;
 		top: 0;
 		z-index: 8;
-		background: #fffefa;
+		background: var(--theme-color-fffefa);
 		padding: 14px 0;
-		border-bottom: 1px solid #e0e7dc;
+		border-bottom: 1px solid var(--theme-color-e0e7dc);
 	}
 	.policy-inspector-heading > div {
 		flex: 1;
@@ -2697,7 +2695,7 @@
 	}
 	.policy-inspector-heading small {
 		font-size: 10px;
-		color: #708371;
+		color: var(--theme-color-708371);
 	}
 	.policy-inspector-heading strong {
 		font-size: 15px;
@@ -2710,7 +2708,7 @@
 	}
 	.policy-workflow-note {
 		font-size: 11px;
-		color: #617565;
+		color: var(--theme-color-617565);
 		width: 100%;
 		line-height: 1.5;
 	}
@@ -2720,14 +2718,14 @@
 	}
 	.policy-context-disclosure summary {
 		padding: 10px 12px;
-		background: #f0f3ea;
+		background: var(--theme-color-f0f3ea);
 		border-radius: 10px;
 	}
 	.policy-location-choice {
 		display: flex;
 		align-items: center;
 		gap: 9px;
-		background: #edf4eb;
+		background: var(--theme-color-edf4eb);
 		padding: 12px;
 		border-radius: 11px;
 	}
@@ -2738,13 +2736,13 @@
 		font-size: 11px;
 	}
 	.policy-site-hint {
-		color: #52715c;
+		color: var(--theme-color-52715c);
 		font-size: 11px;
 		line-height: 1.5;
 	}
 	.policy-site-warning {
-		color: #906428;
-		background: #fff2d9;
+		color: var(--theme-color-906428);
+		background: var(--theme-color-fff2d9);
 		border-radius: 9px;
 		padding: 10px;
 	}
@@ -2826,7 +2824,7 @@
 	}
 	.policy-heading p,
 	.policy-note {
-		color: #656575;
+		color: var(--theme-color-656575);
 		font-size: 13px;
 	}
 	:global(.policy-workbench [data-slot='card-content']) {
@@ -2842,7 +2840,7 @@
 		flex-shrink: 0;
 		height: auto;
 		width: 100%;
-		background: #e7e3f0;
+		background: var(--theme-color-e7e3f0);
 		padding: 5px;
 		gap: 4px;
 	}
@@ -2860,7 +2858,7 @@
 	}
 	.policy-context-title span {
 		font-size: 12px;
-		color: #656575;
+		color: var(--theme-color-656575);
 	}
 	.policy-inputs {
 		display: grid;
@@ -2898,7 +2896,7 @@
 		gap: 10px;
 		padding: 12px;
 		border-radius: 12px;
-		background: #f4f1f8;
+		background: var(--theme-color-f4f1f8);
 	}
 	.policy-operation-row strong,
 	.policy-leg strong {
@@ -2909,7 +2907,7 @@
 	.policy-leg small {
 		display: block;
 		margin-top: 5px;
-		color: #656575;
+		color: var(--theme-color-656575);
 		overflow-wrap: anywhere;
 	}
 	.policy-metrics {
@@ -2925,7 +2923,7 @@
 	.policy-metrics small,
 	.policy-metrics span {
 		font-size: 12px;
-		color: #656575;
+		color: var(--theme-color-656575);
 	}
 	.policy-band {
 		display: grid;
@@ -2953,16 +2951,16 @@
 		flex-shrink: 1;
 	}
 	.policy-bar.baseline {
-		background: #b897f1;
+		background: var(--theme-color-b897f1);
 	}
 	.policy-bar.proposed {
-		background: #88ccae;
+		background: var(--theme-color-88ccae);
 	}
 	.policy-inline-stat {
 		display: flex;
 		align-items: center;
 		gap: 15px;
-		border-top: 1px solid #eeebf2;
+		border-top: 1px solid var(--theme-color-eeebf2);
 		padding-top: 15px;
 	}
 	.policy-inline-stat strong {
@@ -2970,7 +2968,7 @@
 	}
 	.policy-inline-stat span {
 		font-size: 13px;
-		color: #656575;
+		color: var(--theme-color-656575);
 	}
 	.policy-table-heading > h3 {
 		margin-right: auto;
@@ -2990,14 +2988,14 @@
 	}
 	th {
 		text-align: left;
-		color: #686577;
+		color: var(--theme-color-686577);
 		font-weight: 550;
-		background: #f8f6fb;
+		background: var(--theme-color-f8f6fb);
 	}
 	th,
 	td {
 		padding: 12px;
-		border-bottom: 1px solid #efecf3;
+		border-bottom: 1px solid var(--theme-color-efecf3);
 		white-space: nowrap;
 	}
 	.policy-area-id {
@@ -3010,7 +3008,7 @@
 		display: flex;
 		align-items: flex-start;
 		gap: 12px;
-		border-bottom: 1px solid #efecf3;
+		border-bottom: 1px solid var(--theme-color-efecf3);
 		padding-bottom: 14px;
 	}
 	.policy-finance-row {
@@ -3018,7 +3016,7 @@
 		justify-content: space-between;
 		gap: 14px;
 		padding: 12px 0;
-		border-bottom: 1px solid #efecf3;
+		border-bottom: 1px solid var(--theme-color-efecf3);
 		font-size: 13px;
 	}
 	.policy-finance-row strong {
@@ -3032,7 +3030,7 @@
 		padding-top: 12px;
 	}
 	details {
-		border-top: 1px solid #e8e4ee;
+		border-top: 1px solid var(--theme-color-e8e4ee);
 		padding-top: 14px;
 	}
 	details p {
@@ -3045,23 +3043,23 @@
 	}
 	textarea {
 		width: 100%;
-		border: 1px solid #dcd7e7;
+		border: 1px solid var(--theme-color-dcd7e7);
 		border-radius: 12px;
 		padding: 12px;
 		font: 12px/1.6 monospace;
 		resize: vertical;
-		background: #faf8fe;
+		background: var(--theme-color-faf8fe);
 	}
 	.policy-error {
-		color: #8a2b35;
+		color: var(--theme-color-8a2b35);
 		padding: 14px;
-		border: 1px solid #e6bec5;
-		background: #fff2f4;
+		border: 1px solid var(--theme-color-e6bec5);
+		background: var(--theme-color-fff2f4);
 		border-radius: 12px;
 	}
 	.policy-stale {
-		color: #77551d;
-		background: #fff5da;
+		color: var(--theme-color-77551d);
+		background: var(--theme-color-fff5da);
 		padding: 12px;
 		border-radius: 12px;
 		margin-bottom: 16px;

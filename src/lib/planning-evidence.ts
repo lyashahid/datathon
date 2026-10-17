@@ -30,15 +30,15 @@ export type PlanningCoverage = {
 
 const distributionNotes: Record<string, string> = {
 	mixed_island_allocations:
-		'Mixed resident allocation: some islands use approximate spatial assumptions. Inspect each island’s evidence before interpreting neighbourhood differences.',
+		'Resident distribution varies by island. Some islands use approximate allocations; check the method before comparing neighbourhoods.',
 	worldpop_calibrated:
-		'Modeled distribution: screened WorldPop weights calibrated to the official island total. These are not observed neighbourhood counts.',
+		'Resident estimates use WorldPop density weights scaled to the official island total. Neighbourhood counts are estimates.',
 	uniform_mapped_residential_area:
-		'Approximate distribution: residents spread uniformly across mapped residential land. Local density and mapping completeness are unverified.',
+		'Residents are estimated evenly across residential land. Local density and complete residential coverage are unverified.',
 	residential_building_footprint_area:
-		'Approximate distribution: residents allocated by mapped residential building footprints. Occupancy, floor counts and mapping completeness are unverified.',
+		'Resident estimates follow residential building footprints. Occupancy, floor counts and complete building coverage are unverified.',
 	assumed_uniform_land:
-		'Approximate distribution: residents spread uniformly across island land, including potentially uninhabited land. This is not an observed settlement map.'
+		'Residents are estimated evenly across the island, including potentially uninhabited land. This is an approximate distribution.'
 };
 
 /** Resident allocation and dated transport evidence are independent model capabilities. */
@@ -87,9 +87,9 @@ export function planningEvidence(
 		warnings,
 		timetable:
 			coverage?.timetable_status === 'available'
-				? 'Dated service evidence is available. Journeys use only services valid for the selected date.'
+				? 'Journeys use timetables valid for the selected date.'
 				: coverage?.timetable_status === 'unavailable'
-					? 'No dated timetable is available here. Walking to mapped stops can still be modeled; this does not establish whether transport services operate.'
-					: 'Mapped stops show locations. Timetable-based journeys require dated service evidence.'
+					? 'A timetable is unavailable here. Walking times to stops are estimated; service times need confirmation.'
+					: 'Stop locations are shown. Scheduled journeys also require a timetable valid for the selected date.'
 	};
 }

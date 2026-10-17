@@ -164,8 +164,8 @@
 		if (!domain) return 'Explore the island to see where services could improve.';
 		const evidence = island.domains[domain];
 		if (!evidence.mapped_count)
-			return `No ${serviceLabels[domain]} are mapped yet. Check local services before planning.`;
-		const locations = `${number(evidence.mapped_count)} mapped ${evidence.mapped_count === 1 ? singularServiceLabels[domain] : serviceLabels[domain]}`;
+			return `${island.name} needs more ${policyDomainLabels[domain].toLowerCase()} data before access can be assessed.`;
+		const locations = `${number(evidence.mapped_count)} ${evidence.mapped_count === 1 ? singularServiceLabels[domain] : serviceLabels[domain]} in ${island.name}`;
 		if (evidence.status === 'unknown')
 			return `${locations}. More information is needed to assess access.`;
 		return domain === 'transport'
@@ -217,7 +217,8 @@
 				<span class="section-eyebrow">Your next decision</span>
 				<h2>Where action would help most</h2>
 				<p>
-					Three starting points for {scopeLabel}. Check the evidence, then explore on the map.
+					Three starting points for {scopeLabel}. Explore each island and test improvements on the
+					map.
 				</p>
 			</div>
 			<div class="priority-refresh" role="status" aria-live="polite">
@@ -250,9 +251,7 @@
 						</div>
 					{:else if island}
 						<span class:needs-evidence={priority.kind === 'evidence'} class="focus-evidence"
-							>{priority.kind === 'evidence'
-								? 'More evidence needed'
-								: 'Mapped evidence · review access'}</span
+							>{priority.kind === 'evidence' ? 'More data needed' : 'Review service access'}</span
 						>
 						<h3>{island.name}</h3>
 						<p class="focus-reason">{issueSummary(island, priority.domain)}</p>
@@ -264,9 +263,9 @@
 							>
 						</div>
 						<p class="focus-qualification">
-							{priority.tied ? 'Shared screening result. ' : ''}{priority.kind === 'evidence'
-								? 'Missing records do not confirm a service gap.'
-								: 'Confirm this screening signal locally.'}
+							{priority.tied ? 'Other islands share this score. ' : ''}{priority.kind === 'evidence'
+								? 'Service availability is unconfirmed.'
+								: 'Compare travel times and test a proposal.'}
 						</p>
 						<Button
 							variant="outline"
@@ -279,10 +278,10 @@
 						<span class="focus-evidence no-flag"
 							>{scoped.length ? 'No review flag' : 'No islands in this selection'}</span
 						>
-						<h3>{scoped.length ? 'Explore the available services' : 'Choose another scope'}</h3>
+						<h3>{scoped.length ? 'Explore island services' : 'Choose another area'}</h3>
 						<p class="focus-reason">
 							{scoped.length
-								? 'The available records do not flag a specific island for review. Service quality and capacity still need local checks.'
+								? 'No island is flagged for review. Explore services, travel times and capacity.'
 								: 'Change the atoll or island filter to find a starting point.'}
 						</p>
 						<Button
@@ -298,8 +297,8 @@
 			{/each}
 		</div>
 		<p class="focus-source">
-			Screening from the supplied data snapshot. Island counts do not measure residents affected or
-			investment benefits.
+			Priorities highlight islands to review. Test a proposal to see how many residents could
+			benefit.
 		</p>
 		<details class="service-comparison-disclosure">
 			<summary><span>Compare all services and islands</span><ChevronRight size={15} /></summary>
@@ -330,11 +329,11 @@
 									? number(Math.round(residentCount))
 									: 'Not available'}</strong
 						>
-						<span>residents recorded</span>
+						<span>residents</span>
 					</div>
 					<div>
 						<strong>{initialLoading ? '—' : number(mappedCount)}</strong>
-						<span>service locations mapped</span>
+						<span>service locations</span>
 					</div>
 				</div>
 				<div class="sector-comparison" aria-label="Compare island services">
@@ -391,10 +390,10 @@
 								<div>
 									<span
 										>{sector.domain === 'transport'
-											? 'Mapped stops and terminals'
+											? 'Stops and ports'
 											: sector.domain === 'health'
-												? 'Mapped health facilities'
-												: 'Mapped schools and colleges'}</span
+												? 'Health facilities'
+												: 'Schools and colleges'}</span
 									><strong>{initialLoading ? '—' : number(sector.mappedCount)}</strong>
 								</div>
 								<div>
@@ -440,8 +439,7 @@
 					><span><i class="unknown-key"></i> Need more data</span>
 				</div>
 				<p class="screening-definition">
-					These numbers highlight where to check access. Missing data does not mean a service is
-					missing.
+					Review access where scores are low, and check islands with incomplete service data.
 					{#if !initialLoading && populationCount < scoped.length}
 						Resident totals cover {number(populationCount)} of {number(scoped.length)} islands.
 					{/if}
@@ -531,7 +529,7 @@
 											<span class="compact-residents"
 												>{island.population === null
 													? 'Resident count not available'
-													: `${number(Math.round(island.population))} recorded residents`}</span
+													: `${number(Math.round(island.population))} residents`}</span
 											>
 										</div>
 									</div>
@@ -548,8 +546,7 @@
 									<div class="priority-context">
 										{#if island.population !== null}<strong
 												>{number(Math.round(island.population))}</strong
-											><span>recorded residents</span>{:else}<span
-												>Resident count<br />not available</span
+											><span>residents</span>{:else}<span>Resident count<br />not available</span
 											>{/if}
 									</div>
 									<Button
@@ -596,37 +593,32 @@
 					>
 				</div>
 				{#if showEvidence}<div class="evidence-detail" id="policy-screening-evidence">
-						<h3>Use the map to investigate, then test the investment.</h3>
+						<h3>How island priorities are calculated</h3>
 						<p>
 							{number(scoped.length)} islands in this selection · {number(populationCount)} with resident
-							counts · {number(supportedCount)} with modeled resident access available.
+							counts · {number(supportedCount)} with resident access calculations.
 							{referenceDate ? `Data reference: ${referenceDate}.` : ''}
 						</p>
 						<p>
-							Screening combines mapped transport, health and education records with available
-							resident and planning evidence. A stronger evidence signal describes the available
-							records; it does not verify service quality, capacity, admissions, or reliable
-							timetables. Gap scores are screening indicators, not percentages of residents without
-							a service.
+							Priorities combine transport, health and education access with population data. Scores
+							describe access, rather than service quality, spare capacity or timetable reliability.
+							They do not measure the percentage of residents without a service.
 						</p>
 						<p>
-							An available service index below 60 out of 100 is flagged for review. The overall
-							screen uses the weakest known service index. Missing mapped records stay unknown and
-							are not counted as measured service failures.
+							A service score below 60 out of 100 flags an island for review. The overall priority
+							uses the island's lowest known service score. Missing service data is marked unknown.
 						</p>
 						<p>
 							{ranked
 								? 'Islands with higher review scores appear first.'
-								: 'Islands are listed alphabetically because the available scores do not support a useful ranking.'}
-							Mapped-location totals count recorded transport stops and terminals, health facilities,
-							and schools and colleges. They do not measure the number or quality of services running
-							there.
+								: 'Islands with equal scores are listed alphabetically.'}
+							Service locations include transport stops and ports, health facilities, and schools and
+							colleges. A location count does not measure service frequency or capacity.
 						</p>
 						<p>
-							Resident totals remain unavailable where the source does not supply an estimate. Local
-							access models need resident allocation and planning networks. Some use approximate
-							resident distributions; check each island's evidence. Timetable-based journeys require
-							separate dated service evidence. Proposals remain estimates for review.
+							Resident totals are shown where population data exists. Walking access uses estimated
+							resident locations and the island's transport network. Journeys use timetables for the
+							selected date. Proposal results are estimates.
 						</p>
 						{#if snapshot?.warnings.length}<ul>
 								{#each snapshot.warnings as warning (warning)}<li>{warning}</li>{/each}
@@ -640,11 +632,11 @@
 <style>
 	.policy-overview {
 		margin: 28px 0 30px;
-		color: #302b40;
-		--policy-purple: #8762d8;
-		--policy-mint: #26a984;
-		--policy-muted: #81798e;
-		--policy-line: #eeebf3;
+		color: var(--theme-color-302b40);
+		--policy-purple: var(--theme-color-8762d8);
+		--policy-mint: var(--theme-color-26a984);
+		--policy-muted: var(--theme-color-81798e);
+		--policy-line: var(--theme-color-eeebf3);
 	}
 	.focus-heading {
 		display: flex;
@@ -671,7 +663,7 @@
 		min-height: 24px;
 		flex-shrink: 0;
 		font-size: 10px;
-		color: #6b7973;
+		color: var(--theme-color-6b7973);
 	}
 	:global(.policy-overview .refresh-icon) {
 		animation: priority-refresh 850ms linear infinite;
@@ -693,10 +685,10 @@
 		min-width: 0;
 		min-height: 248px;
 		padding: 16px;
-		border: 1px solid #e4dfed;
+		border: 1px solid var(--theme-color-e4dfed);
 		border-radius: 16px;
-		background: linear-gradient(145deg, #fff 65%, #faf8fd);
-		box-shadow: 0 6px 24px #392b5905;
+		background: linear-gradient(145deg, var(--theme-color-ffffff) 65%, var(--theme-color-faf8fd));
+		box-shadow: 0 6px 24px var(--theme-color-392b5905);
 	}
 	.focus-service {
 		display: flex;
@@ -704,7 +696,7 @@
 		gap: 8px;
 		font-size: 11px;
 		font-weight: 550;
-		color: #655875;
+		color: var(--theme-color-655875);
 		margin-bottom: 10px;
 	}
 	.focus-icon {
@@ -713,29 +705,29 @@
 		width: 28px;
 		height: 28px;
 		border-radius: 9px;
-		background: #fff1e5;
-		color: #b77b3c;
+		background: var(--theme-color-fff1e5);
+		color: var(--theme-color-b77b3c);
 	}
 	.focus-health .focus-icon {
-		background: #e5f7f0;
-		color: #26866c;
+		background: var(--theme-color-e5f7f0);
+		color: var(--theme-color-26866c);
 	}
 	.focus-education .focus-icon {
-		background: #f0eafb;
-		color: #8762d8;
+		background: var(--theme-color-f0eafb);
+		color: var(--theme-color-8762d8);
 	}
 	.focus-evidence {
 		display: block;
 		font-size: 10px;
 		font-weight: 550;
-		color: #8b683b;
+		color: var(--theme-color-8b683b);
 		margin-bottom: 5px;
 	}
 	.focus-evidence.needs-evidence {
-		color: #81778c;
+		color: var(--theme-color-81778c);
 	}
 	.focus-evidence.no-flag {
-		color: #39836c;
+		color: var(--theme-color-39836c);
 	}
 	.focus-card h3 {
 		font-size: 18px;
@@ -746,25 +738,25 @@
 		margin: 6px 0 9px;
 		font-size: 11px;
 		line-height: 1.5;
-		color: #756d80;
+		color: var(--theme-color-756d80);
 	}
 	.focus-context {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 3px 10px;
 		font-size: 10px;
-		color: #62596e;
+		color: var(--theme-color-62596e);
 	}
 	.focus-qualification {
 		font-size: 10px;
 		line-height: 1.5;
-		color: #8a8194;
+		color: var(--theme-color-8a8194);
 		margin: 7px 0 11px;
 	}
 	.focus-card :global(button) {
 		margin-top: auto;
-		border-color: #e5def0;
-		color: #7352a8;
+		border-color: var(--theme-color-e5def0);
+		color: var(--theme-color-7352a8);
 		font-size: 11px;
 		border-radius: 9px;
 		min-height: 34px;
@@ -772,7 +764,7 @@
 	.focus-source {
 		font-size: 10px;
 		line-height: 1.5;
-		color: #81798e;
+		color: var(--theme-color-81798e);
 		margin: 10px 0 12px;
 	}
 	.focus-skeleton {
@@ -782,7 +774,7 @@
 	.focus-skeleton span {
 		display: block;
 		border-radius: 6px;
-		background: #f0edf5;
+		background: var(--theme-color-f0edf5);
 		height: 12px;
 		margin-bottom: 12px;
 	}
@@ -794,7 +786,7 @@
 		width: 85%;
 	}
 	.service-comparison-disclosure {
-		border-bottom: 1px solid #e5e0ed;
+		border-bottom: 1px solid var(--theme-color-e5e0ed);
 	}
 	.service-comparison-disclosure > summary {
 		display: flex;
@@ -806,13 +798,13 @@
 		list-style: none;
 		font-size: 11px;
 		font-weight: 550;
-		color: #765a9e;
+		color: var(--theme-color-765a9e);
 	}
 	.service-comparison-disclosure > summary::-webkit-details-marker {
 		display: none;
 	}
 	.service-comparison-disclosure > summary:focus-visible {
-		outline: 2px solid #9373c6;
+		outline: 2px solid var(--theme-color-9373c6);
 		outline-offset: 4px;
 		border-radius: 6px;
 	}
@@ -881,12 +873,12 @@
 		line-height: 1.6;
 	}
 	:global(.policy-overview .policy-section-heading button) {
-		border-color: #e5def2;
-		background: #fff;
-		color: #7651c2;
+		border-color: var(--theme-color-e5def2);
+		background: var(--theme-color-ffffff);
+		color: var(--theme-color-7651c2);
 		border-radius: 10px;
 		font-size: 11px;
-		box-shadow: 0 2px 3px #392b5903;
+		box-shadow: 0 2px 3px var(--theme-color-392b5903);
 	}
 	.policy-summary {
 		display: grid;
@@ -902,16 +894,16 @@
 		padding: 18px 20px;
 		border: 1px solid var(--policy-line);
 		border-radius: 14px;
-		background: #fff;
+		background: var(--theme-color-ffffff);
 		font-size: 11px;
 		color: var(--policy-muted);
 	}
 	.policy-summary > .summary-primary {
-		border-color: #e7dcf8;
-		background: #f7f3fd;
+		border-color: var(--theme-color-e7dcf8);
+		background: var(--theme-color-f7f3fd);
 	}
 	.policy-summary strong {
-		color: #514563;
+		color: var(--theme-color-514563);
 		font-size: 28px;
 		font-weight: 450;
 		letter-spacing: -1px;
@@ -927,18 +919,18 @@
 		position: relative;
 		padding: 22px 22px 9px;
 		gap: 0;
-		border: 1px solid #ebe6f1;
+		border: 1px solid var(--theme-color-ebe6f1);
 		border-radius: 20px;
-		box-shadow: 0 4px 16px #3f255b03;
-		background: #fff;
-		--tw-ring-shadow: 0 0 #0000;
+		box-shadow: 0 4px 16px var(--theme-color-3f255b03);
+		background: var(--theme-color-ffffff);
+		--tw-ring-shadow: 0 0 var(--theme-color-00000000);
 		transition:
 			border-color 150ms ease,
 			box-shadow 150ms ease;
 	}
 	:global(.policy-overview .sector-selected) {
-		border-color: #bca4e8;
-		box-shadow: 0 0 0 3px #8762d80d;
+		border-color: var(--theme-color-bca4e8);
+		box-shadow: 0 0 0 3px var(--theme-color-8762d80d);
 	}
 	.sector-heading {
 		display: flex;
@@ -957,23 +949,23 @@
 		border-radius: 11px;
 		display: grid;
 		place-items: center;
-		background: #fff1e5;
-		color: #cb8b4e;
+		background: var(--theme-color-fff1e5);
+		color: var(--theme-color-cb8b4e);
 	}
 	:global(.sector-health) .sector-icon {
-		color: #269d7c;
-		background: #e5f7f0;
+		color: var(--theme-color-269d7c);
+		background: var(--theme-color-e5f7f0);
 	}
 	:global(.sector-education) .sector-icon {
-		color: #8762d8;
-		background: #f0eafb;
+		color: var(--theme-color-8762d8);
+		background: var(--theme-color-f0eafb);
 	}
 	.selected-label {
 		margin-left: auto;
-		color: #7953c4;
+		color: var(--theme-color-7953c4);
 		font-size: 9px;
 		padding: 4px 7px;
-		background: #f3eefb;
+		background: var(--theme-color-f3eefb);
 		border-radius: 6px;
 	}
 	.sector-visual {
@@ -1014,7 +1006,7 @@
 		stroke-width: 12px;
 	}
 	.donut-track {
-		stroke: #eeebf3;
+		stroke: var(--theme-color-eeebf3);
 	}
 	.donut-review {
 		stroke: var(--policy-purple);
@@ -1063,7 +1055,7 @@
 	}
 	.sector-context strong {
 		font-weight: 500;
-		color: #514563;
+		color: var(--theme-color-514563);
 		font-variant-numeric: tabular-nums;
 	}
 	.sector-context i,
@@ -1080,23 +1072,23 @@
 		background: var(--policy-mint);
 	}
 	.unknown-key {
-		background: #c9c2d4;
+		background: var(--theme-color-c9c2d4);
 	}
 	:global(.policy-overview .sector-action) {
 		width: calc(100% + 16px);
 		margin: 8px -8px 0;
 		display: flex;
 		justify-content: space-between;
-		color: #7953c4;
+		color: var(--theme-color-7953c4);
 		font-size: 11px;
 		border-radius: 9px;
 	}
 	:global(.policy-overview .sector-connection) {
-		color: #995e29;
-		background: #fff4e9;
+		color: var(--theme-color-995e29);
+		background: var(--theme-color-fff4e9);
 	}
 	:global(.policy-overview .sector-connection:hover) {
-		background: #ffead6;
+		background: var(--theme-color-ffead6);
 	}
 	:global(.policy-overview .sector-connection span) {
 		display: inline-flex;
@@ -1107,7 +1099,7 @@
 		transform: scale(0.98);
 	}
 	:global(.policy-overview button:focus-visible) {
-		outline: 2px solid #8762d8;
+		outline: 2px solid var(--theme-color-8762d8);
 		outline-offset: 3px;
 	}
 	.screening-legend {
@@ -1131,14 +1123,14 @@
 		max-width: 910px;
 	}
 	:global(.policy-overview .priority-card) {
-		border: 1px solid #ebe6f1;
+		border: 1px solid var(--theme-color-ebe6f1);
 		border-radius: 20px;
-		background: #fff;
+		background: var(--theme-color-ffffff);
 		padding: 0;
 		gap: 0;
 		overflow: hidden;
-		box-shadow: 0 4px 16px #3f255b03;
-		--tw-ring-shadow: 0 0 #0000;
+		box-shadow: 0 4px 16px var(--theme-color-3f255b03);
+		--tw-ring-shadow: 0 0 var(--theme-color-00000000);
 	}
 	.priority-heading {
 		padding: 25px 26px 19px;
@@ -1164,19 +1156,19 @@
 		gap: 3px;
 		padding: 4px;
 		border-radius: 11px;
-		background: #f5f2fa;
+		background: var(--theme-color-f5f2fa);
 	}
 	:global(.policy-overview .queue-controls button) {
 		font-size: 11px;
 		border-radius: 8px;
-		color: #81798e;
+		color: var(--theme-color-81798e);
 		background: transparent;
 		box-shadow: none;
 	}
 	:global(.policy-overview .queue-controls button[aria-pressed='true']) {
-		color: #7250b6;
-		background: #fff;
-		box-shadow: 0 1px 4px #4c326b0a;
+		color: var(--theme-color-7250b6);
+		background: var(--theme-color-ffffff);
+		box-shadow: 0 1px 4px var(--theme-color-4c326b0a);
 	}
 	.queue-controls span {
 		font-size: 10px;
@@ -1201,10 +1193,10 @@
 		height: 37px;
 		padding-left: 33px;
 		font-size: 11px;
-		border-color: #eae5f1;
+		border-color: var(--theme-color-eae5f1);
 		border-radius: 10px;
 		box-shadow: none;
-		background: #fdfcfe;
+		background: var(--theme-color-fdfcfe);
 	}
 	.priority-row {
 		display: grid;
@@ -1226,8 +1218,8 @@
 		width: 35px;
 		height: 35px;
 		border-radius: 11px;
-		background: #f4effc;
-		color: #a18ac7;
+		background: var(--theme-color-f4effc);
+		color: var(--theme-color-a18ac7);
 		flex-shrink: 0;
 	}
 	.priority-island strong {
@@ -1253,13 +1245,13 @@
 	.issue-chip {
 		font-size: 9px;
 		padding: 4px 7px;
-		color: #7956bd;
-		background: #f3edfc;
+		color: var(--theme-color-7956bd);
+		background: var(--theme-color-f3edfc);
 		border-radius: 6px;
 	}
 	.unknown-chip {
-		color: #83798f;
-		background: #f1eef5;
+		color: var(--theme-color-83798f);
+		background: var(--theme-color-f1eef5);
 	}
 	.priority-issue p {
 		margin: 7px 0 0;
@@ -1275,7 +1267,7 @@
 	}
 	.priority-context strong {
 		display: block;
-		color: #514563;
+		color: var(--theme-color-514563);
 		font-size: 15px;
 		font-weight: 450;
 		letter-spacing: -0.4px;
@@ -1286,8 +1278,8 @@
 	}
 	:global(.policy-overview .priority-row > button) {
 		font-size: 10px;
-		border-color: #e8e1f3;
-		color: #7956bd;
+		border-color: var(--theme-color-e8e1f3);
+		color: var(--theme-color-7956bd);
 		border-radius: 9px;
 		box-shadow: none;
 	}
@@ -1297,7 +1289,7 @@
 		align-items: center;
 		gap: 15px;
 		padding: 14px 26px;
-		background: #fdfcfe;
+		background: var(--theme-color-fdfcfe);
 		border-top: 1px solid var(--policy-line);
 		font-size: 10px;
 		color: var(--policy-muted);
@@ -1310,9 +1302,9 @@
 		font-variant-numeric: tabular-nums;
 	}
 	:global(.policy-overview .priority-footer button) {
-		border-color: #e8e1f3;
+		border-color: var(--theme-color-e8e1f3);
 		border-radius: 8px;
-		color: #7956bd;
+		color: var(--theme-color-7956bd);
 		box-shadow: none;
 	}
 	.priority-empty {
@@ -1323,7 +1315,7 @@
 	}
 	.priority-empty strong {
 		font-weight: 500;
-		color: #514563;
+		color: var(--theme-color-514563);
 	}
 	.priority-empty p {
 		margin: 8px 0 13px;
@@ -1344,16 +1336,16 @@
 	}
 	.evidence-detail {
 		padding: 22px 25px;
-		background: #f2edf9;
-		border: 1px solid #e7def1;
+		background: var(--theme-color-f2edf9);
+		border: 1px solid var(--theme-color-e7def1);
 		border-radius: 15px;
-		color: #776d84;
+		color: var(--theme-color-776d84);
 		margin-top: 8px;
 		font-size: 11px;
 		line-height: 1.8;
 	}
 	.evidence-detail h3 {
-		color: #514563;
+		color: var(--theme-color-514563);
 		font-size: 13px;
 	}
 	.evidence-detail p {
@@ -1369,10 +1361,10 @@
 		align-items: center;
 		gap: 18px;
 		padding: 22px;
-		border: 1px solid #f0ddc7;
-		background: #fff8ef;
+		border: 1px solid var(--theme-color-f0ddc7);
+		background: var(--theme-color-fff8ef);
 		border-radius: 17px;
-		color: #956b42;
+		color: var(--theme-color-956b42);
 		font-size: 12px;
 	}
 	.opportunity-error p {

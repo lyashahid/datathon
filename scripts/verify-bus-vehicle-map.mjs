@@ -1,4 +1,4 @@
-import { projectMapPoint } from './browser-map.mjs';
+import { projectMapPoint, wheelMapZoom } from './browser-map.mjs';
 import { browserBaseURL } from './browser-config.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -237,11 +237,6 @@ try {
 				String(snapshot.events.length)
 			);
 			await expect(atlas.locator('[title="Bus observations"]')).toHaveText(String(buses.length));
-			await page.locator('.movement-settings > summary').click();
-			const pause = page.getByRole('button', { name: 'Pause nearby updates', exact: true });
-			await expect.poll(() => unobscured(pause)).toBe(true);
-			await pause.click();
-			await page.locator('.movement-settings > summary').click();
 
 			// Prefer a supplied heading and a bus isolated from other vehicle hit areas.
 			/** @param {import('../src/lib/types.js').LiveEvent} first @param {import('../src/lib/types.js').LiveEvent} second */
@@ -275,7 +270,7 @@ try {
 			for (let attempt = 0; attempt < 5; attempt++) {
 				const zoom = Number(await atlas.getAttribute('data-zoom'));
 				if (zoom >= 17) break;
-				await atlas.getByRole('button', { name: 'Zoom in', exact: true }).click();
+				await wheelMapZoom(page, atlas, 1);
 				await expect
 					.poll(async () => Number(await atlas.getAttribute('data-zoom')))
 					.toBeGreaterThan(zoom + 0.8);

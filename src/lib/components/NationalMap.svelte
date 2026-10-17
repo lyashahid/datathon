@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { themeColors } from '#lib/theme.js';
 	import { onMount, tick, untrack } from 'svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import type { Feature, FeatureCollection, Geometry } from 'geojson';
@@ -76,7 +77,15 @@
 		LiveProvider
 	} from '../types';
 
+	import type { SeaMapState, SeaMapSelection } from '#lib/sea-connectivity.js';
+	import { seaIslandFeatures } from '#lib/sea-map.js';
 	interface Props {
+		seaState?: SeaMapState | null;
+		seaView?: boolean;
+		seaLayerEnabled?: boolean;
+		seaInspectorOpen?: boolean;
+		onSeaLayerChange?: (enabled: boolean) => void;
+		onSeaSelect?: (selection: Omit<SeaMapSelection, 'key'>) => void;
 		features: MapFeatures | null;
 		selectedId: string | null;
 		atollScope?: string | null;
@@ -162,6 +171,12 @@
 	}
 
 	let {
+		seaState = null,
+		seaView = false,
+		seaLayerEnabled = false,
+		seaInspectorOpen = false,
+		onSeaLayerChange,
+		onSeaSelect,
 		features,
 		selectedId,
 		atollScope = null,
@@ -511,6 +526,11 @@
 		[74.4, 7.3]
 	];
 	const interactiveLayers = [
+		'sea-route-line',
+		'sea-route-unverified',
+		'sea-island-points',
+		'sea-port-points',
+		'sea-island-fill',
 		'facilities-symbols',
 		'transport-symbols',
 		'bus-stop-symbols',
@@ -727,6 +747,7 @@
 			Number(buildingsVisible) +
 			Number(facilitiesVisible) +
 			Number(transportVisible) +
+			Number(!!onSeaLayerChange && seaLayerEnabled) +
 			Number(mode !== 'places' && liveVisible && liveEvents.length > 0)
 	);
 	const mapBusy = $derived(
@@ -801,19 +822,19 @@
 				label: `${label}${sourceProperties.name ? ` · ${sourceProperties.name}` : ''}`,
 				source:
 					sourceProperties.source ??
-					(operation.type === 'road_closure' ? 'OpenStreetMap captured street snapshot' : null),
+					(operation.type === 'road_closure' ? 'OpenStreetMap streets' : null),
 				source_record_id: target?.id ?? sourceProperties.id,
 				location_method:
 					geometry.type === 'Point'
-						? 'Supplied target point'
+						? 'Selected location'
 						: line
-							? 'Marker on supplied target line'
-							: 'Centre of supplied target geometry',
+							? 'Selected route location'
+							: 'Centre of selected area',
 				geometry_preview: edgeWayId
 					? 'Associated OSM way; exact graph segment is not exposed on this map'
 					: operation.type === 'road_closure'
-						? 'Supplied OSM way geometry'
-						: 'Supplied target geometry'
+						? 'OpenStreetMap road'
+						: 'Selected location'
 			};
 			if (operation.type === 'road_closure' && line)
 				items.push({
@@ -999,7 +1020,7 @@
 				? `${timedMovement.length} dated · ${freshMovement.length - timedMovement.length} time unknown · ${liveFeatures.features.length - freshMovement.length} stale`
 				: liveStatus.message ||
 					(liveStatus.providers?.some((provider) => provider.enabled)
-						? 'No provider positions returned in this area'
+						? 'No vehicle positions returned in this area'
 						: 'Movement feeds unavailable in this area')
 	);
 
@@ -1066,10 +1087,9 @@
 						category,
 						name,
 						record_source: source,
-						location_method:
-							feature.geometry.type === 'Point' ? 'Supplied point' : 'Centre of supplied geometry',
+						location_method: feature.geometry.type === 'Point' ? 'Location' : 'Area centre',
 						priority: priority < 0 ? 100 : priority,
-						label: `${name || String(category ?? 'Mapped place').replaceAll('_', ' ')} · ${String(category ?? 'place').replaceAll('_', ' ')}`
+						label: `${name || String(category ?? 'Place').replaceAll('_', ' ')} · ${String(category ?? 'place').replaceAll('_', ' ')}`
 					},
 					geometry: {
 						type: 'Point',
@@ -1613,8 +1633,7 @@
 			contextReceipt = String(data.metadata?.retrieved_at ?? '').slice(0, 10);
 			setData('street-context', data);
 			syncStreetLabels();
-			contextLoadedError =
-				data.summary?.status === 'unavailable' ? 'Street snapshot unavailable' : '';
+			contextLoadedError = data.summary?.status === 'unavailable' ? 'Streets unavailable' : '';
 			contextError = contextLoadedError;
 		} catch (cause) {
 			if (
@@ -1750,8 +1769,7 @@
 			})
 			.catch((cause: unknown) => {
 				if (map === instance)
-					error =
-						cause instanceof Error ? cause.message : 'The supplied map data could not be drawn.';
+					error = cause instanceof Error ? cause.message : 'The map could not be drawn.';
 			});
 	}
 
@@ -1913,9 +1931,24 @@
 				'Bearing',
 				typeof props.heading === 'number'
 					? `${Math.round(props.heading)}° supplied by provider`
-					: 'Not supplied'
+					: 'Unavailable'
 			);
 			row('Motion', 'Only received observations; no extrapolation');
+			if (props.kind === 'vessel') {
+				row('Vessel type', props.vessel_type ?? props.ship_type ?? 'Unavailable');
+				row('Reported destination', props.destination);
+				row('MMSI', props.mmsi, true);
+				row('IMO', props.imo, true);
+				row(
+					'Speed',
+					typeof props.speed_knots === 'number'
+						? `${props.speed_knots} knots`
+						: typeof props.sog === 'number'
+							? `${props.sog} knots`
+							: null
+				);
+				row('Passenger service', 'Service assignment unavailable');
+			}
 		}
 		if (feature.source === 'route') row('Journey', props.status);
 		if (feature.source === 'scenario') {
@@ -1939,6 +1972,12 @@
 		evidenceTitle.textContent = 'Source details';
 		evidence.append(evidenceTitle, details);
 		panel.append(eyebrow, title);
+		if (props.kind === 'vessel' && feature.source === 'live-vessels') {
+			const assignment = document.createElement('p');
+			assignment.textContent =
+				'This is an observed boat position. Its passenger route is unverified. Use Sea connections to inspect published services and their connectivity.';
+			panel.append(assignment);
+		}
 		if (feature.source === 'journey-stops') {
 			const instruction = document.createElement('p');
 			instruction.textContent = [
@@ -2720,6 +2759,59 @@
 	}
 	function handleClick(event: MapMouseEvent) {
 		if (!map || !ready) return;
+		if (seaView && !picking && !islandPicking) {
+			const hits = map.queryRenderedFeatures(event.point, {
+				layers: [
+					'live-vessel-symbols',
+					'live-vessel-clusters',
+					'sea-island-points',
+					'sea-port-points',
+					'sea-route-line',
+					'sea-route-unverified',
+					...(seaInspectorOpen ? ['sea-island-fill', 'island-centroids', 'islands-fill'] : [])
+				]
+			});
+			const vessel = hits.find((hit) => hit.source === 'live-vessels');
+			if (vessel) {
+				if (vessel.properties.cluster) expandCluster(vessel);
+				else inspectFeature(vessel, event);
+				return;
+			}
+			const island = hits.find(
+				(hit) =>
+					hit.properties?.island_id ||
+					(hit.source === 'islands' && hit.properties?.id) ||
+					hit.source === 'centroids'
+			);
+			if (island) {
+				closeInspection();
+				const id = String(island.properties.island_id ?? island.properties.id);
+				if (seaInspectorOpen)
+					onSeaSelect?.({
+						kind: 'island',
+						id,
+						name: String(island.properties.name ?? '')
+					});
+				else onselect(id);
+				return;
+			}
+			const route =
+				hits.find((hit) => hit.properties?.route_id) ??
+				map
+					.queryRenderedFeatures(
+						[
+							[event.point.x - 5, event.point.y - 5],
+							[event.point.x + 5, event.point.y + 5]
+						],
+						{ layers: ['sea-route-line', 'sea-route-unverified'] }
+					)
+					.find((hit) => hit.properties?.route_id);
+			if (route) {
+				closeInspection();
+				onSeaSelect?.({ kind: 'route', id: String(route.properties.route_id) });
+				return;
+			}
+		}
 		if (!serviceEditor && !picking && !islandPicking) {
 			const accepted = map
 				.queryRenderedFeatures(event.point, { layers: serviceHitLayers })
@@ -2938,7 +3030,7 @@
 							{
 								id: 'ocean',
 								type: 'background',
-								paint: { 'background-color': '#dceef0' }
+								paint: { 'background-color': themeColors.colordceef0 }
 							}
 						]
 					},
@@ -2983,8 +3075,6 @@
 					});
 				instance.dragRotate.disable();
 				instance.touchZoomRotate.disableRotation();
-				instance.addControl(new libre.NavigationControl({ showCompass: false }), 'top-right');
-				instance.addControl(new libre.ScaleControl({ maxWidth: 110, unit: 'metric' }), 'top-right');
 				instance.addControl(
 					new libre.AttributionControl({
 						compact: true,
@@ -3051,6 +3141,8 @@
 						'placement-roads',
 						'policy-service',
 						'island-connections',
+						'sea-network',
+						'sea-islands',
 						'conditions-route',
 						'street-context'
 					]) {
@@ -3064,7 +3156,7 @@
 						type: 'line',
 						source: 'islands',
 						paint: {
-							'line-color': '#9fc9c5',
+							'line-color': themeColors.color9fc9c5,
 							'line-width': ['interpolate', ['linear'], ['zoom'], 6, 2, 14, 7],
 							'line-blur': 2.5,
 							'line-opacity': 0.5
@@ -3074,14 +3166,14 @@
 						id: 'islands-fill',
 						type: 'fill',
 						source: 'islands',
-						paint: { 'fill-color': '#f5f2e7', 'fill-opacity': 1 }
+						paint: { 'fill-color': themeColors.colorf5f2e7, 'fill-opacity': 1 }
 					});
 					instance.addLayer({
 						id: 'islands-outline',
 						type: 'line',
 						source: 'islands',
 						paint: {
-							'line-color': '#a0c1b9',
+							'line-color': themeColors.colora0c1b9,
 							'line-width': ['interpolate', ['linear'], ['zoom'], 6, 0.5, 15, 1.2]
 						}
 					});
@@ -3103,7 +3195,7 @@
 						source: 'policy-gaps',
 						filter: ['==', ['geometry-type'], 'Polygon'],
 						paint: {
-							'line-color': '#f5faf7',
+							'line-color': themeColors.colorf5faf7,
 							'line-width': ['interpolate', ['linear'], ['zoom'], 10, 0.15, 14, 0.45, 17, 0.7],
 							'line-opacity': 0,
 							'line-opacity-transition': { duration: 0 }
@@ -3121,7 +3213,7 @@
 							'circle-opacity-transition': { duration: 0 },
 							'circle-stroke-opacity-transition': { duration: 0 },
 							'circle-stroke-width': 1,
-							'circle-stroke-color': '#ffffff'
+							'circle-stroke-color': themeColors.colorffffff
 						}
 					});
 					// Data-driven paint changes relayout MapLibre's feature buckets. Prepare
@@ -3146,7 +3238,7 @@
 						type: 'line',
 						source: 'policy-impact',
 						paint: {
-							'line-color': '#f5faf7',
+							'line-color': themeColors.colorf5faf7,
 							'line-width': ['interpolate', ['linear'], ['zoom'], 10, 0.15, 14, 0.45, 17, 0.7],
 							'line-opacity': 0,
 							'line-opacity-transition': { duration: 0 }
@@ -3168,7 +3260,7 @@
 						type: 'line',
 						source: 'policy-feedback',
 						paint: {
-							'line-color': '#315d61',
+							'line-color': themeColors.color315d61,
 							'line-width': ['interpolate', ['linear'], ['zoom'], 12, 0.65, 17, 1.2],
 							'line-opacity': 0,
 							'line-opacity-transition': { duration: 0 }
@@ -3181,8 +3273,8 @@
 						maxzoom: 10,
 						paint: {
 							'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2.3, 9, 3.4],
-							'circle-color': '#6ba99c',
-							'circle-stroke-color': '#edf7f6',
+							'circle-color': themeColors.color6ba99c,
+							'circle-stroke-color': themeColors.coloredf7f6,
 							'circle-stroke-width': 0.5
 						}
 					});
@@ -3195,20 +3287,20 @@
 							'circle-color': [
 								'case',
 								['get', 'limited_evidence'],
-								'#8d9da1',
+								themeColors.color8d9da1,
 								[
 									'interpolate',
 									['linear'],
 									['to-number', ['get', 'accessibility_score']],
 									0,
-									'#e6a24a',
+									themeColors.colore6a24a,
 									50,
-									'#30969a',
+									themeColors.color30969a,
 									100,
-									'#153f6f'
+									themeColors.color153f6f
 								]
 							],
-							'circle-stroke-color': '#ffffff',
+							'circle-stroke-color': themeColors.colorffffff,
 							'circle-stroke-width': 1.3
 						}
 					});
@@ -3218,7 +3310,7 @@
 						source: 'street-context',
 						filter: ['==', ['get', 'kind'], 'landuse'],
 						minzoom: 10,
-						paint: { 'fill-color': '#c6dfbc', 'fill-opacity': 0.72 }
+						paint: { 'fill-color': themeColors.colorc6dfbc, 'fill-opacity': 0.72 }
 					});
 					instance.addLayer({
 						id: 'context-buildings',
@@ -3227,9 +3319,9 @@
 						filter: ['==', ['get', 'kind'], 'building'],
 						minzoom: 11,
 						paint: {
-							'fill-color': '#d9d2c1',
+							'fill-color': themeColors.colord9d2c1,
 							'fill-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0.25, 15, 0.8],
-							'fill-outline-color': '#c7beac'
+							'fill-outline-color': themeColors.colorc7beac
 						}
 					});
 					// Analytical hexagons cover land/building footprints; streets and symbols stay above.
@@ -3253,7 +3345,7 @@
 						minzoom: 10,
 						layout: { 'line-cap': 'round', 'line-join': 'round' },
 						paint: {
-							'line-color': '#c8c7b8',
+							'line-color': themeColors.colorc8c7b8,
 							'line-width': ['interpolate', ['linear'], ['zoom'], 10, 0.8, 13, 2.2, 16, 6, 19, 13],
 							'line-opacity': 0.85
 						}
@@ -3270,10 +3362,10 @@
 								'match',
 								['get', 'highway'],
 								['primary', 'secondary', 'tertiary'],
-								'#fff4cf',
+								themeColors.colorfff4cf,
 								['footway', 'path', 'pedestrian'],
-								'#f8f9ef',
-								'#fffefa'
+								themeColors.colorf8f9ef,
+								themeColors.colorfffefa
 							],
 							'line-width': [
 								'interpolate',
@@ -3297,7 +3389,7 @@
 						source: 'facilities',
 						filter: ['==', ['geometry-type'], 'Polygon'],
 						minzoom: 10,
-						paint: { 'fill-color': '#40868b', 'fill-opacity': 0.45 }
+						paint: { 'fill-color': themeColors.color40868b, 'fill-opacity': 0.45 }
 					});
 					instance.addLayer({
 						id: 'transport-fill',
@@ -3305,7 +3397,7 @@
 						source: 'transport',
 						filter: ['==', ['geometry-type'], 'Polygon'],
 						minzoom: 10,
-						paint: { 'fill-color': '#648598', 'fill-opacity': 0.24 }
+						paint: { 'fill-color': themeColors.color648598, 'fill-opacity': 0.24 }
 					});
 					instance.addLayer({
 						id: 'transport-lines',
@@ -3314,7 +3406,7 @@
 						filter: ['==', ['geometry-type'], 'LineString'],
 						minzoom: 10,
 						paint: {
-							'line-color': '#7e9ea8',
+							'line-color': themeColors.color7e9ea8,
 							'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 16, 2.8],
 							'line-opacity': 0.85
 						}
@@ -3324,7 +3416,7 @@
 						type: 'fill',
 						source: 'islands',
 						filter: ['==', ['get', 'id'], ''],
-						paint: { 'fill-color': '#b6daca', 'fill-opacity': 0.09 }
+						paint: { 'fill-color': themeColors.colorb6daca, 'fill-opacity': 0.09 }
 					});
 					instance.addLayer({
 						id: 'selected-outline',
@@ -3332,7 +3424,7 @@
 						source: 'islands',
 						filter: ['==', ['get', 'id'], ''],
 						paint: {
-							'line-color': '#41988b',
+							'line-color': themeColors.color41988b,
 							'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1.4, 14, 2.2]
 						}
 					});
@@ -3343,9 +3435,9 @@
 						filter: ['==', ['get', 'id'], ''],
 						maxzoom: 10,
 						paint: {
-							'circle-color': '#087f7c',
+							'circle-color': themeColors.color087f7c,
 							'circle-radius': 5,
-							'circle-stroke-color': '#fff',
+							'circle-stroke-color': themeColors.colorffffff,
 							'circle-stroke-width': 1.5
 						}
 					});
@@ -3419,7 +3511,7 @@
 						source: 'route',
 						filter: ['==', ['geometry-type'], 'LineString'],
 						layout: { 'line-cap': 'round', 'line-join': 'round' },
-						paint: { 'line-color': '#fff', 'line-width': 7 }
+						paint: { 'line-color': themeColors.colorffffff, 'line-width': 7 }
 					});
 					instance.addLayer({
 						id: 'route-line',
@@ -3432,7 +3524,13 @@
 						],
 						layout: { 'line-cap': 'round', 'line-join': 'round' },
 						paint: {
-							'line-color': ['match', ['get', 'mode'], 'ferry', '#8a65a7', '#376eb1'],
+							'line-color': [
+								'match',
+								['get', 'mode'],
+								'ferry',
+								themeColors.color8a65a7,
+								themeColors.color376eb1
+							],
 							'line-width': 4.5
 						}
 					});
@@ -3446,17 +3544,21 @@
 							['==', ['get', 'mode'], 'walk']
 						],
 						layout: { 'line-cap': 'round', 'line-join': 'round' },
-						paint: { 'line-color': '#496f6d', 'line-width': 3, 'line-dasharray': [1.5, 1.5] }
+						paint: {
+							'line-color': themeColors.color496f6d,
+							'line-width': 3,
+							'line-dasharray': [1.5, 1.5]
+						}
 					});
 					instance.addLayer({
 						id: 'journey-stop-halos',
 						type: 'circle',
 						source: 'journey-stops',
 						paint: {
-							'circle-color': '#fff9e8',
+							'circle-color': themeColors.colorfff9e8,
 							'circle-radius': 20,
 							'circle-stroke-width': 2.5,
-							'circle-stroke-color': '#c59a53'
+							'circle-stroke-color': themeColors.colorc59a53
 						}
 					});
 					instance.addLayer({
@@ -3476,9 +3578,15 @@
 						source: 'route',
 						filter: ['==', ['geometry-type'], 'Point'],
 						paint: {
-							'circle-color': ['match', ['get', 'kind'], 'start', '#337f7a', '#ef7159'],
+							'circle-color': [
+								'match',
+								['get', 'kind'],
+								'start',
+								themeColors.color337f7a,
+								themeColors.coloref7159
+							],
 							'circle-radius': 9,
-							'circle-stroke-color': '#fff',
+							'circle-stroke-color': themeColors.colorffffff,
 							'circle-stroke-width': 2
 						}
 					});
@@ -3506,7 +3614,11 @@
 						source: 'scenario',
 						filter: ['==', ['geometry-type'], 'LineString'],
 						layout: { 'line-cap': 'round', 'line-join': 'round' },
-						paint: { 'line-color': '#c1493f', 'line-width': 5, 'line-dasharray': [2, 1.5] }
+						paint: {
+							'line-color': themeColors.colorc1493f,
+							'line-width': 5,
+							'line-dasharray': [2, 1.5]
+						}
 					});
 					instance.addLayer({
 						id: 'scenario-halo',
@@ -3514,7 +3626,7 @@
 						source: 'scenario',
 						filter: ['==', ['geometry-type'], 'Point'],
 						paint: {
-							'circle-color': '#ef7159',
+							'circle-color': themeColors.coloref7159,
 							'circle-radius': 13,
 							'circle-opacity': 0.15
 						}
@@ -3525,9 +3637,9 @@
 						source: 'scenario',
 						filter: ['==', ['geometry-type'], 'Point'],
 						paint: {
-							'circle-color': '#ef7159',
+							'circle-color': themeColors.coloref7159,
 							'circle-radius': 6,
-							'circle-stroke-color': '#fff',
+							'circle-stroke-color': themeColors.colorffffff,
 							'circle-stroke-width': 2
 						}
 					});
@@ -3651,7 +3763,7 @@
 						source: 'policy-service',
 						filter: ['==', ['geometry-type'], 'LineString'],
 						layout: { 'line-cap': 'round', 'line-join': 'round' },
-						paint: { 'line-color': '#fffefa', 'line-width': 10, 'line-opacity': 0.95 }
+						paint: { 'line-color': themeColors.colorfffefa, 'line-width': 10, 'line-opacity': 0.95 }
 					});
 					instance.addLayer({
 						id: 'policy-service-bus-line',
@@ -3663,7 +3775,7 @@
 							['==', ['get', 'mode'], 'bus']
 						],
 						layout: { 'line-cap': 'round', 'line-join': 'round' },
-						paint: { 'line-color': '#00695c', 'line-width': 6 }
+						paint: { 'line-color': themeColors.color00695c, 'line-width': 6 }
 					});
 					instance.addLayer({
 						id: 'policy-service-line',
@@ -3676,7 +3788,7 @@
 						],
 						layout: { 'line-cap': 'round', 'line-join': 'round' },
 						paint: {
-							'line-color': '#7765b2',
+							'line-color': themeColors.color7765b2,
 							'line-width': 4,
 							'line-dasharray': [2, 1.4],
 							'line-opacity': 0.95
@@ -3693,9 +3805,9 @@
 						],
 						paint: {
 							'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 14, 14, 34, 18, 48],
-							'circle-color': '#d4c9ed',
+							'circle-color': themeColors.colord4c9ed,
 							'circle-opacity': 0.32,
-							'circle-stroke-color': '#7765b2',
+							'circle-stroke-color': themeColors.color7765b2,
 							'circle-stroke-opacity': 0.65,
 							'circle-stroke-width': 1.5
 						}
@@ -3708,7 +3820,7 @@
 								source,
 								filter: ['==', ['geometry-type'], 'LineString'],
 								paint: {
-									'line-color': '#397eb0',
+									'line-color': themeColors.color397eb0,
 									'line-width': 4,
 									'line-dasharray': [2, 1.5],
 									'line-opacity': 0.9
@@ -3721,11 +3833,17 @@
 							filter: ['==', ['geometry-type'], 'Point'],
 							paint: {
 								'circle-radius': 14,
-								'circle-color': '#fff',
+								'circle-color': themeColors.colorffffff,
 								'circle-stroke-color':
 									source === 'island-connections'
-										? '#397eb0'
-										: ['match', ['get', 'mode'], 'bus', '#247b75', '#7765b2'],
+										? themeColors.color397eb0
+										: [
+												'match',
+												['get', 'mode'],
+												'bus',
+												themeColors.color247b75,
+												themeColors.color7765b2
+											],
 								'circle-stroke-width': 2
 							}
 						});
@@ -3745,10 +3863,157 @@
 						});
 					}
 					instance.addLayer({
+						id: 'sea-island-fill',
+						type: 'fill',
+						source: 'sea-islands',
+						paint: {
+							'fill-color': ['get', 'color'],
+							'fill-opacity': [
+								'case',
+								['get', 'selected'],
+								0.65,
+								['get', 'within_budget'],
+								0.6,
+								['get', 'known'],
+								0.2,
+								0.08
+							]
+						}
+					});
+					instance.addLayer({
+						id: 'sea-island-outline',
+						type: 'line',
+						source: 'sea-islands',
+						paint: {
+							'line-color': ['get', 'color'],
+							'line-width': ['case', ['get', 'selected'], 1.75, 1]
+						}
+					});
+					for (const verified of [true, false])
+						instance.addLayer({
+							id: verified ? 'sea-route-line' : 'sea-route-unverified',
+							type: 'line',
+							source: 'sea-network',
+							filter: [
+								'all',
+								['==', ['geometry-type'], 'LineString'],
+								verified
+									? ['in', ['get', 'evidence'], ['literal', ['dated_service', 'proposal']]]
+									: ['!', ['in', ['get', 'evidence'], ['literal', ['dated_service', 'proposal']]]]
+							],
+							layout: { 'line-cap': 'round', 'line-join': 'round' },
+							paint: {
+								'line-color': ['coalesce', ['get', 'color'], themeColors.color087f8c],
+								'line-width': ['case', ['get', 'selected'], 2, 1.25],
+								'line-opacity': ['case', ['get', 'dimmed'], 0.12, 0.7],
+								...(!verified ? { 'line-dasharray': [2, 2] } : {})
+							}
+						});
+					instance.addLayer({
+						id: 'sea-route-arrows',
+						type: 'symbol',
+						source: 'sea-network',
+						filter: ['==', ['geometry-type'], 'LineString'],
+						layout: {
+							'symbol-placement': 'line',
+							'symbol-spacing': 180,
+							'text-field': '›',
+							'text-size': 14,
+							'text-keep-upright': false,
+							'text-allow-overlap': true
+						},
+						paint: {
+							'text-color': ['coalesce', ['get', 'color'], themeColors.color087f8c],
+							'text-halo-color': themeColors.colorffffff,
+							'text-halo-width': 1,
+							'text-opacity': ['case', ['get', 'dimmed'], 0.15, 1]
+						}
+					});
+					instance.addLayer({
+						id: 'sea-budget-halo',
+						type: 'circle',
+						source: 'sea-network',
+						filter: [
+							'all',
+							['==', ['geometry-type'], 'Point'],
+							['==', ['get', 'within_budget'], true]
+						],
+						paint: {
+							'circle-radius': 10,
+							'circle-color': themeColors.colorffffff,
+							'circle-opacity': 0.15,
+							'circle-stroke-color': [
+								'case',
+								['get', 'newly_reachable'],
+								themeColors.color22824e,
+								['coalesce', ['get', 'color'], themeColors.color087f8c]
+							],
+							'circle-stroke-width': 2
+						}
+					});
+					instance.addLayer({
+						id: 'sea-island-points',
+						type: 'circle',
+						source: 'sea-network',
+						filter: [
+							'all',
+							['==', ['geometry-type'], 'Point'],
+							['!=', ['get', 'kind'], 'sea_terminal']
+						],
+						paint: {
+							'circle-radius': [
+								'case',
+								['get', 'selected'],
+								8,
+								['==', ['get', 'kind'], 'sea_origin'],
+								8,
+								5
+							],
+							'circle-color': [
+								'case',
+								['get', 'newly_reachable'],
+								themeColors.color22824e,
+								['coalesce', ['get', 'color'], themeColors.color87939b]
+							],
+							'circle-stroke-color': themeColors.colorffffff,
+							'circle-stroke-width': 2
+						}
+					});
+					instance.addLayer({
+						id: 'sea-port-points',
+						type: 'circle',
+						source: 'sea-network',
+						filter: ['==', ['get', 'kind'], 'sea_terminal'],
+						paint: {
+							'circle-radius': 3,
+							'circle-color': themeColors.color087f8c,
+							'circle-stroke-color': themeColors.colorffffff,
+							'circle-stroke-width': 1
+						}
+					});
+					instance.addLayer({
+						id: 'sea-port-labels',
+						type: 'symbol',
+						source: 'sea-network',
+						filter: ['==', ['get', 'kind'], 'sea_terminal'],
+						minzoom: 11,
+						layout: {
+							'text-field': ['get', 'terminal_name'],
+							'text-size': 10,
+							'text-offset': [0, 1.2],
+							'text-anchor': 'top'
+						},
+						paint: {
+							'text-color': themeColors.color355e67,
+							'text-halo-color': themeColors.colorffffff,
+							'text-halo-width': 1.5
+						}
+					});
+					instance.addLayer({
 						id: 'conditions-route-line',
 						type: 'line',
 						source: 'conditions-route',
-						paint: { 'line-color': '#bb7f48', 'line-width': 5, 'line-opacity': 0.9 }
+						paint: { 'line-color': themeColors.colorbb7f48, 'line-width': 5, 'line-opacity': 0.9 }
 					});
 					instance.addLayer({
 						id: 'placement-road-hints',
@@ -3757,7 +4022,7 @@
 						minzoom: 12,
 						layout: { 'line-cap': 'round', 'line-join': 'round' },
 						paint: {
-							'line-color': '#27877b',
+							'line-color': themeColors.color27877b,
 							'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1.5, 17, 3],
 							'line-opacity': 0.5
 						}
@@ -3834,7 +4099,7 @@
 							: props?.cluster
 								? hits[0]?.source === 'live-vessels'
 									? `${props.point_count} observed vessel positions · select to zoom in`
-									: `${props.point_count} mapped places · click to zoom and inspect`
+									: `${props.point_count} places · select to zoom in`
 								: props
 									? String(
 											props.label ??
@@ -4150,6 +4415,11 @@
 	});
 	$effect(() => {
 		if (!ready || !active || !map) return;
+		setData('sea-network', seaView ? (seaState?.features ?? emptyCollection) : emptyCollection);
+		setData('sea-islands', seaIslandFeatures(layers.islands, seaView ? seaState : null));
+	});
+	$effect(() => {
+		if (!ready || !active || !map) return;
 		const key = `${gapLens}_gap`;
 		const color: import('maplibre-gl').ExpressionSpecification = [
 			'case',
@@ -4273,8 +4543,16 @@
 		const bounds = focusBounds.bounds;
 		userZoomGesture = null;
 		untrack(() => {
-			const padding =
-				window.innerWidth > 900
+			const padding = seaInspectorOpen
+				? container.clientWidth > 700
+					? { top: container.clientWidth > 1100 ? 100 : 155, bottom: 70, left: 420, right: 50 }
+					: {
+							top: 150,
+							bottom: Math.round(container.clientHeight * 0.54) + 12,
+							left: 24,
+							right: 24
+						}
+				: window.innerWidth > 900
 					? { top: 150, bottom: 230, left: 370, right: 440 }
 					: {
 							top: Math.min(170, Math.round(window.innerHeight * 0.2)),
@@ -4580,6 +4858,12 @@
 
 <div
 	class="national-map"
+	data-sea-view={seaView}
+	data-sea-routes={seaView
+		? (seaState?.features.features.filter((feature) => feature.geometry.type === 'LineString')
+				.length ?? 0)
+		: 0}
+	data-sea-mode={seaState?.mode ?? ''}
 	class:is-picking={picking}
 	data-active={active}
 	data-atoll-scope={atollScope ?? ''}
@@ -4912,8 +5196,8 @@
 							<strong>{controlsPanel === 'layers' ? 'Map layers' : 'Map view'}</strong>
 							<p>
 								{controlsPanel === 'layers'
-									? 'Choose what you see on the atlas.'
-									: 'Explore the national picture or get closer.'}
+									? 'Choose what appears on the map.'
+									: 'View all islands or zoom in.'}
 							</p>
 						</div>
 						<Button
@@ -4952,7 +5236,7 @@
 							>
 								<span class="layer-icon transport"><MapIcon size={17} /></span>
 								<span class="layer-label"
-									><strong>Streets & paths</strong><small>Local OSM snapshot · named roads</small
+									><strong>Streets & paths</strong><small>Roads and paths · OpenStreetMap</small
 									></span
 								>
 								<span class="layer-switch" data-checked={streetsVisible}><span></span></span>
@@ -4974,7 +5258,7 @@
 							<div class="foundation-layer">
 								<span class="layer-icon land"><MapIcon size={17} /></span><span class="layer-label"
 									><strong>Island boundaries</strong><small
-										>{layers.islands.features.length.toLocaleString()} supplied geometries</small
+										>{layers.islands.features.length.toLocaleString()} island boundaries</small
 									></span
 								><Check size={16} class="foundation-check" />
 							</div>
@@ -4986,7 +5270,7 @@
 								><span class="layer-icon health"><Hospital size={17} /></span><span
 									class="layer-label"
 									><strong>Schools & healthcare</strong><small
-										>{layers.facilities.features.length.toLocaleString()} located public facilities</small
+										>{layers.facilities.features.length.toLocaleString()} public facilities</small
 									></span
 								><span class="layer-switch" data-checked={facilitiesVisible}><span></span></span
 								></Button
@@ -4999,12 +5283,27 @@
 								><span class="layer-icon transport"><BusFront size={17} /></span><span
 									class="layer-label"
 									><strong>Stops & terminals</strong><small
-										>{busStopFeatures.features.length.toLocaleString()} mapped bus stops · ferry terminals
-										& airports</small
+										>{busStopFeatures.features.length.toLocaleString()} bus stops · ferry terminals &
+										airports</small
 									></span
 								><span class="layer-switch" data-checked={transportVisible}><span></span></span
 								></Button
 							>
+							{#if onSeaLayerChange}
+								<Button
+									variant="ghost"
+									class="map-layer-row"
+									aria-pressed={seaLayerEnabled}
+									onclick={() => onSeaLayerChange?.(!seaLayerEnabled)}
+								>
+									<span class="layer-icon transport"><Ship size={17} /></span>
+									<span class="layer-label"
+										><strong>Sea connections</strong><small>Ferry routes between island ports</small
+										></span
+									>
+									<span class="layer-switch" data-checked={seaLayerEnabled}><span></span></span>
+								</Button>
+							{/if}
 							{#if mode !== 'places'}<Button
 									variant="ghost"
 									class="map-layer-row"
@@ -5015,8 +5314,8 @@
 										class="layer-label"
 										><strong>Observed movement</strong><small
 											>{liveFeatures.features.length
-												? `${liveFeatures.features.length.toLocaleString()} provider positions`
-												: 'No provider positions in this area'}</small
+												? `${liveFeatures.features.length.toLocaleString()} vehicle positions`
+												: 'No vehicle positions in this area'}</small
 										></span
 									><span
 										class="layer-switch"
@@ -5027,7 +5326,7 @@
 						</div>
 						<div class="source-note">
 							<Info size={13} /><span
-								>Locations come from supplied geometry. Unlocated records remain in the island
+								>Select a place for details. Places without coordinates appear in the island
 								details.</span
 							>
 						</div>
@@ -5107,9 +5406,7 @@
 				</section>
 			{/if}
 			<div class="map-toolbar" role="group" aria-label="Atlas controls">
-				<span class="atlas-mark" title="Supplied national atlas"
-					><MapIcon size={18} strokeWidth={1.6} /></span
-				>
+				<span class="atlas-mark" title="Maldives map"><MapIcon size={18} strokeWidth={1.6} /></span>
 				<span class="toolbar-divider"></span>
 				<Button
 					bind:ref={layersButton}
@@ -5145,13 +5442,11 @@
 				<span class="loading-spinner" aria-hidden="true"></span>{!ready
 					? 'Preparing map'
 					: !features
-						? 'Waiting for backend map data'
-						: 'Drawing supplied island boundaries'}
+						? 'Loading map data'
+						: 'Drawing island boundaries'}
 			</div>
 		{:else if layers.islands.features.length === 0}
-			<div class="atlas-loading-status" role="status">
-				No island geometry available from the backend.
-			</div>
+			<div class="atlas-loading-status" role="status">Island boundaries are unavailable.</div>
 		{/if}
 		{#if picking && !placementKind}<div class="placement-target" aria-hidden="true">
 				<span></span>
@@ -5172,20 +5467,20 @@
 							<strong
 								>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
 									? gapLens === 'transport'
-										? 'Walk to mapped stop'
+										? 'Walk to a bus stop or terminal'
 										: 'Local journey time'
-									: 'Mapped service screening'}</strong
+									: 'Service availability'}</strong
 							>
 							<span
 								><i class="policy-gap-gradient" style:background={GAP_GRADIENT}
 								></i>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
 									? 'Shorter → at / beyond target'
-									: 'More evidence → review need'}</span
+									: 'More services → fewer services'}</span
 							>
 							<small
 								>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
-									? 'Modeled journeys · Grey: missing evidence'
-									: 'Island-wide inventory check · not local journey times'}</small
+									? 'Estimated journeys · Grey: no estimate'
+									: 'Services across the island'}</small
 							>
 							{#if gapFeatures.features.some((feature) => feature.properties?.origin_id)}<small
 									>Unshaded: no local estimate · select an island to inspect</small
@@ -5228,8 +5523,8 @@
 						</div>{/if}
 					{#if scenarioPreview.unlocated}<div class="street-context-status" role="status">
 							<X size={12} />{scenarioPreview.unlocated}
-							{scenarioPreview.unlocated === 1 ? 'edit lacks' : 'edits lack'} mapped target geometry ·
-							enter a mapped ID or move to its street view
+							{scenarioPreview.unlocated === 1 ? 'edit lacks' : 'edits lack'} a location · select a location
+							on the map
 						</div>{/if}
 					{#if mode !== 'places'}
 						<details class="map-movement-status">
@@ -5277,7 +5572,7 @@
 						{:else if contextError}{contextError}
 						{:else if zoomLevel < 10}Nationwide atlas · zoom in for streets
 						{:else if contextSummary.roads || contextSummary.buildings}Streets · OpenStreetMap
-						{:else}No mapped streets in this view{/if}
+						{:else}No streets in this view{/if}
 						{#if contextSummary.truncated}
 							· Zoom in for all features{/if}
 					</div>
@@ -5327,7 +5622,7 @@
 								<span><Anchor size={12} class="marine-key" />Piers</span>
 								<span><Plane size={12} class="transport-key" />Airports</span>{/if}
 							{#if facilitiesVisible || transportVisible}<span
-									><MapPin size={12} />Other mapped places</span
+									><MapPin size={12} />Other places</span
 								>
 								<span><i class="legend-cluster">#</i>Grouped places · zoom in</span>{/if}
 							{#if mode !== 'places' && liveEvents.length}<span
@@ -5337,7 +5632,7 @@
 									><Ship size={12} class="marine-key" />Ship + count = grouped vessels · select to
 									zoom</span
 								>{/if}
-							{#if contextReceipt}<span>Street snapshot · {contextReceipt}</span>{/if}
+							{#if contextReceipt}<span>Street data · {contextReceipt}</span>{/if}
 							{#if scenarioFeatures.features.length}<span
 									><i class="legend-proposed"></i>Proposed</span
 								>{/if}
@@ -5374,11 +5669,11 @@
 		height: 100%;
 		min-height: 0;
 		overflow: hidden;
-		background: #dceef0;
+		background: var(--theme-color-dceef0);
 		isolation: isolate;
 		container-type: inline-size;
 		container-name: atlas;
-		color: #234e5a;
+		color: var(--theme-color-234e5a);
 	}
 	.map-canvas {
 		position: absolute;
@@ -5388,14 +5683,14 @@
 		position: absolute;
 		z-index: 2;
 		transform: translate(-50%, -50%);
-		border: 2px dashed #286d638c;
+		border: 2px dashed var(--theme-color-286d638c);
 		border-radius: 50%;
-		background: #286d630b;
+		background: var(--theme-color-286d630b);
 		pointer-events: none;
 	}
 	.placement-distance-guide.unsuitable {
-		border-color: #bb634caa;
-		background: #bb634c0b;
+		border-color: var(--theme-color-bb634caa);
+		background: var(--theme-color-bb634c0b);
 	}
 	.placement-preview {
 		position: absolute;
@@ -5410,19 +5705,19 @@
 		place-items: center;
 		width: 42px;
 		height: 46px;
-		border: 2px solid #fffefa;
+		border: 2px solid var(--theme-color-fffefa);
 		border-radius: 13px;
-		background: #286d63;
-		color: white;
+		background: var(--theme-color-286d63);
+		color: var(--theme-color-ffffff);
 		box-shadow:
-			0 0 0 4px #286d6324,
-			0 7px 16px #173d4233;
+			0 0 0 4px var(--theme-color-286d6324),
+			0 7px 16px var(--theme-color-173d4233);
 	}
 	.unsuitable .placement-preview-icon {
-		background: #ad593f;
+		background: var(--theme-color-ad593f);
 		box-shadow:
-			0 0 0 4px #ad593f20,
-			0 7px 16px #173d4233;
+			0 0 0 4px var(--theme-color-ad593f20),
+			0 7px 16px var(--theme-color-173d4233);
 	}
 	.placement-preview-label {
 		position: absolute;
@@ -5433,10 +5728,10 @@
 		width: max-content;
 		max-width: 280px;
 		padding: 9px 12px;
-		border: 1px solid #d8e4de;
+		border: 1px solid var(--theme-color-d8e4de);
 		border-radius: 10px;
-		background: #fffefaed;
-		box-shadow: 0 3px 10px #173d4214;
+		background: var(--theme-color-fffefaed);
+		box-shadow: 0 3px 10px var(--theme-color-173d4214);
 		transform: translateX(-50%);
 		text-align: center;
 	}
@@ -5446,12 +5741,12 @@
 	}
 	.placement-preview-label > span {
 		max-width: 245px;
-		color: #71847b;
+		color: var(--theme-color-71847b);
 		font-size: 10px;
 		line-height: 1.5;
 	}
 	.caution .placement-preview-label {
-		border-color: #d9c5a4;
+		border-color: var(--theme-color-d9c5a4);
 	}
 	.national-map[data-focus-context]:not([data-focus-context='']) :global(.vessel-group-target) {
 		opacity: 0.35;
@@ -5482,9 +5777,9 @@
 		z-index: -1;
 		width: 12px;
 		height: 12px;
-		border-right: 1px solid #cbdcd6;
-		border-bottom: 1px solid #cbdcd6;
-		background: #fffefa;
+		border-right: 1px solid var(--theme-color-cbdcd6);
+		border-bottom: 1px solid var(--theme-color-cbdcd6);
+		background: var(--theme-color-fffefa);
 		transform: translateX(-50%) rotate(45deg);
 		content: '';
 		pointer-events: none;
@@ -5503,42 +5798,42 @@
 	}
 	.service-editor-anchor.beside-right::after {
 		left: -6px;
-		border-left: 1px solid #cbdcd6;
-		border-bottom: 1px solid #cbdcd6;
+		border-left: 1px solid var(--theme-color-cbdcd6);
+		border-bottom: 1px solid var(--theme-color-cbdcd6);
 	}
 	.service-editor-anchor.beside-left::after {
 		left: auto;
 		right: -6px;
-		border-top: 1px solid #cbdcd6;
-		border-right: 1px solid #cbdcd6;
+		border-top: 1px solid var(--theme-color-cbdcd6);
+		border-right: 1px solid var(--theme-color-cbdcd6);
 	}
 	.map-service-editor {
 		overflow: auto;
 		overscroll-behavior: contain;
 		/* Keep focused/scrolled controls above the sticky confirmation footer. */
 		scroll-padding-block-end: 80px;
-		border: 1px solid #cbdcd6;
+		border: 1px solid var(--theme-color-cbdcd6);
 		border-radius: 16px;
-		background: #fffefa;
+		background: var(--theme-color-fffefa);
 		box-shadow:
-			0 6px 18px #173c4020,
-			0 18px 48px -16px #173c4055;
-		color: #294b4c;
+			0 6px 18px var(--theme-color-173c4020),
+			0 18px 48px -16px var(--theme-color-173c4055);
+		color: var(--theme-color-294b4c);
 	}
 	:global(.national-map .policy-service-marker) {
 		display: grid;
 		place-items: center;
 		width: 46px;
 		height: 46px;
-		border: 3px solid #fffefa;
+		border: 3px solid var(--theme-color-fffefa);
 		border-radius: 15px 15px 15px 4px;
-		background: #247b75;
-		box-shadow: 0 4px 12px #173c403d;
-		color: #fff;
+		background: var(--theme-color-247b75);
+		box-shadow: 0 4px 12px var(--theme-color-173c403d);
+		color: var(--theme-color-ffffff);
 		cursor: pointer;
 	}
 	:global(.national-map .policy-service-marker[data-kind='ferry']) {
-		background: #7765b2;
+		background: var(--theme-color-7765b2);
 	}
 	:global(.national-map .policy-service-marker svg) {
 		width: 26px;
@@ -5546,7 +5841,7 @@
 		fill: currentColor;
 	}
 	:global(.national-map .policy-service-marker:focus-visible) {
-		outline: 3px solid #164c47;
+		outline: 3px solid var(--theme-color-164c47);
 		outline-offset: 3px;
 	}
 	.proposal-edit-anchor.below {
@@ -5558,9 +5853,9 @@
 		bottom: -6px;
 		width: 11px;
 		height: 11px;
-		border-right: 1px solid #d1dfd9;
-		border-bottom: 1px solid #d1dfd9;
-		background: #fffefa;
+		border-right: 1px solid var(--theme-color-d1dfd9);
+		border-bottom: 1px solid var(--theme-color-d1dfd9);
+		background: var(--theme-color-fffefa);
 		transform: translateX(-50%) rotate(45deg);
 		content: '';
 		pointer-events: none;
@@ -5572,13 +5867,13 @@
 	}
 	.proposal-marker-actions {
 		padding: 11px;
-		border: 1px solid #d1dfd9;
+		border: 1px solid var(--theme-color-d1dfd9);
 		border-radius: 14px;
-		background: #fffefa;
+		background: var(--theme-color-fffefa);
 		box-shadow:
-			0 6px 18px #173c4020,
-			0 18px 48px -16px #173c4055;
-		color: #294b4c;
+			0 6px 18px var(--theme-color-173c4020),
+			0 18px 48px -16px var(--theme-color-173c4055);
+		color: var(--theme-color-294b4c);
 	}
 	.proposal-marker-actions header {
 		display: flex;
@@ -5593,7 +5888,7 @@
 	}
 	.proposal-marker-actions p {
 		margin: 0 0 10px;
-		color: #72857c;
+		color: var(--theme-color-72857c);
 		font-size: 10px;
 		line-height: 1.5;
 	}
@@ -5606,7 +5901,7 @@
 		border: 0;
 		border-radius: 7px;
 		background: transparent;
-		color: #73877d;
+		color: var(--theme-color-73877d);
 	}
 	.proposal-edit-buttons {
 		display: flex;
@@ -5618,25 +5913,25 @@
 		flex: 1;
 		gap: 4px;
 		min-height: 48px;
-		border: 1px solid #dce7df;
+		border: 1px solid var(--theme-color-dce7df);
 		border-radius: 9px;
-		background: #f7faf5;
-		color: #397065;
+		background: var(--theme-color-f7faf5);
+		color: var(--theme-color-397065);
 		font-size: 10px;
 		transition:
 			transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
 			background-color 130ms ease;
 	}
 	.proposal-edit-buttons button.remove {
-		color: #a45a46;
-		background: #fff6ef;
-		border-color: #eddfd4;
+		color: var(--theme-color-a45a46);
+		background: var(--theme-color-fff6ef);
+		border-color: var(--theme-color-eddfd4);
 	}
 	.proposal-edit-buttons button:hover {
-		background: #eaf2e8;
+		background: var(--theme-color-eaf2e8);
 	}
 	.proposal-edit-buttons button.remove:hover {
-		background: #f9eade;
+		background: var(--theme-color-f9eade);
 	}
 	.proposal-edit-buttons button:active,
 	.proposal-action-close:active {
@@ -5644,7 +5939,7 @@
 	}
 	.proposal-edit-buttons button:focus-visible,
 	.proposal-action-close:focus-visible {
-		outline: 3px solid #087f7c;
+		outline: 3px solid var(--theme-color-087f7c);
 		outline-offset: 2px;
 	}
 	.placement-confirmation-anchor {
@@ -5662,13 +5957,13 @@
 		overflow-y: auto;
 		scrollbar-width: thin;
 		padding: 15px;
-		border: 1px solid #d1dfd9;
+		border: 1px solid var(--theme-color-d1dfd9);
 		border-radius: 17px;
-		background: #fffefa;
+		background: var(--theme-color-fffefa);
 		box-shadow:
-			0 6px 18px #173c4020,
-			0 18px 48px -16px #173c4055;
-		color: #294b4c;
+			0 6px 18px var(--theme-color-173c4020),
+			0 18px 48px -16px var(--theme-color-173c4055);
+		color: var(--theme-color-294b4c);
 		pointer-events: auto;
 		transform-origin: var(--placement-arrow) bottom;
 		transition: opacity 140ms ease;
@@ -5679,9 +5974,9 @@
 		bottom: -7px;
 		width: 13px;
 		height: 13px;
-		border-right: 1px solid #d1dfd9;
-		border-bottom: 1px solid #d1dfd9;
-		background: #fffefa;
+		border-right: 1px solid var(--theme-color-d1dfd9);
+		border-bottom: 1px solid var(--theme-color-d1dfd9);
+		background: var(--theme-color-fffefa);
 		transform: translateX(-50%) rotate(45deg);
 		content: '';
 	}
@@ -5708,7 +6003,7 @@
 		gap: 2px;
 	}
 	.placement-card-heading > div > span {
-		color: #758880;
+		color: var(--theme-color-758880);
 		font-size: 10px;
 		font-weight: 600;
 		letter-spacing: 0.06em;
@@ -5725,17 +6020,17 @@
 		flex-shrink: 0;
 		width: 38px;
 		height: 38px;
-		border: 1px solid #d7e5dd;
+		border: 1px solid var(--theme-color-d7e5dd);
 		border-radius: 11px;
-		background: #edf5ee;
-		color: #397065;
+		background: var(--theme-color-edf5ee);
+		color: var(--theme-color-397065);
 	}
 	.placement-card-costs {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 10px;
 		padding-bottom: 12px;
-		border-bottom: 1px solid #e7ece7;
+		border-bottom: 1px solid var(--theme-color-e7ece7);
 	}
 	.placement-card-costs > div {
 		display: grid;
@@ -5743,7 +6038,7 @@
 	}
 	.placement-card-costs span,
 	.placement-budget-remaining {
-		color: #78877e;
+		color: var(--theme-color-78877e);
 		font-size: 10px;
 		line-height: 1.45;
 	}
@@ -5759,7 +6054,7 @@
 		margin: 9px 0 0;
 	}
 	.placement-budget-remaining strong {
-		color: #397065;
+		color: var(--theme-color-397065);
 		font-weight: 650;
 	}
 	.placement-card-message {
@@ -5773,12 +6068,12 @@
 	.placement-card-message.blocked {
 		padding: 8px 10px;
 		border-radius: 9px;
-		background: #fff1e8;
-		color: #a5552f;
+		background: var(--theme-color-fff1e8);
+		color: var(--theme-color-a5552f);
 	}
 	.placement-card-note {
 		margin: 8px 0 0;
-		color: #75857b;
+		color: var(--theme-color-75857b);
 		font-size: 10px;
 		line-height: 1.5;
 	}
@@ -5789,8 +6084,8 @@
 		margin: 11px 0 0;
 		padding: 9px 10px;
 		border-radius: 9px;
-		background: #edf4eb;
-		color: #3c6c5b;
+		background: var(--theme-color-edf4eb);
+		color: var(--theme-color-3c6c5b);
 	}
 	.placement-access-preview strong {
 		font-size: 19px;
@@ -5807,16 +6102,16 @@
 		border: 0;
 		border-radius: 6px;
 		padding: 5px 7px;
-		background: #f7e7d9;
-		color: #8b5636;
+		background: var(--theme-color-f7e7d9);
+		color: var(--theme-color-8b5636);
 		font-size: 11px;
 		font-weight: 600;
 	}
 	.placement-adjust-budget:hover {
-		background: #f0d9c6;
+		background: var(--theme-color-f0d9c6);
 	}
 	.placement-adjust-budget:focus-visible {
-		outline: 3px solid #087f7c;
+		outline: 3px solid var(--theme-color-087f7c);
 		outline-offset: 2px;
 	}
 	.placement-card-actions {
@@ -5828,8 +6123,8 @@
 		gap: 7px;
 		margin-top: 13px;
 		padding: 10px 0;
-		border-top: 1px solid #e4ece6;
-		background: #fffefa;
+		border-top: 1px solid var(--theme-color-e4ece6);
+		background: var(--theme-color-fffefa);
 	}
 	.placement-card-actions :global(button) {
 		height: 38px;
@@ -5845,13 +6140,13 @@
 		transform: scale(0.97);
 	}
 	.placement-card-actions :global(button:focus-visible) {
-		outline: 3px solid #087f7c;
+		outline: 3px solid var(--theme-color-087f7c);
 		outline-offset: 3px;
 	}
 	.placement-card-hint {
 		display: block;
 		margin-top: 10px;
-		color: #829087;
+		color: var(--theme-color-829087);
 		font-size: 10px;
 		text-align: center;
 	}
@@ -5863,39 +6158,39 @@
 		height: 46px;
 		border-radius: 13px;
 		box-shadow:
-			0 3px 6px #173d4229,
-			0 0 0 1px #65579930;
+			0 3px 6px var(--theme-color-173d4229),
+			0 0 0 1px var(--theme-color-65579930);
 		transition: box-shadow 140ms ease;
 	}
 	:global(.national-map .policy-proposal-marker.pending) {
-		border: 2px solid #fffefa;
-		background: #286d63;
-		color: white;
+		border: 2px solid var(--theme-color-fffefa);
+		background: var(--theme-color-286d63);
+		color: var(--theme-color-ffffff);
 		box-shadow:
-			0 0 0 4px #286d632b,
-			0 5px 12px #173d4240;
+			0 0 0 4px var(--theme-color-286d632b),
+			0 5px 12px var(--theme-color-173d4240);
 	}
 	:global(.national-map .policy-proposal-marker.pending span) {
 		top: -6px;
 		right: -6px;
 		min-width: 19px;
 		height: 19px;
-		background: #fffefa;
-		color: #286d63;
+		background: var(--theme-color-fffefa);
+		color: var(--theme-color-286d63);
 		font-size: 15px;
 		line-height: 14px;
 	}
 	:global(.national-map .policy-proposal-marker.is-dragging) {
 		cursor: grabbing;
 		box-shadow:
-			0 0 0 6px #286d6320,
-			0 12px 20px #173d4255;
+			0 0 0 6px var(--theme-color-286d6320),
+			0 12px 20px var(--theme-color-173d4255);
 	}
 	:global(.national-map .policy-proposal-marker.selected) {
 		box-shadow:
-			0 0 0 4px #fffefa,
-			0 0 0 6px #286d63,
-			0 8px 18px #173d4233;
+			0 0 0 4px var(--theme-color-fffefa),
+			0 0 0 6px var(--theme-color-286d63),
+			0 8px 18px var(--theme-color-173d4233);
 	}
 	@media (max-width: 700px) {
 		.placement-card-actions :global(button) {
@@ -5911,7 +6206,7 @@
 		}
 	}
 	:global(.national-map canvas:focus-visible) {
-		outline: 2px solid #087f7c;
+		outline: 2px solid var(--theme-color-087f7c);
 		outline-offset: -3px;
 	}
 	.map-controls {
@@ -5926,24 +6221,24 @@
 		align-items: center;
 		gap: 3px;
 		padding: 6px;
-		border: 1px solid #d7e2df;
+		border: 1px solid var(--theme-color-d7e2df);
 		border-radius: 14px;
-		background: #fffffff5;
+		background: var(--theme-color-fffffff5);
 		box-shadow:
-			0 3px 5px -2px #294c4912,
-			0 12px 28px -12px #294c4930;
+			0 3px 5px -2px var(--theme-color-294c4912),
+			0 12px 28px -12px var(--theme-color-294c4930);
 		backdrop-filter: blur(10px);
 	}
 	.atlas-mark {
 		display: grid;
 		place-items: center;
 		width: 30px;
-		color: #087f7c;
+		color: var(--theme-color-087f7c);
 	}
 	.toolbar-divider {
 		height: 19px;
 		width: 1px;
-		background: #e0e9e5;
+		background: var(--theme-color-e0e9e5);
 		margin: 0 3px;
 	}
 	:global(.national-map .map-tool-button),
@@ -5952,7 +6247,7 @@
 		border-radius: 9px;
 		gap: 7px;
 		padding: 0 11px;
-		color: #49616a;
+		color: var(--theme-color-49616a);
 		font-size: 12px;
 		font-weight: 550;
 		transition:
@@ -5963,11 +6258,11 @@
 	:global(.national-map .map-national-button) {
 		width: 36px;
 		padding: 0;
-		color: #507b79;
+		color: var(--theme-color-507b79);
 	}
 	:global(.national-map .map-tool-button[aria-expanded='true']) {
-		color: #087f7c;
-		background: #e9f3ef;
+		color: var(--theme-color-087f7c);
+		background: var(--theme-color-e9f3ef);
 	}
 	:global(.national-map .map-tool-button:active),
 	:global(.national-map .map-national-button:active) {
@@ -5979,8 +6274,8 @@
 		min-width: 18px;
 		height: 18px;
 		border-radius: 5px;
-		background: #edf3ef;
-		color: #6e8680;
+		background: var(--theme-color-edf3ef);
+		color: var(--theme-color-6e8680);
 		font-size: 10px;
 		font-variant-numeric: tabular-nums;
 	}
@@ -6003,12 +6298,12 @@
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		scrollbar-width: thin;
-		background: #fffefa;
-		border: 1px solid #d7e2df;
+		background: var(--theme-color-fffefa);
+		border: 1px solid var(--theme-color-d7e2df);
 		border-radius: 16px;
 		box-shadow:
-			0 5px 16px -8px #294c4918,
-			0 22px 54px -24px #294c4945;
+			0 5px 16px -8px var(--theme-color-294c4918),
+			0 22px 54px -24px var(--theme-color-294c4945);
 		transform-origin: bottom left;
 	}
 	.control-panel-header {
@@ -6019,18 +6314,18 @@
 		padding: 18px 14px 13px 18px;
 	}
 	.control-panel-header strong {
-		color: #23454d;
+		color: var(--theme-color-23454d);
 		font-size: 14px;
 		font-weight: 650;
 	}
 	.control-panel-header p {
-		color: #7a8d8b;
+		color: var(--theme-color-7a8d8b);
 		margin: 4px 0 0;
 		font-size: 11px;
 		line-height: 1.5;
 	}
 	:global(.national-map .map-close-button) {
-		color: #7b908b;
+		color: var(--theme-color-7b908b);
 		border-radius: 8px;
 		margin-top: -3px;
 	}
@@ -6051,7 +6346,7 @@
 		border-radius: 10px;
 	}
 	:global(.national-map .map-layer-row) {
-		color: #456167;
+		color: var(--theme-color-456167);
 		transition: background-color 140ms ease;
 		white-space: normal;
 	}
@@ -6060,28 +6355,28 @@
 		place-items: center;
 		width: 34px;
 		height: 34px;
-		border: 1px solid #dce7df;
+		border: 1px solid var(--theme-color-dce7df);
 		border-radius: 10px;
 		flex-shrink: 0;
 	}
 	.layer-icon.land {
-		background: #f5f2e7;
-		color: #91a69b;
+		background: var(--theme-color-f5f2e7);
+		color: var(--theme-color-91a69b);
 	}
 	.layer-icon.health {
-		background: #edf6f2;
-		color: #087f7c;
-		border-color: #d7e7e0;
+		background: var(--theme-color-edf6f2);
+		color: var(--theme-color-087f7c);
+		border-color: var(--theme-color-d7e7e0);
 	}
 	.layer-icon.transport {
-		background: #edf1f5;
-		color: #557a91;
-		border-color: #dde5ec;
+		background: var(--theme-color-edf1f5);
+		color: var(--theme-color-557a91);
+		border-color: var(--theme-color-dde5ec);
 	}
 	.layer-icon.activity {
-		background: #f2eef6;
-		color: #8772a4;
-		border-color: #e6deec;
+		background: var(--theme-color-f2eef6);
+		color: var(--theme-color-8772a4);
+		border-color: var(--theme-color-e6deec);
 	}
 	.layer-label {
 		display: flex;
@@ -6093,23 +6388,23 @@
 	.layer-label strong {
 		font-size: 12px;
 		font-weight: 550;
-		color: #35565b;
+		color: var(--theme-color-35565b);
 	}
 	.layer-label small {
 		font-size: 10px;
 		font-weight: 400;
-		color: #80918e;
+		color: var(--theme-color-80918e);
 		line-height: 1.4;
 	}
 	.foundation-layer :global(.foundation-check) {
-		color: #80a28c;
+		color: var(--theme-color-80a28c);
 		flex-shrink: 0;
 		margin-right: 7px;
 	}
 	.layer-switch {
 		width: 29px;
 		height: 17px;
-		background: #dce5e1;
+		background: var(--theme-color-dce5e1);
 		border-radius: 20px;
 		padding: 2px;
 		flex-shrink: 0;
@@ -6120,12 +6415,12 @@
 		width: 13px;
 		height: 13px;
 		border-radius: 50%;
-		background: white;
-		box-shadow: 0 1px 3px #294c4920;
+		background: var(--theme-color-ffffff);
+		box-shadow: 0 1px 3px var(--theme-color-294c4920);
 		transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
 	}
 	.layer-switch[data-checked='true'] {
-		background: #278a78;
+		background: var(--theme-color-278a78);
 	}
 	.layer-switch[data-checked='true'] > span {
 		transform: translateX(12px);
@@ -6134,12 +6429,12 @@
 		display: flex;
 		align-items: flex-start;
 		gap: 7px;
-		border-top: 1px solid #e9eee7;
-		background: #f7f8f3;
+		border-top: 1px solid var(--theme-color-e9eee7);
+		background: var(--theme-color-f7f8f3);
 		padding: 12px 17px;
 		font-size: 10px;
 		line-height: 1.6;
-		color: #82918a;
+		color: var(--theme-color-82918a);
 	}
 	.source-note :global(svg) {
 		flex-shrink: 0;
@@ -6156,14 +6451,14 @@
 		padding: 0 12px;
 		gap: 9px;
 		border-radius: 9px;
-		border-color: #dce7e0;
-		background: #fff;
-		color: #48716e;
+		border-color: var(--theme-color-dce7e0);
+		background: var(--theme-color-ffffff);
+		color: var(--theme-color-48716e);
 		font-size: 12px;
 	}
 	.view-toggles {
 		padding: 3px 8px 8px;
-		border-top: 1px solid #e9eee7;
+		border-top: 1px solid var(--theme-color-e9eee7);
 	}
 	:global(.national-map .map-layer-row.compact) {
 		min-height: 43px;
@@ -6175,15 +6470,15 @@
 		justify-content: space-between;
 		gap: 12px;
 		padding: 12px 17px;
-		border-top: 1px solid #e9eee7;
+		border-top: 1px solid var(--theme-color-e9eee7);
 		font-size: 9px;
-		color: #81928c;
+		color: var(--theme-color-81928c);
 		font-variant-numeric: tabular-nums;
 	}
 	.movement-providers {
 		padding: 12px 17px;
-		border-top: 1px solid #e9eee7;
-		color: #67817d;
+		border-top: 1px solid var(--theme-color-e9eee7);
+		color: var(--theme-color-67817d);
 		font-size: 10px;
 	}
 	.movement-providers > strong {
@@ -6211,21 +6506,21 @@
 		gap: 10px;
 		max-width: 85%;
 		padding: 13px 17px;
-		background: #fffffff5;
-		border: 1px solid #d7e2df;
+		background: var(--theme-color-fffffff5);
+		border: 1px solid var(--theme-color-d7e2df);
 		border-radius: 12px;
-		color: #567772;
+		color: var(--theme-color-567772);
 		font-size: 12px;
 		pointer-events: none;
 		text-align: center;
-		box-shadow: 0 8px 32px -16px #2b51452b;
+		box-shadow: 0 8px 32px -16px var(--theme-color-2b51452b);
 	}
 	.loading-spinner {
 		width: 14px;
 		height: 14px;
 		flex-shrink: 0;
-		border: 1.5px solid #d2e8df;
-		border-top-color: #278a78;
+		border: 1.5px solid var(--theme-color-d2e8df);
+		border-top-color: var(--theme-color-278a78);
 		border-radius: 50%;
 		animation: loading-spin 700ms linear infinite;
 	}
@@ -6253,24 +6548,24 @@
 		max-height: min(330px, 44svh);
 		overflow: auto;
 		padding: 10px 12px;
-		border: 1px solid #d6e4de;
+		border: 1px solid var(--theme-color-d6e4de);
 		border-radius: 12px;
-		background: #fffefaed;
-		box-shadow: 0 3px 12px #294c490a;
+		background: var(--theme-color-fffefaed);
+		box-shadow: 0 3px 12px var(--theme-color-294c490a);
 		pointer-events: auto;
 	}
 	.policy-colour-key {
 		display: grid;
 		gap: 6px;
 		padding-bottom: 8px;
-		border-bottom: 1px solid #dce7df;
+		border-bottom: 1px solid var(--theme-color-dce7df);
 	}
 	.accessibility-key {
 		display: grid;
 		gap: 6px;
 		width: 230px;
 		max-width: 100%;
-		color: #34585d;
+		color: var(--theme-color-34585d);
 	}
 	.accessibility-key strong {
 		font-size: 11px;
@@ -6286,16 +6581,21 @@
 		height: 7px;
 		flex: 1;
 		border-radius: 4px;
-		background: linear-gradient(90deg, #e6a24a, #30969a, #153f6f);
+		background: linear-gradient(
+			90deg,
+			var(--theme-color-e6a24a),
+			var(--theme-color-30969a),
+			var(--theme-color-153f6f)
+		);
 	}
 	.accessibility-key small {
 		font-size: 9px;
 		line-height: 1.4;
-		color: #5a6e72;
+		color: var(--theme-color-5a6e72);
 	}
 	.policy-colour-key strong {
 		font-size: 11px;
-		color: #4b6758;
+		color: var(--theme-color-4b6758);
 		font-weight: 600;
 	}
 	.policy-colour-key span {
@@ -6303,17 +6603,17 @@
 		align-items: center;
 		gap: 6px;
 		font-size: 10px;
-		color: #617465;
+		color: var(--theme-color-617465);
 	}
 	.policy-colour-key small {
 		font-size: 9px;
-		color: #7d8a7c;
+		color: var(--theme-color-7d8a7c);
 	}
 	.policy-colour-key .policy-overlay-status {
 		padding: 4px 6px;
 		border-radius: 5px;
-		background: #edf5ef;
-		color: #376551;
+		background: var(--theme-color-edf5ef);
+		color: var(--theme-color-376551);
 		font-size: 10px;
 		line-height: 1.4;
 	}
@@ -6326,9 +6626,9 @@
 	.overlay-opacity-control {
 		margin: 4px 0 8px;
 		padding: 12px;
-		border: 1px solid #dce8e2;
+		border: 1px solid var(--theme-color-dce8e2);
 		border-radius: 10px;
-		background: #f5faf7;
+		background: var(--theme-color-f5faf7);
 	}
 	.overlay-opacity-control > div {
 		display: flex;
@@ -6339,7 +6639,7 @@
 		font-weight: 600;
 	}
 	.overlay-opacity-control output {
-		color: #087f7c;
+		color: var(--theme-color-087f7c);
 		font-variant-numeric: tabular-nums;
 	}
 	.overlay-opacity-control input {
@@ -6347,17 +6647,17 @@
 		width: 100%;
 		height: 32px;
 		margin: 2px 0;
-		accent-color: #087f7c;
+		accent-color: var(--theme-color-087f7c);
 		cursor: pointer;
 	}
 	.overlay-opacity-control input:focus-visible {
-		outline: 2px solid #087f7c;
+		outline: 2px solid var(--theme-color-087f7c);
 		outline-offset: 2px;
 		border-radius: 5px;
 	}
 	.overlay-opacity-control small {
 		display: block;
-		color: #60776d;
+		color: var(--theme-color-60776d);
 		font-size: 10px;
 		line-height: 1.5;
 	}
@@ -6395,22 +6695,22 @@
 		pointer-events: none;
 	}
 	:global(.national-map .vessel-group-target:focus-visible) {
-		outline: 3px solid #087f7c;
+		outline: 3px solid var(--theme-color-087f7c);
 		outline-offset: 3px;
-		background: #087f7c10;
+		background: var(--theme-color-087f7c10);
 	}
 	.map-hint {
 		display: flex;
 		align-items: center;
 		gap: 7px;
 		padding: 7px 10px;
-		border: 1px solid #d6e4de;
+		border: 1px solid var(--theme-color-d6e4de);
 		border-radius: 8px;
-		background: #ffffffe6;
-		color: #67817d;
+		background: var(--theme-color-ffffffe6);
+		color: var(--theme-color-67817d);
 		font-size: 10px;
 		max-width: min(100%, 350px);
-		box-shadow: 0 2px 6px #294c4908;
+		box-shadow: 0 2px 6px var(--theme-color-294c4908);
 	}
 	.map-hint span {
 		overflow: hidden;
@@ -6421,9 +6721,9 @@
 		flex-shrink: 0;
 	}
 	.map-hint.picking {
-		color: #8e573c;
-		border-color: #e4c6ac;
-		background: #fff9ed;
+		color: var(--theme-color-8e573c);
+		border-color: var(--theme-color-e4c6ac);
+		background: var(--theme-color-fff9ed);
 	}
 	.map-legend {
 		display: flex;
@@ -6432,10 +6732,10 @@
 		gap: 6px 11px;
 		max-width: 420px;
 		padding: 7px 9px;
-		border: 1px solid #d6e4de;
+		border: 1px solid var(--theme-color-d6e4de);
 		border-radius: 9px;
-		background: #fffef7ed;
-		color: #58756d;
+		background: var(--theme-color-fffef7ed);
+		color: var(--theme-color-58756d);
 		font-size: 10px;
 	}
 	.compact-map-key {
@@ -6444,11 +6744,11 @@
 		gap: 6px 12px;
 		padding: 8px 10px;
 		max-width: 350px;
-		border: 1px solid #d6e4de;
+		border: 1px solid var(--theme-color-d6e4de);
 		border-radius: 9px;
-		background: #fffef7ed;
+		background: var(--theme-color-fffef7ed);
 		font-size: 10px;
-		color: #496f6d;
+		color: var(--theme-color-496f6d);
 	}
 	.compact-map-key > span {
 		display: flex;
@@ -6470,19 +6770,19 @@
 	}
 	:global(.national-map .map-point-actions button) {
 		min-height: 38px;
-		border: 1px solid #d6e4de;
+		border: 1px solid var(--theme-color-d6e4de);
 		border-radius: 8px;
-		color: #234e5a;
-		background: #f4f8f4;
+		color: var(--theme-color-234e5a);
+		background: var(--theme-color-f4f8f4);
 		cursor: pointer;
 		font: inherit;
 		font-size: 11px;
 	}
 	:global(.national-map .map-point-actions .point-proposal-action) {
 		grid-column: 1 / -1;
-		background: #087f78;
-		color: white;
-		border-color: #087f78;
+		background: var(--theme-color-087f78);
+		color: var(--theme-color-ffffff);
+		border-color: var(--theme-color-087f78);
 	}
 	:global(.national-map .map-point-actions button:hover) {
 		filter: brightness(0.96);
@@ -6491,7 +6791,7 @@
 		transform: scale(0.97);
 	}
 	:global(.national-map .map-point-actions button:focus-visible) {
-		outline: 2px solid #087f78;
+		outline: 2px solid var(--theme-color-087f78);
 		outline-offset: 2px;
 	}
 	:global(.national-map .map-location-cancel) {
@@ -6500,13 +6800,13 @@
 		border: 0;
 		border-radius: 7px;
 		background: transparent;
-		color: #627a70;
+		color: var(--theme-color-627a70);
 		font: inherit;
 		font-size: 11px;
 		cursor: pointer;
 	}
 	:global(.national-map .map-location-cancel:focus-visible) {
-		outline: 2px solid #087f78;
+		outline: 2px solid var(--theme-color-087f78);
 		outline-offset: 2px;
 	}
 	:global(.national-map .atlas-stop-label) {
@@ -6516,27 +6816,27 @@
 		white-space: nowrap;
 		border-radius: 5px;
 		padding: 2px 5px;
-		color: #35566e;
-		background: #fffefade;
+		color: var(--theme-color-35566e);
+		background: var(--theme-color-fffefade);
 		font-size: 10px;
 		font-weight: 600;
 		pointer-events: none;
 	}
 	:global(.national-map .journey-stop-label) {
-		border: 1px solid #c59a53;
-		background: #fffaee;
-		color: #795b2d;
+		border: 1px solid var(--theme-color-c59a53);
+		background: var(--theme-color-fffaee);
+		color: var(--theme-color-795b2d);
 		font-weight: 700;
 	}
 	:global(.national-map .map-record-card summary) {
 		cursor: pointer;
 		padding-block: 7px;
-		color: #627a70;
+		color: var(--theme-color-627a70);
 		font-size: 11px;
 	}
 	:global(.national-map .map-record-card p) {
 		font-size: 12px;
-		color: #627a70;
+		color: var(--theme-color-627a70);
 		line-height: 1.5;
 	}
 	:global(.national-map .journey-drag-pin) {
@@ -6544,16 +6844,16 @@
 		height: 30px;
 		display: grid;
 		place-items: center;
-		color: white;
-		border: 3px solid white;
+		color: var(--theme-color-ffffff);
+		border: 3px solid var(--theme-color-ffffff);
 		border-radius: 50%;
-		background: #087f78;
+		background: var(--theme-color-087f78);
 		font-weight: 700;
-		box-shadow: 0 2px 8px #12352f40;
+		box-shadow: 0 2px 8px var(--theme-color-12352f40);
 		cursor: grab;
 	}
 	:global(.national-map .journey-drag-pin.end) {
-		background: #b76c43;
+		background: var(--theme-color-b76c43);
 	}
 	:global(.national-map .journey-drag-pin:active) {
 		cursor: grabbing;
@@ -6571,9 +6871,9 @@
 	.legend-land {
 		width: 10px;
 		height: 8px;
-		border: 1px solid #9cb9af;
+		border: 1px solid var(--theme-color-9cb9af);
 		border-radius: 2px;
-		background: #f5f2e7;
+		background: var(--theme-color-f5f2e7);
 	}
 	.map-movement-status {
 		display: flex;
@@ -6581,11 +6881,11 @@
 		gap: 4px;
 		padding: 8px 10px;
 		max-width: min(100%, 365px);
-		border: 1px solid #d6e4de;
+		border: 1px solid var(--theme-color-d6e4de);
 		border-radius: 10px;
-		background: #fffef7ed;
-		color: #496f6d;
-		box-shadow: 0 2px 6px #294c4908;
+		background: var(--theme-color-fffef7ed);
+		color: var(--theme-color-496f6d);
+		box-shadow: 0 2px 6px var(--theme-color-294c4908);
 		pointer-events: auto;
 	}
 	.movement-counts {
@@ -6611,7 +6911,7 @@
 	}
 	:global(.national-map .movement-fit-button) {
 		align-self: flex-start;
-		color: #337f7a;
+		color: var(--theme-color-337f7a);
 		font-size: 10px;
 		height: 25px;
 		padding: 3px 6px;
@@ -6623,59 +6923,59 @@
 		place-items: center;
 		width: 13px;
 		height: 13px;
-		border: 1px solid #6b9894;
+		border: 1px solid var(--theme-color-6b9894);
 		border-radius: 50%;
-		background: #fffefa;
+		background: var(--theme-color-fffefa);
 		font-size: 8px;
 		font-style: normal;
 	}
 	.legend-origin {
-		color: #337f7a;
+		color: var(--theme-color-337f7a);
 	}
 	.legend-destination {
-		color: #d56954;
+		color: var(--theme-color-d56954);
 	}
 	:global(.national-map .marine-key) {
-		color: #3c8c9a;
+		color: var(--theme-color-3c8c9a);
 	}
 	:global(.national-map .health-key) {
-		color: #087f7c;
+		color: var(--theme-color-087f7c);
 	}
 	:global(.national-map .school-key) {
-		color: #ad7b3a;
+		color: var(--theme-color-ad7b3a);
 	}
 	:global(.national-map .transport-key) {
-		color: #557a91;
+		color: var(--theme-color-557a91);
 	}
 	.legend-proposed {
 		width: 6px;
 		height: 6px;
 		border-radius: 50%;
-		background: #ef7159;
-		box-shadow: 0 0 0 2px #ef715920;
+		background: var(--theme-color-ef7159);
+		box-shadow: 0 0 0 2px var(--theme-color-ef715920);
 	}
 	.legend-route {
 		width: 13px;
 		height: 3px;
 		border-radius: 4px;
-		background: #376eb1;
+		background: var(--theme-color-376eb1);
 	}
 	.legend-walk {
 		width: 13px;
-		border-top: 2px dashed #496f6d;
+		border-top: 2px dashed var(--theme-color-496f6d);
 	}
 	.legend-ferry-route {
 		width: 13px;
 		height: 3px;
 		border-radius: 4px;
-		background: #8a65a7;
+		background: var(--theme-color-8a65a7);
 	}
 	.legend-journey-stop {
 		width: 11px;
 		height: 11px;
 		border-radius: 50%;
-		border: 2px solid #c59a53;
-		background: #fff9e8;
+		border: 2px solid var(--theme-color-c59a53);
+		background: var(--theme-color-fff9e8);
 	}
 	.placement-target {
 		position: absolute;
@@ -6685,10 +6985,10 @@
 		width: 24px;
 		height: 24px;
 		transform: translate(-50%, -50%);
-		border: 1.5px solid #997349;
+		border: 1.5px solid var(--theme-color-997349);
 		border-radius: 50%;
-		background: #fff9ed60;
-		box-shadow: 0 0 0 4px #fff9eda0;
+		background: var(--theme-color-fff9ed60);
+		box-shadow: 0 0 0 4px var(--theme-color-fff9eda0);
 		pointer-events: none;
 	}
 	.placement-target span {
@@ -6696,7 +6996,7 @@
 		width: 4px;
 		height: 4px;
 		border-radius: 50%;
-		background: #997349;
+		background: var(--theme-color-997349);
 		left: 50%;
 		top: 50%;
 		transform: translate(-50%, -50%);
@@ -6710,7 +7010,7 @@
 		justify-content: center;
 		padding: 35px;
 		text-align: center;
-		color: #567772;
+		color: var(--theme-color-567772);
 		gap: 14px;
 	}
 	.map-fallback strong {
@@ -6733,13 +7033,13 @@
 	}
 	:global(.national-map .map-record-popup .maplibregl-popup-content) {
 		padding: 18px;
-		border: 1px solid #d7e2df;
+		border: 1px solid var(--theme-color-d7e2df);
 		border-radius: 14px;
 		box-shadow:
-			0 5px 16px -8px #294c4918,
-			0 22px 54px -24px #294c4945;
+			0 5px 16px -8px var(--theme-color-294c4918),
+			0 22px 54px -24px var(--theme-color-294c4945);
 		font-family: inherit;
-		background: #fffefa;
+		background: var(--theme-color-fffefa);
 	}
 	:global(.national-map .map-record-popup .maplibregl-popup-close-button) {
 		width: 28px;
@@ -6747,7 +7047,7 @@
 		top: 5px;
 		right: 5px;
 		font-size: 19px;
-		color: #81958d;
+		color: var(--theme-color-81958d);
 		border-radius: 8px;
 	}
 	:global(.map-record-card) {
@@ -6760,14 +7060,14 @@
 		font-weight: 650;
 		letter-spacing: 0.065em;
 		text-transform: uppercase;
-		color: #759388;
+		color: var(--theme-color-759388);
 	}
 	:global(.map-record-card h3) {
 		font-family: inherit;
 		font-size: 14px;
 		font-weight: 650;
 		line-height: 1.45;
-		color: #294c53;
+		color: var(--theme-color-294c53);
 		margin: 6px 13px 12px 0;
 		overflow-wrap: anywhere;
 	}
@@ -6780,11 +7080,11 @@
 		line-height: 1.5;
 	}
 	:global(.map-record-card dt) {
-		color: #83988f;
+		color: var(--theme-color-83988f);
 		font-weight: 400;
 	}
 	:global(.map-record-card dd) {
-		color: #36585f;
+		color: var(--theme-color-36585f);
 		margin: 0;
 		overflow-wrap: anywhere;
 	}
@@ -6795,27 +7095,27 @@
 	:global(.island-map-label) {
 		pointer-events: none;
 		font-family: inherit;
-		color: #1d645e;
+		color: var(--theme-color-1d645e);
 		font-size: 12px;
 		font-weight: 650;
-		background: #fffef6eb;
-		border: 1px solid #b8d9cc;
+		background: var(--theme-color-fffef6eb);
+		border: 1px solid var(--theme-color-b8d9cc);
 		border-radius: 8px;
 		padding: 6px 11px;
-		box-shadow: 0 3px 14px -6px #294c4935;
+		box-shadow: 0 3px 14px -6px var(--theme-color-294c4935);
 		white-space: nowrap;
 	}
 	:global(.atlas-neighbor-label) {
 		pointer-events: none;
 		font-family: inherit;
-		color: #618176;
+		color: var(--theme-color-618176);
 		font-size: 10px;
 		font-weight: 600;
 		letter-spacing: 0.025em;
 		text-shadow:
-			0 1px 4px #fff,
-			0 0 5px #fff,
-			0 0 5px #fff;
+			0 1px 4px var(--theme-color-ffffff),
+			0 0 5px var(--theme-color-ffffff),
+			0 0 5px var(--theme-color-ffffff);
 		white-space: nowrap;
 	}
 	:global(.atlas-street-label) {
@@ -6824,12 +7124,12 @@
 		font-size: 10px;
 		font-weight: 550;
 		letter-spacing: 0.015em;
-		color: #647169;
+		color: var(--theme-color-647169);
 		text-shadow:
-			0 1px 2px #fffef4,
-			1px 0 2px #fffef4,
-			-1px 0 2px #fffef4,
-			0 -1px 2px #fffef4;
+			0 1px 2px var(--theme-color-fffef4),
+			1px 0 2px var(--theme-color-fffef4),
+			-1px 0 2px var(--theme-color-fffef4),
+			0 -1px 2px var(--theme-color-fffef4);
 		white-space: nowrap;
 		max-width: 180px;
 		overflow: hidden;
@@ -6842,10 +7142,10 @@
 		width: fit-content;
 		max-width: 100%;
 		padding: 5px 8px;
-		border: 1px solid #d8e5de;
+		border: 1px solid var(--theme-color-d8e5de);
 		border-radius: 7px;
-		background: #fffef7e8;
-		color: #6d8278;
+		background: var(--theme-color-fffef7e8);
+		color: var(--theme-color-6d8278);
 		font-size: 9px;
 		line-height: 1.3;
 	}
@@ -6853,21 +7153,21 @@
 		width: 5px;
 		height: 5px;
 		border-radius: 50%;
-		background: #66a88b;
+		background: var(--theme-color-66a88b);
 		flex-shrink: 0;
 	}
 	.street-context-status > span.loading {
-		background: #cda64e;
+		background: var(--theme-color-cda64e);
 	}
 	.legend-street {
-		background: #fff4cf;
-		border: 1px solid #b5b8a6;
+		background: var(--theme-color-fff4cf);
+		border: 1px solid var(--theme-color-b5b8a6);
 		width: 13px;
 		height: 4px;
 	}
 	.legend-building {
-		background: #d9d2c1;
-		border: 1px solid #c7beac;
+		background: var(--theme-color-d9d2c1);
+		border: 1px solid var(--theme-color-c7beac);
 		width: 9px;
 		height: 8px;
 	}
@@ -6877,18 +7177,18 @@
 		right: calc(var(--map-controls-right, 18px) - 10px);
 	}
 	:global(.national-map .maplibregl-ctrl-group) {
-		border: 1px solid #d7e2df;
+		border: 1px solid var(--theme-color-d7e2df);
 		border-radius: 11px;
-		box-shadow: 0 8px 24px -12px #294c4935;
+		box-shadow: 0 8px 24px -12px var(--theme-color-294c4935);
 		overflow: hidden;
-		background: #fffffff5;
+		background: var(--theme-color-fffffff5);
 	}
 	:global(.national-map .maplibregl-ctrl-group button) {
 		width: 36px;
 		height: 36px;
 	}
 	:global(.national-map .maplibregl-ctrl-group button + button) {
-		border-top-color: #e5ece7;
+		border-top-color: var(--theme-color-e5ece7);
 	}
 	:global(.national-map .maplibregl-ctrl-bottom-right) {
 		right: calc(var(--map-controls-right, 18px) - 10px);
@@ -6899,19 +7199,19 @@
 	:global(.national-map .maplibregl-ctrl-scale) {
 		font-family: inherit;
 		font-size: 9px;
-		color: #65847c;
-		border-color: #739389;
+		color: var(--theme-color-65847c);
+		border-color: var(--theme-color-739389);
 		border-radius: 3px;
-		background: #ffffff80;
+		background: var(--theme-color-ffffff80);
 	}
 	:global(.national-map .maplibregl-ctrl-attrib) {
 		font-family: inherit;
 		font-size: 9px;
-		color: #739088;
-		background-color: #ffffffe0;
+		color: var(--theme-color-739088);
+		background-color: var(--theme-color-ffffffe0);
 	}
 	:global(.national-map .maplibregl-ctrl-attrib a) {
-		color: #517b73;
+		color: var(--theme-color-517b73);
 	}
 	:global(.national-map .maplibregl-canvas-container.maplibregl-interactive) {
 		cursor: grab;
@@ -6923,7 +7223,7 @@
 		:global(.national-map .map-tool-button:hover),
 		:global(.national-map .map-national-button:hover),
 		:global(.national-map .map-layer-row:hover) {
-			background: #edf5f1;
+			background: var(--theme-color-edf5f1);
 		}
 	}
 	@container atlas (max-width: 900px) {
@@ -6982,9 +7282,9 @@
 			gap: 5px;
 			border-radius: 8px;
 			font-size: 10px;
-			color: #58756d;
-			background: #fffef7ed;
-			border-color: #d6e4de;
+			color: var(--theme-color-58756d);
+			background: var(--theme-color-fffef7ed);
+			border-color: var(--theme-color-d6e4de);
 		}
 		.map-legend:not(.mobile-expanded),
 		.map-hint:not(.picking) {

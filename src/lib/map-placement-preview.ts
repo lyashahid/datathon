@@ -18,7 +18,7 @@ export function placementLocationHint(input: {
 	if (input.kind === 'add_stop') {
 		if (input.snapped)
 			return {
-				title: 'Aligned to a mapped road',
+				title: 'Aligned to the road',
 				detail: `Pin adjusted ${Math.round(input.distance ?? 0)} m. Review the suggested stop connection after placing.`,
 				caution: false
 			};

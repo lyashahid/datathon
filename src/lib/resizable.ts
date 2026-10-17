@@ -156,11 +156,11 @@ function installStyles(): void {
 		[data-resizable="true"] > .window-resize-handle {
 			all: unset; box-sizing: border-box; position: absolute; z-index: 30;
 			display: flex; align-items: center; justify-content: center;
-			color: #78938e; touch-action: none; user-select: none;
+			color: var(--theme-color-78938e); touch-action: none; user-select: none;
 		}
 		.window-resize-handle::after { content: ''; opacity: .42; border-radius: 3px; transition: opacity 130ms ease; }
 		.window-resize-handle:hover::after, .window-resize-handle:focus-visible::after { opacity: 1; }
-		.window-resize-handle:focus-visible { outline: 2px solid #0a8176; outline-offset: -2px; border-radius: 5px; }
+		.window-resize-handle:focus-visible { outline: 2px solid var(--theme-color-0a8176); outline-offset: -2px; border-radius: 5px; }
 		.window-resize-handle[data-edge="left"], .window-resize-handle[data-edge="right"] { top: 25px; bottom: 25px; width: 10px; cursor: ew-resize; }
 		.window-resize-handle[data-edge="left"] { left: 0; }
 		.window-resize-handle[data-edge="right"] { right: 0; }

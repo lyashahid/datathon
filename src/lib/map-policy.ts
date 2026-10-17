@@ -152,6 +152,11 @@ export type MapServiceEditor = {
 	title?: string;
 };
 export type MapPolicyState = {
+	/** Accepted operations plus the current validated ferry draft for network comparison. */
+	seaOriginIslandId?: string | null;
+	seaOperations?: PlanningOperation[];
+	seaAcceptedOperations?: PlanningOperation[];
+	seaAssumptions?: Record<string, unknown>;
 	serviceEditor?: MapServiceEditor | null;
 	serviceEditorContent?: Snippet;
 	operations: PlanningOperation[];

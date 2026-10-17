@@ -573,15 +573,51 @@ def test_quote_gates_exact_capital_and_operating_budgets_without_access_routing(
 
 def test_quote_blocks_unavailable_limited_costs_and_preserves_unbounded_status(service):
     service.repository.baseline["transit"]["patterns"][0]["distanceM"] = None
+    operations = [
+        {
+            "type": "disable_service",
+            "target_id": service.repository.baseline["transit"]["patterns"][0]["id"],
+        }
+    ]
     limited = service.quote(
-        PlanningRequest(assumptions={"departure_minutes": 470, "annual_operating_budget_mvr": 0})
+        PlanningRequest(
+            operations=operations,
+            assumptions={"departure_minutes": 470, "annual_operating_budget_mvr": 0},
+        )
     )
     assert limited["budget"]["allowed"] is False
     assert limited["budget"]["status"] == "unavailable"
     assert limited["budget"]["annual_operating"]["projected_mvr"] is None
-    unbounded = service.quote(PlanningRequest(assumptions={"departure_minutes": 470}))
+    unbounded = service.quote(
+        PlanningRequest(operations=operations, assumptions={"departure_minutes": 470})
+    )
     assert unbounded["budget"]["allowed"] is True
     assert unbounded["budget"]["status"] == "unbounded"
+
+
+def test_unchanged_unknown_distance_cancels_only_from_project_change(service):
+    service.repository.baseline["transit"]["patterns"][0]["distanceM"] = None
+    assumptions = PlanningAssumptions(departure_minutes=470)
+    before = baseline_world(service.repository)
+    after = copy.deepcopy(before)
+    after["facilities"].append(
+        {
+            "id": "proposed:school",
+            "name": "Proposed school",
+            "kind": "school",
+            "planningStatus": "proposed",
+            "proposedOpeningDate": "2026-10-10",
+            "costOverrides": {"annual_operating_kg_co2e": 100, "embodied_kg_co2e": 200},
+        }
+    )
+    result = economics(before, after, assumptions)
+    assert result["before"]["annual_operating_mvr"] is None
+    assert result["after"]["annual_operating_mvr"] is None
+    assert result["delta"]["annual_operating_mvr"] == 5_000_000
+    assert result["delta"]["annual_fleet_operating_kg_co2e"] == 0
+    assert result["delta"]["annual_operating_kg_co2e"] == 100
+    after["patterns"][0]["timing"]["trips"][0]["stopTimes"][-1]["arrivalMinutes"] += 1
+    assert economics(before, after, assumptions)["delta"]["annual_operating_mvr"] is None
 
 
 def test_quote_uses_same_financial_model_and_keeps_legacy_overbudget_evaluation(service):

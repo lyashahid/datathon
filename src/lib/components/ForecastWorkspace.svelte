@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { themeColors } from '#lib/theme.js';
 	import { downloadJson as download } from '#lib/download.js';
 	import { onMount, untrack } from 'svelte';
 	import {
@@ -327,7 +328,7 @@
 			<h1>Passenger outlook</h1>
 			<p>Understand the direction of demand, then check how the model performed.</p>
 		</div>
-		<Badge variant="secondary"><TrendingUp size={13} /> Aggregate monthly movements</Badge>
+		<Badge variant="secondary"><TrendingUp size={13} /> Monthly passenger movements</Badge>
 	</header>
 	<Card.Root class="forecast-controls">
 		<form
@@ -440,7 +441,7 @@
 											x2={chart.width - 26}
 											y1={chart.y(chart.maximum * fraction)}
 											y2={chart.y(chart.maximum * fraction)}
-											stroke="#eceaf1"
+											stroke={themeColors.coloreceaf1}
 										/><text
 											x="46"
 											y={chart.y(chart.maximum * fraction) + 4}
@@ -451,11 +452,16 @@
 										y="15"
 										width={Math.max(0, chart.width - chart.lastX - 26)}
 										height={chart.height - 55}
-										fill="#f4f0fc"
-									/><path d={chart.actual} fill="none" stroke="#66894e" stroke-width="2.5" /><path
+										fill={themeColors.colorf4f0fc}
+									/><path
+										d={chart.actual}
+										fill="none"
+										stroke={themeColors.color66894e}
+										stroke-width="2.5"
+									/><path
 										d={chart.projection}
 										fill="none"
-										stroke="#8974b1"
+										stroke={themeColors.color8974b1}
 										stroke-width="2.5"
 										stroke-dasharray="7 5"
 									/>{#if chart.range}<line
@@ -463,7 +469,7 @@
 											x2={chart.finalX}
 											y1={chart.y(chart.range.lower)}
 											y2={chart.y(chart.range.upper)}
-											stroke="#b6a6d1"
+											stroke={themeColors.colorb6a6d1}
 											stroke-width="8"
 											stroke-linecap="round"
 										/>{/if}{#each chart.labels as item (item.month)}<text
@@ -476,7 +482,7 @@
 							</div>{/if}
 						<div class="legend">
 							<span><i class="actual"></i> Official actuals</span><span
-								><i class="projection"></i> Unobserved estimates</span
+								><i class="projection"></i> Forecast estimates</span
 							><span><i class="range"></i> Historical residual range</span>
 						</div>
 						{#if current.unavailableReason}<p class="qualification">
@@ -514,7 +520,7 @@
 								}}>Inspect backtests <ArrowUpRight size={14} /></Button
 							></Card.Root
 						><Card.Root class="interpretation tinted"
-							><h3>Keep the source boundaries visible</h3>
+							><h3>What the numbers mean</h3>
 							<p>
 								Movements are not unique passengers. No stop-level demand, peak-hour load or
 								occupancy is inferred. Ferry endpoint counts stay separate.
@@ -756,7 +762,7 @@
 			><TrendingUp size={26} />
 			<h2>Loading the checked passenger history…</h2>
 			<p>
-				Forecasts use official monthly publications and retain their source qualifications.
+				Forecasts use official monthly publications. Sources and methodology are included above.
 			</p></Card.Root
 		>{/if}
 </section>
@@ -783,7 +789,7 @@
 	}
 	.eyebrow {
 		display: block;
-		color: #726781;
+		color: var(--theme-color-726781);
 		font-size: 10px;
 		font-weight: 650;
 		letter-spacing: 1.5px;
@@ -828,12 +834,12 @@
 		font-size: 13px;
 	}
 	.feedback.error {
-		background: #fbeeed;
-		color: #984137;
+		background: var(--theme-color-fbeeed);
+		color: var(--theme-color-984137);
 	}
 	.feedback.success {
-		background: #e7f0df;
-		color: #446538;
+		background: var(--theme-color-e7f0df);
+		color: var(--theme-color-446538);
 	}
 	.tab-count {
 		margin-left: 5px;
@@ -845,8 +851,8 @@
 	}
 	.reliability-note {
 		margin-top: 16px;
-		border-left: 3px solid #b8a2cd;
-		background: #f8f5fb;
+		border-left: 3px solid var(--theme-color-b8a2cd);
+		background: var(--theme-color-f8f5fb);
 		padding: 13px 16px;
 		border-radius: 0 12px 12px 0;
 	}
@@ -855,7 +861,7 @@
 	}
 	.reliability-note p {
 		font-size: 11px;
-		color: #776682;
+		color: var(--theme-color-776682);
 		line-height: 1.7;
 		margin-top: 5px;
 	}
@@ -869,19 +875,19 @@
 		display: grid;
 		gap: 7px;
 		padding: 17px;
-		background: #f2eef8;
+		background: var(--theme-color-f2eef8);
 		border-radius: 13px;
 	}
 	.method-partitions span {
 		font-size: 10px;
-		color: #81689a;
+		color: var(--theme-color-81689a);
 		font-weight: 650;
 	}
 	.method-partitions strong {
 		font-size: 13px;
 	}
 	.method-partitions small {
-		color: #796c84;
+		color: var(--theme-color-796c84);
 		font-size: 11px;
 		line-height: 1.65;
 	}
@@ -891,7 +897,7 @@
 		flex-wrap: wrap;
 		padding: 14px 0;
 		font-size: 11px;
-		color: #7a6985;
+		color: var(--theme-color-7a6985);
 	}
 	@media (max-width: 700px) {
 		.method-partitions {
@@ -922,13 +928,13 @@
 		min-width: 0;
 		white-space: normal;
 		gap: 10px;
-		background: white;
-		border: 1px solid #e5e1eb;
+		background: var(--theme-color-ffffff);
+		border: 1px solid var(--theme-color-e5e1eb);
 		border-radius: 18px;
 	}
 	.forecast-workspace :global(.series-card.selected) {
-		background: #eee9f7;
-		border-color: #aa98c8;
+		background: var(--theme-color-eee9f7);
+		border-color: var(--theme-color-aa98c8);
 	}
 	.forecast-workspace :global(.series-card span) {
 		display: grid;
@@ -939,7 +945,7 @@
 		line-height: 1.5;
 	}
 	.forecast-workspace :global(.series-card small) {
-		color: #716879;
+		color: var(--theme-color-716879);
 		font-size: 10px;
 	}
 	.forecast-workspace :global(.series-card b) {
@@ -950,7 +956,7 @@
 	}
 	.mode-label {
 		font-size: 9px;
-		color: #736088;
+		color: var(--theme-color-736088);
 		font-weight: 650;
 		letter-spacing: 1px;
 	}
@@ -965,11 +971,11 @@
 		gap: 12px;
 	}
 	.forecast-workspace :global(.metric-card.featured) {
-		background: #e4eedb;
-		border-color: #dce7d2;
+		background: var(--theme-color-e4eedb);
+		border-color: var(--theme-color-dce7d2);
 	}
 	.metric-label {
-		color: #64606e;
+		color: var(--theme-color-64606e);
 		font-size: 12px;
 	}
 	.forecast-workspace :global(.metric-card strong) {
@@ -980,7 +986,7 @@
 	}
 	.forecast-workspace :global(.metric-card p) {
 		font-size: 10px;
-		color: #6c6775;
+		color: var(--theme-color-6c6775);
 		line-height: 1.6;
 	}
 	.forecast-workspace :global(.history-card),
@@ -1002,7 +1008,7 @@
 		overflow: visible;
 	}
 	.axis-text {
-		fill: #716c7a;
+		fill: var(--theme-color-716c7a);
 		font-size: 10px;
 	}
 	.legend {
@@ -1010,7 +1016,7 @@
 		gap: 25px;
 		flex-wrap: wrap;
 		font-size: 11px;
-		color: #6c6478;
+		color: var(--theme-color-6c6478);
 		margin: 8px 0 20px;
 	}
 	.legend span {
@@ -1025,20 +1031,20 @@
 		border-radius: 3px;
 	}
 	.legend .actual {
-		background: #66894e;
+		background: var(--theme-color-66894e);
 	}
 	.legend .projection {
-		background: #8974b1;
+		background: var(--theme-color-8974b1);
 	}
 	.legend .range {
-		background: #b6a6d1;
+		background: var(--theme-color-b6a6d1);
 		height: 9px;
 		width: 9px;
 	}
 	.range-note {
 		padding: 15px 18px;
 		border-radius: 13px;
-		background: #f3eff9;
+		background: var(--theme-color-f3eff9);
 		margin-bottom: 14px;
 	}
 	.range-note strong {
@@ -1046,12 +1052,12 @@
 		font-weight: 600;
 	}
 	.range-note p {
-		color: #6e617e;
+		color: var(--theme-color-6e617e);
 		font-size: 11px;
 		margin-top: 5px;
 	}
 	.qualification {
-		color: #6f667c;
+		color: var(--theme-color-6f667c);
 		font-size: 11px;
 		line-height: 1.75;
 		margin-top: 14px;
@@ -1067,10 +1073,10 @@
 		gap: 10px;
 	}
 	.forecast-workspace :global(.interpretation.tinted) {
-		background: #efedf6;
+		background: var(--theme-color-efedf6);
 	}
 	.forecast-workspace :global(.interpretation p) {
-		color: #706979;
+		color: var(--theme-color-706979);
 		font-size: 12px;
 	}
 	.forecast-workspace :global(.interpretation a) {
@@ -1082,14 +1088,14 @@
 		margin-top: 6px;
 	}
 	.evaluation-callout {
-		background: #f2eff8;
+		background: var(--theme-color-f2eff8);
 		padding: 17px;
 		display: flex;
 		gap: 12px;
 		align-items: center;
 		margin-bottom: 20px;
 		border-radius: 14px;
-		color: #6d617d;
+		color: var(--theme-color-6d617d);
 	}
 	.evaluation-callout :global(svg) {
 		flex-shrink: 0;
@@ -1110,15 +1116,15 @@
 		min-width: 650px;
 	}
 	th {
-		color: #7b7486;
+		color: var(--theme-color-7b7486);
 		font-weight: 500;
 		font-size: 10px;
 		padding: 12px 13px;
-		border-bottom: 1px solid #e9e5ee;
+		border-bottom: 1px solid var(--theme-color-e9e5ee);
 	}
 	td {
 		padding: 15px 13px;
-		border-bottom: 1px solid #efecf3;
+		border-bottom: 1px solid var(--theme-color-efecf3);
 		font-variant-numeric: tabular-nums;
 	}
 	td strong {
@@ -1129,14 +1135,14 @@
 		margin-left: 7px;
 	}
 	.selected-row {
-		background: #f5f1fb;
+		background: var(--theme-color-f5f1fb);
 	}
 	.backtest-title {
 		margin: 27px 0 9px;
 	}
 	.issue-row {
 		padding: 22px 0;
-		border-top: 1px solid #ebe7f0;
+		border-top: 1px solid var(--theme-color-ebe7f0);
 		display: flex;
 		align-items: flex-start;
 		justify-content: space-between;
@@ -1148,7 +1154,7 @@
 	}
 	.issue-row p,
 	.issue-row small {
-		color: #776c82;
+		color: var(--theme-color-776c82);
 		font-size: 11px;
 	}
 	.score-list {
@@ -1157,7 +1163,7 @@
 		gap: 10px 20px;
 		margin-top: 14px;
 		font-size: 11px;
-		color: #72677e;
+		color: var(--theme-color-72677e);
 	}
 	.forecast-workspace :global(.method-card) {
 		padding: 20px 24px;
@@ -1168,12 +1174,12 @@
 		cursor: pointer;
 	}
 	.forecast-workspace :global(.method-card p) {
-		color: #73687f;
+		color: var(--theme-color-73687f);
 		margin-top: 13px;
 		font-size: 12px;
 	}
 	.forecast-workspace :global(.method-card ul) {
-		color: #73687f;
+		color: var(--theme-color-73687f);
 		font-size: 11px;
 		line-height: 1.8;
 		padding-left: 18px;
@@ -1198,7 +1204,7 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 12px;
-		color: #786982;
+		color: var(--theme-color-786982);
 	}
 	.empty-state p {
 		max-width: 460px;

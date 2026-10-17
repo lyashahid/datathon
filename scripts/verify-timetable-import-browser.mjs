@@ -243,7 +243,7 @@ try {
 	const page = await desktop.newPage();
 	page.setDefaultTimeout(60000);
 	page.on('pageerror', (error) => report.errors.push(error.message));
-	const url = `${baseURL}/?view=map&tool=explore&explorer=schedules&island=island%3A1442`;
+	const url = `${baseURL}/?view=overview&analytics=timetables&island=island%3A1442`;
 	const dashboard = page.getByRole('region', { name: 'National analytics', exact: true });
 	const studio = page.getByRole('region', {
 		name: 'Multi-dataset explorer and chart builder',
@@ -448,9 +448,7 @@ try {
 			await page.getByRole('button', { name: 'Directions', exact: true }).click();
 			await page.getByRole('button', { name: 'Island connections', exact: true }).click();
 			await connections.getByLabel('From island', { exact: true }).selectOption('island:1443');
-			await connections
-				.getByLabel('Check service evidence for', { exact: true })
-				.fill('2026-10-14');
+			await connections.getByLabel('Travel date', { exact: true }).fill('2026-10-14');
 			const pending = page.waitForResponse((response) => {
 				const value = new URL(response.url());
 				return (
@@ -475,7 +473,9 @@ try {
 			await connections.evaluate((element) =>
 				element.setAttribute('data-qa-retained', 'connections')
 			);
-			await page.getByRole('button', { name: 'Nationwide schedules', exact: true }).click();
+			await navigation.getByRole('button', { name: 'Analytics', exact: true }).click();
+			await page.getByRole('tab', { name: 'Timetables', exact: true }).click();
+			await expect(page).toHaveURL(/analytics=timetables/);
 			return { status: evidence.status, connections: refreshCounts().connections };
 		}
 	);
@@ -605,7 +605,7 @@ try {
 				)
 				.toBeGreaterThan(2);
 			await expect(page).toHaveURL((value) => value.searchParams.get('island') === 'island:1442');
-			await page.getByRole('button', { name: 'Back to map', exact: true }).click();
+			await page.getByRole('button', { name: 'Close directions', exact: true }).click();
 			await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
 			if (!(await policyPanel.getByLabel('Capital budget · MVR').isVisible()))
 				await policyPanel.getByRole('button', { name: 'Edit budget limits', exact: true }).click();
@@ -747,8 +747,7 @@ try {
 				beforeAcceptance.inventory + 1,
 				'Clean activation reuses refreshed analytics'
 			);
-			await navigation.getByRole('button', { name: 'Map & planning', exact: true }).click();
-			await page.getByRole('button', { name: 'Nationwide schedules', exact: true }).click();
+			await page.getByRole('tab', { name: 'Timetables', exact: true }).click();
 			await expect(page.locator('.snapshot')).toContainText('Accepted · 2 services');
 			return {
 				chartRows: chart.items.length,

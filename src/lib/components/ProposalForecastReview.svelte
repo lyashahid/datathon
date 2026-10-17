@@ -297,7 +297,7 @@
 					<p>
 						{hasTransportProposal
 							? 'Transport services, return journeys, resident access and the full funding commitment.'
-							: 'What changes for residents, what it costs, and what the evidence can support.'}
+							: 'See how residents benefit, what it costs, and how the proposal works.'}
 					</p>
 				</div>
 				<div class="report-date">
@@ -431,7 +431,7 @@
 								<span><strong>MVR 0</strong> new port construction for this ferry service</span>
 								<p>
 									Existing landing places are reused. Vessel procurement and yearly operation are
-									included in the proposal costs above; a mapped landing place still needs
+									included in the proposal costs above; a ferry landing place still needs
 									suitability and permission checks.
 								</p>
 							</div>{/if}
@@ -486,7 +486,7 @@
 							</div>
 							<div>
 								<strong>{formatAmount(unknown)}</strong><span
-									>Residents whose proposal journey evidence is unavailable</span
+									>Residents with unavailable journey estimates</span
 								>
 							</div>
 						</div>
@@ -505,7 +505,7 @@
 						<p class="method-note">
 							{evaluation.population_basis
 								? ''
-								: 'No source-backed resident allocation is available for this scope. '}
+								: 'Resident estimates are unavailable for this area. '}
 							Missing journey evidence is not proof of no access.
 						</p>
 					</section>
@@ -697,7 +697,7 @@
 				<section class="report-card evidence-card">
 					<div class="section-heading">
 						<div>
-							<span class="eyebrow">Evidence and assumptions</span>
+							<span class="eyebrow">Sources and assumptions</span>
 							<h2>What to know before a decision</h2>
 						</div>
 						<Info size={19} />
@@ -754,14 +754,14 @@
 		color: var(--foreground);
 		overflow: hidden;
 		box-shadow:
-			0 28px 90px #14282029,
-			0 2px 10px #14282012;
+			0 28px 90px var(--theme-color-14282029),
+			0 2px 10px var(--theme-color-14282012);
 		transform-origin: center;
 		container-type: inline-size;
 		container-name: proposal-review;
 	}
 	.forecast-review::backdrop {
-		background: #17251f66;
+		background: var(--theme-color-17251f66);
 		opacity: 1;
 		transition: opacity 150ms ease-out;
 	}
@@ -854,11 +854,11 @@
 		font-size: 12px;
 	}
 	.report-alert.error {
-		background: #fff2f0;
+		background: var(--theme-color-fff2f0);
 		color: var(--destructive);
 	}
 	.report-alert.stale {
-		background: #fff9ed;
+		background: var(--theme-color-fff9ed);
 	}
 	.report-alert :global(button) {
 		margin-left: auto;
@@ -885,12 +885,12 @@
 		min-width: 0;
 	}
 	.metric.reach {
-		background: #e8efdf;
-		border-color: #dce7d0;
+		background: var(--theme-color-e8efdf);
+		border-color: var(--theme-color-dce7d0);
 	}
 	.metric small {
 		font-size: 11px;
-		color: #62636a;
+		color: var(--theme-color-62636a);
 		display: block;
 		line-height: 1.5;
 	}
@@ -905,7 +905,7 @@
 	}
 	.metric span {
 		font-size: 10px;
-		color: #6a6e6b;
+		color: var(--theme-color-6a6e6b);
 		line-height: 1.6;
 		display: block;
 	}
@@ -926,23 +926,23 @@
 	}
 	.transport-card {
 		margin-bottom: 20px;
-		border-color: #c7dfe3;
-		background: #faffff;
+		border-color: var(--theme-color-c7dfe3);
+		background: var(--theme-color-faffff);
 	}
 	.transport-card .section-heading > :global(svg) {
-		color: #437c8b;
+		color: var(--theme-color-437c8b);
 	}
 	.transport-cost-note {
 		display: flex;
 		gap: 25px;
 		padding: 18px 0 0;
 		margin-top: 22px;
-		border-top: 1px solid #dfeaec;
+		border-top: 1px solid var(--theme-color-dfeaec);
 		align-items: center;
 	}
 	.transport-cost-note > span {
 		font-size: 10px;
-		color: #6d868d;
+		color: var(--theme-color-6d868d);
 		flex-shrink: 0;
 		display: grid;
 		gap: 5px;
@@ -950,13 +950,13 @@
 	.transport-cost-note strong {
 		font-size: 21px;
 		font-weight: 600;
-		color: #376c79;
+		color: var(--theme-color-376c79);
 		letter-spacing: -0.5px;
 	}
 	.transport-cost-note p {
 		margin: 0;
 		font-size: 11px;
-		color: #73888e;
+		color: var(--theme-color-73888e);
 		line-height: 1.8;
 	}
 	.report-card {
@@ -1012,10 +1012,10 @@
 		border-radius: inherit;
 	}
 	.baseline {
-		background: #c2b7dc;
+		background: var(--theme-color-c2b7dc);
 	}
 	.proposed {
-		background: #89ad71;
+		background: var(--theme-color-89ad71);
 	}
 	.access-footnotes {
 		display: grid;
@@ -1119,11 +1119,11 @@
 	}
 	.fiscal-bar {
 		width: 100%;
-		background: #aea0ce;
+		background: var(--theme-color-aea0ce);
 		border-radius: 7px 7px 0 0;
 	}
 	.fiscal-bar.saving {
-		background: #89ad71;
+		background: var(--theme-color-89ad71);
 	}
 	.fiscal-table-wrap {
 		overflow: auto;
@@ -1172,10 +1172,10 @@
 		border-radius: 2px;
 	}
 	.baseline-key {
-		background: #c2b7dc;
+		background: var(--theme-color-c2b7dc);
 	}
 	.proposed-key {
-		background: #89ad71;
+		background: var(--theme-color-89ad71);
 	}
 	.band-chart {
 		display: grid;
@@ -1301,8 +1301,8 @@
 		height: 65px;
 		display: grid;
 		place-items: center;
-		background: #e8efdf;
-		color: #52743f;
+		background: var(--theme-color-e8efdf);
+		color: var(--theme-color-52743f);
 		border-radius: 20px;
 	}
 	@container proposal-review (max-width: 1000px) {

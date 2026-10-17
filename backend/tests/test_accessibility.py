@@ -249,10 +249,9 @@ def test_unverified_ferry_earns_no_points_by_default_and_has_a_clear_reason(tmp_
     assert default is not None and assumed is not None
     assert default["assessment"]["components"]["transport"]["marine_terminal_count"] == 1
     assert default["domains"]["transport"]["score"] == 0
-    assert (
-        "excluded because ferry services are unverified"
-        in default["assessment"]["reasons"][2]["text"]
-    )
+    assert "excluded from this land access index" in default["assessment"]["reasons"][2]["text"]
+    assert "Sea connections" in default["assessment"]["reasons"][2]["text"]
+    assert "ferry services are unverified" not in default["assessment"]["reasons"][2]["text"]
     assert assumed["domains"]["transport"]["score"] == pytest.approx(33.33)
     assert "included as an assumption" in assumed["assessment"]["reasons"][2]["text"]
 

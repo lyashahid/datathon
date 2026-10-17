@@ -1,3 +1,4 @@
+import { themeColors } from '#lib/theme.js';
 import type { Accessibility, MapFeatures } from './types.js';
 
 export interface NationalAccessibility {
@@ -62,11 +63,11 @@ export const facilityLabels: Record<string, string> = {
 };
 
 export const facilityColors: Record<string, string> = {
-	clinic: '#9072dd',
-	health_center: '#af98e7',
-	hospital: '#cfc0ee',
-	school: '#32ae89',
-	airport: '#efa84b'
+	clinic: themeColors.color9072dd,
+	health_center: themeColors.coloraf98e7,
+	hospital: themeColors.colorcfc0ee,
+	school: themeColors.color32ae89,
+	airport: themeColors.colorefa84b
 };
 
 export function inventoryFromFeatures(collection: MapFeatures | null): FacilityInventory[] {

@@ -7,7 +7,7 @@ from typing import Any
 from app.accessibility.config import AccessibilityConfig
 from app.accessibility.evidence import scored_facilities
 
-ASSESSMENT_VERSION = "island-access-assessment-v1"
+ASSESSMENT_VERSION = "island-access-assessment-v2"
 
 
 def _score_label(value: float) -> str:
@@ -23,8 +23,8 @@ def island_assessment(
     components: dict[str, Any] = {}
     reasons = []
     limitations = [
-        "This is an access index based on mapped services and planning assumptions, "
-        "not a percentage of residents served."
+        "The access score combines services, travel distances and estimated demand. "
+        "It is not a percentage of residents served."
     ]
     scored_domains = 0
     for domain, weights, label in (
@@ -43,13 +43,13 @@ def island_assessment(
             )
         elif "no_geocoded_demand_anchor" in details.get("missing_data", []):
             text = (
-                f"{count:,} mapped {noun}{plural}, but distances could not "
+                f"{count:,} {noun}{plural}, but distances could not "
                 "be estimated. This part of the index is 0."
             )
         else:
             scored_domains += 1
             text = (
-                f"{count:,} mapped {noun}{plural}; distance and facility type give "
+                f"{count:,} {noun}{plural}; distance and facility type give "
                 f"{label.lower()} {_score_label(details['score'])}/100."
             )
             distance = details.get("best_distance_m")
@@ -57,7 +57,7 @@ def island_assessment(
                 method = (
                     "in a straight line"
                     if details.get("distance_method") == "straight_line_fallback"
-                    else "along mapped walking routes"
+                    else "along walking routes"
                 )
                 distance_label = (
                     f"{distance / 1000:.1f} km" if distance >= 1000 else f"{distance:.0f} m"
@@ -75,27 +75,29 @@ def island_assessment(
     for key, noun in (("bus_stop_count", "bus stop"), ("airport_count", "airport")):
         count = transport_counts[key]
         if count:
-            included.append(f"{count:,} mapped {noun}{'s' if count != 1 else ''}")
+            included.append(f"{count:,} {noun}{'s' if count != 1 else ''}")
     transport_text = (
-        f"Mapped transport includes {' and '.join(included)}. "
+        f"Transport includes {' and '.join(included)}. "
         f"Transport contributes {_score_label(domains['transport']['score'])}/100."
         if included
-        else "No bus stops or airports are mapped for this island."
+        else "No bus stops or airports are listed for this island."
     )
     marine_count = transport_counts["marine_terminal_count"]
     if marine_count:
         transport_text += (
-            f" {marine_count:,} mapped marine access point{'s' if marine_count != 1 else ''} "
+            f" {marine_count:,} marine access point{'s' if marine_count != 1 else ''} "
             f"{'are' if marine_count != 1 else 'is'} "
             + (
-                "included as an assumption; ferry services are unverified."
+                "included as an assumption about boarding-point access. This land access "
+                "index does not measure scheduled island-to-island journeys."
                 if policy.include_unverified_marine
-                else "excluded because ferry services are unverified."
+                else "excluded from this land access index. Scheduled island-to-island "
+                "journeys are assessed separately in Sea connections."
             )
         )
     else:
         transport_text += (
-            " No marine access points are mapped; this does not prove no ferry service."
+            " No ferry ports are listed. Check Sea connections for ferry services."
         )
     reasons.append(
         {"domain": "transport", "score": domains["transport"]["score"], "text": transport_text}
@@ -130,8 +132,7 @@ def island_assessment(
         )
     if transport_counts["bus_stop_count"] or transport_counts["airport_count"] or marine_count:
         limitations.append(
-            "Mapped stops, airports and marine access points do not confirm "
-            "operating services or timetables."
+            "Stop, airport and port locations are separate from operating timetables."
         )
     score = result["score"]
     if scored_domains == 0:
@@ -154,9 +155,9 @@ def island_assessment(
     coverage_label = {
         "limited": "Limited evidence",
         "partial": "Partial evidence",
-        "mapped": "Mapped evidence",
+        "mapped": "Service data available",
     }[coverage_status]
-    coverage_note = f"{scored_domains} of 3 areas have mapped evidence. " + (
+    coverage_note = f"{scored_domains} of 3 service areas have data. " + (
         "Resident counts are available." if population_available else "Resident counts are missing."
     )
     return {
