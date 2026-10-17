@@ -1860,7 +1860,7 @@
 							<IslandMapScore
 								islandName={selected?.properties.name ?? 'Selected island'}
 								accessibility={selectedAccessibility}
-								loading={profileLoading}
+								loading={profileLoading || loading}
 								error={profileError}
 								onRetry={() => selectedId && loadProfile(selectedId)}
 							/>
