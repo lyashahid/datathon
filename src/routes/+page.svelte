@@ -48,6 +48,7 @@
 	} from '@lucide/svelte';
 	import { CloudSun } from '@lucide/svelte';
 	import CountryAccessibilityExplorer from '#lib/components/CountryAccessibilityExplorer.svelte';
+	import IslandMapScore from '#lib/components/IslandMapScore.svelte';
 	import type { NationalAccessibility } from '#lib/analytics.js';
 	import { emptyFeatures, type MapPolicyState, type PlacementKind } from '#lib/map-policy.js';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
@@ -323,6 +324,7 @@
 	let focusVersion = $state(0);
 	let loading = $state(true);
 	let profileLoading = $state(false);
+	let profileError = $state('');
 	let connection = $state('Connecting');
 	let fatalError = $state('');
 	let error = $state('');
@@ -419,6 +421,18 @@
 	);
 	const preparingIsland = $derived(
 		loading && ['policy', 'places', 'conditions'].includes(activeWorkspace)
+	);
+	const showIslandScore = $derived(
+		isMapWorkspace &&
+			!!selectedId &&
+			tab === 'explore' &&
+			exploreView === 'map' &&
+			!panelOpen &&
+			!pickMode &&
+			!islandPick &&
+			!policyState.panelOpen &&
+			!policyState.serviceEditor &&
+			!policyState.pending
 	);
 	async function loadWorkspace(key: WorkspaceKey) {
 		if (workspaces[key] || workspaceBusy[key]) return;
@@ -617,6 +631,11 @@
 			? accessScores.scores.map((score) => (score.island_id === selectedId ? fullScore : score))
 			: (accessScores?.scores ?? null);
 	});
+	const selectedAccessibility = $derived(
+		(profile?.island.id === selectedId ? profile.accessibility : null) ??
+			accessScores?.scores.find((score) => score.island_id === selectedId) ??
+			null
+	);
 	const displayedLiveStatus = $derived({
 		loading: liveBusy,
 		retrieved_at: liveSnapshot?.retrieved_at,
@@ -766,6 +785,7 @@
 		profileController?.abort();
 		profile = null;
 		profileLoading = false;
+		profileError = '';
 		profileView = 'baseline';
 		focusPoint = null;
 		selectedId = null;
@@ -847,6 +867,7 @@
 		profileController = active;
 		profile = null;
 		profileLoading = true;
+		profileError = '';
 		try {
 			const next = await api<IslandProfile>(
 				`islands/${encodeURIComponent(id)}/profile`,
@@ -855,7 +876,10 @@
 			);
 			if (!active.signal.aborted) profile = next;
 		} catch (cause) {
-			if (!active.signal.aborted) error = message(cause);
+			if (!active.signal.aborted) {
+				profileError = message(cause);
+				error = profileError;
+			}
 		} finally {
 			if (!active.signal.aborted) profileLoading = false;
 		}
@@ -1595,6 +1619,7 @@
 			class:conditions-panel-open={tab === 'explore' && exploreView === 'conditions'}
 			class:access-exploring={showAccessExplorer}
 			class:country-overview={!selectedId}
+			class:showing-island-score={showIslandScore}
 			hidden={!isMapWorkspace || activeWorkspace === 'policy'}
 		>
 			<div class="map-region" aria-label="National planning map">
@@ -1830,6 +1855,17 @@
 							>
 						</div>
 					</details>
+					{#if showIslandScore}
+						{#key selectedId}
+							<IslandMapScore
+								islandName={selected?.properties.name ?? 'Selected island'}
+								accessibility={selectedAccessibility}
+								loading={profileLoading}
+								error={profileError}
+								onRetry={() => selectedId && loadProfile(selectedId)}
+							/>
+						{/key}
+					{/if}
 				</div>{/if}
 			{#if islandPick}<div class="pick-banner" role="status">
 					<MapPin size={18} /><span

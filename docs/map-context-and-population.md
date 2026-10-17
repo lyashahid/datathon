@@ -57,6 +57,17 @@ The repository generates the artifact automatically if the source PBF exists
 and the derived file is missing. If neither source nor derived data exists,
 the API reports `unavailable`; it does not substitute invented streets.
 
+## Selected-island access score
+
+The map shows the selected island's baseline access index and the API explanation
+for its lowest-scoring component. “Why this score” expands the healthcare,
+education and transport reasons, component scores and evidence limitations.
+The existing island profile request supplies these details; the compact national
+summary supplies a matching score while the profile loads. Selection changes
+cancel obsolete profile requests and reset the expanded explanation. Zero remains
+a valid score, and unavailable evidence is explicitly identified. This planning
+index is separate from the hexagon journey estimates and proposal results.
+
 ## Population reconciliation
 
 `backend/app/data/population.py` reconciles a copy of the captured records at
