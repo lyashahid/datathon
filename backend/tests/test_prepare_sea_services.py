@@ -19,6 +19,13 @@ prepare = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(prepare)
 
 
+@pytest.fixture
+def capital_vessel_source(monkeypatch):
+    """Use the pinned official response without a local acquisition archive."""
+    fixture = ROOT / "backend/tests/fixtures/rtl-vessels.json"
+    monkeypatch.setattr(prepare, "CAPITAL_VESSELS", fixture)
+
+
 def test_explicit_paired_rows_preserve_layover_and_calendar_across_pages():
     pages = [
         """( Route Z6R2 )
@@ -173,7 +180,9 @@ def test_republished_calendars_share_physical_sailing_identity():
         assert rows[1][0]["id"] in rows[0][0]["equivalent_publications"]
 
 
-def test_capital_departures_are_directional_evidence_without_invented_arrivals():
+def test_capital_departures_are_directional_evidence_without_invented_arrivals(
+    capital_vessel_source,
+):
     routes, sources = prepare.capital_calendar_routes()
     assert len(routes) == 8 and len(sources) == 5
     by_id = {route["id"]: route for route in routes}
@@ -199,7 +208,9 @@ def test_capital_departures_are_directional_evidence_without_invented_arrivals()
     assert by_id["mtcc:sea:gulhifalhu:outward"]["published_departures"][1]["no_scheduled_service"]
 
 
-def test_capital_terminals_preserve_exact_official_route_endpoint_ids_and_coordinates():
+def test_capital_terminals_preserve_exact_official_route_endpoint_ids_and_coordinates(
+    capital_vessel_source,
+):
     terminals, source = prepare.capital_terminal_catalogue()
     by_id = {terminal["id"]: terminal for terminal in terminals}
     assert set(by_id) == {f"rtl:vessel-terminal:{number}" for number in (1, 2, 3)}
@@ -227,7 +238,9 @@ def test_capital_terminal_catalogue_requires_unchanged_source_receipt(tmp_path, 
         prepare.capital_terminal_catalogue()
 
 
-def test_frequency_and_gap_windows_are_preserved_without_generating_departures():
+def test_frequency_and_gap_windows_are_preserved_without_generating_departures(
+    capital_vessel_source,
+):
     routes, _ = prepare.capital_calendar_routes()
     route = next(row for row in routes if row["id"] == "mtcc:sea:vilimale:outward")
     assert route["published_departures"] == []

@@ -2,5 +2,10 @@
 * text=auto
 /backend/data/** -text whitespace=cr-at-eol
 /data/** -text whitespace=cr-at-eol
+# These generated models were committed with LF; keep their byte receipts portable.
+/data/public/prediction-source.json text eol=lf
+/data/public/facility-operation-review.json text eol=lf
+/data/public/transit-operation-review.json text eol=lf
+/backend/tests/fixtures/rtl-vessels.json -text
 /backend/vendor/vela_api/data/** -text whitespace=cr-at-eol,-blank-at-eol
 *.sh text eol=lf

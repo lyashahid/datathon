@@ -290,7 +290,7 @@ def decorate(canvas, doc):
     canvas.setFillColor(MUTED)
     canvas.drawString(MARGIN, PAGE_H - 30, "DATATHON / PRODUCTION PLAYBOOK")
     canvas.setFont("Guide", 8)
-    canvas.drawRightString(PAGE_W - MARGIN, PAGE_H - 30, "16 OCT 2026")
+    canvas.drawRightString(PAGE_W - MARGIN, PAGE_H - 30, "18 OCT 2026")
     canvas.setStrokeColor(LINE)
     canvas.line(MARGIN, 39, PAGE_W - MARGIN, 39)
     canvas.setFont("Guide", 7.5)
@@ -322,11 +322,11 @@ def build() -> None:
     story += [Architecture(), Spacer(1, 10)]
     story += [
         table(
-            ["You complete once", "Every push to main does"],
+            ["You complete once", "Code pushes to main do"],
             [
                 [
                     "Install app controls and separate environment files. Configure the verified server connection in GitHub. Enable deployment after setup.",
-                    "Run tests. Build two Docker images. Deploy their exact digests. Wait for health checks and verify the public app.",
+                    "Run quick checks. Build both cached images in parallel. Smoke-test and deploy their exact digests. Verify container health and the public app.",
                 ],
             ],
             [BODY_W * 0.5, BODY_W * 0.5],
@@ -334,7 +334,7 @@ def build() -> None:
     ]
     story += [
         p(
-            "Confirmed target: yoosuf@169.58.6.224, SSH port 22. App folder: /srv/apps/datathon. Environment files: /etc/server-apps/datathon.*.env. The dedicated Actions private-key secret is already saved in GitHub.",
+            "Confirmed target: yoosuf@169.58.6.224, SSH port 22. App folder: /srv/apps/datathon. Environment files: /etc/server-apps/datathon.*.env. The Actions key is saved in GitHub; DATATHON_DEPLOY_ENABLED was confirmed true on 17 October 2026. Verify running images separately.",
             "SmallBody",
         )
     ]
@@ -548,7 +548,7 @@ def build() -> None:
                 ],
                 [
                     mono("DATATHON_DEPLOY_ENABLED"),
-                    "Set <b>true</b> after the server installation, host verification and HTTPS route are complete. Keep <b>false</b> while setting up or intentionally pausing releases.",
+                    "Confirmed <b>true</b> on 17 October 2026. Use <b>false</b> while preparing a new installation or intentionally pausing releases.",
                 ],
             ],
             [BODY_W * 0.48, BODY_W * 0.52],
@@ -578,7 +578,7 @@ def build() -> None:
     ]
     story += [
         p(
-            "Before turning the final variable true, check that both secrets exist, all connection variables match the tested server login and the installer finished successfully. The app URL is fixed to yoosufsayyid.com/apps/datathon in this deployment configuration.",
+            "Before enabling a new installation, check both secrets, the connection variables and successful installer completion. The app URL is fixed to yoosufsayyid.com/apps/datathon. An enabled variable alone does not prove a successful release.",
             "CaptionGuide",
         )
     ]
@@ -587,32 +587,24 @@ def build() -> None:
     story += heading(
         "05",
         "Run the first deployment",
-        "After setup, each push to main performs the same test, build and deployment sequence. No SSH commands need to be typed for routine releases.",
+        "Code pushes to main run build then deploy when DATATHON_DEPLOY_ENABLED is true. Documentation-only pushes are ignored. No SSH commands are needed for routine releases.",
     )
     story += step(
         "11",
         "Start the workflow",
-        "Open the repository's <b>Actions</b> tab, choose <b>Test and deploy Datathon</b>, click <b>Run workflow</b>, select branch <b>main</b> and confirm. Future pushes to main trigger it automatically.",
+        "Open <b>Actions &gt; Test and deploy Datathon &gt; Run workflow</b>. Manual runs default to build-only on any selected branch. To release, select <b>main</b> and check <b>deploy</b>. Leave <b>full_checks</b> off for quick checks; enable it for full lint/regression and installer checks.",
     )
     story += [
         table(
             ["Stage", "What success means"],
             [
                 [
-                    "verify",
-                    "Frontend checks/lint/tests, backend tests and deployment-boundary tests pass. Production credentials are not passed to test jobs.",
-                ],
-                [
                     "build",
-                    "Linux x86-64 frontend and backend images are published to GHCR and identified by immutable sha256 digests.",
+                    "Frontend type check, 9 startup, 2 source-receipt and 18 gateway tests pass. Cached Docker Bake builds both Linux x86-64 images in parallel, publishes exact GHCR digests and smoke-tests them using production Compose. Full frontend/backend regression and installer tests are optional via full_checks (default false).",
                 ],
                 [
                     "deploy",
-                    "The restricted server gateway pulls those two images, starts only the Datathon Compose project and waits for both containers to be healthy.",
-                ],
-                [
-                    "public verification",
-                    "The public page responds successfully and /apps/datathon/api/backend/health returns a JSON status of ok.",
+                    "The restricted server gateway pulls those images, starts only Datathon and waits for healthy containers. The public page must respond and /apps/datathon/api/backend/health must return status ok. Manual runs require deploy checked, main selected and the repository deployment variable true.",
                 ],
             ],
             [BODY_W * 0.22, BODY_W * 0.78],
@@ -689,7 +681,7 @@ def build() -> None:
     story += [
         note(
             "Keep controls protected",
-            "Code pushes cannot change the fixed gateway, Compose file or environment files. Keep private backups of /srv/apps/datathon/control, state/ and the two /etc/server-apps/datathon.*.env files. Preserve their ownership and exact symlinks on restore. Never print environment contents in logs.",
+            "Code pushes cannot change the fixed gateway, Compose file or environment files. Back up control/, state/ and the two /etc/server-apps/datathon.*.env files privately. Manual fallback uses manual-release.env; Actions uses release.env. Match the manifest to running image IDs before recovery. Preserve ownership and symlinks; never log environment contents.",
         )
     ]
     story += [PageBreak()]
@@ -705,7 +697,7 @@ def build() -> None:
             [
                 [
                     "Deploy is skipped",
-                    "DATATHON_DEPLOY_ENABLED must be true; the run must be on main. Complete the one-time server setup before enabling it.",
+                    "DATATHON_DEPLOY_ENABLED must be true and the run on main. Manual runs also require deploy checked; its default false intentionally permits build-only branch tests.",
                 ],
                 [
                     "Permission denied (publickey)",
@@ -765,7 +757,7 @@ def build() -> None:
     ]
     story += [
         p(
-            "Reference screenshots: GitHub Docs, Figures 1-2 on page 4. Screens may change over time. Implementation sources: .github/workflows/deploy.yml; Dockerfile; deploy/install-server.sh; deploy/server/deploy.py; deploy/server/compose.yaml; deploy/nginx-location.conf; docs/deployment.md. Generated 16 October 2026.",
+            "Reference screenshots: GitHub Docs, Figures 1-2 on page 4. Screens may change over time. Implementation sources: .github/workflows/deploy.yml; Dockerfile; deploy/docker-bake.hcl; deploy/install-server.sh; deploy/server/deploy.py; deploy/server/compose.yaml; deploy/nginx-location.conf; docs/deployment.md. Guide source updated 18 October 2026.",
             "CaptionGuide",
         )
     ]

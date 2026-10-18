@@ -3,7 +3,19 @@ name: Test and deploy Datathon
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
   workflow_dispatch:
+    inputs:
+      full_checks:
+        description: Run the full regression suite and server installer checks
+        type: boolean
+        default: false
+      deploy:
+        description: Deploy to production after the build passes (main only)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -13,9 +25,15 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  verify:
+  build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      frontend_digest: ${{ fromJSON(steps.images.outputs.metadata).frontend['containerimage.digest'] }}
+      backend_digest: ${{ fromJSON(steps.images.outputs.metadata).backend['containerimage.digest'] }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -24,86 +42,62 @@ jobs:
         with:
           node-version: '24'
           cache: npm
+      - name: Quick application and deployment checks
+        run: |
+          npm ci --no-audit --no-fund
+          npm run check
+          npm run test:startup
+          python3 -I -m unittest discover -s backend/tests -p test_source_use.py -v
+          python3 -I -m unittest discover -s deploy/server -p test_deploy.py -v
       - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        if: inputs.full_checks
         with:
           version: '0.12.19'
           enable-cache: true
           cache-dependency-glob: backend/uv.lock
-      - name: Check frontend
-        run: |
-          npm ci
-          npm run check
-          npm run lint
-          npm test
-          npm run test:startup
-      - name: Check backend and deployment boundary
+      - name: Full regression checks (optional)
+        if: inputs.full_checks
         env:
           MOBILITY_ENVIRONMENT: test
           MOBILITY_COMPUTED_CACHE_POSTGRES_ENABLED: 'false'
         run: |
+          npm run lint
+          npm test
           uv sync --directory backend --frozen --python 3.14
           uv run --directory backend --no-sync ruff check app tests
           uv run --directory backend --no-sync pytest -m 'not browser'
-          python3 -I -m unittest discover -s deploy/server -p test_deploy.py -v
-
-  build:
-    if: github.ref == 'refs/heads/main'
-    needs: verify
-    runs-on: ubuntu-24.04
-    timeout-minutes: 35
-    permissions:
-      contents: read
-      packages: write
-    outputs:
-      frontend_digest: ${{ steps.frontend.outputs.digest }}
-      backend_digest: ${{ steps.backend.outputs.digest }}
-    steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          persist-credentials: false
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
       - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build frontend image
-        id: frontend
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+      - name: Build both cached images in parallel
+        id: images
+        uses: docker/bake-action@5be5f02ff8819ecd3092ea6b2e6261c31774f2b4 # v6
         with:
-          context: .
-          target: frontend
-          platforms: linux/amd64
+          source: .
+          files: deploy/docker-bake.hcl
           push: true
-          tags: ghcr.io/lyashahid/datathon-frontend:${{ github.sha }}
-          build-args: PUBLIC_BASE_PATH=/apps/datathon
-          labels: org.opencontainers.image.source=https://github.com/lyashahid/datathon
-          cache-from: type=gha,scope=frontend
-          cache-to: type=gha,scope=frontend,mode=max
-      - name: Build backend image
-        id: backend
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
-        with:
-          context: .
-          target: backend
-          platforms: linux/amd64
-          push: true
-          tags: ghcr.io/lyashahid/datathon-backend:${{ github.sha }}
-          labels: org.opencontainers.image.source=https://github.com/lyashahid/datathon
-          cache-from: type=gha,scope=backend
-          cache-to: type=gha,scope=backend,mode=max
-      - name: Verify built production containers and installer
+          set: |
+            frontend.tags=ghcr.io/lyashahid/datathon-frontend:${{ github.sha }}
+            backend.tags=ghcr.io/lyashahid/datathon-backend:${{ github.sha }}
+            *.labels.org.opencontainers.image.revision=${{ github.sha }}
+      - name: Smoke-test the production images
         env:
-          DATATHON_FRONTEND_IMAGE: ghcr.io/lyashahid/datathon-frontend@${{ steps.frontend.outputs.digest }}
-          DATATHON_BACKEND_IMAGE: ghcr.io/lyashahid/datathon-backend@${{ steps.backend.outputs.digest }}
+          DATATHON_FRONTEND_IMAGE: ghcr.io/lyashahid/datathon-frontend@${{ fromJSON(steps.images.outputs.metadata).frontend['containerimage.digest'] }}
+          DATATHON_BACKEND_IMAGE: ghcr.io/lyashahid/datathon-backend@${{ fromJSON(steps.images.outputs.metadata).backend['containerimage.digest'] }}
+          FULL_CHECKS: ${{ inputs.full_checks }}
         run: |
           docker pull "$DATATHON_FRONTEND_IMAGE"
           docker pull "$DATATHON_BACKEND_IMAGE"
-          docker run --rm --network none --user 0 --mount "type=bind,src=$GITHUB_WORKSPACE/deploy,dst=/source,readonly" --entrypoint /bin/bash "$DATATHON_BACKEND_IMAGE" /source/test-install-server.sh
+          if [[ "$FULL_CHECKS" == 'true' ]]; then
+            docker run --rm --network none --user 0 --mount "type=bind,src=$GITHUB_WORKSPACE/deploy,dst=/source,readonly" --entrypoint /bin/bash "$DATATHON_BACKEND_IMAGE" /source/test-install-server.sh
+          fi
           bash deploy/test-containers.sh
 
   deploy:
-    if: github.ref == 'refs/heads/main' && vars.DATATHON_DEPLOY_ENABLED == 'true'
+    if: github.ref == 'refs/heads/main' && vars.DATATHON_DEPLOY_ENABLED == 'true' && (github.event_name == 'push' || inputs.deploy)
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 35

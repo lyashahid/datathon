@@ -12784,7 +12784,7 @@
     },
     {
       "path": "data/public/prediction-source.json",
-      "sha256": "b472467e54fabfc5b61cbf3c8d0e46279609f7accf5fe609e8a88add4d0d3742",
+      "sha256": "e27ab4c1d4d780ae69003e7cf612fd4d44a51c8dcb7e13cee3c039ee61c69ff7",
       "purpose": "Aggregate transport history and cross-publication forecast audit",
       "version": 1,
       "coverage": null,
@@ -12808,7 +12808,7 @@
     },
     {
       "path": "data/public/facility-operation-review.json",
-      "sha256": "7072ab5f402817f6a1bd645887b7a8beea800cab0b822adcafbf510fee420e10",
+      "sha256": "959680d7ff5553e445d282acf8d04d0d54102c5fb6864db9da61d0a00c55acb9",
       "purpose": "Mapped education institution operation desk review",
       "version": "facility-operation-review-b5830075bb4e",
       "coverage": null,
@@ -12845,7 +12845,7 @@
     },
     {
       "path": "data/public/transit-operation-review.json",
-      "sha256": "3cbbad25d628dfb60fd7b0ec6605274d0bc398d4350bae16269b532d0a2f3ce8",
+      "sha256": "efaa5f84196098e396223a64062a8f5f75927b03f8a723697bde5d1842f39e12",
       "purpose": "Captured operator catalogue and unresolved diversion review",
       "version": "rtl-transit-operation-review-e2455376a7f9",
       "coverage": null,
@@ -13481,8 +13481,8 @@
     },
     {
       "path": "data/public/prediction-source.json",
-      "sha256": "b472467e54fabfc5b61cbf3c8d0e46279609f7accf5fe609e8a88add4d0d3742",
-      "bytes": 21959,
+      "sha256": "e27ab4c1d4d780ae69003e7cf612fd4d44a51c8dcb7e13cee3c039ee61c69ff7",
+      "bytes": 21092,
       "modelConsumers": [
         "data/public/transport-context.json"
       ]
@@ -14304,5 +14304,5 @@
     "Source IDs can have multiple dated captures. Paths and checksums preserve those distinctions.",
     "Island resident allocations do not imply complete walking, facility or scheduled public-transport coverage."
   ],
-  "version": "source-use-inventory-v1:fc96a0b87fb0db18"
+  "version": "source-use-inventory-v1:39b8e75b9a657c52"
 }

@@ -15,17 +15,21 @@ The confirmed SSH target is `yoosuf@169.58.6.224` on port `22`. Datathon has its
 | Backend environment | `/etc/server-apps/datathon.backend.env` |
 | Datathon Nginx locations | `/etc/nginx/snippets/datathon.conf` |
 
-The dedicated Actions private key is already stored as repository secret `DATATHON_SSH_PRIVATE_KEY`. The steps below document installation and recovery; do not treat a successful image build as proof of a live release. The final Actions job checks both the public page and its real backend health endpoint. Keep `DATATHON_DEPLOY_ENABLED=false` until the one-time installation, verified SSH host key and HTTPS route are ready.
+The dedicated Actions private key is already stored as repository secret `DATATHON_SSH_PRIVATE_KEY`. The steps below document installation and recovery; do not treat a successful image build as proof of a live release. The final Actions job checks both the public page and its real backend health endpoint.
 
-## Current manual deployment mode · 17 October 2026
+## Actions deployment configuration · 17 October 2026
 
-Deployment is currently manual at the owner's request. `DATATHON_DEPLOY_ENABLED` is `false`; the run triggered by the national-data commit was cancelled before deployment. The Actions instructions below describe the optional automated path, rather than the current release process.
+The repository variable `DATATHON_DEPLOY_ENABLED` was confirmed as `true` on 17 October 2026. Code pushes to `main` therefore request an automated deployment after checks and image smoke tests pass; documentation-only pushes are ignored. The workflow has two jobs, **build** and **deploy**. This configuration does not establish which release is currently running; confirm that from the deployment result and actual container images.
+
+Manual workflow runs default to building and testing only. Leave the `deploy` input unchecked when validating a branch. To deploy a manual run, select `main` and check `deploy`; the repository deployment variable must also remain `true`.
+
+## Manual deployment fallback
 
 The administrator-owned checkout is `/srv/apps/datathon/source`. Use the existing trusted administrator SSH connection, run `git pull --ff-only` there, verify a clean checkout and its commit, then build the Dockerfile's `frontend` and `backend` targets on the server. The frontend requires `--build-arg PUBLIC_BASE_PATH=/apps/datathon`. Label both images with `org.opencontainers.image.revision` and the verified commit. No registry credentials or database connection string are needed for these builds.
 
 Before replacing the public containers, test the backend candidate in an isolated temporary container with no published ports, no network and no production state mounts. Keep the production memory/CPU limits and use temporary writable runtime storage. Check health, national datasets, capital and Hithadhoo baselines, heatmap geometry and a computation-only evaluation. Remove only that temporary container after recording its result.
 
-Manual releases use the protected `/srv/apps/datathon/control/manual-release.env`, containing the two immutable local image IDs and `DATATHON_REVISION`. Preserve the previous manifest as `manual-rollback-<UTC timestamp>.env` and serialize releases with `control/deploy.lock`. Validate Compose configuration before replacing the manual manifest, then run the existing fixed Compose file with `up -d --wait --wait-timeout 240 --no-build --pull never`. If health fails, restore the previous manifest and repeat that command. The Actions gateway's separate `release.env` remains intact; use **`manual-release.env`** when inspecting or maintaining the manual release.
+Manual releases use the protected `/srv/apps/datathon/control/manual-release.env`, containing the two immutable local image IDs and `DATATHON_REVISION`. Preserve the previous manifest as `manual-rollback-<UTC timestamp>.env` and serialize releases with `control/deploy.lock`. Validate Compose configuration before replacing the manual manifest, then run the existing fixed Compose file with `up -d --wait --wait-timeout 240 --no-build --pull never`. If health fails, restore the previous manifest and repeat that command. The Actions gateway uses the separate `release.env`; use **`manual-release.env`** when inspecting or maintaining a manual release. Confirm the running containers' image IDs before choosing a manifest for recovery.
 
 After switching, check the public HTTPS health endpoint, application correctness and bounded request timings. A successful image build alone does not complete deployment. This process changes only Datathon's two containers and preserves its persistent runtime volume, other state, reverse proxy and unrelated applications.
 
@@ -84,7 +88,7 @@ No manual environment-creation step is required. The workflow itself limits depl
 | Variable | `DATATHON_SSH_HOST` | `169.58.6.224` |
 | Variable | `DATATHON_SSH_USER` | `yoosuf` - the existing account; no new server user is needed. |
 | Variable | `DATATHON_SSH_PORT` | `22` |
-| Variable | `DATATHON_DEPLOY_ENABLED` | Keep `false` until server installation and the HTTPS route are ready; then set `true`. |
+| Variable | `DATATHON_DEPLOY_ENABLED` | Confirmed `true` on 17 October 2026. Set `false` to pause automated deployments or while preparing a new installation. |
 
 To obtain a candidate known-hosts line locally:
 
@@ -100,24 +104,26 @@ The workflow uses GitHub's automatic, job-scoped `GITHUB_TOKEN` to publish and p
 ## First deployment and subsequent pushes
 
 1. Finish the server installation and HTTPS route.
-2. Set the remaining SSH secret/variables, then set `DATATHON_DEPLOY_ENABLED=true`.
-3. Open **Actions → Test and deploy Datathon → Run workflow**, choose `main`, and run it. A new push to `main` also triggers it.
-4. Check **verify**, **build** and **deploy**. Tests must pass before images are published. Deploy pulls immutable SHA-256 image digests and waits for container health. It does not upload a checkout or execute repository scripts on the server.
+2. Verify the SSH secrets/variables and `DATATHON_DEPLOY_ENABLED=true`.
+3. Open **Actions → Test and deploy Datathon → Run workflow**, choose `main`, check `deploy`, and run it. Leave `full_checks` unchecked for the normal fast path. A code push to `main` triggers the normal path automatically.
+4. Check **build** and **deploy**. Build runs the frontend type check, 9 startup tests, 2 source-receipt tests and 18 deployment-gateway tests. Docker Bake builds the frontend and backend in parallel using separate GitHub Actions caches, publishes immutable SHA-256 image digests, then smoke-tests those exact images through the production Compose configuration. Deploy pulls the verified digests and waits for container health. It does not upload a checkout or execute repository scripts on the server.
 5. Open https://yoosufsayyid.com/apps/datathon. Check Analytics, Map & planning, proposal preview, impact review and PDF export. Live feeds require outbound network access and their providers' coverage.
 
-After setup, every push to `main` follows the same sequence automatically. Deployments are serialized. The restricted helper pulls both images before changing the active release and rolls back to the previous image pair if container health fails. A failure in the later public HTTPS check is reported in Actions and requires inspecting the route; that check does not silently change proxy configuration.
+The optional `full_checks` input adds frontend lint and regression tests, backend lint and non-browser regression tests, and the server installer test. It defaults to `false` and can be enabled on a manual build without enabling deployment. The normal path avoids installing the backend development test environment on the runner; the backend image still installs its locked runtime dependencies.
+
+After setup, code pushes to `main` follow the same sequence automatically; documentation-only pushes do not run it. Deployments are serialized. The restricted helper pulls both images before changing the active release and rolls back to the previous image pair if container health fails. A failure in the later public HTTPS check is reported in Actions and requires inspecting the route; that check does not silently change proxy configuration.
 
 ## Inspection, rollback and maintenance
 
-Use your normal administrator login, not the Actions key, to inspect the current manual release:
+Use your normal administrator login, not the Actions key, to inspect an Actions release:
 
 ```sh
-sudo docker compose --project-name datathon --project-directory /srv/apps/datathon/control --env-file /srv/apps/datathon/control/manual-release.env -f /srv/apps/datathon/control/compose.yaml ps
-sudo docker compose --project-name datathon --project-directory /srv/apps/datathon/control --env-file /srv/apps/datathon/control/manual-release.env -f /srv/apps/datathon/control/compose.yaml logs --tail 100
+sudo docker compose --project-name datathon --project-directory /srv/apps/datathon/control --env-file /srv/apps/datathon/control/release.env -f /srv/apps/datathon/control/compose.yaml ps
+sudo docker compose --project-name datathon --project-directory /srv/apps/datathon/control --env-file /srv/apps/datathon/control/release.env -f /srv/apps/datathon/control/compose.yaml logs --tail 100
 curl --fail http://127.0.0.1:18730/apps/datathon/api/backend/health
 ```
 
-Logs may contain upstream data, so inspect them privately before sharing. Securely back up `/srv/apps/datathon/state`, the protected control files and only the two `/etc/server-apps/datathon.*.env` files. Preserve symlinks and ownership when restoring. Never run a global `docker system prune` as part of this deployment. To reverse a manual release, restore its timestamped rollback manifest to `manual-release.env`, run the same scoped Compose health-wait command and verify both actual image IDs and health. The Actions `release.env` still identifies the older Actions-managed image pair; using it with `compose up` can switch back to that pair. While deployment is manual, pushing a revert alone does not change the server. If Actions is deliberately enabled later, a reviewed revert or an available older workflow release can use that separate automated process.
+For a manual fallback release, substitute `manual-release.env` in these commands and verify the running image IDs against that manifest. Logs may contain upstream data, so inspect them privately before sharing. Securely back up `/srv/apps/datathon/state`, the protected control files and only the two `/etc/server-apps/datathon.*.env` files. Preserve symlinks and ownership when restoring. Never run a global `docker system prune` as part of this deployment. To reverse a manual release, restore its timestamped rollback manifest to `manual-release.env`, run the same scoped Compose health-wait command and verify both actual image IDs and health. An Actions release can be reverted through a reviewed source revert pushed to `main` while automated deployments are enabled. The two manifests may describe different image pairs; do not interchange them during recovery.
 
 Changes to the protected Compose file, resource limits, app folder or helper require a deliberate administrator installation; a push cannot alter these protections. Read/review installer changes before rerunning it. This is intentional: repository automation can update app images, not server administration policy.
 
@@ -130,6 +136,7 @@ npm run check
 npm run lint
 npm test
 npm run test:startup
+python -I -m unittest discover -s backend/tests -p test_source_use.py -v
 uv run --directory backend pytest -m 'not browser'
 python -I -m unittest discover -s deploy/server -p test_deploy.py -v
 docker build --target frontend -t datathon/frontend:local .
