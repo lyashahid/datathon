@@ -55,6 +55,7 @@
 	import { api, subscribeApiInvalidation } from '#lib/api.js';
 	import { downloadJson } from '#lib/download.js';
 	import { MovementSession, movementScope } from '#lib/movement.js';
+	import { deduplicateJourneyPlaces, type JourneyPlace } from '#lib/explore-journey.js';
 	import {
 		operationLabels,
 		needsCoordinates,
@@ -362,10 +363,10 @@
 	});
 	const journeyPlaces = $derived.by(() => {
 		const seen = new SvelteSet<string>();
-		const places: { id: string; name: string; coordinates: Coordinates; category?: string }[] = [];
+		const places: JourneyPlace[] = [];
 		for (const feature of features?.features ?? []) {
 			const properties = feature.properties;
-			if (!properties?.name || !feature.geometry || !properties.island_id) continue;
+			if (!properties?.name || !feature.geometry || properties.island_id !== selectedId) continue;
 			const coordinates =
 				feature.geometry.type === 'Point' ? feature.geometry.coordinates : properties.centroid;
 			if (
@@ -383,13 +384,30 @@
 				id,
 				name: properties.name,
 				coordinates: coordinates as Coordinates,
-				category: properties.category
+				category: properties.category,
+				stopRole:
+					properties.category === 'bus_stop'
+						? 'platform'
+						: properties.tags?.bus === 'yes' &&
+							  ['platform', 'stop_position'].includes(properties.tags?.public_transport)
+							? properties.tags.public_transport
+							: undefined,
+				stopCode: properties.tags?.ref ?? properties.tags?.local_ref,
+				direction: properties.tags?.direction
 			});
 		}
 		for (const stop of transitStops) {
-			if (!seen.has(stop.id)) places.push({ ...stop, category: 'Bus stop' });
+			if ((stop.national_island_id ?? stop.island_id) !== selectedId) continue;
+			if (!seen.has(stop.id))
+				places.push({
+					...stop,
+					category: stop.mode === 'ferry' ? 'Ferry terminal' : 'Bus stop',
+					stopRole: stop.mode === 'ferry' ? undefined : 'platform',
+					stopCode: stop.operator_code,
+					operatorStop: true
+				});
 		}
-		return places.sort((a, b) => a.name.localeCompare(b.name));
+		return deduplicateJourneyPlaces(places).sort((a, b) => a.name.localeCompare(b.name));
 	});
 	let summary = $state.raw<NationalSummary | null>(null);
 	let profile = $state.raw<IslandProfile | null>(null);
@@ -464,7 +482,17 @@
 	let journeyFocusVersion = $state(0);
 	let routeDate = $state('2026-10-10');
 	let routeTime = $state('15:20');
-	let transitStops = $state.raw<{ id: string; name: string; coordinates: Coordinates }[]>([]);
+	let transitStops = $state.raw<
+		{
+			id: string;
+			name: string;
+			coordinates: Coordinates;
+			island_id?: string;
+			national_island_id?: string;
+			operator_code?: string | null;
+			mode?: string;
+		}[]
+	>([]);
 	let transitStopController: AbortController | undefined;
 	let route = $state.raw<LandRoute | null>(null);
 	let recommendationType = $state('bus_stop');
@@ -1101,6 +1129,15 @@
 		panelOpen = false;
 		profileView = 'baseline';
 		writeLocation(true);
+	}
+	function changeJourneyKind() {
+		cancelPick();
+		cancelAction();
+		route = null;
+		conditionRoute = [];
+		connectionFeatures = emptyFeatures();
+		focusBounds = null;
+		journeyFocusVersion += 1;
 	}
 	function returnToExplore() {
 		exploreView = 'map';
@@ -2049,6 +2086,7 @@
 											onNotices={() => setExploreView('notices')}
 											islands={overviewFeatures}
 											bind:journeyKind
+											onKindChange={changeJourneyKind}
 											bind:originIslandId={connectionOriginId}
 											bind:destinationIslandId={connectionDestinationId}
 											onPickIsland={chooseConnectionIsland}

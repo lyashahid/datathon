@@ -41,6 +41,7 @@
 		onFind,
 		onChange,
 		journeyKind = $bindable('local'),
+		onKindChange,
 		islands = null,
 		originIslandId = $bindable(''),
 		destinationIslandId = $bindable(''),
@@ -72,6 +73,7 @@
 		onFind: () => void;
 		onChange: () => void;
 		journeyKind?: 'local' | 'islands';
+		onKindChange?: () => void;
 		islands?: MapFeatures | null;
 		originIslandId?: string;
 		destinationIslandId?: string;
@@ -121,6 +123,12 @@
 		activeSearch = null;
 		onPick(endpoint);
 	}
+	function changeJourneyKind(kind: 'local' | 'islands') {
+		if (journeyKind === kind) return;
+		journeyKind = kind;
+		activeSearch = null;
+		onKindChange?.();
+	}
 	const journey = $derived(result?.journey);
 	const unavailable = $derived(journey?.reason ?? result?.reason);
 	const reasons: Record<string, string> = {
@@ -139,12 +147,12 @@
 			variant={journeyKind === 'local' ? 'secondary' : 'ghost'}
 			size="sm"
 			aria-pressed={journeyKind === 'local'}
-			onclick={() => (journeyKind = 'local')}>Local directions</Button
+			onclick={() => changeJourneyKind('local')}>Local directions</Button
 		><Button
 			variant={journeyKind === 'islands' ? 'secondary' : 'ghost'}
 			size="sm"
 			aria-pressed={journeyKind === 'islands'}
-			onclick={() => (journeyKind = 'islands')}><Ship size={14} />Island connections</Button
+			onclick={() => changeJourneyKind('islands')}><Ship size={14} />Island connections</Button
 		>
 	</div>
 	{#if journeyKind === 'islands'}
@@ -209,6 +217,7 @@
 										event.currentTarget.select();
 									}}
 									oninput={(event) => {
+										if (chosen) onClear(point);
 										queries[point] = event.currentTarget.value;
 										activeSearch = point;
 									}}

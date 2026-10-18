@@ -1,6 +1,63 @@
 import type { FeatureCollection } from 'geojson';
 import type { Coordinates } from './types.js';
 
+export type JourneyPlace = {
+	id: string;
+	name: string;
+	coordinates: Coordinates;
+	category?: string;
+	stopRole?: 'platform' | 'stop_position';
+	stopCode?: string | null;
+	direction?: string | null;
+	operatorStop?: boolean;
+};
+
+/** One suggestion per place, while retaining distinct boarding sides and operator stops. */
+export function deduplicateJourneyPlaces(places: JourneyPlace[]): JourneyPlace[] {
+	const normalize = (value: string | null | undefined) =>
+		(value ?? '').trim().toLocaleLowerCase().replaceAll(/\s+/g, ' ');
+	const family = (place: JourneyPlace) =>
+		place.stopRole ? 'bus_stop' : normalize(place.category).replaceAll(' ', '_');
+	const retained: JourneyPlace[] = [];
+	for (const place of [...places].sort(
+		(a, b) => Number(!!b.operatorStop) - Number(!!a.operatorStop)
+	)) {
+		const duplicate = retained.some((other) => {
+			if (other.id === place.id) return true;
+			if (normalize(other.name) !== normalize(place.name) || family(other) !== family(place))
+				return false;
+			if (other.operatorStop && place.operatorStop) return false;
+			if (
+				other.stopCode &&
+				place.stopCode &&
+				normalize(other.stopCode) !== normalize(place.stopCode)
+			)
+				return false;
+			if (
+				other.direction &&
+				place.direction &&
+				normalize(other.direction) !== normalize(place.direction)
+			)
+				return false;
+			const latitude = ((other.coordinates[1] + place.coordinates[1]) * Math.PI) / 360;
+			const distance = Math.hypot(
+				(other.coordinates[0] - place.coordinates[0]) * 111320 * Math.cos(latitude),
+				(other.coordinates[1] - place.coordinates[1]) * 111320
+			);
+			// Coordinate rounding can duplicate a platform; its roadway stop position is a nearby alias.
+			return (
+				distance <= 2 ||
+				(distance <= 18 &&
+					!!other.stopRole &&
+					!!place.stopRole &&
+					other.stopRole !== place.stopRole)
+			);
+		});
+		if (!duplicate) retained.push(place);
+	}
+	return retained;
+}
+
 export interface JourneyPoint {
 	id: string;
 	name: string;
