@@ -59,6 +59,41 @@ def test_real_bus_journey_includes_boarding_alighting_and_transfers(repository):
     assert all(stop["roles"] for stop in journey["stops"])
 
 
+def test_route_selection_reuses_dated_services_without_mutating_prepared_router(repository):
+    start, end = [73.5404157, 4.2370837], [73.527056, 4.190044]
+    unrestricted_before = route_journey(repository, start, end)
+    selected = route_journey(repository, start, end, route_ids=["rtl:route:129"])
+    assert selected["status"] == "ok"
+    journey = selected["journey"]
+    buses = [leg for leg in journey["legs"] if leg["mode"] == "bus"]
+    assert buses and {leg["route_id"] for leg in buses} == {"rtl:route:129"}
+    assert all(stop["island_id"] != "male" for leg in buses for stop in leg["stops"])
+    assert journey["walk_minutes"] > 0 and journey["wait_minutes"] > 0
+    assert abs(sum(leg["minutes"] for leg in journey["legs"]) - journey["minutes"]) < 0.01
+    assert journey["active_service_count"] == 1
+    assert route_journey(repository, start, end) == unrestricted_before
+
+
+def test_pattern_catalogue_exposes_retained_source_without_mutating_it(repository, tmp_path):
+    app = FastAPI()
+    app.state.planning = PlanningService(repository)
+    app.state.routing = RoutingRepository(tmp_path)
+    app.include_router(router)
+    client = TestClient(app)
+    source = next(
+        p for p in repository.baseline["transit"]["patterns"] if p["routeId"] == "rtl:route:129"
+    )
+    before = copy.deepcopy(source)
+    response = client.get("/api/v1/routing/patterns?route_id=rtl:route:129")
+    assert response.status_code == 200
+    catalogue = response.json()
+    assert len(catalogue["patterns"]) == 1
+    assert catalogue["patterns"][0]["segment_geometry"] == source["segmentGeometry"]
+    assert catalogue["patterns"][0]["stop_ids"] == source["stopIds"]
+    assert "not an operator-published route trace" in catalogue["qualification"]
+    assert source == before
+
+
 def test_unknown_ferry_crossing_does_not_invent_a_trip(repository):
     start = endpoints(repository)[0]
     end = next(

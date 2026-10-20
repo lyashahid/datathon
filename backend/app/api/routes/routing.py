@@ -42,6 +42,7 @@ class MapJourneyRequest(BaseModel):
     mode: TravelMode = "walk"
     service_date: date | None = None
     departure_minutes: float = Field(default=920, ge=0, lt=1440, allow_inf_nan=False)
+    route_ids: list[str] | None = Field(default=None, min_length=1, max_length=10)
 
 
 def get_routing(request: Request) -> RoutingRepository:
@@ -137,6 +138,7 @@ def map_journey(
             payload.mode,
             payload.service_date,
             payload.departure_minutes,
+            payload.route_ids,
         ),
     )
 
@@ -205,4 +207,29 @@ def transit_stops(
         "timezone": "Indian/Maldives",
         "qualification": "Operator-published stop points and a dated remaining-departure "
         "timetable. Physical stop operation and live arrivals are not independently verified.",
+    }
+
+
+@router.get("/patterns")
+def transit_patterns(
+    route_id: str,
+    planning: PlanningService = Depends(get_planning),
+) -> dict[str, Any]:
+    """Retained corridor geometry for one route, without assuming valid driving directions."""
+    patterns = planning.repository.baseline.get("transit", {}).get("patterns", [])
+    return {
+        "patterns": [
+            {
+                "id": pattern["id"],
+                "route_id": pattern["routeId"],
+                "name": pattern["name"],
+                "stop_ids": pattern["stopIds"],
+                "segment_geometry": pattern.get("segmentGeometry", []),
+                "qualification": pattern.get("qualification"),
+            }
+            for pattern in patterns
+            if pattern["routeId"] == route_id
+        ],
+        "qualification": "Road-derived corridor geometry, not an operator-published route trace. "
+        "Reversing a corridor does not establish legal driving direction or a timetable.",
     }

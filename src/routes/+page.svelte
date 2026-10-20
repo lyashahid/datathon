@@ -26,6 +26,7 @@
 		Check,
 		Activity,
 		Route,
+		Clapperboard,
 		X,
 		RefreshCw,
 		Layers
@@ -47,6 +48,10 @@
 	import CountryAccessibilityExplorer from '#lib/components/CountryAccessibilityExplorer.svelte';
 	import MapSearch from '#lib/components/MapSearch.svelte';
 	import SearchDirections from '#lib/components/SearchDirections.svelte';
+	import ScenarioPresenter from '#lib/components/ScenarioPresenter.svelte';
+	import type { PresentationView } from '#lib/presentation-state.js';
+	import type { PresentationProgress } from '#lib/presentation-map.js';
+	import { warmPresentationStory } from '#lib/presentation-story.js';
 	import {
 		searchDirectionsRequest,
 		type SearchDirectionPoint,
@@ -191,6 +196,113 @@
 	let seaNetworkLoading = $state(false);
 	let seaNetworkError = $state('');
 	let seaNetworkRetry = $state(0);
+	let presentationActive = $state(false);
+	let presentationView = $state.raw<PresentationView | null>(null);
+	let presentationProgress = $state.raw<PresentationProgress | null>(null);
+	let presentationReturn = $state.raw<ReturnType<typeof capturePresentationContext> | null>(null);
+	let presentationTrigger: HTMLElement | null = null;
+	function capturePresentationContext() {
+		return {
+			selectedId,
+			tab,
+			exploreView,
+			profileView,
+			panelOpen,
+			panelExpanded,
+			accessExplorerOpen,
+			capitalRegion,
+			countryAtoll,
+			focusBounds,
+			focusPoint,
+			searchSelection,
+			route,
+			routeStart,
+			routeEnd,
+			directions,
+			directionPoints,
+			directionPickIndex,
+			policyLens,
+			simulation,
+			comparison,
+			recommendations,
+			seaMap,
+			seaSelection,
+			pickMode,
+			islandPick,
+			longitude,
+			latitude,
+			inspectedCell,
+			policyCommand
+		};
+	}
+	function startPresentation() {
+		if (presentationActive || loading) return;
+		presentationReturn = capturePresentationContext();
+		presentationTrigger =
+			document.activeElement instanceof HTMLElement ? document.activeElement : null;
+		presentationActive = true;
+		presentationView = null;
+		presentationProgress = null;
+		go('map', false);
+		profileView = 'baseline';
+		accessExplorerOpen = false;
+		panelOpen = false;
+		islandSearchOpen = false;
+	}
+	function showPresentationView(value: PresentationView) {
+		if (!presentationActive) return;
+		presentationView = value;
+		if (selectedId !== value.islandId) selectIsland(value.islandId, false);
+	}
+	function showPresentationProgress(value: PresentationProgress) {
+		if (presentationActive) presentationProgress = value;
+	}
+	function closePresentation() {
+		const previous = presentationReturn;
+		presentationActive = false;
+		presentationView = null;
+		presentationProgress = null;
+		presentationReturn = null;
+		if (previous) {
+			if (previous.selectedId) selectIsland(previous.selectedId, false);
+			else resetIslandSelection();
+			tab = previous.tab;
+			exploreView = previous.exploreView;
+			profileView = previous.profileView;
+			panelOpen = previous.panelOpen;
+			panelExpanded = previous.panelExpanded;
+			accessExplorerOpen = previous.accessExplorerOpen;
+			capitalRegion = previous.capitalRegion;
+			countryAtoll = previous.countryAtoll;
+			focusBounds = previous.focusBounds;
+			focusPoint = previous.focusPoint;
+			searchSelection = previous.searchSelection;
+			route = previous.route;
+			routeStart = previous.routeStart;
+			routeEnd = previous.routeEnd;
+			directions = previous.directions;
+			directionPoints = previous.directionPoints;
+			directionPickIndex = previous.directionPickIndex;
+			policyLens = previous.policyLens;
+			simulation = previous.simulation;
+			comparison = previous.comparison;
+			recommendations = previous.recommendations;
+			seaMap = previous.seaMap;
+			seaSelection = previous.seaSelection;
+			pickMode = previous.pickMode;
+			islandPick = previous.islandPick;
+			longitude = previous.longitude;
+			latitude = previous.latitude;
+			inspectedCell = previous.inspectedCell;
+			policyCommand = previous.policyCommand;
+			focusVersion += 1;
+		}
+		void tick().then(() => {
+			if (presentationTrigger?.isConnected && presentationTrigger.getClientRects().length)
+				presentationTrigger.focus({ preventScroll: true });
+			presentationTrigger = null;
+		});
+	}
 	let airNetwork = $state.raw<AirNetwork | null>(null);
 	let airNetworkLoading = $state(false);
 	let airNetworkError = $state('');
@@ -533,6 +645,7 @@
 	);
 	const showAccessExplorer = $derived(
 		isMapWorkspace &&
+			!presentationActive &&
 			!selectedId &&
 			tab === 'explore' &&
 			exploreView === 'map' &&
@@ -778,7 +891,12 @@
 			}
 		}
 	}
-	const movementVisible = $derived(initialized && !loading && documentVisible && isMapWorkspace);
+	const movementVisible = $derived(
+		initialized && !loading && documentVisible && isMapWorkspace && !presentationActive
+	);
+	$effect(() => {
+		if (initialized && !loading && isMapWorkspace) void warmPresentationStory().catch(() => {});
+	});
 	const selectedMovementKey = $derived(
 		selectedId && selectedCoordinates ? `${selectedId}:${selectedCoordinates.join(':')}` : null
 	);
@@ -1655,6 +1773,24 @@
 >
 <svelte:window
 	onkeydown={(event) => {
+		if (presentationActive) return;
+		if (
+			activeWorkspace === 'atlas' &&
+			event.shiftKey &&
+			event.key.toLowerCase() === 's' &&
+			!event.altKey &&
+			!event.ctrlKey &&
+			!event.metaKey &&
+			!event.defaultPrevented &&
+			!(
+				event.target instanceof HTMLElement &&
+				event.target.closest('input, textarea, select, [contenteditable="true"]')
+			)
+		) {
+			event.preventDefault();
+			startPresentation();
+			return;
+		}
 		if (
 			activeWorkspace === 'atlas' &&
 			event.key === 'Escape' &&
@@ -1664,9 +1800,13 @@
 			cancelPick();
 	}}
 />
-<div class="app-shell" class:map-first-shell={isMapWorkspace}>
+<div
+	class="app-shell"
+	class:map-first-shell={isMapWorkspace}
+	class:scenario-stage={presentationActive}
+>
 	<a class="skip-link" href="#workspace-content">Skip to workspace</a>
-	<header class="app-header" class:floating-map-header={isMapWorkspace}>
+	<header class="app-header" class:floating-map-header={isMapWorkspace} hidden={presentationActive}>
 		{#if !isMapWorkspace}
 			<a
 				class="brand"
@@ -1693,6 +1833,7 @@
 					class={active ? 'nav-item active' : 'nav-item'}
 					aria-current={active ? 'page' : undefined}
 					onclick={() => {
+						if (presentationActive) closePresentation();
 						if (item.id === 'map') showDefaultMap();
 						else go(item.id);
 					}}><item.icon size={16} /><span>{item.label}</span></Button
@@ -1810,6 +1951,7 @@
 			</div>{/if}
 		<div
 			class="map-workspace"
+			class:presentation-active={presentationActive}
 			class:proposal-workspace={tab === 'scenarios' || tab === 'recommendations'}
 			class:panel-hidden={!panelOpen}
 			class:panel-expanded={panelExpanded && panelOpen}
@@ -1830,19 +1972,28 @@
 						atollScope={countryAtoll}
 						scopeBounds={capitalRegion ? capitalBounds : null}
 						{focusBounds}
-						seaState={displayedSeaNetwork}
-						seaView={seaLayerEnabled}
+						presentation={presentationActive ? (presentationView?.scene ?? null) : null}
+						onPresentationProgress={showPresentationProgress}
+						seaState={presentationActive
+							? (presentationView?.seaState ?? null)
+							: displayedSeaNetwork}
+						seaView={presentationActive ? (presentationView?.showSea ?? false) : seaLayerEnabled}
 						seaNetworkStatus={seaNetworkError ? 'error' : seaNetworkLoading ? 'loading' : 'ready'}
 						onSeaRetry={() => (seaNetworkRetry += 1)}
-						{seaLayerEnabled}
+						seaLayerEnabled={presentationActive
+							? (presentationView?.showSea ?? false)
+							: seaLayerEnabled}
 						seaInspectorOpen={seaActive}
 						onSeaLayerChange={setSeaLayer}
-						airState={airNetwork}
-						{airLayerEnabled}
+						airState={presentationActive ? (presentationView?.airNetwork ?? null) : airNetwork}
+						airLayerEnabled={presentationActive
+							? (presentationView?.showAir ?? false)
+							: airLayerEnabled}
 						airNetworkStatus={airNetworkError ? 'error' : airNetworkLoading ? 'loading' : 'ready'}
 						onAirRetry={() => (airNetworkRetry += 1)}
 						onAirLayerChange={setAirLayer}
 						onSeaSelect={(selection) => {
+							if (presentationActive) return;
 							if (!seaActive && selection.kind === 'route') {
 								const connection = displayedSeaNetwork?.routes?.find(
 									(item) => item.id === selection.id
@@ -1863,13 +2014,17 @@
 						{focusVersion}
 						{focusPoint}
 						{searchSelection}
-						conditionRoute={seaActive ? [] : conditionRoute}
-						policyServiceFeatures={accessExplorerOpen || seaActive
+						conditionRoute={presentationActive || seaActive ? [] : conditionRoute}
+						policyServiceFeatures={presentationActive || accessExplorerOpen || seaActive
 							? emptyPolicyMap
 							: policyState.serviceFeatures}
-						serviceEditor={accessExplorerOpen || seaActive ? null : policyState.serviceEditor}
-						serviceEditorContent={islandPick ? undefined : policyState.serviceEditorContent}
-						mapControlsContent={islandPick || seaActive
+						serviceEditor={presentationActive || accessExplorerOpen || seaActive
+							? null
+							: policyState.serviceEditor}
+						serviceEditorContent={presentationActive || islandPick
+							? undefined
+							: policyState.serviceEditorContent}
+						mapControlsContent={presentationActive || islandPick || seaActive
 							? undefined
 							: policyState.mapControlsContent}
 						onserviceplace={(placement) =>
@@ -1877,64 +2032,89 @@
 						onservicelanding={(landing) => (serviceLanding = { ...landing, id: ++policySequence })}
 						onservicecandidate={(stopId) => (serviceCandidate = { stopId, id: ++policySequence })}
 						oncancelservice={() => policyAction('cancel-service')}
-						gapFeatures={accessExplorerOpen || seaActive ? emptyPolicyMap : policyState.gapFeatures}
-						coverageFillFeatures={accessExplorerOpen || seaActive
-							? emptyPolicyMap
-							: policyState.coverageFillFeatures}
-						impactFeatures={accessExplorerOpen || seaActive
-							? emptyPolicyMap
-							: policyState.impactFeatures}
-						policyComparisonView={policyState.policyComparisonView}
-						comparisonPreview={policyState.comparisonPreview}
-						policyEvaluationId={policyState.policyEvaluationId}
-						policyComparisonPending={policyState.calculating ||
-							policyState.stale ||
-							!!policyState.comparisonPreview}
-						gapLens={policyLens}
-						policyOperations={accessExplorerOpen || seaActive
-							? emptyOperations
-							: policyState.operations}
-						pendingProposal={accessExplorerOpen || seaActive ? null : policyState.pending}
-						pendingPlacementDecision={accessExplorerOpen || seaActive
+						gapFeatures={presentationActive
+							? (presentationView?.gaps ?? emptyPolicyMap)
+							: accessExplorerOpen || seaActive
+								? emptyPolicyMap
+								: policyState.gapFeatures}
+						coverageFillFeatures={presentationActive
+							? (presentationView?.coverage ?? emptyPolicyMap)
+							: accessExplorerOpen || seaActive
+								? emptyPolicyMap
+								: policyState.coverageFillFeatures}
+						impactFeatures={presentationActive
+							? (presentationView?.comparison ?? emptyPolicyMap)
+							: accessExplorerOpen || seaActive
+								? emptyPolicyMap
+								: policyState.impactFeatures}
+						policyComparisonView={presentationActive
+							? presentationView?.comparisonView
+							: policyState.policyComparisonView}
+						comparisonPreview={presentationActive ? false : policyState.comparisonPreview}
+						policyEvaluationId={presentationActive ? null : policyState.policyEvaluationId}
+						policyComparisonPending={!presentationActive &&
+							(policyState.calculating || policyState.stale || !!policyState.comparisonPreview)}
+						gapLens={presentationActive ? (presentationView?.lens ?? 'overall') : policyLens}
+						policyOperations={presentationActive
+							? (presentationView?.operations ?? emptyOperations)
+							: accessExplorerOpen || seaActive
+								? emptyOperations
+								: policyState.operations}
+						pendingProposal={presentationActive || accessExplorerOpen || seaActive
+							? null
+							: policyState.pending}
+						pendingPlacementDecision={presentationActive || accessExplorerOpen || seaActive
 							? null
 							: policyState.pendingDecision}
-						placementKind={policyPickKind}
+						placementKind={presentationActive ? null : policyPickKind}
 						placementRoads={policyState.placementRoads ?? []}
 						onconfirmproposal={() => policyAction('confirm')}
 						oncancelproposal={() => policyAction('cancel-placement')}
 						onadjustbudget={() => policyAction('adjust-budget')}
-						policyCalculating={policyState.calculating}
-						policyStale={policyState.stale}
-						onmoveproposal={(index, coordinates) =>
-							(policyMove = { id: ++policySequence, index, coordinates })}
-						onfocusproposal={startIslandProposal}
-						oneditproposal={(index, action) =>
-							(policyEdit = { id: ++policySequence, index, action })}
-						ondropplacement={(point, kind) => placeProposal(point, kind)}
+						policyCalculating={!presentationActive && policyState.calculating}
+						policyStale={!presentationActive && policyState.stale}
+						onmoveproposal={(index, coordinates) => {
+							if (!presentationActive) policyMove = { id: ++policySequence, index, coordinates };
+						}}
+						onfocusproposal={presentationActive ? undefined : startIslandProposal}
+						oneditproposal={(index, action) => {
+							if (!presentationActive) policyEdit = { id: ++policySequence, index, action };
+						}}
+						ondropplacement={(point, kind) => {
+							if (!presentationActive) placeProposal(point, kind);
+						}}
 						oninspectgap={(properties) => {
+							if (presentationActive) return;
 							accessExplorerOpen = false;
 							inspectedCell = properties;
 							policyAction('inspect');
 						}}
 						mode={mapTool === 'proposals' ? 'proposal' : 'explore'}
-						onselect={inspectIsland}
-						onpick={picked}
-						onplanpoint={policyState.proposalEditing || mapTool === 'proposals'
+						onselect={(id) => {
+							if (!presentationActive) inspectIsland(id);
+						}}
+						onpick={(point) => {
+							if (!presentationActive) picked(point);
+						}}
+						onplanpoint={!presentationActive &&
+						(policyState.proposalEditing || mapTool === 'proposals')
 							? placeProposal
 							: undefined}
-						onroutepoint={useJourneyPoint}
-						onmovejourneypoint={chooseJourneyPoint}
-						onclearjourneypoint={clearJourneyPoint}
+						onroutepoint={presentationActive ? undefined : useJourneyPoint}
+						onmovejourneypoint={presentationActive ? undefined : chooseJourneyPoint}
+						onclearjourneypoint={presentationActive ? undefined : clearJourneyPoint}
 						transitStops={seaActive ? [] : transitStops}
-						picking={pickMode !== null}
-						draft={seaActive ? [] : scenario.operations}
-						route={seaActive ? null : route}
+						picking={!presentationActive && pickMode !== null}
+						draft={presentationActive || seaActive ? [] : scenario.operations}
+						route={presentationActive || seaActive ? null : route}
 						directions={showSearchDirections ? directions : null}
 						directionPoints={showSearchDirections ? directionPoints : undefined}
 						routeStart={showSearchDirections ? routeStart : null}
 						{journeyFocusVersion}
 						routeEnd={showSearchDirections ? routeEnd : null}
-						liveEvents={liveSnapshot?.events ?? emptyLiveEvents}
+						liveEvents={presentationActive
+							? emptyLiveEvents
+							: (liveSnapshot?.events ?? emptyLiveEvents)}
 						liveStatus={displayedLiveStatus}
 					/>
 				{/if}
@@ -1971,7 +2151,7 @@
 				</div>
 			{/if}
 			{#if workspaces.mapPolicy}<workspaces.mapPolicy
-					islandId={selectedId}
+					islandId={presentationActive ? (presentationReturn?.selectedId ?? null) : selectedId}
 					islandName={selected?.properties.name ?? 'Selected island'}
 					profile={profile?.island.id === selectedId ? profile : null}
 					{profileLoading}
@@ -1981,7 +2161,8 @@
 					boundaryFeatures={selectedBoundaryFeatures}
 					boundaryError={detailError}
 					onRetryBoundary={() => (detailVersion += 1)}
-					active={isMapWorkspace &&
+					active={!presentationActive &&
+						isMapWorkspace &&
 						tab === 'explore' &&
 						exploreView === 'map' &&
 						!showSearchDirections &&
@@ -2134,6 +2315,13 @@
 							onclick={() => setProfileView('route')}><Route size={16} />Directions</Button
 						>
 						<Button
+							variant="ghost"
+							aria-label="Start scenario"
+							title="The Last Few Kilometres · Shift+S"
+							disabled={loading}
+							onclick={startPresentation}><Clapperboard size={16} />Scenario</Button
+						>
+						<Button
 							class="map-header-proposal"
 							disabled={loading || !selected}
 							aria-label={policyState.operations.length ? 'Edit proposal' : 'Create proposal'}
@@ -2147,7 +2335,12 @@
 					</div>
 				{/if}
 			</div>
-			{#if islandPick}<div class="pick-banner" role="status">
+			{#if presentationActive}<ScenarioPresenter
+					onView={showPresentationView}
+					onClose={closePresentation}
+					progress={presentationProgress}
+				/>{/if}
+			{#if !presentationActive && islandPick}<div class="pick-banner" role="status">
 					<MapPin size={18} /><span
 						>Choose {islandPick === 'ferry-origin'
 							? 'your starting island'

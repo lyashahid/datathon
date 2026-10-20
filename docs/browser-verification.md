@@ -25,7 +25,7 @@ Specialist regressions remain available on demand:
 
 - Analytics and evidence: `decisions`, `forecasts`, `accessibility`, `resilience`.
 - Map scope and evidence: `capital`, `country`, `map`, `nearby-stops`, `nearby-access`, `map-controls`.
-- Rendering and interaction: `map-legibility`, `bus-vehicles`, `map-audit`, `overlays`, `motion`.
+- Rendering and interaction: `map-legibility`, `bus-vehicles`, `map-audit`, `overlays`, `motion`, `scenario-presentation`.
 - Proposal impact and review: `map-comparison`, `map-transport`, `transport-impact`, `review-window`.
 - Specialist workbenches: `planning`, `delivery`, `timetables`, `conditions`.
 

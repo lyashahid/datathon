@@ -83,6 +83,12 @@ export const browserSuites = [
 		covers: 'Sea and domestic air connections, route illustrations, source popups and layer caching'
 	},
 	{
+		id: 'scenario-presentation',
+		file: 'verify-scenario-presentation.mjs',
+		covers:
+			'Story stages, journey clocks, vehicle playback, responsive layouts and workspace restoration'
+	},
+	{
 		id: 'accessibility',
 		file: 'verify-island-accessibility.mjs',
 		covers: 'Island scores, reasons and missing census evidence'

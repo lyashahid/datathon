@@ -3,6 +3,21 @@ import { forwardBackend } from './backend';
 import { gunzipSync } from 'node:zlib';
 
 describe('backend integration boundary', () => {
+	it('forwards retained transit geometry with its route selection', async () => {
+		const patterns = { patterns: [{ id: 'airport-corridor', route_id: 'rtl:route:129' }] };
+		const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json(patterns));
+		const response = await forwardBackend(
+			new Request('http://localhost/api/backend/routing/patterns?route_id=rtl%3Aroute%3A129'),
+			'routing/patterns',
+			'http://127.0.0.1:8000',
+			fetcher
+		);
+		expect(response.status).toBe(200);
+		expect(String(fetcher.mock.calls[0][0])).toBe(
+			'http://127.0.0.1:8000/api/v1/routing/patterns?route_id=rtl%3Aroute%3A129'
+		);
+		expect(await response.json()).toEqual(patterns);
+	});
 	it('forwards ordered multi-stop directions through the public app boundary', async () => {
 		const payload = {
 			points: [

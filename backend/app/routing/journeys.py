@@ -74,6 +74,7 @@ def route_journey(
     end: list[float],
     service_date: date | None = None,
     departure_minutes: float = 920,
+    route_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     snapshot_date = repository.baseline.get("referenceDate")
     selected_date = service_date or (
@@ -85,6 +86,22 @@ def route_journey(
     prepared = prepare_journeys(repository, selected_date)
     world = prepared.world
     router = prepared.for_destination(destination, departure_minutes)
+    if route_ids is not None:
+        # Restrict this query, never the shared prepared day's service catalogue.
+        selected_routes = set(route_ids)
+        router.patterns_at = {
+            stop_id: [
+                (pattern, index)
+                for pattern, index in candidates
+                if pattern["routeId"] in selected_routes
+            ]
+            for stop_id, candidates in router.patterns_at.items()
+        }
+        router.trips = {
+            pattern["id"]: router.trips[pattern["id"]]
+            for pattern in world["patterns"]
+            if pattern["routeId"] in selected_routes and pattern["id"] in router.trips
+        }
     result = router.route(origin)
     if result["status"] != "reachable":
         result["reason"] = (
@@ -109,6 +126,8 @@ def route_journey(
     ]
     if selected_date.isoformat() != snapshot_date:
         warnings.append("No verified bus calendar is available on the selected date.")
+    if route_ids is not None:
+        warnings.append("Transit services are restricted to the requested route selection.")
     # A national timetable must not inflate a local journey's service metadata.
     # Count patterns serving either endpoint island; the router still retains
     # every supported pattern for any valid connecting journey.

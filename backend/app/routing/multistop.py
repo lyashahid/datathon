@@ -21,6 +21,7 @@ def route_multistop(
     mode: TravelMode,
     service_date: date | None = None,
     departure_minutes: float = 920,
+    route_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     """Each stop is mandatory and ordered; no optimization or stop dwell time is assumed.
 
@@ -58,7 +59,14 @@ def route_multistop(
             segments.append(segment)
             continue
         if mode == "transit":
-            result = route_journey(planning, start, end, segment_date, segment_departure)
+            result = route_journey(
+                planning,
+                start,
+                end,
+                segment_date,
+                segment_departure,
+                **({"route_ids": route_ids} if route_ids is not None else {}),
+            )
             journey = result.get("journey", {})
             warnings.extend(journey.get("warnings", []))
             segment["reason"] = journey.get("reason") or result.get("reason")

@@ -45,7 +45,7 @@ def _recording_app(failures=None):
 
 @pytest.mark.parametrize(
     ("include_analysis", "include_planning", "expected_count"),
-    [(False, False, 6), (True, False, 9), (False, True, 33), (True, True, 36)],
+    [(False, False, 6), (True, False, 9), (False, True, 43), (True, True, 46)],
 )
 async def test_warmup_covers_selected_work_and_all_nine_planning_baselines(
     include_analysis, include_planning, expected_count, directions_preparation, monkeypatch
@@ -82,6 +82,8 @@ async def test_warmup_covers_selected_work_and_all_nine_planning_baselines(
     assert (("/api/v1/datasets", "") in gets) == include_analysis
     posts = [(key, body) for key, body in calls if key[0] == "POST"]
     if include_planning:
+        assert ("/api/v1/planning/sea-network", "date=2026-10-10") in gets
+        assert ("/api/v1/planning/air-network", "date=2026-10-10") in gets
         assert ("/api/v1/planning/opportunities", "include_geometry=false") in gets
         assert len(posts) == 9
         assert all(body["island_id"] != "island:1483" for _, body in posts)
@@ -98,13 +100,13 @@ async def test_warmup_covers_selected_work_and_all_nine_planning_baselines(
             assert body["assumptions"]["include_world"] is False
             if body["assumptions"]["goal"] == "transport":
                 assert body["assumptions"]["target_minutes"] == 10
-        for island in ("1443", "1442", "1483", "1382"):
+        for island in ("697", "706", "1443", "1442", "1483", "1382"):
             assert ("/api/v1/planning/baseline", f"island_id=island%3A{island}") in gets
             assert (f"/api/v1/planning/opportunities/island:{island}", "") in gets
             assert (f"/api/v1/islands/island:{island}/profile", "") in gets
             assert (
                 "/api/v1/planning/connectivity",
-                f"origin_island_id=island%3A{island}",
+                f"origin_island_id=island%3A{island}&date=2026-10-10",
             ) in gets
     else:
         assert posts == []
@@ -113,6 +115,14 @@ async def test_warmup_covers_selected_work_and_all_nine_planning_baselines(
 def test_sea_preparation_matches_maldives_date_across_utc_midnight_boundary():
     assert precompute._sea_date(datetime(2026, 10, 19, 18, 59, tzinfo=UTC)) == "2026-10-19"
     assert precompute._sea_date(datetime(2026, 10, 19, 19, tzinfo=UTC)) == "2026-10-20"
+
+
+def test_captured_network_warmup_reuses_current_date_when_it_matches(monkeypatch):
+    monkeypatch.setattr(precompute, "_sea_date", lambda: "2026-10-10")
+    jobs = precompute._jobs(include_planning=True, include_analysis=False)
+    urls = [job.url for job in jobs]
+    assert urls.count("/api/v1/planning/sea-network?date=2026-10-10") == 1
+    assert urls.count("/api/v1/planning/air-network?date=2026-10-10") == 1
 
 
 async def test_manual_warmup_remains_fail_fast_by_default():
@@ -135,7 +145,7 @@ async def test_internal_directions_preparation_retries_without_repeating_http_jo
         app, include_planning=True, continue_on_error=True, retry_delay=0
     )
     assert directions_preparation.await_count == 2
-    assert len(calls) == 32
+    assert len(calls) == len(precompute._jobs(include_planning=True, include_analysis=False)) - 1
     prepared = next(row for row in rows if row["name"] == "directions_index")
     assert prepared["status"] == "ready"
     assert prepared["attempts"] == 2
@@ -163,15 +173,19 @@ async def test_background_sweep_isolates_failures_then_retries_each_once(caplog)
         retry_delay=0,
     )
 
-    assert len(rows) == 36
-    assert len(calls) == 37
-    assert {key[1] for key, _ in calls[35:]} == {"/api/v1/forecasts/analysis", "/api/v1/datasets"}
+    count = len(precompute._jobs(include_planning=True, include_analysis=True))
+    assert len(rows) == count
+    assert len(calls) == count + 1
+    assert {key[1] for key, _ in calls[count - 1 :]} == {
+        "/api/v1/forecasts/analysis",
+        "/api/v1/datasets",
+    }
     by_name = {row["name"]: row for row in rows}
     assert by_name["data_analysis"]["status"] == "ready"
     assert by_name["data_analysis"]["attempts"] == 2
     assert by_name["datasets"]["status"] == "failed"
     assert by_name["datasets"]["attempts"] == 2
-    assert sum(row["status"] == "ready" for row in rows) == 35
+    assert sum(row["status"] == "ready" for row in rows) == count - 1
     assert private_detail not in json.dumps(rows)
     assert private_detail not in caplog.text
 
@@ -219,9 +233,10 @@ def _startup_app():
 
 @pytest.mark.parametrize("failed_jobs", [[], ["datasets"]])
 async def test_automatic_precompute_enables_full_sweep_and_records_result(monkeypatch, failed_jobs):
+    count = len(precompute._jobs(include_planning=True, include_analysis=True))
     rows = [
         {"name": f"ready_{index}", "status": "ready", "attempts": 1}
-        for index in range(36 - len(failed_jobs))
+        for index in range(count - len(failed_jobs))
     ]
     rows.extend({"name": name, "status": "failed", "attempts": 2} for name in failed_jobs)
     warm = AsyncMock(return_value=rows)
@@ -240,8 +255,8 @@ async def test_automatic_precompute_enables_full_sweep_and_records_result(monkey
     app.state.computed_cache.mirror_public_results.assert_awaited_once_with("source-v1")
     assert app.state.precompute == {
         "status": "partial" if failed_jobs else "ready",
-        "completed": 36 - len(failed_jobs),
-        "total": 36,
+        "completed": count - len(failed_jobs),
+        "total": count,
         "failed_jobs": failed_jobs,
     }
 
@@ -269,9 +284,10 @@ async def test_cancelled_precompute_records_cancellation_and_does_not_mirror(mon
 
 async def test_background_progress_tracks_unique_ready_views_and_retry_recovery(monkeypatch):
     app = _startup_app()
+    count = len(precompute._jobs(include_planning=True, include_analysis=True))
 
     async def warm(_app, **options):
-        assert app.state.precompute["total"] == 36
+        assert app.state.precompute["total"] == count
         progress = options["on_progress"]
         progress({"name": "country_map", "status": "ready"})
         assert app.state.precompute["completed"] == 1

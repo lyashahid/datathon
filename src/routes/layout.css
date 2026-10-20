@@ -217,6 +217,9 @@ html[data-motion-input='keyboard'] [data-slot='tabs-content'] {
 .app-shell {
 	min-height: 100dvh;
 }
+.app-shell.scenario-stage > .app-header {
+	display: none;
+}
 .app-header {
 	height: 84px;
 	display: flex;
@@ -1843,6 +1846,15 @@ td {
 	justify-content: space-between;
 	gap: 16px;
 	pointer-events: none;
+}
+.presentation-active .map-header-tools,
+.presentation-active .detail-panel,
+.presentation-active .policy-map-panel,
+.presentation-active .policy-inspect-trigger,
+.presentation-active .sea-connections-overlay,
+.presentation-active .pick-banner,
+.presentation-active .map-action-dock {
+	display: none !important;
 }
 .map-first-shell .map-header-tools > .map-search-dock {
 	position: relative;

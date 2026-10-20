@@ -43,15 +43,29 @@ def _sea_date(now: datetime | None = None) -> str:
 
 
 def _jobs(*, include_planning: bool, include_analysis: bool) -> list[WarmupJob]:
+    service_date = _sea_date()
     jobs = [
         WarmupJob("country_map", "/api/v1/map/features?layer=islands&simplify_m=25"),
         WarmupJob("country_scores", "/api/v1/accessibility/summary?compact=true"),
         WarmupJob("country_summary", "/api/v1/national/summary"),
         WarmupJob("published_history", "/api/v1/forecasts?history_only=true"),
-        WarmupJob("sea_network", f"/api/v1/planning/sea-network?date={_sea_date()}"),
-        WarmupJob("air_network", f"/api/v1/planning/air-network?date={_sea_date()}"),
+        WarmupJob("sea_network", f"/api/v1/planning/sea-network?date={service_date}"),
+        WarmupJob("air_network", f"/api/v1/planning/air-network?date={service_date}"),
     ]
     if include_planning:
+        # The presenter uses the retained timetable date, rather than claiming
+        # historical bus departures recur today. Warm the exact network keys.
+        if service_date != "2026-10-10":
+            jobs.extend(
+                [
+                    WarmupJob(
+                        "presentation_sea_network", "/api/v1/planning/sea-network?date=2026-10-10"
+                    ),
+                    WarmupJob(
+                        "presentation_air_network", "/api/v1/planning/air-network?date=2026-10-10"
+                    ),
+                ]
+            )
         jobs.append(WarmupJob("directions_index", prepare=_prepare_directions))
     if include_analysis:
         jobs.extend(
@@ -65,7 +79,7 @@ def _jobs(*, include_planning: bool, include_analysis: bool) -> list[WarmupJob]:
         jobs.append(
             WarmupJob("opportunities", "/api/v1/planning/opportunities?include_geometry=false")
         )
-        for island in ("1443", "1442", "1483", "1382"):
+        for island in ("697", "706", "1443", "1442", "1483", "1382"):
             jobs.extend(
                 [
                     WarmupJob(
@@ -78,7 +92,8 @@ def _jobs(*, include_planning: bool, include_analysis: bool) -> list[WarmupJob]:
                     WarmupJob(f"profile_{island}", f"/api/v1/islands/island%3A{island}/profile"),
                     WarmupJob(
                         f"connections_{island}",
-                        f"/api/v1/planning/connectivity?origin_island_id=island%3A{island}",
+                        f"/api/v1/planning/connectivity?origin_island_id=island%3A{island}"
+                        "&date=2026-10-10",
                     ),
                 ]
             )

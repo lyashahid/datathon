@@ -96,6 +96,16 @@
 	import { airNetworkFeatures, type AirNetwork } from '#lib/air-connectivity.js';
 	import { airRouteCard } from './map/air-route-card.js';
 	import {
+		preparePresentationPaths,
+		presentationCameraPadding,
+		presentationPathBounds,
+		presentationRouteFeatures,
+		presentationPosition,
+		presentationVehicleFeatures,
+		type PresentationMapScene,
+		type PresentationProgress
+	} from '#lib/presentation-map.js';
+	import {
 		prepareRouteVehicles,
 		routeVehicleFeatures,
 		type RouteVehiclePath
@@ -114,6 +124,8 @@
 		role: 'start' | 'via' | 'end';
 	};
 	interface Props {
+		presentation?: PresentationMapScene | null;
+		onPresentationProgress?: (state: PresentationProgress) => void;
 		airState?: AirNetwork | null;
 		airLayerEnabled?: boolean;
 		airNetworkStatus?: 'loading' | 'ready' | 'error';
@@ -216,6 +228,8 @@
 	}
 
 	let {
+		presentation = null,
+		onPresentationProgress,
 		airState = null,
 		airLayerEnabled = false,
 		airNetworkStatus = 'ready',
@@ -578,6 +592,7 @@
 	let inspectedAirRouteId = $state('');
 	let inspectedAirNetwork: AirNetwork | null = null;
 	let inspectedSeaFeatures: FeatureCollection | null = null;
+	let inspectedPresentationSignature = '';
 	let inspectedSource: string | null = null;
 	let inspectedIslandId: string | null = null;
 	let makeMarker: typeof import('maplibre-gl').Marker | undefined;
@@ -588,6 +603,37 @@
 	let activationFrame = 0;
 	let scopeFocusFrame = 0;
 	let journeyFocusFrame = 0;
+	let presentationProgress = $state(0);
+	let presentationAnimating = $state(false);
+	let presentationFollowing = $state(false);
+	let presentationPhase = $state<PresentationProgress['phase']>('idle');
+	let presentationAirplaneReady = $state(false);
+	const presentationPathEnd = $derived(presentation?.paths.at(-1)?.coordinates.at(-1));
+	const presentationMinLatitude = $derived.by(() => {
+		const points = presentation?.paths.flatMap((path) => path.coordinates) ?? [];
+		return points.length ? Math.min(...points.map((point) => point[1])) : undefined;
+	});
+	const presentationPointsInMale = $derived(
+		presentation?.paths.reduce(
+			(count, path) =>
+				count +
+				path.coordinates.filter(([longitude, latitude]) => longitude < 73.5265 && latitude < 4.178)
+					.length,
+			0
+		) ?? 0
+	);
+	const presentationMotionKey = $derived.by(() => {
+		const scene = presentation;
+		if (!scene) return '';
+		const hasPath = scene.paths.some((path) => path.coordinates.length > 1);
+		const readiness = scene.playback ? (hasPath ? 'ready' : 'waiting') : 'static';
+		return `${scene.key}:${readiness}:${scene.inspect?.routeId ?? ''}:${scene.panel ?? ''}`;
+	});
+	const presentationProposalKey = $derived(
+		presentation?.emphasis?.proposalPoint
+			? `${presentation.key}:${presentation.emphasis.proposalPoint.join(',')}`
+			: ''
+	);
 	const sourceData = new SvelteMap<string, FeatureCollection>();
 	let lastFocusedIsland: Feature<Geometry> | undefined;
 	let lastFocusedId: string | null | undefined;
@@ -643,6 +689,8 @@
 	const seaVehicleDate = $derived(seaState?.serviceDate);
 	const vehiclePaths = $derived.by(() => {
 		const paths: RouteVehiclePath[] = [];
+		// A highlighted leg owns the moving symbol during the presentation.
+		if (presentation?.paths.length) return paths;
 		const seaRoutes = new Map((seaVehicleRoutes ?? []).map((route) => [route.id, route]));
 		for (const [mode, network] of [
 			['sea', seaVehicleFeatures],
@@ -1516,7 +1564,7 @@
 	}
 
 	function focusJourney() {
-		if (!map) return;
+		if (!map || presentation) return;
 		userZoomGesture = null;
 		const positions = routeFeatures.features.flatMap((feature) => {
 			if (feature.geometry.type === 'LineString') return feature.geometry.coordinates;
@@ -1669,7 +1717,7 @@
 	}
 
 	function focusIsland() {
-		if (!map || !selectedIsland?.geometry) return;
+		if (!map || presentation || !selectedIsland?.geometry) return;
 		userZoomGesture = null;
 		const bounds = boundsOf(selectedIsland.geometry);
 		if (bounds)
@@ -2046,13 +2094,63 @@
 		inspectedSeaFeatures = null;
 		inspectedAirRouteId = '';
 		inspectedAirNetwork = null;
+		inspectedPresentationSignature = '';
 	}
-	function inspectAirRoute(feature: Feature, event: { lngLat: { lng: number; lat: number } }) {
+	function inspectPresentationRoute(inspection: NonNullable<PresentationMapScene['inspect']>) {
+		const feature: Feature = {
+			type: 'Feature',
+			properties: { route_id: inspection.routeId },
+			geometry: { type: 'Point', coordinates: inspection.coordinates }
+		};
+		const event = {
+			lngLat: { lng: inspection.coordinates[0], lat: inspection.coordinates[1] }
+		};
+		if (inspection.mode === 'air') inspectAirRoute(feature, event, inspection.summary);
+		else if (
+			inspection.summary ||
+			seaState?.routes?.some((route) => route.id === inspection.routeId)
+		)
+			inspectSeaRoute({ ...feature, source: 'sea-network' }, event, inspection.summary);
+		if (inspectionPopup) inspectedPresentationSignature = JSON.stringify(inspection);
+	}
+	function inspectAirRoute(
+		feature: Feature,
+		event: { lngLat: { lng: number; lat: number } },
+		presentationSummary?: NonNullable<PresentationMapScene['inspect']>['summary']
+	) {
 		const network = airState;
 		const routeId = String(feature.properties?.route_id ?? '');
 		const route = network?.routes.find((item) => item.id === routeId);
 		if (!map || !makePopup || !network || !route) return;
 		closeInspection();
+		const panel = airRouteCard(network, route);
+		if (presentationSummary) {
+			const title = panel.querySelector('h3');
+			if (title) title.textContent = presentationSummary.title;
+			const details = panel.querySelector('details');
+			const sourceSummary = panel.querySelector('dl');
+			if (details && sourceSummary) {
+				sourceSummary.classList.add('presentation-route-source-summary');
+				details.insertBefore(sourceSummary, details.children[1] ?? null);
+				const pressure = panel.querySelector('.sea-route-pressure');
+				if (pressure) details.append(pressure);
+			}
+			const summary = document.createElement('dl');
+			summary.className = 'presentation-route-summary';
+			const label = document.createElement('dt');
+			label.textContent = presentationSummary.timingLabel ?? 'Estimated flight';
+			const value = document.createElement('dd');
+			value.textContent =
+				presentationSummary.minutes == null
+					? 'Unavailable'
+					: seaDuration(presentationSummary.minutes);
+			summary.append(label, value);
+			const qualification = document.createElement('p');
+			qualification.className = 'sea-route-presentation-qualification';
+			qualification.textContent = presentationSummary.qualification;
+			panel.insertBefore(summary, details);
+			panel.insertBefore(qualification, details);
+		}
 		const popup = new makePopup({
 			className: 'map-record-popup map-source-record-popup map-air-route-popup',
 			maxWidth: '304px',
@@ -2061,7 +2159,7 @@
 			focusAfterOpen: false
 		})
 			.setLngLat([event.lngLat.lng, event.lngLat.lat])
-			.setDOMContent(airRouteCard(network, route))
+			.setDOMContent(panel)
 			.addTo(map);
 		inspectionPopup = popup;
 		inspectedSource = 'air-network';
@@ -2079,7 +2177,8 @@
 	}
 	function inspectSeaRoute(
 		feature: Feature & { source: string },
-		event: { lngLat: { lng: number; lat: number } }
+		event: { lngLat: { lng: number; lat: number } },
+		presentationSummary?: NonNullable<PresentationMapScene['inspect']>['summary']
 	) {
 		if (!map || !makePopup) return;
 		closeInspection();
@@ -2104,9 +2203,16 @@
 		panel.dataset.seaRoute = routeId;
 		const eyebrow = document.createElement('small');
 		eyebrow.className = 'map-record-kind';
-		eyebrow.textContent = route?.route_code ? `Ferry route · ${route.route_code}` : 'Ferry route';
+		eyebrow.textContent = presentationSummary
+			? 'Illustrative ferry connection'
+			: route?.route_code
+				? `Ferry route · ${route.route_code}`
+				: 'Ferry route';
 		const title = document.createElement('h3');
-		title.textContent = route?.name || String(props.name ?? props.route_name ?? 'Sea connection');
+		title.textContent =
+			presentationSummary?.title ||
+			route?.name ||
+			String(props.name ?? props.route_name ?? 'Sea connection');
 		const badge = document.createElement('span');
 		badge.className = 'sea-route-pressure';
 		badge.dataset.pressure = level;
@@ -2118,7 +2224,9 @@
 			level === 'unknown' ? 'Pressure unknown' : `${pressureLabel} estimated pressure`
 		);
 		const summary = document.createElement('dl');
-		summary.className = 'sea-route-summary';
+		summary.className = presentationSummary
+			? 'sea-route-summary presentation-route-summary'
+			: 'sea-route-summary';
 		function row(list: HTMLDListElement, label: string, value: unknown) {
 			if (value === undefined || value === null || value === '') return;
 			const term = document.createElement('dt');
@@ -2130,7 +2238,22 @@
 		const number = (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 0 });
 		const weeklyDepartures = pressure?.departures_per_week ?? props.departures_per_week;
 		const estimatedFrequency = pressure?.frequency_basis === 'published_headway_estimate';
-		if (typeof weeklyDepartures === 'number' && Number.isFinite(weeklyDepartures))
+		if (presentationSummary) {
+			row(
+				summary,
+				presentationSummary.timingLabel ?? 'Estimated crossing',
+				presentationSummary.minutes == null
+					? 'Unavailable'
+					: seaDuration(presentationSummary.minutes)
+			);
+			row(
+				summary,
+				presentationSummary.frequencyLabel ?? 'Source corridor sailings',
+				presentationSummary.weeklySailings == null
+					? 'Unavailable'
+					: `${number(presentationSummary.weeklySailings)} sailings / week`
+			);
+		} else if (typeof weeklyDepartures === 'number' && Number.isFinite(weeklyDepartures))
 			row(
 				summary,
 				estimatedFrequency ? 'Estimated service' : 'Published service',
@@ -2138,14 +2261,24 @@
 			);
 		else if (route?.departure_count != null)
 			row(summary, 'Selected date', `${number(route.departure_count)} published departures`);
-		row(summary, 'Full-route crossing', seaDuration(route?.crossing_minutes));
-		panel.append(eyebrow, title, badge, summary);
+		if (!presentationSummary)
+			row(summary, 'Full-route crossing', seaDuration(route?.crossing_minutes));
+		panel.append(eyebrow, title);
+		if (!presentationSummary) panel.append(badge);
+		panel.append(summary);
+		if (presentationSummary) {
+			const explanation = document.createElement('p');
+			explanation.className = 'sea-route-presentation-qualification';
+			explanation.textContent = presentationSummary.qualification;
+			panel.append(explanation);
+		}
 		const details = document.createElement('details');
 		details.className = 'sea-route-details';
 		const toggle = document.createElement('summary');
-		toggle.textContent = 'Route details';
+		toggle.textContent = presentationSummary ? 'Source corridor details' : 'Route details';
 		details.append(toggle);
 		const evidence = document.createElement('dl');
+		if (presentationSummary) row(evidence, 'Source corridor', route?.name);
 		row(evidence, 'Operator', route?.operator);
 		row(evidence, 'Week beginning', seaState?.serviceDate);
 		if (pressure?.population != null)
@@ -2253,7 +2386,7 @@
 			}
 		}
 		panel.append(details);
-		if (onSeaSelect) {
+		if (onSeaSelect && !presentation) {
 			const action = document.createElement('button');
 			action.type = 'button';
 			action.className = 'sea-route-open';
@@ -3235,7 +3368,7 @@
 			map.panBy([point.x - x, point.y - y], { duration: reducedMotion() ? 0 : 180 });
 	}
 	function keepAcceptedPointVisible(coordinates: Coordinates) {
-		if (!map || !active || pendingProposal) return;
+		if (!map || !active || presentation || pendingProposal) return;
 		const mapBounds = container.getBoundingClientRect();
 		const width = container.clientWidth;
 		const height = container.clientHeight;
@@ -3263,7 +3396,7 @@
 			map.panBy([point.x - x, point.y - y], { duration: reducedMotion() ? 0 : 180 });
 	}
 	function editSelectedProposal(action: 'move' | 'duplicate' | 'remove') {
-		if (selectedProposalIndex === null) return;
+		if (presentation || selectedProposalIndex === null) return;
 		const index = selectedProposalIndex;
 		selectedProposalIndex = null;
 		oneditproposal?.(index, action);
@@ -3362,6 +3495,7 @@
 				let lastDragged = 0;
 				element.addEventListener('click', (event) => {
 					event.stopPropagation();
+					if (presentation) return;
 					if (performance.now() - lastDragged < 200) return;
 					if (entry.index === -1) focusPlacementDecision();
 					else if (oneditproposal) {
@@ -3375,17 +3509,23 @@
 						});
 					} else onfocusproposal?.(entry.index);
 				});
-				marker = new makeMarker({ element, draggable: !entry.locked, anchor: 'bottom' })
+				marker = new makeMarker({
+					element,
+					draggable: !presentation && !entry.locked,
+					anchor: 'bottom'
+				})
 					.setLngLat(entry.coordinates)
 					.addTo(map);
 				const current = marker;
 				marker.on('dragstart', () => {
+					if (presentation) return;
 					closeInspection();
 					selectedProposalIndex = null;
 					element.classList.add('is-dragging');
 					if (entry.index === -1) placementDragging = true;
 				});
 				marker.on('drag', () => {
+					if (presentation) return;
 					if (entry.index === -1) {
 						schedulePlacementAnchor();
 						schedulePlacementPreview();
@@ -3395,6 +3535,7 @@
 					lastDragged = performance.now();
 					element.classList.remove('is-dragging');
 					if (entry.index === -1) placementDragging = false;
+					if (presentation) return;
 					const point: Coordinates = [current.getLngLat().lng, current.getLngLat().lat];
 					const kind =
 						entry.index === -1 ? pendingProposal?.kind : policyOperations[entry.index]?.type;
@@ -3408,11 +3549,14 @@
 				});
 				policyMarkers.set(entry.index, marker);
 			}
-			marker.setDraggable(!entry.locked);
+			marker.setDraggable(!presentation && !entry.locked);
 			const location = marker.getLngLat();
 			if (location.lng !== entry.coordinates[0] || location.lat !== entry.coordinates[1])
 				marker.setLngLat(entry.coordinates);
 			const element = marker.getElement();
+			element.setAttribute('aria-disabled', String(!!presentation));
+			element.tabIndex = presentation ? -1 : 0;
+			element.style.pointerEvents = presentation ? 'none' : '';
 			// Keep MapLibre's marker classes and the active drag state when updating a draft.
 			element.classList.add('policy-proposal-marker');
 			element.classList.toggle('pending', entry.index === -1);
@@ -3423,7 +3567,9 @@
 			element.dataset.operationIndex = String(entry.index);
 			element.setAttribute(
 				'aria-label',
-				`${entry.index === -1 ? placementTitle : entry.name}${entry.locked ? '. Part of a routed service package. Select to remove the service; regenerate it to change its route.' : '. Drag to move, or select for move, duplicate and remove actions.'}${entry.index === -1 ? ' Confirm or cancel above this pin.' : ''}`
+				presentation
+					? entry.name
+					: `${entry.index === -1 ? placementTitle : entry.name}${entry.locked ? '. Part of a routed service package. Select to remove the service; regenerate it to change its route.' : '. Drag to move, or select for move, duplicate and remove actions.'}${entry.index === -1 ? ' Confirm or cancel above this pin.' : ''}`
 			);
 			element.title = element.getAttribute('aria-label')!;
 			const symbol =
@@ -3441,6 +3587,7 @@
 		schedulePlacementAnchor();
 	}
 	function dropPlacement(event: DragEvent) {
+		if (presentation) return;
 		const serviceKind = event.dataTransfer?.getData('application/x-policy-service');
 		if (map && (serviceKind === 'bus' || serviceKind === 'ferry')) {
 			event.preventDefault();
@@ -3460,7 +3607,7 @@
 		);
 	}
 	function handleClick(event: MapMouseEvent) {
-		if (!map || !ready) return;
+		if (!map || !ready || presentation) return;
 		if ((airState || seaState) && !picking && !islandPicking) {
 			const hits = map.queryRenderedFeatures(event.point, {
 				layers: [
@@ -3861,6 +4008,23 @@
 					if (disposed) return;
 					for (const [id, data] of Object.entries(atlasSymbols()))
 						instance.addImage(id, data, { pixelRatio: 2 });
+					void instance
+						.loadImage('/images/scenario-airplane.png')
+						.then(({ data }) => {
+							if (disposed || map !== instance) return;
+							// Keep the detailed transparent artwork, with a small GPU texture.
+							const canvas = document.createElement('canvas');
+							canvas.width = canvas.height = 192;
+							const context = canvas.getContext('2d');
+							if (!context) return;
+							context.drawImage(data, 0, 0, 192, 192);
+							instance.addImage('presentation-airplane', context.getImageData(0, 0, 192, 192), {
+								pixelRatio: 3
+							});
+							presentationAirplaneReady = true;
+						})
+						// The existing aircraft sprite remains usable if this optional artwork fails.
+						.catch(() => undefined);
 					instance.addSource('pois', {
 						type: 'geojson',
 						data: emptyCollection,
@@ -3913,6 +4077,10 @@
 						'sea-islands',
 						'air-network',
 						'route-vehicles',
+						'presentation-routes',
+						'presentation-vehicle',
+						'presentation-population',
+						'presentation-proposal-focus',
 						'conditions-route',
 						'street-context'
 					]) {
@@ -4938,6 +5106,122 @@
 						}
 					});
 					// Airport junctions stay legible above the denser sea-island markers.
+					instance.addLayer(
+						{
+							id: 'presentation-population-fill',
+							type: 'fill',
+							source: 'presentation-population',
+							paint: {
+								'fill-color': [
+									'interpolate',
+									['linear'],
+									['get', 'presentation_population_fraction'],
+									0,
+									themeColors.colorf3efe0,
+									0.3,
+									themeColors.colord0c6e7,
+									1,
+									themeColors.color8762d8
+								],
+								'fill-opacity': 0.82,
+								'fill-outline-color': themeColors.colorfffefa
+							}
+						},
+						'context-buildings'
+					);
+					instance.addLayer({
+						id: 'presentation-proposal-pulse',
+						type: 'circle',
+						source: 'presentation-proposal-focus',
+						paint: {
+							'circle-radius': 12,
+							'circle-color': themeColors.color27877b,
+							'circle-opacity': 0,
+							'circle-stroke-color': themeColors.color27877b,
+							'circle-stroke-width': 2,
+							'circle-stroke-opacity': 0
+						}
+					});
+					instance.addLayer({
+						id: 'presentation-route-casing',
+						type: 'line',
+						source: 'presentation-routes',
+						layout: { 'line-cap': 'round', 'line-join': 'round' },
+						paint: { 'line-color': themeColors.colorfffefa, 'line-width': 9, 'line-opacity': 0.9 }
+					});
+					instance.addLayer({
+						id: 'presentation-route-line',
+						type: 'line',
+						source: 'presentation-routes',
+						filter: ['!', ['in', ['get', 'mode'], ['literal', ['walk', 'transfer']]]],
+						layout: { 'line-cap': 'round', 'line-join': 'round' },
+						paint: {
+							'line-color': [
+								'match',
+								['get', 'mode'],
+								'ferry',
+								themeColors.color2689b2,
+								'air',
+								themeColors.color566cc3,
+								'bus',
+								themeColors.color087f8c,
+								themeColors.colord18c34
+							],
+							'line-width': 5
+						}
+					});
+					instance.addLayer({
+						id: 'presentation-transfer-line',
+						type: 'line',
+						source: 'presentation-routes',
+						filter: ['in', ['get', 'mode'], ['literal', ['walk', 'transfer']]],
+						layout: { 'line-cap': 'round', 'line-join': 'round' },
+						paint: {
+							'line-color': themeColors.color22796d,
+							'line-width': 4,
+							'line-dasharray': [1.5, 1.5]
+						}
+					});
+					instance.addLayer({
+						id: 'presentation-vehicle-halo',
+						type: 'circle',
+						source: 'presentation-vehicle',
+						paint: {
+							'circle-radius': 22,
+							'circle-color': themeColors.colorfffefa,
+							'circle-opacity': 0.95,
+							'circle-stroke-color': themeColors.color087f78,
+							'circle-stroke-width': 2
+						}
+					});
+					instance.addLayer({
+						id: 'presentation-vehicle-symbol',
+						type: 'symbol',
+						source: 'presentation-vehicle',
+						layout: {
+							'icon-image': [
+								'match',
+								['get', 'mode'],
+								'ferry',
+								'atlas-route-vessel',
+								'air',
+								'atlas-route-aircraft',
+								'bus',
+								'atlas-live-bus',
+								'atlas-origin'
+							],
+							'icon-size': 1.1,
+							'icon-rotate': [
+								'case',
+								['in', ['get', 'mode'], ['literal', ['walk', 'transfer']]],
+								0,
+								['get', 'bearing']
+							],
+							'icon-rotation-alignment': 'map',
+							'icon-allow-overlap': true,
+							'icon-ignore-placement': true
+						}
+					});
 					for (const id of ['air-airport-halo', 'air-airport-points', 'air-airport-symbols'])
 						instance.moveLayer(id, 'conditions-route-line');
 					ready = true;
@@ -5043,7 +5327,7 @@
 					schedulePlacementPreview();
 				});
 				instance.getCanvas().addEventListener('keydown', (event) => {
-					if (!picking || (event.key !== 'Enter' && event.key !== ' ')) return;
+					if (presentation || !picking || (event.key !== 'Enter' && event.key !== ' ')) return;
 					event.preventDefault();
 					const center = instance.unproject([
 						container.clientWidth / 2,
@@ -5186,7 +5470,7 @@
 	});
 	$effect(() => {
 		void selectedProposal;
-		if (!selectedProposal || pendingProposal || picking || !active) {
+		if (!selectedProposal || pendingProposal || picking || !active || presentation) {
 			selectedProposalIndex = null;
 			proposalEditAnchor = null;
 		} else untrack(schedulePlacementAnchor);
@@ -5292,6 +5576,7 @@
 	$effect(() => {
 		if (!ready || !map || !active) return;
 		const focused = !!focusContext;
+		const quiet = !!presentation?.emphasis?.quietContext;
 		const duration = shouldAnimateMotion() ? 160 : 0;
 		for (const id of [
 			'facilities-symbols',
@@ -5303,9 +5588,9 @@
 			'live-vessel-clusters'
 		])
 			map.setPaintProperty(id, 'icon-opacity-transition', { duration });
-		map.setPaintProperty(
-			'facilities-symbols',
-			'icon-opacity',
+		map.setPaintProperty('facilities-symbols', 'icon-opacity', [
+			'*',
+			quiet ? 0.22 : 1,
 			!focused
 				? 1
 				: focusContext === 'health'
@@ -5313,31 +5598,39 @@
 					: focusContext === 'education'
 						? ['match', ['get', 'category'], 'school', 1, 0.3]
 						: 0.3
-		);
+		]);
 		map.setPaintProperty(
 			'transport-symbols',
 			'icon-opacity',
-			!focused ? 1 : ['bus', 'ferry', 'journey'].includes(focusContext) ? 0.85 : 0.4
+			quiet ? 0.38 : !focused ? 1 : ['bus', 'ferry', 'journey'].includes(focusContext) ? 0.85 : 0.4
 		);
 		map.setPaintProperty(
 			'bus-stop-symbols',
 			'icon-opacity',
-			!focused ? 1 : ['bus', 'journey'].includes(focusContext) ? 0.85 : 0.4
+			quiet ? 0.48 : !focused ? 1 : ['bus', 'journey'].includes(focusContext) ? 0.85 : 0.4
 		);
-		map.setPaintProperty('poi-clusters', 'icon-opacity', focused ? 0.45 : 1);
+		map.setPaintProperty('poi-clusters', 'icon-opacity', quiet ? 0.24 : focused ? 0.45 : 1);
 		for (const id of ['live-symbols', 'live-vessel-symbols']) {
 			map.setPaintProperty(id, 'icon-opacity', [
 				'*',
-				focused ? 0.32 : 1,
+				quiet ? 0.12 : focused ? 0.32 : 1,
 				['case', ['get', 'stale'], 0.48, 1]
 			]);
-			map.setPaintProperty(id, 'text-opacity', focused ? 0.32 : 1);
+			map.setPaintProperty(id, 'text-opacity', quiet ? 0.12 : focused ? 0.32 : 1);
 		}
 		map.setPaintProperty('live-vessel-clusters', 'icon-opacity', [
 			'*',
-			focused ? 0.32 : 1,
+			quiet ? 0.12 : focused ? 0.32 : 1,
 			['case', ['==', ['get', 'stale_count'], ['get', 'point_count']], 0.48, 1]
 		]);
+		map.setPaintProperty('route-vehicle-symbols', 'icon-opacity', [
+			'*',
+			quiet ? 0.24 : 1,
+			['coalesce', ['get', 'opacity'], 1]
+		]);
+		map.setPaintProperty('facilities-fill', 'fill-opacity', quiet ? 0.1 : 0.45);
+		map.setPaintProperty('transport-fill', 'fill-opacity', quiet ? 0.1 : 0.24);
+		map.setPaintProperty('transport-lines', 'line-opacity', quiet ? 0.24 : 0.85);
 	});
 	$effect(() => {
 		if (!ready || !active || !map) return;
@@ -5403,6 +5696,7 @@
 	});
 	$effect(() => {
 		if (!ready || !active || !map) return;
+		const quiet = !!presentation?.emphasis?.quietContext;
 		const focusAirport =
 			hoveredAirAirport ||
 			airState?.airports.find((airport) => airport.island_id && airport.island_id === selectedId)
@@ -5446,10 +5740,9 @@
 		]);
 		map.setPaintProperty('air-route-casing', 'line-width', ['+', normal, 1.6]);
 		map.setPaintProperty('air-route-casing', 'line-opacity', [
-			'case',
-			connected,
-			0.65,
-			focused ? 0.1 : 0.25
+			'*',
+			quiet ? 0.16 : 1,
+			['case', connected, 0.65, focused ? 0.1 : 0.25]
 		]);
 		map.setPaintProperty('air-route-line', 'line-opacity-transition', {
 			duration: reducedMotion() ? 0 : 160
@@ -5459,11 +5752,19 @@
 			['linear'],
 			['zoom'],
 			5,
-			['case', connected, 1, focused ? 0.12 : ['case', regional, 0.9, 0.32]],
+			[
+				'*',
+				quiet ? 0.2 : 1,
+				['case', connected, 1, focused ? 0.12 : ['case', regional, 0.9, 0.32]]
+			],
 			10,
-			['case', connected, 1, focused ? 0.16 : ['case', regional, 0.9, 0.55]],
+			[
+				'*',
+				quiet ? 0.2 : 1,
+				['case', connected, 1, focused ? 0.16 : ['case', regional, 0.9, 0.55]]
+			],
 			15,
-			['case', connected, 1, focused ? 0.16 : 0.6]
+			['*', quiet ? 0.2 : 1, ['case', connected, 1, focused ? 0.16 : 0.6]]
 		]);
 		const stops =
 			airState?.routes.find((route) => route.id === inspectedAirRouteId)?.itinerary_iata ?? [];
@@ -5480,14 +5781,52 @@
 	});
 	$effect(() => {
 		if (!ready || !active || !map) return;
+		const quiet = !!presentation?.emphasis?.quietContext;
+		const focusRoute = presentation?.inspect?.mode === 'ferry' ? presentation.inspect.routeId : '';
 		const selected: import('maplibre-gl').ExpressionSpecification = [
 			'any',
 			['==', ['get', 'selected'], true],
 			['==', ['get', 'route_id'], inspectedSeaRouteId || '__none__']
 		];
 		map.setPaintProperty('sea-route-casing', 'line-width', routeLineWidth(selected, 3.6, 5.4));
-		for (const id of ['sea-route-line', 'sea-route-unverified'])
+		for (const id of ['sea-route-line', 'sea-route-unverified']) {
 			map.setPaintProperty(id, 'line-width', routeLineWidth(selected, 1.7, 3.2));
+			map.setPaintProperty(id, 'line-opacity-transition', { duration: reducedMotion() ? 0 : 240 });
+			map.setPaintProperty(id, 'line-opacity', [
+				'interpolate',
+				['linear'],
+				['zoom'],
+				5,
+				quiet
+					? [
+							'case',
+							['==', ['get', 'route_id'], focusRoute || '__none__'],
+							0.72 * 0.65,
+							0.72 * 0.14
+						]
+					: 0.72,
+				9,
+				quiet
+					? ['case', ['==', ['get', 'route_id'], focusRoute || '__none__'], 0.8 * 0.65, 0.8 * 0.14]
+					: 0.8,
+				14,
+				quiet
+					? [
+							'case',
+							['==', ['get', 'route_id'], focusRoute || '__none__'],
+							0.58 * 0.65,
+							0.58 * 0.14
+						]
+					: 0.58
+			]);
+		}
+		map.setPaintProperty('sea-route-casing', 'line-opacity', quiet ? 0.06 : 0.4);
+		map.setPaintProperty('sea-route-arrows', 'text-opacity', quiet ? 0.12 : 0.6);
+		for (const id of ['sea-island-points', 'sea-port-points']) {
+			map.setPaintProperty(id, 'circle-opacity', quiet ? 0.3 : 1);
+			map.setPaintProperty(id, 'circle-stroke-opacity', quiet ? 0.3 : 1);
+		}
+		map.setPaintProperty('sea-port-labels', 'text-opacity', quiet ? 0.4 : 1);
 	});
 	$effect(() => {
 		if (!ready || !active || !map) return;
@@ -5518,6 +5857,7 @@
 		void policyOperations;
 		void pendingProposal;
 		void placementTitle;
+		void presentation;
 		untrack(syncPolicyMarkers);
 	});
 	$effect(() => {
@@ -5572,6 +5912,9 @@
 	$effect(() => {
 		if (!ready || !active || !map) return;
 		// Opacity changes paint only: no source rebuilding, evidence fetching or recalculation.
+		const transition = { duration: reducedMotion() ? 0 : presentation ? 420 : 180 };
+		for (const id of ['policy-current-fill', 'policy-impact-fill'])
+			map.setPaintProperty(id, 'fill-opacity-transition', transition);
 		map.setPaintProperty('policy-coverage-fill', 'fill-opacity', coverageFillOpacity);
 		map.setPaintProperty('policy-coverage-fill-outline', 'line-opacity', coverageFillOpacity * 0.7);
 		map.setPaintProperty('policy-gaps-fill', 'fill-opacity', gapOpacity);
@@ -5590,6 +5933,56 @@
 			'fill-opacity',
 			seaState || hasPolicyOverlay ? 0 : 0.09
 		);
+	});
+	$effect(() => {
+		void presentationProposalKey;
+		const instance = map;
+		if (!ready || !active || !instance) return;
+		const point = untrack(() => presentation?.emphasis?.proposalPoint);
+		setData(
+			'presentation-proposal-focus',
+			point && validCoordinates(point)
+				? collection([
+						{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: point } }
+					])
+				: emptyCollection
+		);
+		instance.setPaintProperty('presentation-proposal-pulse', 'circle-opacity', 0);
+		instance.setPaintProperty('presentation-proposal-pulse', 'circle-stroke-opacity', 0);
+		if (!point || presentationPhase !== 'complete' || reducedMotion() || document.hidden) return;
+		let frame = 0;
+		const started = performance.now();
+		function stop() {
+			cancelAnimationFrame(frame);
+			if (!instance!.getLayer('presentation-proposal-pulse')) return;
+			instance!.setPaintProperty('presentation-proposal-pulse', 'circle-opacity', 0);
+			instance!.setPaintProperty('presentation-proposal-pulse', 'circle-stroke-opacity', 0);
+		}
+		function pulse(now: number) {
+			const progress = Math.min(1, (now - started) / 1000);
+			instance!.setPaintProperty(
+				'presentation-proposal-pulse',
+				'circle-radius',
+				12 + progress * 26
+			);
+			instance!.setPaintProperty(
+				'presentation-proposal-pulse',
+				'circle-opacity',
+				0.08 * (1 - progress)
+			);
+			instance!.setPaintProperty(
+				'presentation-proposal-pulse',
+				'circle-stroke-opacity',
+				0.45 * (1 - progress)
+			);
+			if (progress < 1) frame = requestAnimationFrame(pulse);
+		}
+		frame = requestAnimationFrame(pulse);
+		document.addEventListener('visibilitychange', stop);
+		return () => {
+			stop();
+			document.removeEventListener('visibilitychange', stop);
+		};
 	});
 	$effect(() => {
 		if (!overlayPreferenceLoaded) return;
@@ -5617,7 +6010,357 @@
 		);
 	});
 	$effect(() => {
-		if (!ready || !active || !map || !focusBounds) return;
+		const scene = presentation;
+		if (!ready || !map) return;
+		setData(
+			'presentation-routes',
+			active && scene
+				? presentationRouteFeatures(preparePresentationPaths(scene.paths))
+				: emptyCollection
+		);
+		setData('presentation-population', emptyCollection);
+		if (!active || !scene) return;
+		if (scene.population) {
+			const maximum = Math.max(
+				1,
+				...scene.population.features.map((feature) => Number(feature.properties?.population) || 0)
+			);
+			setData('presentation-population', {
+				...scene.population,
+				features: scene.population.features.map((feature) => ({
+					...feature,
+					properties: {
+						...feature.properties,
+						presentation_population_fraction:
+							Math.max(0, Number(feature.properties?.population) || 0) / maximum
+					}
+				}))
+			});
+		}
+	});
+	$effect(() => {
+		const customAirplane = !!presentation && presentationAirplaneReady;
+		if (!map || !ready) return;
+		const aircraftIcon = customAirplane ? 'presentation-airplane' : 'atlas-route-aircraft';
+		map.setLayoutProperty('route-vehicle-symbols', 'icon-image', [
+			'match',
+			['get', 'mode'],
+			'air',
+			aircraftIcon,
+			'atlas-route-vessel'
+		]);
+		map.setLayoutProperty('presentation-vehicle-symbol', 'icon-image', [
+			'match',
+			['get', 'mode'],
+			'ferry',
+			'atlas-route-vessel',
+			'air',
+			aircraftIcon,
+			'bus',
+			'atlas-live-bus',
+			'atlas-origin'
+		]);
+		map.setLayoutProperty('presentation-vehicle-symbol', 'icon-size', [
+			'match',
+			['get', 'mode'],
+			'air',
+			customAirplane ? 1.18 : 1.1,
+			1.1
+		]);
+		map.setPaintProperty('presentation-vehicle-halo', 'circle-opacity', [
+			'case',
+			['==', ['get', 'mode'], 'air'],
+			customAirplane ? 0 : 0.95,
+			0.95
+		]);
+		map.setPaintProperty('presentation-vehicle-halo', 'circle-stroke-opacity', [
+			'case',
+			['==', ['get', 'mode'], 'air'],
+			customAirplane ? 0 : 1,
+			1
+		]);
+	});
+	$effect(() => {
+		void presentationMotionKey;
+		const scene = untrack(() => presentation);
+		const instance = map;
+		if (!ready || !instance) return;
+		let reportedProgress = 0;
+		function reportProgress(progress: number, phase: PresentationProgress['phase']) {
+			reportedProgress = progress;
+			untrack(() => onPresentationProgress?.({ key: scene?.key ?? '', progress, phase }));
+		}
+		function setPresentationPhase(phase: PresentationProgress['phase']) {
+			presentationPhase = phase;
+			reportProgress(reportedProgress, phase);
+		}
+		presentationAnimating = false;
+		presentationFollowing = false;
+		presentationProgress = 0;
+		setPresentationPhase('idle');
+		setData('presentation-vehicle', emptyCollection);
+		if (!active || !scene) return;
+		const paths = preparePresentationPaths(scene.paths);
+		let frame = 0;
+		let startedAt = 0;
+		let pausedAt: number | null = document.hidden ? performance.now() : null;
+		let canceled = false;
+		let lastPaint = 0;
+		let lastFollow = 0;
+		let followInterrupted = false;
+		let entryTimer: ReturnType<typeof setTimeout> | undefined;
+		let entryStage: 'overview' | 'hold' | 'approach' = 'overview';
+		const duration = Math.max(1, scene.playback?.durationMs ?? 1);
+		const entryDuration = Math.max(0, scene.camera.durationMs ?? 1400);
+		const establishDuration = Math.max(0, scene.playback?.establishMs ?? 750);
+		const padding = presentationCameraPadding(
+			container.clientWidth,
+			container.clientHeight,
+			scene.panel
+		);
+		const firstPosition = presentationPosition(paths, 0);
+		const followZoom =
+			'zoom' in scene.camera
+				? scene.camera.zoom
+				: firstPosition?.mode === 'air'
+					? 8.3
+					: firstPosition?.mode === 'ferry'
+						? 12.2
+						: firstPosition?.mode === 'walk'
+							? 15.4
+							: 14.9;
+		const easing = (value: number) => value * value * (3 - 2 * value);
+
+		function openSceneInspection() {
+			const inspection = untrack(() => presentation?.inspect);
+			if (!inspection || canceled || document.hidden) return;
+			inspectPresentationRoute(inspection);
+		}
+
+		function paint(progress: number, now: number, instant = false, follow = true) {
+			const position = presentationPosition(paths, progress);
+			setData('presentation-vehicle', presentationVehicleFeatures(position));
+			presentationProgress = progress;
+			reportProgress(progress, presentationPhase);
+			if (
+				follow &&
+				scene?.playback?.follow &&
+				position &&
+				!followInterrupted &&
+				(instant || now - lastFollow >= 160 || progress === 1)
+			) {
+				lastFollow = now;
+				const target = presentationPosition(paths, Math.min(1, progress + 280 / duration));
+				const camera = {
+					center: (target ?? position).point,
+					zoom: followZoom,
+					padding,
+					pitch: scene.camera.pitch ?? 0,
+					bearing: scene.camera.bearing ?? 0
+				};
+				if (instant) instance!.jumpTo(camera);
+				else
+					instance!.easeTo({
+						...camera,
+						duration: progress === 1 ? 600 : 420,
+						easing: (value) => 1 - (1 - value) * (1 - value)
+					});
+			}
+		}
+		function animate(now: number) {
+			if (canceled || pausedAt !== null) return;
+			const progress = Math.min(1, (now - startedAt) / duration);
+			if (now - lastPaint >= 32 || progress === 1) {
+				paint(progress, now);
+				lastPaint = now;
+			}
+			if (progress < 1) frame = requestAnimationFrame(animate);
+			else {
+				presentationAnimating = false;
+				setPresentationPhase('complete');
+			}
+		}
+		function startPlayback() {
+			if (canceled || document.hidden || followInterrupted) return;
+			if (!scene?.playback || !paths.length) {
+				setPresentationPhase('complete');
+				untrack(openSceneInspection);
+				return;
+			}
+			startedAt = performance.now();
+			if (reducedMotion()) {
+				paint(1, startedAt, true);
+				setPresentationPhase('complete');
+				return;
+			}
+			setPresentationPhase('playing');
+			presentationFollowing = !!scene.playback.follow;
+			paint(0, startedAt);
+			presentationAnimating = true;
+			frame = requestAnimationFrame(animate);
+		}
+		function approachVehicle() {
+			if (canceled || document.hidden || followInterrupted) return;
+			entryStage = 'approach';
+			if (!scene?.playback?.follow || !firstPosition) {
+				startPlayback();
+				return;
+			}
+			instance!.on('moveend', finishEntry);
+			instance!.easeTo({
+				center: firstPosition.point,
+				zoom: followZoom,
+				padding,
+				pitch: scene.camera.pitch ?? 0,
+				bearing: scene.camera.bearing ?? 0,
+				duration: 850,
+				easing
+			});
+			if (!instance!.isMoving()) finishEntry();
+		}
+		function finishEntry() {
+			if (canceled || presentationPhase !== 'entering' || document.hidden || followInterrupted)
+				return;
+			instance!.off('moveend', finishEntry);
+			if (scene?.playback && paths.length && entryStage === 'overview' && !reducedMotion()) {
+				entryStage = 'hold';
+				// Both endpoints stay visible before the camera approaches the moving vehicle.
+				paint(0, performance.now(), false, false);
+				entryTimer = setTimeout(approachVehicle, establishDuration);
+				return;
+			}
+			startPlayback();
+		}
+		function enterScene() {
+			if (canceled) return;
+			setPresentationPhase('entering');
+			if (document.hidden) {
+				pausedAt = performance.now();
+				return;
+			}
+			instance!.resize();
+			clearTimeout(entryTimer);
+			instance!.off('moveend', finishEntry);
+			instance!.stop();
+			untrack(closeInspection);
+			entryStage = 'overview';
+			const camera = scene!.camera;
+			const routeBounds = scene?.playback ? presentationPathBounds(paths) : null;
+			const bounds = routeBounds ?? ('bounds' in camera ? camera.bounds : null);
+			const framing = bounds
+				? instance!.cameraForBounds(bounds, {
+						absolutePadding: true,
+						padding,
+						maxZoom: 'zoom' in camera ? camera.zoom : (camera.maxZoom ?? 15),
+						bearing: camera.bearing ?? 0
+					})
+				: 'center' in camera
+					? { center: camera.center, zoom: camera.zoom }
+					: undefined;
+			instance!.on('moveend', finishEntry);
+			instance!.flyTo({
+				...framing,
+				padding,
+				pitch: camera.pitch ?? 0,
+				bearing: camera.bearing ?? 0,
+				duration: reducedMotion() ? 0 : entryDuration,
+				curve: 1.35,
+				easing
+			});
+			if (!instance!.isMoving()) finishEntry();
+		}
+		function stopFollowing() {
+			if (followInterrupted) return;
+			followInterrupted = true;
+			presentationFollowing = false;
+			clearTimeout(entryTimer);
+			cancelAnimationFrame(frame);
+			instance!.off('moveend', finishEntry);
+			// Cancel once on pointerdown; subsequent drag events retain their gesture handlers.
+			instance!.stop();
+			presentationAnimating = false;
+			if (scene?.playback && presentationPhase !== 'complete') {
+				paint(reportedProgress, performance.now(), false, false);
+				setPresentationPhase('paused');
+			} else if (presentationPhase === 'entering') {
+				setPresentationPhase('complete');
+				untrack(openSceneInspection);
+			}
+		}
+		function interruptFollow(event: { originalEvent?: unknown }) {
+			if (event.originalEvent) stopFollowing();
+		}
+		function visibilityChanged() {
+			if (document.hidden) {
+				pausedAt = performance.now();
+				cancelAnimationFrame(frame);
+				clearTimeout(entryTimer);
+				instance!.off('moveend', finishEntry);
+				instance!.stop();
+				presentationAnimating = false;
+				setData('presentation-vehicle', emptyCollection);
+				reportProgress(reportedProgress, 'idle');
+			} else if (pausedAt !== null) {
+				startedAt += performance.now() - pausedAt;
+				pausedAt = null;
+				if (presentationPhase === 'entering') enterScene();
+				else if (scene?.playback) {
+					if (reducedMotion() || presentationPhase === 'complete')
+						paint(1, performance.now(), reducedMotion());
+					else if (presentationPhase === 'playing') {
+						presentationAnimating = true;
+						frame = requestAnimationFrame(animate);
+					} else if (presentationPhase === 'paused')
+						paint(reportedProgress, performance.now(), false, false);
+				}
+				// Static panels also consume progress events to reveal their settled state.
+				reportProgress(reportedProgress, presentationPhase);
+			}
+		}
+		// Keep next/back interruptible: each new scene starts from the camera's current position.
+		frame = requestAnimationFrame(enterScene);
+		const canvas = instance.getCanvas();
+		canvas.addEventListener('pointerdown', stopFollowing, { capture: true });
+		canvas.addEventListener('wheel', stopFollowing, { capture: true, passive: true });
+		document.addEventListener('visibilitychange', visibilityChanged);
+		instance.on('dragstart', interruptFollow);
+		instance.on('zoomstart', interruptFollow);
+		instance.on('rotatestart', interruptFollow);
+		instance.on('pitchstart', interruptFollow);
+		return () => {
+			canceled = true;
+			reportProgress(reportedProgress, 'idle');
+			cancelAnimationFrame(frame);
+			clearTimeout(entryTimer);
+			canvas.removeEventListener('pointerdown', stopFollowing, { capture: true });
+			canvas.removeEventListener('wheel', stopFollowing, { capture: true });
+			document.removeEventListener('visibilitychange', visibilityChanged);
+			instance.off('moveend', finishEntry);
+			instance.off('dragstart', interruptFollow);
+			instance.off('zoomstart', interruptFollow);
+			instance.off('rotatestart', interruptFollow);
+			instance.off('pitchstart', interruptFollow);
+			instance.stop();
+		};
+	});
+	$effect(() => {
+		const inspection = presentation?.inspect;
+		if (!ready || !active || !inspection || presentationPhase !== 'complete') return;
+		const network = inspection.mode === 'air' ? airState : seaState;
+		if (!inspection.summary && !network?.routes?.some((route) => route.id === inspection.routeId))
+			return;
+		const current = untrack(() =>
+			inspection.mode === 'air' ? inspectedAirRouteId : inspectedSeaRouteId
+		);
+		const signature = JSON.stringify(inspection);
+		if (
+			current !== inspection.routeId ||
+			signature !== untrack(() => inspectedPresentationSignature)
+		)
+			untrack(() => inspectPresentationRoute(inspection));
+	});
+	$effect(() => {
+		if (!ready || !active || !map || presentation || !focusBounds) return;
 		const bounds = focusBounds.bounds;
 		userZoomGesture = null;
 		untrack(() => {
@@ -5656,7 +6399,7 @@
 		});
 	});
 	$effect(() => {
-		if (!ready || !active || !map || !focusPoint) return;
+		if (!ready || !active || !map || presentation || !focusPoint) return;
 		const coordinates = focusPoint.coordinates;
 		userZoomGesture = null;
 		untrack(() =>
@@ -5708,6 +6451,7 @@
 	});
 	$effect(() => {
 		if (!ready || !active) return;
+		if (presentation) return;
 		if (inlineDirectionsActive) {
 			if (!matchedDirections || matchedDirections === lastFittedDirections) return;
 			if (!routeFeatures.features.some((feature) => feature.geometry.type === 'LineString')) return;
@@ -5856,6 +6600,7 @@
 	$effect(() => {
 		if (!ready || !map || !active) return;
 		const requestedId = selectedId;
+		if (presentation) return;
 		// A fast cached connection can resolve before the deferred island focus.
 		// Keep its corridor framing authoritative until a new island is selected.
 		if (focusBounds || searchSelection || (inlineDirectionsActive && directionWaypoints.length))
@@ -5883,6 +6628,7 @@
 				!ready ||
 				!active ||
 				map !== instance ||
+				presentation ||
 				focusBounds ||
 				searchSelection ||
 				(inlineDirectionsActive && directionWaypoints.length) ||
@@ -5963,12 +6709,12 @@
 		});
 	});
 	$effect(() => {
-		if (!ready || !map || !active || journeyFocusVersion <= 0) return;
+		if (!ready || !map || !active || presentation || journeyFocusVersion <= 0) return;
 		if (journeyFocusVersion === lastJourneyFocusVersion || !routeFeatures.features.length) return;
 		const requestedVersion = journeyFocusVersion;
 		// A retained map must resize after it becomes visible before fitting a selected place.
 		journeyFocusFrame = requestAnimationFrame(() => {
-			if (!active || !map || requestedVersion !== journeyFocusVersion) return;
+			if (!active || !map || presentation || requestedVersion !== journeyFocusVersion) return;
 			map.resize();
 			mapHeight = container.clientHeight;
 			focusJourney();
@@ -5979,14 +6725,21 @@
 	$effect(() => {
 		const selection = searchSelection;
 		const instance = map;
-		if (!ready || !active || !instance || !selection || !validCoordinates(selection.coordinates)) {
+		if (
+			!ready ||
+			!active ||
+			!instance ||
+			presentation ||
+			!selection ||
+			!validCoordinates(selection.coordinates)
+		) {
 			untrack(clearSearchPlace);
 			return;
 		}
 		// Run after the retained map has resized and any island framing has settled.
 		// Popup focus stays in search so keyboard selection does not jump into map actions.
 		const frame = requestAnimationFrame(() => {
-			if (!active || map !== instance || searchSelection !== selection) return;
+			if (!active || map !== instance || presentation || searchSelection !== selection) return;
 			instance.resize();
 			userZoomGesture = null;
 			showSearchPlace(selection);
@@ -6008,6 +6761,21 @@
 
 <div
 	class="national-map"
+	data-presentation-key={presentation?.key ?? ''}
+	data-presentation-progress={presentationProgress.toFixed(3)}
+	data-presentation-animating={presentationAnimating}
+	data-presentation-following={presentationFollowing}
+	data-presentation-phase={presentationPhase}
+	data-presentation-panel={presentation?.panel ?? ''}
+	data-presentation-quiet={!!presentation?.emphasis?.quietContext}
+	data-presentation-paths={presentation?.paths.length ?? 0}
+	data-presentation-source-paths={sourceData.get('presentation-routes')?.features.length ?? 0}
+	data-presentation-population={presentation?.population?.features.length ?? 0}
+	data-presentation-end-longitude={presentationPathEnd?.[0]}
+	data-presentation-end-latitude={presentationPathEnd?.[1]}
+	data-presentation-min-latitude={presentationMinLatitude}
+	data-presentation-points-in-male={presentationPointsInMale}
+	data-presentation-airplane-image-ready={presentationAirplaneReady}
 	data-air-routes={airLayerEnabled ? (airState?.map_features.features.length ?? 0) : 0}
 	data-air-network-routes={airState?.map_features.features.length ?? 0}
 	data-air-airports={airState?.airports.length ?? 0}
@@ -6362,6 +7130,7 @@
 		<div
 			class="map-controls"
 			class:sea-inspector-open={seaInspectorOpen}
+			style:display={presentation ? 'none' : undefined}
 			bind:this={controls}
 			role="group"
 			aria-label="Map controls"
@@ -6613,303 +7382,310 @@
 			{#if mapControlsContent}<div class="map-coverage-controls">
 					{@render mapControlsContent()}
 				</div>{/if}
-			<div class="map-footer" class:has-legend={legendVisible}>
-				<div class="map-information-card" class:mobile-expanded={mobileLegendOpen}>
-					{#if seaView || airLayerEnabled}
-						<div
-							class="sea-pressure-key"
-							aria-label="Estimated service pressure"
-							data-testid="sea-pressure-legend"
-						>
-							<div class="sea-pressure-heading">
-								<div>
-									<strong>Estimated service pressure</strong><small
-										>{seaView
-											? 'Population per weekly departure'
-											: 'Flight frequency unconfirmed'}</small
-									>
-								</div>
-								{#if seaView && !seaInspectorOpen && onSeaLayerChange}<button
-										type="button"
-										class="sea-local-services"
-										onclick={() => onSeaLayerChange?.(false)}>Hide sea route lines</button
-									>{/if}
-							</div>
-							<div class="sea-pressure-swatches">
-								{#each [{ label: 'Low', color: seaPressureColors.low }, { label: 'Moderate', color: seaPressureColors.medium }, { label: 'High', color: seaPressureColors.high }, { label: 'Unknown', color: seaPressureColors.unknown }] as item (item.label)}
-									<span><i style:background={item.color} aria-hidden="true"></i>{item.label}</span>
-								{/each}
-							</div>
-							<div class="network-route-key">
-								{#if seaView}<span><i aria-hidden="true"></i><Ship size={11} />Sea</span>{/if}
-								{#if airLayerEnabled}<span class="air"
-										><i aria-hidden="true"></i><Plane size={11} />Air · frequency unconfirmed</span
-									>{/if}
-							</div>
-							{#if seaView && seaNetworkStatus === 'loading'}<p
-									class="sea-network-status"
-									role="status"
-								>
-									Loading sea connections…
-								</p>
-							{:else if seaView && seaNetworkStatus === 'error'}<p
-									class="sea-network-status"
-									role="status"
-								>
-									Sea connections unavailable.{#if onSeaRetry}<button
-											type="button"
-											onclick={onSeaRetry}>Try again</button
-										>{/if}
-								</p>{/if}
-							{#if airLayerEnabled && airNetworkStatus === 'loading'}<p
-									class="sea-network-status"
-									role="status"
-								>
-									Loading domestic flights…
-								</p>
-							{:else if airLayerEnabled && airNetworkStatus === 'error'}<p
-									class="sea-network-status"
-									role="status"
-								>
-									Domestic flights unavailable.{#if onAirRetry}<button
-											type="button"
-											onclick={onAirRetry}>Try again</button
-										>{/if}
-								</p>{/if}
-						</div>
-					{/if}
-					{#if !seaInspectorOpen}
-						{#if accessibilityOverview}
-							<div class="accessibility-key" aria-label="Island accessibility score colours">
-								<strong>Accessibility /100</strong>
-								<span><span>Low</span><i aria-hidden="true"></i><span>High</span></span>
-								<small>Residential islands · Grey: limited evidence</small>
-							</div>
-						{:else}
-							{#if (gapFeatures.features.length || coverageFillFeatures.features.length) && !impactFeatures.features.length}<div
-									class="policy-colour-key"
-									aria-label="Service gap colours"
-								>
-									<strong
-										>{coverageFillFeatures.features.length ||
-										gapFeatures.features.some((feature) => feature.properties?.origin_id)
-											? gapLens === 'transport'
-												? 'Walk to a bus stop or terminal'
-												: 'Local journey time'
-											: 'Service availability'}</strong
-									>
-									<span
-										><i class="policy-gap-gradient" style:background={GAP_GRADIENT}
-										></i>{coverageFillFeatures.features.length ||
-										gapFeatures.features.some((feature) => feature.properties?.origin_id)
-											? 'Shorter → at / beyond target'
-											: 'More services → fewer services'}</span
-									>
-									<small
-										>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
-											? 'Grey: no estimate'
-											: 'Services across the island'}</small
-									>
-									{#if coverageFillFeatures.features.length}
-										<span class="policy-coverage-fill-key">Gaps: nearby estimates</span>
-									{/if}
-								</div>{:else if impactFeatures.features.length}<div
-									class="policy-colour-key"
-									aria-label="Proposal impact colours"
-								>
-									<strong
-										>{policyOverlayView === 'before'
-											? 'Without proposal'
-											: policyOverlayView === 'after'
-												? 'With proposal'
-												: 'Proposed access change'}</strong
-									>
-									{#if policyOverlayView === 'before' || policyOverlayView === 'after'}
-										<span
-											><i class="policy-gap-gradient" style:background={GAP_GRADIENT}></i>Shorter →
-											at / beyond target</span
+			{#if !presentation}
+				<div class="map-footer" class:has-legend={legendVisible}>
+					<div class="map-information-card" class:mobile-expanded={mobileLegendOpen}>
+						{#if seaView || airLayerEnabled}
+							<div
+								class="sea-pressure-key"
+								aria-label="Estimated service pressure"
+								data-testid="sea-pressure-legend"
+							>
+								<div class="sea-pressure-heading">
+									<div>
+										<strong>Estimated service pressure</strong><small
+											>{seaView
+												? 'Population per weekly departure'
+												: 'Flight frequency unconfirmed'}</small
 										>
-										<small>Same journey-time scale in both views</small>
-									{/if}
-									<div class="policy-overlay-swatches">
-										{#each policyOverlayLegend as item (item.label)}<span
-												><i style:background={item.color}></i>{item.label}</span
-											>{/each}
 									</div>
-									{#if policyStale || policyCalculating}
-										<small class="policy-overlay-status" data-testid="policy-overlay-status"
-											>Updating proposal · {policyOverlayView === 'before'
-												? 'current access shown'
-												: 'showing previous result'}</small
-										>
-									{:else if comparisonPreview && policyOverlayView === 'after'}
-										<small class="policy-overlay-status" data-testid="policy-overlay-status"
-											>Placement preview · not added</small
-										>
-									{/if}
-									{#if coverageFillFeatures.features.length}
-										<span class="policy-coverage-fill-key">Gaps: nearby estimates</span>
-									{/if}
-								</div>{/if}
-							{#if scenarioPreview.unlocated}<div class="street-context-status" role="status">
-									<X size={12} />{scenarioPreview.unlocated}
-									{scenarioPreview.unlocated === 1 ? 'edit lacks' : 'edits lack'} a location · select
-									a location on the map
-								</div>{/if}
-							{#if picking}<div class="map-hint picking">
-									<Crosshair size={15} /><span>Click to place · Enter at map center</span>
-								</div>{/if}
-							{#if mobileLegendOpen}
-								<div
-									class="map-key-details"
-									id={mapKeyId}
-									aria-hidden={!mobileLegendOpen}
-									inert={!mobileLegendOpen}
-									in:slide={{ duration: shouldAnimateMotion() ? 220 : 0 }}
-									out:slide={{ duration: shouldAnimateMotion() ? 140 : 0 }}
-								>
-									<section class="map-movement-status" aria-label="Live coverage">
-										<div class="movement-counts">
-											<span title="Aircraft observations"
-												><Plane size={14} />{activityKinds.aircraft}</span
-											>
-											<span title="Vessel observations"
-												><Ship size={14} />{activityKinds.vessel}</span
-											>
-											<span title="Bus observations"><BusFront size={14} />{activityKinds.bus}</span
-											>
-											<strong title="Visible observations / all positions received for this area"
-												>{renderedMovementObservations} visible / {liveFeatures.features.length} received</strong
-											>
-										</div>
-										{#if freshMovement.length && renderedMovementObservations < freshMovement.length}<Button
-												variant="ghost"
-												size="sm"
-												class="movement-fit-button"
-												onclick={focusMovement}><LocateFixed size={13} />View nearby</Button
-											>{/if}
-									</section>
-
-									{#if !picking && hoverDescription}<div class="map-hint">
-											<MousePointer2 size={15} />
-											<span
-												>{hoverDescription ||
-													(nationalScale
-														? 'Select an island to explore'
-														: 'Click a place to inspect, plan a journey or propose a change')}</span
-											>
-										</div>{/if}
-									{#if legendVisible}<div class="map-legend" aria-label="Map key">
-											{#if facilitiesVisible}<span
-													><Hospital size={12} class="health-key" />Health</span
-												><span><GraduationCap size={13} class="school-key" />Schools</span>{/if}
-											{#if transportVisible}<span
-													><BusFront size={12} class="transport-key" />Bus stops</span
-												>
-												<span><Ship size={12} class="marine-key" />Ferry terminals</span>
-												<span><Anchor size={12} class="marine-key" />Piers</span>
-												<span><Plane size={12} class="transport-key" />Airports</span>{/if}
-											{#if facilitiesVisible || transportVisible}<span
-													><MapPin size={12} />Other places</span
-												>
-												<span><i class="legend-cluster">#</i>Grouped places</span>{/if}
-											{#if renderedVesselGroups}<span
-													><Ship size={12} class="marine-key" />Grouped vessels</span
-												>{/if}
-											{#if scenarioFeatures.features.length}<span
-													><i class="legend-proposed"></i>Proposed</span
-												>{/if}
-											{#if scenarioFeatures.features.some( (feature) => ['remove_bus_stop', 'disable_ferry_terminal', 'road_closure'].includes(feature.properties?.type) )}<span
-													><X size={12} />Removal / closure</span
-												>{/if}
-											{#if routeFeatures.features.some((feature) => feature.geometry.type === 'LineString' && !['walk', 'ferry'].includes(feature.properties?.mode))}<span
-													><i class="legend-route"></i>{routeFeatures.features.some(
-														(feature) => feature.properties?.mode === 'bus'
-													)
-														? 'Bus journey'
-														: 'Journey route'}</span
-												>{/if}
-											{#if routeFeatures.features.some((feature) => feature.geometry.type === 'LineString' && feature.properties?.mode === 'walk')}<span
-													><i class="legend-walk"></i>{inlineDirectionsActive
-														? 'Walking route'
-														: 'Walk to / from stop'}</span
-												>{/if}
-											{#if routeFeatures.features.some((feature) => feature.geometry.type === 'LineString' && feature.properties?.mode === 'ferry')}<span
-													><i class="legend-ferry-route"></i>Ferry journey</span
-												>{/if}
-											{#if journeyStopFeatures.features.length}<span
-													><i class="legend-journey-stop"></i>Board / get off here</span
-												>{/if}
-											{#if inlineDirectionsActive}
-												{#each directionWaypoints as point (`${point.index}:${point.id}`)}
-													<span
-														><b
-															class:legend-origin={point.role !== 'end'}
-															class:legend-destination={point.role === 'end'}>{point.letter}</b
-														>{point.role === 'start'
-															? 'Start'
-															: point.role === 'end'
-																? 'Destination'
-																: 'Via point'}</span
-													>
-												{/each}
-											{:else if routeStart || routeEnd}<span
-													><b class="legend-origin">A</b>Start</span
-												><span><b class="legend-destination">B</b>Destination</span>{/if}
-										</div>{/if}
+									{#if seaView && !seaInspectorOpen && onSeaLayerChange}<button
+											type="button"
+											class="sea-local-services"
+											onclick={() => onSeaLayerChange?.(false)}>Hide sea route lines</button
+										>{/if}
 								</div>
+								<div class="sea-pressure-swatches">
+									{#each [{ label: 'Low', color: seaPressureColors.low }, { label: 'Moderate', color: seaPressureColors.medium }, { label: 'High', color: seaPressureColors.high }, { label: 'Unknown', color: seaPressureColors.unknown }] as item (item.label)}
+										<span><i style:background={item.color} aria-hidden="true"></i>{item.label}</span
+										>
+									{/each}
+								</div>
+								<div class="network-route-key">
+									{#if seaView}<span><i aria-hidden="true"></i><Ship size={11} />Sea</span>{/if}
+									{#if airLayerEnabled}<span class="air"
+											><i aria-hidden="true"></i><Plane size={11} />Air · frequency unconfirmed</span
+										>{/if}
+								</div>
+								{#if seaView && seaNetworkStatus === 'loading'}<p
+										class="sea-network-status"
+										role="status"
+									>
+										Loading sea connections…
+									</p>
+								{:else if seaView && seaNetworkStatus === 'error'}<p
+										class="sea-network-status"
+										role="status"
+									>
+										Sea connections unavailable.{#if onSeaRetry}<button
+												type="button"
+												onclick={onSeaRetry}>Try again</button
+											>{/if}
+									</p>{/if}
+								{#if airLayerEnabled && airNetworkStatus === 'loading'}<p
+										class="sea-network-status"
+										role="status"
+									>
+										Loading domestic flights…
+									</p>
+								{:else if airLayerEnabled && airNetworkStatus === 'error'}<p
+										class="sea-network-status"
+										role="status"
+									>
+										Domestic flights unavailable.{#if onAirRetry}<button
+												type="button"
+												onclick={onAirRetry}>Try again</button
+											>{/if}
+									</p>{/if}
+							</div>
+						{/if}
+						{#if !seaInspectorOpen}
+							{#if accessibilityOverview}
+								<div class="accessibility-key" aria-label="Island accessibility score colours">
+									<strong>Accessibility /100</strong>
+									<span><span>Low</span><i aria-hidden="true"></i><span>High</span></span>
+									<small>Residential islands · Grey: limited evidence</small>
+								</div>
+							{:else}
+								{#if (gapFeatures.features.length || coverageFillFeatures.features.length) && !impactFeatures.features.length}<div
+										class="policy-colour-key"
+										aria-label="Service gap colours"
+									>
+										<strong
+											>{coverageFillFeatures.features.length ||
+											gapFeatures.features.some((feature) => feature.properties?.origin_id)
+												? gapLens === 'transport'
+													? 'Walk to a bus stop or terminal'
+													: 'Local journey time'
+												: 'Service availability'}</strong
+										>
+										<span
+											><i class="policy-gap-gradient" style:background={GAP_GRADIENT}
+											></i>{coverageFillFeatures.features.length ||
+											gapFeatures.features.some((feature) => feature.properties?.origin_id)
+												? 'Shorter → at / beyond target'
+												: 'More services → fewer services'}</span
+										>
+										<small
+											>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
+												? 'Grey: no estimate'
+												: 'Services across the island'}</small
+										>
+										{#if coverageFillFeatures.features.length}
+											<span class="policy-coverage-fill-key">Gaps: nearby estimates</span>
+										{/if}
+									</div>{:else if impactFeatures.features.length}<div
+										class="policy-colour-key"
+										aria-label="Proposal impact colours"
+									>
+										<strong
+											>{policyOverlayView === 'before'
+												? 'Without proposal'
+												: policyOverlayView === 'after'
+													? 'With proposal'
+													: 'Proposed access change'}</strong
+										>
+										{#if policyOverlayView === 'before' || policyOverlayView === 'after'}
+											<span
+												><i class="policy-gap-gradient" style:background={GAP_GRADIENT}></i>Shorter
+												→ at / beyond target</span
+											>
+											<small>Same journey-time scale in both views</small>
+										{/if}
+										<div class="policy-overlay-swatches">
+											{#each policyOverlayLegend as item (item.label)}<span
+													><i style:background={item.color}></i>{item.label}</span
+												>{/each}
+										</div>
+										{#if policyStale || policyCalculating}
+											<small class="policy-overlay-status" data-testid="policy-overlay-status"
+												>Updating proposal · {policyOverlayView === 'before'
+													? 'current access shown'
+													: 'showing previous result'}</small
+											>
+										{:else if comparisonPreview && policyOverlayView === 'after'}
+											<small class="policy-overlay-status" data-testid="policy-overlay-status"
+												>Placement preview · not added</small
+											>
+										{/if}
+										{#if coverageFillFeatures.features.length}
+											<span class="policy-coverage-fill-key">Gaps: nearby estimates</span>
+										{/if}
+									</div>{/if}
+								{#if scenarioPreview.unlocated}<div class="street-context-status" role="status">
+										<X size={12} />{scenarioPreview.unlocated}
+										{scenarioPreview.unlocated === 1 ? 'edit lacks' : 'edits lack'} a location · select
+										a location on the map
+									</div>{/if}
+								{#if picking}<div class="map-hint picking">
+										<Crosshair size={15} /><span>Click to place · Enter at map center</span>
+									</div>{/if}
+								{#if mobileLegendOpen}
+									<div
+										class="map-key-details"
+										id={mapKeyId}
+										aria-hidden={!mobileLegendOpen}
+										inert={!mobileLegendOpen}
+										in:slide={{ duration: shouldAnimateMotion() ? 220 : 0 }}
+										out:slide={{ duration: shouldAnimateMotion() ? 140 : 0 }}
+									>
+										<section class="map-movement-status" aria-label="Live coverage">
+											<div class="movement-counts">
+												<span title="Aircraft observations"
+													><Plane size={14} />{activityKinds.aircraft}</span
+												>
+												<span title="Vessel observations"
+													><Ship size={14} />{activityKinds.vessel}</span
+												>
+												<span title="Bus observations"
+													><BusFront size={14} />{activityKinds.bus}</span
+												>
+												<strong title="Visible observations / all positions received for this area"
+													>{renderedMovementObservations} visible / {liveFeatures.features.length} received</strong
+												>
+											</div>
+											{#if freshMovement.length && renderedMovementObservations < freshMovement.length}<Button
+													variant="ghost"
+													size="sm"
+													class="movement-fit-button"
+													onclick={focusMovement}><LocateFixed size={13} />View nearby</Button
+												>{/if}
+										</section>
+
+										{#if !picking && hoverDescription}<div class="map-hint">
+												<MousePointer2 size={15} />
+												<span
+													>{hoverDescription ||
+														(nationalScale
+															? 'Select an island to explore'
+															: 'Click a place to inspect, plan a journey or propose a change')}</span
+												>
+											</div>{/if}
+										{#if legendVisible}<div class="map-legend" aria-label="Map key">
+												{#if facilitiesVisible}<span
+														><Hospital size={12} class="health-key" />Health</span
+													><span><GraduationCap size={13} class="school-key" />Schools</span>{/if}
+												{#if transportVisible}<span
+														><BusFront size={12} class="transport-key" />Bus stops</span
+													>
+													<span><Ship size={12} class="marine-key" />Ferry terminals</span>
+													<span><Anchor size={12} class="marine-key" />Piers</span>
+													<span><Plane size={12} class="transport-key" />Airports</span>{/if}
+												{#if facilitiesVisible || transportVisible}<span
+														><MapPin size={12} />Other places</span
+													>
+													<span><i class="legend-cluster">#</i>Grouped places</span>{/if}
+												{#if renderedVesselGroups}<span
+														><Ship size={12} class="marine-key" />Grouped vessels</span
+													>{/if}
+												{#if scenarioFeatures.features.length}<span
+														><i class="legend-proposed"></i>Proposed</span
+													>{/if}
+												{#if scenarioFeatures.features.some( (feature) => ['remove_bus_stop', 'disable_ferry_terminal', 'road_closure'].includes(feature.properties?.type) )}<span
+														><X size={12} />Removal / closure</span
+													>{/if}
+												{#if routeFeatures.features.some((feature) => feature.geometry.type === 'LineString' && !['walk', 'ferry'].includes(feature.properties?.mode))}<span
+														><i class="legend-route"></i>{routeFeatures.features.some(
+															(feature) => feature.properties?.mode === 'bus'
+														)
+															? 'Bus journey'
+															: 'Journey route'}</span
+													>{/if}
+												{#if routeFeatures.features.some((feature) => feature.geometry.type === 'LineString' && feature.properties?.mode === 'walk')}<span
+														><i class="legend-walk"></i>{inlineDirectionsActive
+															? 'Walking route'
+															: 'Walk to / from stop'}</span
+													>{/if}
+												{#if routeFeatures.features.some((feature) => feature.geometry.type === 'LineString' && feature.properties?.mode === 'ferry')}<span
+														><i class="legend-ferry-route"></i>Ferry journey</span
+													>{/if}
+												{#if journeyStopFeatures.features.length}<span
+														><i class="legend-journey-stop"></i>Board / get off here</span
+													>{/if}
+												{#if inlineDirectionsActive}
+													{#each directionWaypoints as point (`${point.index}:${point.id}`)}
+														<span
+															><b
+																class:legend-origin={point.role !== 'end'}
+																class:legend-destination={point.role === 'end'}>{point.letter}</b
+															>{point.role === 'start'
+																? 'Start'
+																: point.role === 'end'
+																	? 'Destination'
+																	: 'Via point'}</span
+														>
+													{/each}
+												{:else if routeStart || routeEnd}<span
+														><b class="legend-origin">A</b>Start</span
+													><span><b class="legend-destination">B</b>Destination</span>{/if}
+											</div>{/if}
+									</div>
+								{/if}
 							{/if}
 						{/if}
+					</div>
+				</div>
+				<div class="map-toolbar" role="group" aria-label="Atlas controls">
+					<span class="atlas-mark" title="Maldives map"
+						><MapIcon size={18} strokeWidth={1.6} /></span
+					>
+					<span class="toolbar-divider"></span>
+					<Button
+						bind:ref={layersButton}
+						variant="ghost"
+						class="map-tool-button"
+						aria-expanded={controlsPanel === 'layers'}
+						onclick={() => toggleControls('layers')}
+						><Layers size={16} /><span>Layers</span><span class="layer-count"
+							>{activeLayerCount}</span
+						></Button
+					>
+					<Button
+						bind:ref={viewButton}
+						variant="ghost"
+						class="map-tool-button"
+						aria-expanded={controlsPanel === 'view'}
+						onclick={() => toggleControls('view')}
+						><SlidersHorizontal size={16} /><span>View</span><ChevronDown size={12} /></Button
+					>
+					<span class="toolbar-divider"></span>
+					<Button
+						variant="ghost"
+						size="icon"
+						class="map-national-button"
+						disabled={!ready}
+						aria-label="Show all Maldives islands"
+						title="Show all Maldives islands"
+						onclick={nationalView}><Globe2 size={18} /></Button
+					>
+
+					{#if !accessibilityOverview}
+						<div class="mobile-key-toggle">
+							<Button
+								variant="ghost"
+								size="sm"
+								aria-expanded={mobileLegendOpen}
+								aria-controls={mapKeyId}
+								aria-label="Map key & live coverage"
+								onclick={toggleMapKey}
+								><Info size={12} /><span class="map-key-label">Key</span><ChevronDown
+									size={12}
+								/></Button
+							>
+						</div>
 					{/if}
 				</div>
-			</div>
-			<div class="map-toolbar" role="group" aria-label="Atlas controls">
-				<span class="atlas-mark" title="Maldives map"><MapIcon size={18} strokeWidth={1.6} /></span>
-				<span class="toolbar-divider"></span>
-				<Button
-					bind:ref={layersButton}
-					variant="ghost"
-					class="map-tool-button"
-					aria-expanded={controlsPanel === 'layers'}
-					onclick={() => toggleControls('layers')}
-					><Layers size={16} /><span>Layers</span><span class="layer-count">{activeLayerCount}</span
-					></Button
-				>
-				<Button
-					bind:ref={viewButton}
-					variant="ghost"
-					class="map-tool-button"
-					aria-expanded={controlsPanel === 'view'}
-					onclick={() => toggleControls('view')}
-					><SlidersHorizontal size={16} /><span>View</span><ChevronDown size={12} /></Button
-				>
-				<span class="toolbar-divider"></span>
-				<Button
-					variant="ghost"
-					size="icon"
-					class="map-national-button"
-					disabled={!ready}
-					aria-label="Show all Maldives islands"
-					title="Show all Maldives islands"
-					onclick={nationalView}><Globe2 size={18} /></Button
-				>
-
-				{#if !accessibilityOverview}
-					<div class="mobile-key-toggle">
-						<Button
-							variant="ghost"
-							size="sm"
-							aria-expanded={mobileLegendOpen}
-							aria-controls={mapKeyId}
-							aria-label="Map key & live coverage"
-							onclick={toggleMapKey}
-							><Info size={12} /><span class="map-key-label">Key</span><ChevronDown
-								size={12}
-							/></Button
-						>
-					</div>
-				{/if}
-			</div>
+			{/if}
 		</div>
 		{#if mapBusy}
 			<div class="atlas-loading-status" role="status">
@@ -6929,6 +7705,127 @@
 </div>
 
 <style>
+	:global(.national-map[data-presentation-panel='route'] .map-source-record-popup) {
+		inset: 24px 24px auto auto;
+		width: 410px;
+		max-width: calc(100% - 48px) !important;
+		transform: none !important;
+		z-index: 7;
+	}
+	:global(
+		.national-map[data-presentation-panel='route'] .map-source-record-popup .maplibregl-popup-tip
+	) {
+		display: none;
+	}
+	:global(
+		.national-map[data-presentation-panel='route'] .map-source-record-popup .map-record-card
+	) {
+		max-height: calc(100dvh - 176px);
+		overflow: auto;
+	}
+	:global(
+		.national-map[data-presentation-panel='route'] .map-record-popup .maplibregl-popup-content
+	) {
+		padding: 24px;
+	}
+	:global(.national-map[data-presentation-panel='route'] .map-record-card .map-record-kind) {
+		font-size: 13px;
+	}
+	:global(.national-map[data-presentation-panel='route'] .map-record-card h3) {
+		margin: 9px 14px 17px 0;
+		font-size: 26px;
+		line-height: 1.25;
+	}
+	:global(.national-map[data-presentation-panel='route'] .map-network-route-card > dl) {
+		grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+		gap: 15px 18px;
+		margin-block: 20px;
+		font-size: 16px;
+		line-height: 1.45;
+	}
+	:global(.national-map[data-presentation-panel='route'] .map-network-route-card > dl dd) {
+		font-size: 30px;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+	}
+	:global(
+		.national-map[data-presentation-panel='route']
+			.map-network-route-card
+			> .presentation-route-summary
+	) {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 5px;
+	}
+	:global(
+		.national-map[data-presentation-panel='route']
+			.presentation-route-summary
+			> dt:not(:first-child)
+	) {
+		margin-top: 16px;
+	}
+	:global(
+		.national-map[data-presentation-panel='route']
+			.map-network-route-card
+			> .presentation-route-summary
+			dd
+	) {
+		font-size: 36px;
+		line-height: 1.2;
+	}
+	:global(
+		.national-map[data-presentation-panel='route'] .map-network-route-card .sea-route-pressure
+	),
+	:global(.national-map[data-presentation-panel='route'] .map-network-route-card p),
+	:global(.national-map[data-presentation-panel='route'] .map-network-route-card details),
+	:global(.national-map[data-presentation-panel='route'] .map-network-route-card details dl),
+	:global(.national-map[data-presentation-panel='route'] .map-network-route-card .sea-route-stops),
+	:global(
+		.national-map[data-presentation-panel='route'] .map-network-route-card .sea-route-sources
+	) {
+		font-size: 14px;
+		line-height: 1.5;
+	}
+	:global(.national-map[data-presentation-panel='route'] .map-network-route-card > p) {
+		margin-block: 17px;
+	}
+	:global(.national-map[data-presentation-quiet='true'] .atlas-street-label),
+	:global(.national-map[data-presentation-quiet='true'] .atlas-neighbor-label),
+	:global(
+		.national-map[data-presentation-quiet='true'] .atlas-stop-label:not(.journey-stop-label)
+	) {
+		opacity: 0.35;
+	}
+	@media (max-width: 700px) {
+		:global(.national-map[data-presentation-panel='route'] .map-source-record-popup) {
+			inset: auto 14px 82px;
+			width: auto;
+			max-width: none !important;
+		}
+		:global(
+			.national-map[data-presentation-panel='route'] .map-source-record-popup .map-record-card
+		) {
+			max-height: calc(43dvh - 38px);
+		}
+		:global(
+			.national-map[data-presentation-panel='route'] .map-record-popup .maplibregl-popup-content
+		) {
+			padding: 19px;
+		}
+		:global(.national-map[data-presentation-panel='route'] .map-network-route-card > dl dd) {
+			font-size: 24px;
+		}
+		:global(.national-map[data-presentation-panel='route'] .map-record-card h3) {
+			font-size: 23px;
+		}
+		:global(
+			.national-map[data-presentation-panel='route']
+				.map-network-route-card
+				> .presentation-route-summary
+				dd
+		) {
+			font-size: 28px;
+		}
+	}
 	.national-map {
 		position: relative;
 		height: 100%;

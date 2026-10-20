@@ -273,6 +273,50 @@ def test_direction_result_cache_reuses_exact_query_and_invalidates_source(
     assert len(calls) == 5
 
 
+def test_route_selection_is_forwarded_and_has_a_distinct_cached_query(
+    client, tmp_path, monkeypatch
+):
+    import app.api.routes.routing as routes
+
+    calls = []
+    client.app.state.computed_cache = ComputedCache(tmp_path / "route-selection")
+    client.app.state.source_version = SimpleNamespace(version=lambda: "source-1")
+
+    def calculate(*args):
+        calls.append(args)
+        return {"status": "ok", "selected_route_ids": args[6]}
+
+    monkeypatch.setattr(routes, "route_multistop", calculate)
+    payload = {"points": [[73, 3], [73.001, 3]], "mode": "transit"}
+    assert client.post("/api/v1/routing/journey", json=payload).json()["selected_route_ids"] is None
+    payload["route_ids"] = ["rtl:route:129"]
+    assert client.post("/api/v1/routing/journey", json=payload).json()["selected_route_ids"] == [
+        "rtl:route:129"
+    ]
+    client.post("/api/v1/routing/journey", json=payload)
+    assert len(calls) == 2
+    assert calls[1][6] == ["rtl:route:129"]
+
+
+def test_multistop_forwards_selected_routes_to_each_transit_segment(routing, planning, monkeypatch):
+    calls = []
+
+    def calculate(repository, start, end, selected_date, departure, route_ids=None):
+        calls.append(route_ids)
+        return {"status": "ok", "journey": {"minutes": 1, "arrival_minutes": departure + 1}}
+
+    monkeypatch.setattr(multistop, "route_journey", calculate)
+    result = multistop.route_multistop(
+        routing,
+        planning,
+        [[73, 3], [73.001, 3], [73.002, 3]],
+        "transit",
+        route_ids=["rtl:route:129"],
+    )
+    assert result["status"] == "ok"
+    assert calls == [["rtl:route:129"], ["rtl:route:129"]]
+
+
 @pytest.mark.parametrize(
     "body",
     [
@@ -286,6 +330,8 @@ def test_direction_result_cache_reuses_exact_query_and_invalidates_source(
         {"points": [[73, 3], [73, 3]], "departure_minutes": -1},
         {"points": [[73, 3], [73, 3]], "departure_minutes": 1440},
         {"points": [[73, 3], [73, 3]], "island_id": "island:1"},
+        {"points": [[73, 3], [73, 3]], "route_ids": []},
+        {"points": [[73, 3], [73, 3]], "route_ids": ["x"] * 11},
     ],
 )
 def test_map_journey_validates_stop_count_coordinates_modes_and_time(client, body):
