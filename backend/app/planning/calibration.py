@@ -153,6 +153,8 @@ def calibrate(
     manual: dict[str, float],
     energy_manual: dict[str, float],
     service_date: date,
+    *,
+    default_basis: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     if set(manual).difference(defaults):
         raise ValueError("Unknown cost override")
@@ -162,7 +164,11 @@ def calibrate(
         raise ValueError("Calibration record IDs must be unique")
     by_id = {record.id: record for record in records}
     costs, energy = dict(defaults), dict(energy_manual)
-    applied, warnings, bases = [], [], {key: "illustrative_default" for key in defaults}
+    applied, warnings, bases = (
+        [],
+        [],
+        {key: (default_basis or {}).get(key, "illustrative_default") for key in defaults},
+    )
     for factor, record_id in selection.items():
         record = by_id.get(record_id)
         if not record or record.factor != factor:

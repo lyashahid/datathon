@@ -1,0 +1,140 @@
+{
+  "schema_version": "reviewed-ferry-suggestions-v1",
+  "assessment_date": "2026-10-20",
+  "selection_method": "Screen existing passenger-terminal and shoreline-corridor feasibility; compare retained census residents and contextual existing ferry endpoint use. Prefer a short direct connection that could remove a transfer. This is not an observed unmet-demand or crowding ranking.",
+  "suggestions": [
+    {
+      "id": "hulhumale-vilimale-existing-terminals-v1",
+      "title": "Hulhumalé ↔ Vilimalé",
+      "origin_island_id": "island:1442",
+      "destination_island_id": "island:1382",
+      "assessment_date": "2026-10-20",
+      "settings": {
+        "origin_terminal_id": "osm:way:302137545",
+        "destination_terminal_id": "rtl:vessel-terminal:3",
+        "headway_minutes": 60,
+        "start_minutes": 360,
+        "end_minutes": 1200,
+        "speed_kph": 25
+      },
+      "rationale": "A short direct link to Vilimalé could bypass a Malé transfer for an island with 6,755 census residents and an existing terminal. Its Malé ferry is already frequent; demand and time savings for this direct route remain unverified.",
+      "evidence": [
+        {
+          "title": "Maldives Bureau of Statistics: Census 2022, Table P5",
+          "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2023/07/P5.xlsx",
+          "value": "Vilimalé: 6,755 census residents (2022)",
+          "qualification": "Combined Vilimaale census wards; excludes the unallocatable multi-island harbour row. Census residents are not current passenger demand. The impact model uses its separately qualified 2026 resident allocation."
+        },
+        {
+          "title": "Maldives Bureau of Statistics: Maldives in Figures, June 2026, Table 11.2",
+          "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2026/09/MIF_June-2026.xlsx",
+          "value": "226,614 ferry endpoint passenger movements in June 2026; category Villigili (VM Ferry), cell CC162",
+          "qualification": "Existing Malé–Vilimalé endpoint category. Repeat travel may be counted. Not unique people, Hulhumalé–Vilimalé demand, occupancy, shortage or a forecast. Opposite endpoint rows must not be added."
+        },
+        {
+          "title": "MTCC Vilimalé ferry frequency calendar 2026",
+          "url": "https://mtcc.mv/wp-content/uploads/2025/12/Vili-male-Ferry-Schedule-2026-V1.pdf",
+          "value": "Published Malé–Vilimalé headway windows: 5–60 minutes; effective 21 March 2026",
+          "qualification": "Already frequent existing service. Crossing time is absent; a Saturday 17:20–17:30 interval, expiry and holiday/cancellation exceptions remain unverified. Do not describe Vilimalé as underserved overall."
+        },
+        {
+          "title": "RTL official vessel route catalogue",
+          "url": "https://bo.rtl.mv:4455/maldives/api/booking/v1/vessel/routedetails",
+          "value": "Existing Vilimalé terminal rtl:vessel-terminal:3; source snapshot 11 October 2026",
+          "qualification": "Official endpoint for MVML, not evidence of arrivals, berth permission or a direct Hulhumalé service."
+        },
+        {
+          "title": "OpenStreetMap: Hulhumalé Ferry Terminal",
+          "url": "https://www.openstreetmap.org/way/302137545",
+          "value": "Existing mapped origin terminal; no new port construction assumed"
+        }
+      ],
+      "qualifications": [
+        "This is a proposed direct-connection opportunity, not a ranking of highest unmet demand. Observed direct-route demand, queues, occupancy, current capacity and shortage are unknown.",
+        "Vilimalé already has frequent Malé ferry service. A direct Hulhumalé link could remove a transfer, but complete timed journeys are unavailable, so total journey minutes saved cannot be claimed.",
+        "60-minute headway, 06:00–20:00 hours and 25 km/h speed are editable planning assumptions. The existing model derives the 19-minute crossing, departures, fleet, costs and impacts. They are not optimized service levels or an operator commitment.",
+        "Missing retained dated direct service is an evidence gap, not proof that no service operates. Baseline expected-wait savings for a new direct link remain unavailable.",
+        "Reusing existing terminals can leave walking-access gains at zero on both islands. Added dated connections and departures are separate benefits; neither establishes ridership.",
+        "The modeled corridor avoids mapped shorelines. Depth, reefs, channels, landing access, vessel suitability and permission remain unverified; this is not navigation clearance."
+      ]
+    }
+  ],
+  "screened_candidates": [
+    {
+      "island_id": "island:1431",
+      "name": "Maafushi",
+      "census_2022_residents": 4471,
+      "model_status": "corridor_unvalidated",
+      "note": "Both eligible mapped terminals failed the conservative shoreline corridor model; higher resident proxy alone cannot justify an invented route."
+    },
+    {
+      "island_id": "island:1380",
+      "name": "Himmafushi",
+      "census_2022_residents": 2012,
+      "model_status": "ready",
+      "note": "Feasible alternative: 11.43 km, 28-minute modeled crossing; 2,012 census residents. Historical service exists, current dated model coverage is incomplete."
+    },
+    {
+      "island_id": "island:1358",
+      "name": "Dhiffushi",
+      "census_2022_residents": 1270,
+      "model_status": "corridor_unvalidated",
+      "note": "Both eligible mapped terminals failed the shoreline corridor model."
+    },
+    {
+      "island_id": "island:1464",
+      "name": "Gulhi",
+      "census_2022_residents": 976,
+      "model_status": "terminal_evidence_needed",
+      "note": "No eligible mapped passenger terminal in the model; real infrastructure may still exist."
+    },
+    {
+      "island_id": "island:1372",
+      "name": "Huraa",
+      "model_status": "terminal_evidence_needed",
+      "note": "No eligible modeled terminal; real ferry service exists."
+    },
+    {
+      "island_id": "island:1364",
+      "name": "Thulusdhoo",
+      "model_status": "terminal_evidence_needed",
+      "note": "No eligible modeled terminal; real ferry service exists."
+    },
+    {
+      "island_id": "island:1427",
+      "name": "Guraidhoo",
+      "model_status": "terminal_evidence_needed",
+      "note": "No eligible modeled terminal; real ferry service exists."
+    },
+    {
+      "island_id": "island:1382",
+      "name": "Vilimalé",
+      "census_2022_residents": 6755,
+      "model_status": "ready",
+      "note": "Selected direct-link opportunity: 7.66 km modeled corridor, official terminal, established frequent ferry use to Malé. Existing usage is not projected Hulhumalé demand."
+    },
+    {
+      "name": "Thilafushi",
+      "model_status": "ready",
+      "note": "10.55 km modeled corridor; no comparable resident allocation available. Existing endpoint movements do not establish direct-route demand."
+    }
+  ],
+  "reproduction": {
+    "command": "uv run --directory backend python -m app.cli.precompute --ferry-suggestion-only --output ../artifacts/qa/ferry-suggestion/precomputed-default.json",
+    "endpoint": "POST /api/v1/planning/ferry-suggestion",
+    "canonical_request": {
+      "origin_island_id": "island:1442",
+      "assumptions": {
+        "goal": "transport",
+        "target_minutes": 30,
+        "include_origin_geometry": false,
+        "include_journey_geometry": false,
+        "include_world": false,
+        "capital_budget_mvr": 50000000,
+        "annual_operating_budget_mvr": 12000000
+      },
+      "operations": []
+    },
+    "cache_basis": "Exact full existing operations, complete assumptions including date, reviewed artifact, model code, baseline/calendar/source receipts, all mapped shorelines, marine graph and source terminal catalogue. Changed bus work, dates or inputs calculate a distinct result."
+  }
+}

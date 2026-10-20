@@ -7,6 +7,11 @@
 	import { animatedSelection, shouldAnimateMotion } from '#lib/motion.js';
 	import type { BusConnectionDraft } from '#lib/bus-planning.js';
 	import {
+		restorePlanningBudget,
+		TRANSPORT_PILOT_BUDGET,
+		TRANSPORT_PILOT_BUDGET_NOTE
+	} from '#lib/planning-budget.js';
+	import {
 		ArrowRight,
 		BusFront,
 		Check,
@@ -72,13 +77,16 @@
 		ferryFeatureBounds,
 		ferryPlanningDate,
 		ferryServiceInput,
+		ferrySuggestionInput,
 		type FerryConnectivity,
-		type FerryDraft
+		type FerryDraft,
+		type FerrySuggestion
 	} from '#lib/ferry-planning.js';
 	import type { FeatureCollection } from 'geojson';
 	import ProposalCostStrip from './ProposalCostStrip.svelte';
 	import ProposalForecastReview from './ProposalForecastReview.svelte';
 	import TransportImpact from './TransportImpact.svelte';
+	import IslandProposalImpacts from './IslandProposalImpacts.svelte';
 	import IslandOverview from './IslandOverview.svelte';
 	import AccessScore from './AccessScore.svelte';
 	import { buildIslandOverview } from '#lib/island-overview.js';
@@ -305,13 +313,18 @@
 	let ferryLoading = $state(false);
 	let ferryPreviewing = $state(false);
 	let ferryError = $state('');
+	let ferrySuggestionResult = $state.raw<{ key: string; value: FerrySuggestion } | null>(null);
+	let appliedFerrySuggestion = $state.raw<{ key: string; value: FerrySuggestion } | null>(null);
+	let ferrySuggestionLoading = $state(false);
+	let ferrySuggestionError = $state('');
+	let ferrySuggestionRetry = $state(0);
 	let overviewConnection = $state.raw<{ key: string; value: FerryConnectivity } | null>(null);
 	let overviewConnectionLoading = $state(false);
 	let overviewConnectionError = $state('');
 	let overviewConnectionVersion = $state(0);
 
-	let capitalBudget = $state<number | string | null | undefined>(150_000_000);
-	let annualBudget = $state<number | string | null | undefined>(25_000_000);
+	let capitalBudget = $state<number | string | null | undefined>(TRANSPORT_PILOT_BUDGET.capital);
+	let annualBudget = $state<number | string | null | undefined>(TRANSPORT_PILOT_BUDGET.annual);
 	let goal = $state<'healthcare' | 'education' | 'transport'>('healthcare');
 	const goalLabel = $derived(
 		goal === 'transport'
@@ -358,6 +371,7 @@
 	let placementQuoteController: AbortController | undefined;
 	let ferryConnectionController: AbortController | undefined;
 	let ferryDraftController: AbortController | undefined;
+	let ferrySuggestionController: AbortController | undefined;
 	let ferryRequestedSignature = '';
 	let suggestionContext = '';
 	let evaluateTimer: ReturnType<typeof setTimeout> | undefined;
@@ -449,6 +463,9 @@
 		ferryConnection?.key === ferryConnectionKey ? ferryConnection.value : null
 	);
 	const ferryPreview = $derived(ferryDraft?.key === ferrySignature ? ferryDraft.value : null);
+	const suggestedFerryPreview = $derived(
+		appliedFerrySuggestion?.key === ferrySignature ? appliedFerrySuggestion.value : null
+	);
 	const ferryAllowed = $derived(
 		canConfirmFerry(
 			ferryPreview,
@@ -473,8 +490,10 @@
 			.slice(0, 8);
 	});
 	const ferryDestinationName = $derived(
-		national?.islands.find((island) => island.island_id === ferryDestination)?.name ??
-			'Choose a destination'
+		ferryDestination === 'island:1382'
+			? 'Vilimalé (Vilin’gili)'
+			: (national?.islands.find((island) => island.island_id === ferryDestination)?.name ??
+					'Choose a destination')
 	);
 	const draftItems = $derived(
 		operations.flatMap((operation, index) =>
@@ -596,6 +615,22 @@
 		busConnectionMode && busConnection?.status === 'ready'
 			? [...operations, ...connectionOperations]
 			: plainPlacementOperations
+	);
+	const ferrySuggestionRequest = $derived(
+		ferrySuggestionInput(
+			islandId,
+			pending && busConnectionMode && busConnection?.status === 'ready'
+				? { ...request, operations: placementOperations }
+				: request
+		)
+	);
+	const suggestedFerryIncluded = $derived(
+		islandId === 'island:1442' &&
+			operations.some((operation) => operation.metadata?.ferry_suggestion)
+	);
+	const ferrySuggestionKey = $derived(JSON.stringify(ferrySuggestionRequest));
+	const ferrySuggestion = $derived(
+		ferrySuggestionResult?.key === ferrySuggestionKey ? ferrySuggestionResult.value : null
 	);
 	const placementEvaluationKey = $derived(
 		JSON.stringify({ ...request, operations: placementOperations })
@@ -959,12 +994,13 @@
 	);
 	const draftEconomics = $derived<PlanningEconomics>({
 		currency: 'MVR',
-		basis: 'Illustrative cost factors. Operating service cost requires a service plan.',
+		basis: 'Editable MVR planning allowances. Running costs require a service plan.',
 		before: {},
 		after: {},
 		delta: { capital_mvr: costs.capital, annual_operating_mvr: costs.annual },
 		budget: {},
-		assumptions: baseline?.cost_defaults ?? {},
+		assumptions: costDefaults,
+		cost_basis: baseline?.cost_basis,
 		warnings: []
 	});
 	const visibleEconomics = $derived(
@@ -1145,6 +1181,40 @@
 		};
 	});
 	$effect(() => {
+		const key = ferrySuggestionKey;
+		const input = ferrySuggestionRequest;
+		void ferrySuggestionRetry;
+		if (!mounted || !active || !baseline || restoredScope !== scopedKey || !input) return;
+		if (input.assumptions.goal !== 'transport' && !ferryOpen) return;
+		if (ferrySuggestionResult?.key === key) return;
+		// Start with the previewed bus package so accepting it can retain the warmed result.
+		const controller = new AbortController();
+		ferrySuggestionController = controller;
+		const timer = setTimeout(() => {
+			untrack(() => {
+				ferrySuggestionLoading = true;
+				ferrySuggestionError = '';
+			});
+			void api<FerrySuggestion>('planning/ferry-suggestion', input, controller.signal)
+				.then((value) => {
+					if (!controller.signal.aborted && key === ferrySuggestionKey)
+						ferrySuggestionResult = { key, value };
+				})
+				.catch((cause) => {
+					if (!controller.signal.aborted)
+						ferrySuggestionError =
+							cause instanceof Error ? cause.message : 'The suggested connection is unavailable.';
+				})
+				.finally(() => {
+					if (ferrySuggestionController === controller) ferrySuggestionLoading = false;
+				});
+		}, 450);
+		return () => {
+			clearTimeout(timer);
+			controller.abort();
+		};
+	});
+	$effect(() => {
 		const key = ferrySignature;
 		if (
 			!active ||
@@ -1177,6 +1247,10 @@
 			cancelPending();
 			closeBusService();
 			closeFerry();
+			ferrySuggestionController?.abort();
+			ferrySuggestionResult = null;
+			appliedFerrySuggestion = null;
+			ferrySuggestionRetry += 1;
 			cancelSuggestions();
 			baseline = null;
 			gapCells = emptyFeatures();
@@ -1209,6 +1283,7 @@
 			busController?.abort();
 			ferryConnectionController?.abort();
 			ferryDraftController?.abort();
+			ferrySuggestionController?.abort();
 		};
 	});
 	$effect(() => {
@@ -1365,8 +1440,8 @@
 			operations = [];
 			history = [];
 			title = `${islandName} service improvement`;
-			capitalBudget = 150_000_000;
-			annualBudget = 25_000_000;
+			capitalBudget = TRANSPORT_PILOT_BUDGET.capital;
+			annualBudget = TRANSPORT_PILOT_BUDGET.annual;
 			goal = 'healthcare';
 			targetMinutes = 30;
 			date = '2026-10-10';
@@ -1393,12 +1468,12 @@
 					if (restored.discarded)
 						restorationWarning = `${restored.discarded} saved change${restored.discarded === 1 ? '' : 's'} could not be restored. Review the remaining draft before continuing.`;
 					if (typeof draft.title === 'string') title = draft.title;
-					const capital = assumptions.capital_budget_mvr ?? draft.capitalBudget;
-					const annual = assumptions.annual_operating_budget_mvr ?? draft.annualBudget;
-					if (typeof capital === 'number' && Number.isFinite(capital) && capital >= 0)
-						capitalBudget = capital;
-					if (typeof annual === 'number' && Number.isFinite(annual) && annual >= 0)
-						annualBudget = annual;
+					const budget = restorePlanningBudget(
+						assumptions.capital_budget_mvr ?? draft.capitalBudget,
+						assumptions.annual_operating_budget_mvr ?? draft.annualBudget
+					);
+					capitalBudget = budget.capital;
+					annualBudget = budget.annual;
 					const savedGoal = assumptions.goal ?? draft.goal;
 					if (savedGoal === 'healthcare' || savedGoal === 'education' || savedGoal === 'transport')
 						goal = savedGoal;
@@ -2396,6 +2471,7 @@
 		ferryPreviewing = false;
 		ferryLoading = false;
 		ferryDraft = null;
+		appliedFerrySuggestion = null;
 		ferryError = '';
 		onPickFerryDestination(false);
 	}
@@ -2421,6 +2497,31 @@
 		const bounds = ferryFeatureBounds(features);
 		if (bounds && onFocusBounds) onFocusBounds(bounds);
 	}
+	async function applyFerrySuggestion() {
+		const value = ferrySuggestion;
+		const key = ferrySuggestionKey;
+		if (!value?.inputs || value.status !== 'ready') return;
+		const input = value.inputs;
+		const clock = (minutes: number) =>
+			`${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+		ferryDraftController?.abort();
+		ferryPreviewing = false;
+		chooseFerryDestination(input.destination_island_id);
+		ferryOriginTerminal = input.origin_terminal_id ?? value.summary?.origin_terminal.id ?? '';
+		ferryDestinationTerminal =
+			input.destination_terminal_id ?? value.summary?.destination_terminal.id ?? '';
+		ferryHeadway = input.headway_minutes;
+		ferryStart = clock(input.start_minutes);
+		ferryEnd = clock(input.end_minutes);
+		ferrySpeed = input.speed_kph;
+		await tick();
+		if (key !== ferrySuggestionKey || !ferryOpen) return;
+		const previewKey = ferrySignature;
+		ferryDraft = { key: previewKey, value };
+		appliedFerrySuggestion = { key: previewKey, value };
+		ferryRequestedSignature = previewKey;
+		focusFerryFeatures(value.map_features);
+	}
 	async function previewFerry() {
 		const input = ferryInput;
 		if (operations.length > 98) {
@@ -2436,6 +2537,7 @@
 			ferryError = budgetLimits.reason;
 			return;
 		}
+		if (ferryDraft?.key === ferrySignature) return;
 		ferryDraftController?.abort();
 		const controller = new AbortController();
 		ferryDraftController = controller;
@@ -2470,6 +2572,7 @@
 			return;
 		}
 		const preview = ferryPreview;
+		const preparedImpact = suggestedFerryPreview?.impact;
 		const group = `ferry-service:${crypto.randomUUID()}`;
 		const capital = preview.quote!.economics.delta.capital_mvr ?? null;
 		const annual = preview.quote!.economics.delta.annual_operating_mvr ?? null;
@@ -2504,8 +2607,16 @@
 			annual
 		};
 		commitChange(next);
+		if (preparedImpact) {
+			// Only presentation metadata was added to this exact, already evaluated proposal.
+			evaluation = { ...preparedImpact, origins: preparedImpact.origins ?? [] };
+			evaluatedSignature = JSON.stringify(request);
+			resultTime = calculationTime();
+		}
 		closeFerry();
-		actionMessage = 'Ferry service added · recalculating journeys and costs';
+		actionMessage = preparedImpact
+			? 'Ferry service added · impact on both islands is ready'
+			: 'Ferry service added · recalculating journeys and costs';
 	}
 	function confirm() {
 		if (!pending || (editingIndex === null && operations.length >= 100)) return;
@@ -3153,6 +3264,68 @@
 					From <strong>{islandName}</strong>. The route connects to an existing ferry landing place.
 					Click a highlighted landing to change it.
 				</p>
+				{#if suggestedFerryIncluded}
+					<p class="service-progress">
+						<Check size={14} />The suggested connection is already in your proposal. Review full
+						impact to compare both islands.
+					</p>
+				{:else if ferrySuggestionRequest}
+					<section class="ferry-suggestion" aria-label="Suggested ferry connection">
+						<div class="ferry-suggestion-heading">
+							<span><Sparkles size={14} />Suggested connection</span>
+							{#if ferrySuggestion?.impact}<small><Check size={12} />Impact ready</small>{/if}
+						</div>
+						{#if ferrySuggestion?.suggestion}
+							<strong>{ferrySuggestion.suggestion.title}</strong>
+							<p>{ferrySuggestion.suggestion.rationale}</p>
+							{#if ferrySuggestion.summary}
+								<p class="ferry-suggestion-metrics">
+									<span><b>{ferrySuggestion.summary.crossing_minutes} min</b> crossing</span>
+									<span
+										><b>{ferrySuggestion.summary.departures_each_direction}</b> sailings each way</span
+									>
+								</p>
+								<small class="ferry-suggestion-date">Modeled for {date}</small>
+							{/if}
+							<Button
+								variant="outline"
+								disabled={ferrySuggestion.status !== 'ready' || !!suggestedFerryPreview}
+								onclick={() => void applyFerrySuggestion()}
+								><Ship size={15} />{suggestedFerryPreview
+									? 'Suggested connection selected'
+									: 'Use suggested connection'}<ArrowRight size={14} /></Button
+							>
+							<details>
+								<summary>Why this island?</summary>
+								{#each ferrySuggestion.suggestion.evidence as item, index (index)}
+									<p>
+										{#if item.url}<a href={item.url} target="_blank" rel="noreferrer"
+												>{item.title}</a
+											>{:else}<b>{item.title}</b>{/if}
+										{#if item.value}<span> · {item.value}</span>{/if}
+										{#if item.qualification}<small>{item.qualification}</small>{/if}
+									</p>
+								{/each}
+								{#each ferrySuggestion.suggestion.qualifications as note, index (index)}<p>
+										{note}
+									</p>{/each}
+								<small>Evidence reviewed {ferrySuggestion.suggestion.assessment_date}.</small>
+							</details>
+						{:else if ferrySuggestionError}
+							<p role="status">Suggested impact could not be prepared.</p>
+							<button class="ferry-suggestion-retry" onclick={() => (ferrySuggestionRetry += 1)}
+								>Retry suggestion</button
+							>
+						{:else if ferrySuggestion?.status === 'evidence_needed'}
+							<p>{ferrySuggestion.reasons.join(' ')}</p>
+						{:else}
+							<p class="service-progress" role="status">
+								<RefreshCw size={14} class={ferrySuggestionLoading ? 'spin' : ''} />Preparing impact
+								for this proposal…
+							</p>
+						{/if}
+					</section>
+				{/if}
 				{#if ferryLoading}<p class="service-progress" role="status">
 						<RefreshCw size={14} class="spin" />Finding verified landing places…
 					</p>{/if}
@@ -3292,6 +3465,11 @@
 						{budgetLimits.reason}
 					</p>{/if}
 				<TransportImpact impact={visibleTransportImpact} compact preview />
+				<IslandProposalImpacts
+					impacts={suggestedFerryPreview?.impact?.island_impacts}
+					compact
+					{goal}
+				/>
 				<footer>
 					{#if onSeaImpact}<Button
 							variant="outline"
@@ -3708,6 +3886,7 @@
 									/>
 								</div>
 							</div>
+							<p>{TRANSPORT_PILOT_BUDGET_NOTE}</p>
 							<p>Both limits are checked before a change can be added.</p>
 						</section>
 					{/if}
@@ -4234,6 +4413,71 @@
 		align-items: center;
 		gap: 8px;
 		color: var(--theme-color-087e77);
+	}
+	.ferry-suggestion {
+		display: grid;
+		gap: 10px;
+		padding: 14px;
+		border: 1px solid var(--theme-color-d4e3db);
+		border-radius: 12px;
+		background: var(--theme-color-eff7f3);
+	}
+	.ferry-suggestion-heading {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 10px;
+		color: var(--theme-color-087e77);
+	}
+	.ferry-suggestion-heading span,
+	.ferry-suggestion-heading small {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 11px;
+		font-weight: 600;
+	}
+	.ferry-suggestion > strong {
+		font-size: 16px;
+		line-height: 1.3;
+		color: var(--theme-color-234f43);
+	}
+	.ferry-suggestion p {
+		margin: 0;
+		font-size: 12px;
+		line-height: 1.5;
+	}
+	.ferry-suggestion .ferry-suggestion-metrics {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px 18px;
+		color: var(--theme-color-234f43);
+	}
+	.ferry-suggestion-date {
+		margin-top: -7px;
+		font-size: 10px;
+		color: var(--theme-color-677e72);
+	}
+	.ferry-suggestion summary,
+	.ferry-suggestion-retry {
+		font-size: 11px;
+		font-weight: 600;
+		cursor: pointer;
+		color: var(--theme-color-087e77);
+	}
+	.ferry-suggestion details[open] {
+		display: grid;
+		gap: 10px;
+	}
+	.ferry-suggestion details small {
+		display: block;
+		font-size: 11px;
+		line-height: 1.5;
+		color: var(--theme-color-677e72);
+	}
+	.ferry-suggestion a {
+		text-decoration: underline;
+		text-underline-offset: 2px;
 	}
 	.service-options {
 		padding: 10px 12px;

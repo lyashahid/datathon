@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from shapely.geometry import LineString, box, mapping, shape
 
+from app.data.computed_cache import ComputedCache
 from app.planning.water_corridor import WaterCorridorPlanner
 from app.routing.engine import _distance_m
 
@@ -26,12 +27,26 @@ def crossing():
     return islands, first, second
 
 
-def test_corridor_avoids_land_and_keeps_exact_source_terminals(crossing):
+def test_corridor_avoids_land_and_keeps_exact_source_terminals(crossing, tmp_path, monkeypatch):
     islands, first, second = crossing
+    computations = 0
+    calculate = WaterCorridorPlanner._corridor
+
+    def counted(planner, *args):
+        nonlocal computations
+        computations += 1
+        return calculate(planner, *args)
+
+    monkeypatch.setattr(WaterCorridorPlanner, "_corridor", counted)
+    cache = ComputedCache(tmp_path)
     planner = WaterCorridorPlanner(islands)
-    result = planner.corridor(first, second)
+    result = planner.corridor(first, second, cache=cache)
     assert result is not None
-    assert result == planner.corridor(first, second)
+    # A new planner and cache instance exercise persistent rather than LRU reuse.
+    assert result == WaterCorridorPlanner(islands).corridor(
+        first, second, cache=ComputedCache(tmp_path)
+    )
+    assert computations == 1
     geometry = result["geometry"]
     assert geometry[0] == first["coordinates"]
     assert geometry[-1] == second["coordinates"]
@@ -43,6 +58,30 @@ def test_corridor_avoids_land_and_keeps_exact_source_terminals(crossing):
     water = LineString(geometry[1:-1])
     assert all(not water.intersects(shape(item["geometry"])) for item in islands.values())
     assert "not navigation clearance" in result["qualification"]
+
+    # Both full terminal records invalidate the result, even when coordinates
+    # remain unchanged. Service assumptions are deliberately not cached here.
+    first["name"] = "Revised source terminal"
+    assert planner.corridor(first, second, cache=cache) == result
+    second["name"] = "Revised receiving terminal"
+    assert planner.corridor(first, second, cache=cache) == result
+    assert computations == 3
+
+    # The same planner must revalidate an in-place change to an intervening
+    # shoreline instead of using its previous loaded geometry or route LRU.
+    islands["island:3"]["geometry"] = mapping(box(73.507, 4.197, 73.513, 4.203))
+    changed = planner.corridor(first, second, cache=cache)
+    assert changed is not None
+    assert changed != result
+    assert not LineString(changed["geometry"]).intersects(shape(islands["island:3"]["geometry"]))
+    assert computations == 4
+
+    monkeypatch.setattr("app.planning.water_corridor.MAX_VERTICES", 3)
+    assert planner.corridor(first, second, cache=cache) is None
+    assert computations == 5
+    monkeypatch.setattr("app.planning.water_corridor.CORRIDOR_MODEL_VERSION", 999)
+    assert planner.corridor(first, second, cache=cache) is None
+    assert computations == 6
 
 
 def test_exact_airport_crossing_uses_actual_national_polygons():

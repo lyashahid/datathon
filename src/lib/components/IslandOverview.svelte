@@ -29,6 +29,7 @@
 		connectivityLoading = false,
 		connectivityDate = '',
 		presentation,
+		presentationFact,
 		presentationAirport = null,
 		onRetry
 	}: {
@@ -40,6 +41,7 @@
 		connectivityDate?: string;
 		/** A focused native overview for the presenter; normal island pages omit this. */
 		presentation?: 'access' | 'population';
+		presentationFact?: { label: string; value: string; detail: string };
 		/** Retained airport evidence supplements the presenter without changing the access index. */
 		presentationAirport?: AirAirport | null;
 		onRetry?: () => void;
@@ -95,6 +97,7 @@
 	class="island-overview"
 	class:presentation-overview={!!presentation}
 	class:population-focus={presentation === 'population'}
+	class:fact-focus={!!presentationFact}
 	data-testid="island-overview"
 	data-presentation={presentation}
 	aria-busy={loading}
@@ -454,6 +457,15 @@
 		{#if presentation}
 			{@const transport = overview.score.domains.find((domain) => domain.key === 'transport')}
 			<div class="presentation-primary">
+				{#if presentationFact}
+					{#key presentationFact.label}
+						<section class="presentation-story-fact" aria-label={presentationFact.label}>
+							<h3>{presentationFact.label}</h3>
+							<strong>{presentationFact.value}</strong>
+							<p>{presentationFact.detail}</p>
+						</section>
+					{/key}
+				{/if}
 				{#if presentation === 'population'}{@render populationFact(overview)}{/if}
 				<section class="presentation-access" aria-label="Island access index">
 					<div class="hero-topline">
@@ -486,42 +498,44 @@
 						{overview.score.value === null ? overview.score.summary : overview.score.coverage}
 					</p>
 				</section>
-				{#if presentation !== 'population'}{@render populationFact(overview)}{/if}
-				<section
-					class="presentation-connections"
-					aria-label="Island connections"
-					aria-busy={connectivityLoading}
-				>
-					{#each displayedConnections as connection (connection.key)}
-						{@const Icon = connectionIcons[connection.key]}
-						<div
-							class="overview-connection"
-							data-status={connection.status}
-							title={connection.note}
-						>
-							<Icon size={18} strokeWidth={1.7} aria-hidden="true" />
-							<div>
-								<h4>{connection.label}</h4>
-								<p>
-									{connectivityLoading && connection.key === 'ferry'
-										? 'Checking service…'
-										: connection.statusLabel}
-								</p>
-							</div>
-						</div>
-					{/each}
-				</section>
 			</div>
 			{#key `${profile?.island.id}:${presentation}`}
 				<details class="presentation-details">
 					<summary
-						><span>Services, demographics &amp; data</span><ChevronDown
+						><span>Connections, services &amp; data</span><ChevronDown
 							size={18}
 							strokeWidth={1.7}
 							aria-hidden="true"
 						/></summary
 					>
-					<div class="presentation-details-content">{@render expandedOverview(overview)}</div>
+					<div class="presentation-details-content">
+						{#if presentation !== 'population'}{@render populationFact(overview)}{/if}
+						<section
+							class="presentation-connections"
+							aria-label="Island connections"
+							aria-busy={connectivityLoading}
+						>
+							{#each displayedConnections as connection (connection.key)}
+								{@const Icon = connectionIcons[connection.key]}
+								<div
+									class="overview-connection"
+									data-status={connection.status}
+									title={connection.note}
+								>
+									<Icon size={18} strokeWidth={1.7} aria-hidden="true" />
+									<div>
+										<h4>{connection.label}</h4>
+										<p>
+											{connectivityLoading && connection.key === 'ferry'
+												? 'Checking service…'
+												: connection.statusLabel}
+										</p>
+									</div>
+								</div>
+							{/each}
+						</section>
+						{@render expandedOverview(overview)}
+					</div>
 				</details>
 			{/key}
 		{:else}
@@ -1125,6 +1139,72 @@
 		display: grid;
 		gap: 12px;
 	}
+	.presentation-story-fact {
+		padding: 18px 18px 22px;
+		border: 1px solid #d7e2df;
+		border-radius: 14px;
+		background: linear-gradient(115deg, #eef6f4, #ffffff);
+		animation: fact-enter 400ms cubic-bezier(0.23, 1, 0.32, 1) both;
+	}
+	.presentation-story-fact h3 {
+		font-size: 14px;
+		font-weight: 500;
+		color: #48665d;
+	}
+	.presentation-story-fact > strong {
+		display: block;
+		margin: 12px 0 8px;
+		font-size: 62px;
+		font-weight: 600;
+		letter-spacing: -0.055em;
+		line-height: 1;
+	}
+	.island-overview .presentation-story-fact p {
+		font-size: 12px;
+		color: #6f8177;
+		line-height: 1.5;
+	}
+	.fact-focus .presentation-access,
+	.population-focus .presentation-access {
+		padding: 14px 16px;
+	}
+	.fact-focus .presentation-value strong,
+	.population-focus .presentation-value strong {
+		font-size: 30px;
+	}
+	.fact-focus .presentation-value,
+	.population-focus .presentation-value {
+		min-height: 32px;
+		margin-top: 4px;
+	}
+	.fact-focus .presentation-metrics,
+	.population-focus .presentation-metrics {
+		margin: 12px 0 8px;
+	}
+	.fact-focus .presentation-access .assessment-label,
+	.population-focus .presentation-access .assessment-label {
+		display: none;
+	}
+	.presentation-overview:not(.fact-focus):not(.population-focus)
+		.presentation-metric[data-domain='transport']
+		.presentation-value
+		strong {
+		font-size: 32px;
+	}
+	.presentation-details-content > .presentation-residents,
+	.presentation-details-content > .presentation-connections {
+		margin-bottom: 12px;
+	}
+	@keyframes fact-enter {
+		from {
+			opacity: 0;
+			transform: translateY(8px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
 	.presentation-access,
 	.presentation-residents,
 	.presentation-connections {
@@ -1243,6 +1323,7 @@
 	}
 	.population-focus .presentation-residents {
 		background: linear-gradient(115deg, var(--theme-color-eef6f4), var(--theme-color-ffffff));
+		animation: fact-enter 400ms cubic-bezier(0.23, 1, 0.32, 1) both;
 	}
 	.population-focus .presentation-residents > strong {
 		font-size: 62px;
@@ -1465,6 +1546,10 @@
 		}
 	}
 	@media (prefers-reduced-motion: reduce) {
+		.presentation-story-fact,
+		.population-focus .presentation-residents {
+			animation: none;
+		}
 		.overview-data-details summary > :global(svg) {
 			transition: none;
 		}

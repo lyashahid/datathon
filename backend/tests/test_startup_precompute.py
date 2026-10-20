@@ -45,7 +45,7 @@ def _recording_app(failures=None):
 
 @pytest.mark.parametrize(
     ("include_analysis", "include_planning", "expected_count"),
-    [(False, False, 6), (True, False, 9), (False, True, 43), (True, True, 46)],
+    [(False, False, 6), (True, False, 9), (False, True, 44), (True, True, 47)],
 )
 async def test_warmup_covers_selected_work_and_all_nine_planning_baselines(
     include_analysis, include_planning, expected_count, directions_preparation, monkeypatch
@@ -85,6 +85,14 @@ async def test_warmup_covers_selected_work_and_all_nine_planning_baselines(
         assert ("/api/v1/planning/sea-network", "date=2026-10-10") in gets
         assert ("/api/v1/planning/air-network", "date=2026-10-10") in gets
         assert ("/api/v1/planning/opportunities", "include_geometry=false") in gets
+        assert len(posts) == 10
+        suggestions = [(key, body) for key, body in posts if key[1].endswith("ferry-suggestion")]
+        assert len(suggestions) == 1
+        assert suggestions[0][1]["origin_island_id"] == "island:1442"
+        assert suggestions[0][1]["operations"] == []
+        assert suggestions[0][1]["assumptions"]["capital_budget_mvr"] == 50_000_000
+        assert suggestions[0][1]["assumptions"]["annual_operating_budget_mvr"] == 12_000_000
+        posts = [(key, body) for key, body in posts if key[1].endswith("evaluate")]
         assert len(posts) == 9
         assert all(body["island_id"] != "island:1483" for _, body in posts)
         assert {(body["island_id"], body["assumptions"]["goal"]) for _, body in posts} == {

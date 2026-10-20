@@ -1,5 +1,10 @@
 <script lang="ts">
 	import { downloadText } from '#lib/download.js';
+	import {
+		restorePlanningBudget,
+		TRANSPORT_PILOT_BUDGET,
+		TRANSPORT_PILOT_BUDGET_NOTE
+	} from '#lib/planning-budget.js';
 	import { onMount, untrack } from 'svelte';
 	import {
 		ArrowRight,
@@ -306,8 +311,8 @@
 	let wheelchair = $state(false);
 	let walkSpeed = $state(80);
 	let operatingDays = $state(300);
-	let capitalBudget = $state(150000000);
-	let annualBudget = $state(25000000);
+	let capitalBudget = $state<number>(TRANSPORT_PILOT_BUDGET.capital);
+	let annualBudget = $state<number>(TRANSPORT_PILOT_BUDGET.annual);
 	let displacedPassengerKm = $state(0);
 	let costOverrides = $state<Record<string, number>>({});
 	let energyOverrides = $state<Record<string, number>>({});
@@ -627,6 +632,8 @@
 		if (!preserveDraft) {
 			operations = [];
 			changeHistory = [];
+			capitalBudget = TRANSPORT_PILOT_BUDGET.capital;
+			annualBudget = TRANSPORT_PILOT_BUDGET.annual;
 			costOverrides = {};
 			energyOverrides = {};
 			calibrationRecords = [];
@@ -852,9 +859,9 @@
 			populationYear = String(a.population_year);
 		if (typeof a.walk_m_per_minute === 'number') walkSpeed = a.walk_m_per_minute;
 		if (typeof a.annual_operating_days === 'number') operatingDays = a.annual_operating_days;
-		if (typeof a.capital_budget_mvr === 'number') capitalBudget = a.capital_budget_mvr;
-		if (typeof a.annual_operating_budget_mvr === 'number')
-			annualBudget = a.annual_operating_budget_mvr;
+		const budget = restorePlanningBudget(a.capital_budget_mvr, a.annual_operating_budget_mvr);
+		capitalBudget = budget.capital;
+		annualBudget = budget.annual;
 		if (typeof a.displaced_passenger_km === 'number')
 			displacedPassengerKm = a.displaced_passenger_km;
 		if (typeof a.require_audited_wheelchair === 'boolean')
@@ -2346,6 +2353,7 @@
 							<Card.Root
 								><Card.Content
 									><h3>Delivery envelope</h3>
+									<p class="policy-note">{TRANSPORT_PILOT_BUDGET_NOTE}</p>
 									<div class="policy-two-fields">
 										<div>
 											<Label for="policy-capital-budget">Capital budget · MVR</Label><Input

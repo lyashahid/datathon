@@ -1,11 +1,10 @@
 import type { FeatureCollection } from 'geojson';
 import { api } from './api.js';
 import type { AirAirport, AirNetwork, AirRoute } from './air-connectivity.js';
-import type { BusConnectionDraft } from './bus-planning.js';
-import { displayComparisonHexes, displayGapHexes } from './display-grid.js';
+import { displayGapHexes } from './display-grid.js';
 import type { FerryConnectivity } from './ferry-planning.js';
-import { emptyFeatures, type MapBaseline, type MapEvaluation } from './map-policy.js';
-import type { PlanningOperation, PlanningPlace } from './planning-map.js';
+import { emptyFeatures, type MapBaseline } from './map-policy.js';
+import type { PlanningPlace } from './planning-map.js';
 import type { PresentationMapScene } from './presentation-map.js';
 import type { SearchDirectionsResult } from './search-directions.js';
 import type { SeaConnections, SeaJourney, SeaNetwork, SeaRoute } from './sea-connectivity.js';
@@ -13,15 +12,25 @@ import type { Coordinates, IslandProfile } from './types.js';
 
 /** Stable presenter locations; journey estimates still come from the application's models. */
 export const PRESENTATION_LOCATIONS = {
-	hithadhoo: {
-		id: 'island:697',
-		name: 'Hithadhoo · Laamu',
-		coordinates: [73.3882588888889, 1.7968288888888888] as Coordinates
+	baarah: {
+		id: 'island:640',
+		name: 'Baarah · Haa Alifu',
+		coordinates: [73.2083825, 6.816661388888889] as Coordinates
 	},
-	kadhdhoo: {
-		id: 'island:706',
-		name: 'Kadhdhoo · Laamu',
-		coordinates: [73.52127222222222, 1.8614808333333335] as Coordinates
+	vashafaru: {
+		id: 'island:611',
+		name: 'Vashafaru · Haa Alifu',
+		coordinates: [73.15975138888889, 6.897603888888888] as Coordinates
+	},
+	dhidhdhoo: {
+		id: 'island:625',
+		name: 'Dhidhdhoo · Haa Alifu',
+		coordinates: [73.11092833333333, 6.888109444444444] as Coordinates
+	},
+	hanimaadhoo: {
+		id: 'island:684',
+		name: 'Hanimaadhoo · Haa Dhaalu',
+		coordinates: [73.16965777777779, 6.753920833333333] as Coordinates
 	},
 	hulhumale: {
 		id: 'island:1442',
@@ -40,10 +49,14 @@ export const PRESENTATION_LOCATIONS = {
 export const PRESENTATION_ORIGIN_ID = 'wp:hulhumale:3443:1080';
 export const PRESENTATION_DEPARTURE_MINUTES = 920;
 export const PRESENTATION_AIRPORT_BUS_ROUTE_ID = 'rtl:route:129';
-/** Offshore of the retained OneMap west coastline; no recorded public ferry berth is asserted. */
-export const PRESENTATION_KADHDHOO_COAST: Coordinates = [73.5169, 1.8588];
-const FLIGHT_DURATION_SOURCE =
-	'https://www.trauminselreisen.de/fileadmin/user_upload/Six_Senses_Laamu_-_Transfer_Information_Brochure_2022.pdf';
+export const PRESENTATION_TRAVEL_START = { date: '2026-10-10', minutes: 480 } as const;
+const FLIGHT_DURATION_SOURCE = 'https://maldivian.aero/destinations/hanimaadhoo.html';
+const FLIGHT_CHECK_IN_SOURCE = 'https://maldivian.aero/plan-and-book/online-check-in.html';
+const FERRY_CONNECTIONS = [
+	{ from: 'island:640', to: 'island:611' },
+	{ from: 'island:611', to: 'island:625' },
+	{ from: 'island:625', to: 'island:684' }
+] as const;
 export type PresentationTravelTime = {
 	minutes: number | null;
 	basis: 'unavailable' | 'captured_timetable' | 'presentation_estimate' | 'published_estimate';
@@ -51,8 +64,10 @@ export type PresentationTravelTime = {
 	sourceUrl?: string;
 };
 export const PRESENTATION_ISLAND_IDS = [
-	'island:697',
-	'island:706',
+	'island:640',
+	'island:611',
+	'island:625',
+	'island:684',
 	'island:1442',
 	'island:1443'
 ] as const;
@@ -79,8 +94,13 @@ export type PresentationFerry = {
 	geometry: Coordinates[];
 	from: string;
 	to: string;
+	fromIslandId: string;
+	toIslandId: string;
 	journey: SeaJourney | null;
 	minutes: number | null;
+	waitMinutes: number | null;
+	elapsedMinutes: number | null;
+	serviceDate: string | null;
 	departure: number | null;
 	arrival: number | null;
 	schematic: boolean;
@@ -89,23 +109,17 @@ export type PresentationFerry = {
 	sourceWeeklySailings: number | null;
 	transferRequired: boolean;
 };
-export type PresentationProposal = {
-	operations: PlanningOperation[];
-	connection: BusConnectionDraft;
-	evaluation: MapEvaluation | null;
-	comparisonFeatures: FeatureCollection;
-	originBeforeMinutes: number | null;
-	originAfterMinutes: number | null;
-};
 export type PresentationStory = {
+	/** Northern journey readiness, independent of the retained Hulhumalé bus service date. */
+	travelStart: { date: string; minutes: number };
 	serviceDate: string;
 	departureMinutes: number;
 	islands: typeof PRESENTATION_LOCATIONS;
 	islandData: Record<string, PresentationIslandData>;
-	airports: { kdo: AirAirport | null; mle: AirAirport | null };
+	airports: { haq: AirAirport | null; mle: AirAirport | null };
 	seaNetwork: SeaNetwork | null;
 	airNetwork: AirNetwork | null;
-	ferry: PresentationFerry | null;
+	ferryLegs: PresentationFerry[];
 	flight: AirRoute | null;
 	flightGeometry: Coordinates[];
 	baseline: StoryBaseline | null;
@@ -122,10 +136,10 @@ export type PresentationStory = {
 	timing: {
 		arrival: PresentationTravelTime;
 		ferry: PresentationTravelTime;
+		connection: PresentationTravelTime;
 		flight: PresentationTravelTime;
 		pickup: PresentationTravelTime;
 	};
-	proposal: PresentationProposal | null;
 	errors: Record<string, string>;
 };
 
@@ -138,6 +152,7 @@ type TransitPattern = {
 
 export function emptyPresentationStory(): PresentationStory {
 	return {
+		travelStart: { ...PRESENTATION_TRAVEL_START },
 		serviceDate: '2026-10-10',
 		departureMinutes: PRESENTATION_DEPARTURE_MINUTES,
 		islands: PRESENTATION_LOCATIONS,
@@ -156,10 +171,10 @@ export function emptyPresentationStory(): PresentationStory {
 				}
 			])
 		),
-		airports: { kdo: null, mle: null },
+		airports: { haq: null, mle: null },
 		seaNetwork: null,
 		airNetwork: null,
-		ferry: null,
+		ferryLegs: [],
 		flight: null,
 		flightGeometry: [],
 		baseline: null,
@@ -175,120 +190,168 @@ export function emptyPresentationStory(): PresentationStory {
 		timing: {
 			arrival: { minutes: null, basis: 'unavailable', qualification: 'Travel times are loading.' },
 			ferry: { minutes: null, basis: 'unavailable', qualification: 'Travel times are loading.' },
+			connection: presentationAirportConnection(),
 			flight: { minutes: null, basis: 'unavailable', qualification: 'Travel times are loading.' },
 			pickup: { minutes: null, basis: 'unavailable', qualification: 'Travel times are loading.' }
 		},
-		proposal: null,
 		errors: {}
 	};
 }
 
-/** Retain the source corridor separately from the explicitly schematic airport crossing. */
-export function presentationFerry(network: SeaNetwork): PresentationFerry | null {
+/** Slice only a retained directional corridor with both recorded terminal vertices. */
+export function presentationFerry(
+	network: SeaNetwork,
+	fromIslandId: string = FERRY_CONNECTIONS[0].from,
+	toIslandId: string = FERRY_CONNECTIONS[0].to
+): PresentationFerry | null {
 	const route = network.routes.find((item) => {
-		const start = item.stops.findIndex((stop) => stop.island_id === 'island:697');
-		const end = item.stops.findIndex((stop) => stop.island_id === 'island:704');
-		return item.route_code === 'Z4R17' && start >= 0 && end > start;
+		const start = item.stops.findIndex((stop) => stop.island_id === fromIslandId);
+		const end = item.stops.findIndex((stop) => stop.island_id === toIslandId);
+		return start >= 0 && end > start && Boolean(item.geometry);
 	});
 	if (!route?.geometry) return null;
-	const from = route.stops.find((stop) => stop.island_id === 'island:697');
-	const to = route.stops.find((stop) => stop.island_id === 'island:704');
+	const from = route.stops.find((stop) => stop.island_id === fromIslandId);
+	const to = route.stops.find((stop) => stop.island_id === toIslandId);
 	if (!from?.coordinates || !to?.coordinates) return null;
 	const path = route.geometry.coordinates as Coordinates[];
-	const nearest = (point: Coordinates) =>
-		path.reduce(
-			(best, current, index) =>
-				Math.hypot(current[0] - point[0], current[1] - point[1]) <
-				Math.hypot(path[best][0] - point[0], path[best][1] - point[1])
-					? index
-					: best,
-			0
-		);
-	if (path.length < 2) return null;
-	const start = nearest(from.coordinates),
-		end = nearest(to.coordinates);
-	if (end <= start) return null;
-	// A corridor without its source terminal vertex cannot establish a sliced berth.
 	const matches = (a: Coordinates, b: Coordinates) =>
 		Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.000001;
-	if (!matches(path[start], from.coordinates) || !matches(path[end], to.coordinates)) return null;
+	const start = path.findIndex((point) => matches(point, from.coordinates!));
+	const end = path.findIndex((point, index) => index > start && matches(point, to.coordinates!));
+	if (start < 0 || end <= start) return null;
 	return {
 		route,
-		geometry: [from.coordinates, PRESENTATION_KADHDHOO_COAST],
+		geometry: path.slice(start, end + 1),
 		from: from.name,
-		to: 'Kadhdhoo Airport coast',
+		to: to.name,
+		fromIslandId,
+		toIslandId,
 		journey: null,
 		minutes: null,
+		waitMinutes: null,
+		elapsedMinutes: null,
+		serviceDate: null,
 		departure: null,
 		arrival: null,
-		schematic: true,
+		schematic: route.geometry_basis === 'schematic_connection',
 		qualification:
-			'Presentation-only direct crossing to the Kadhdhoo airport coast. No public ferry berth, operator timetable or navigable track is retained for this connection. Source corridor details describe Z4R17 to Fonadhoo, not this crossing.',
+			route.qualifications?.join(' ') ??
+			'Retained source corridor; actual operation and navigation clearance are unconfirmed.',
 		sourceMinutes: null,
 		sourceWeeklySailings: route.pressure?.departures_per_week ?? null,
-		transferRequired: false
+		transferRequired: fromIslandId === PRESENTATION_LOCATIONS.dhidhdhoo.id
 	};
 }
 
-function pathDistance(coordinates: Coordinates[]) {
-	const radians = Math.PI / 180;
-	return coordinates.slice(1).reduce((total, point, index) => {
-		const previous = coordinates[index];
-		const latitude = (point[1] - previous[1]) * radians;
-		const longitude = (point[0] - previous[0]) * radians;
-		const a =
-			Math.sin(latitude / 2) ** 2 +
-			Math.cos(previous[1] * radians) * Math.cos(point[1] * radians) * Math.sin(longitude / 2) ** 2;
-		return total + 2 * 6371000 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-	}, 0);
+/** Ordered scenes must never shift to a different leg when a corridor is missing. */
+export function presentationFerryLegs(network: SeaNetwork): PresentationFerry[] {
+	const legs = FERRY_CONNECTIONS.map(({ from, to }) => presentationFerry(network, from, to));
+	return legs.every((leg): leg is PresentationFerry => leg !== null) ? legs : [];
+}
+
+function serviceTime(date: string, minutes: number) {
+	const day = new Date(`${date}T00:00:00Z`);
+	day.setUTCDate(day.getUTCDate() + Math.floor(minutes / 1440));
+	return { date: day.toISOString().slice(0, 10), minutes: minutes % 1440 };
+}
+
+/** The sea API searches one service day, so look ahead without inventing overnight sailings. */
+export async function nextPresentationFerry(
+	ferry: PresentationFerry,
+	ready: { date: string; minutes: number },
+	signal: AbortSignal
+) {
+	const start = serviceTime(ready.date, ready.minutes);
+	for (let offset = 0; offset <= 7; offset++) {
+		signal.throwIfAborted();
+		const date = serviceTime(start.date, offset * 1440).date;
+		const departure = offset === 0 ? start.minutes : 0;
+		const value = await api<SeaConnections>(
+			'planning/sea-connections',
+			{
+				origin_island_id: ferry.fromIslandId,
+				date,
+				departure_minutes: departure,
+				budget_minutes: 120,
+				max_transfers: 0
+			},
+			signal
+		);
+		signal.throwIfAborted();
+		const destination = value.baseline.destinations.find((item) => item.id === ferry.toIslandId);
+		if (!destination)
+			throw new Error('The retained timetable does not confirm this ferry destination.');
+		const journey = destination.journey;
+		if (!journey) continue;
+		const leg = journey.legs.length === 1 ? journey.legs[0] : undefined;
+		if (
+			(value.service_date && value.service_date !== date) ||
+			!leg ||
+			leg.proposed ||
+			leg.route_id !== ferry.route.id ||
+			leg.from_island_id !== ferry.fromIslandId ||
+			leg.to_island_id !== ferry.toIslandId ||
+			!Number.isFinite(leg.departure_minutes) ||
+			!Number.isFinite(leg.arrival_minutes) ||
+			leg.departure_minutes < departure ||
+			leg.arrival_minutes <= leg.departure_minutes
+		)
+			throw new Error('The retained timetable does not confirm this ferry leg and its wait.');
+		const minutes = leg.arrival_minutes - leg.departure_minutes;
+		const waitMinutes = offset * 1440 + leg.departure_minutes - start.minutes;
+		return {
+			journey,
+			serviceDate: date,
+			departure: leg.departure_minutes,
+			arrival: leg.arrival_minutes,
+			minutes,
+			waitMinutes,
+			elapsedMinutes: waitMinutes + minutes
+		};
+	}
+	throw new Error('No dated ferry sailing is confirmed within the next seven days.');
+}
+
+function presentationAirportConnection(): PresentationTravelTime {
+	return {
+		minutes: 90,
+		basis: 'presentation_estimate',
+		qualification:
+			'Presentation assumptions: 20 minutes from Hanimaadhoo harbour to the airport plus a 70-minute check-in and connection allowance. Maldivian asks for boarding-pass collection and bag drop at least one hour before departure. No dated connecting flight is retained; the actual flight wait is unknown and may be longer.',
+		sourceUrl: FLIGHT_CHECK_IN_SOURCE
+	};
 }
 
 function updateTravelTimes(story: PresentationStory) {
-	const sourceMinutes = story.ferry?.sourceMinutes;
-	if (story.ferry && sourceMinutes != null) {
-		const stops = story.ferry.route.stops;
-		const sourceStart = stops.find((stop) => stop.island_id === 'island:697')?.coordinates;
-		const sourceEnd = stops.find((stop) => stop.island_id === 'island:704')?.coordinates;
-		const path = story.ferry.route.geometry?.coordinates as Coordinates[] | undefined;
-		const startIndex = path?.findIndex((point) =>
-			point.every((value, i) => value === sourceStart?.[i])
-		);
-		const endIndex = path?.findIndex((point) =>
-			point.every((value, i) => value === sourceEnd?.[i])
-		);
-		const sourceDistance =
-			path && startIndex != null && endIndex != null && startIndex >= 0 && endIndex > startIndex
-				? pathDistance(path.slice(startIndex, endIndex + 1))
-				: 0;
-		if (sourceDistance > 0) {
-			// A distance-scaled estimate is not a scheduled crossing or medical transfer time.
-			const minutes = Math.max(
-				5,
-				Math.round((sourceMinutes * pathDistance(story.ferry.geometry)) / sourceDistance / 5) * 5
-			);
-			story.ferry = { ...story.ferry, minutes };
-			story.timing.ferry = {
-				minutes,
-				basis: 'presentation_estimate',
-				qualification: `Approximate direct crossing, scaled by distance from the retained ${sourceMinutes}-minute Hithadhoo–Fonadhoo sailing. Not an operator timetable; excludes waiting and coast-to-terminal transfer.`
-			};
-		}
-	}
+	const completeFerry =
+		story.ferryLegs.length === FERRY_CONNECTIONS.length &&
+		story.ferryLegs.every((leg) => leg.minutes != null && leg.elapsedMinutes != null);
+	story.timing.ferry = {
+		minutes: completeFerry
+			? story.ferryLegs.reduce((total, leg) => total + leg.elapsedMinutes!, 0)
+			: null,
+		basis: completeFerry ? 'captured_timetable' : 'unavailable',
+		qualification:
+			'Elapsed time from the stated Baarah start, including the next confirmed timetable departure, every crossing, the Vashafaru dwell and the Dhidhdhoo connection wait. Published timetable snapshot; actual operation is unconfirmed.'
+	};
+	story.timing.connection = presentationAirportConnection();
 	if (story.flight)
 		story.timing.flight = {
-			minutes: 50,
+			minutes: 45,
 			basis: 'published_estimate',
 			qualification:
-				'Approximate 50-minute domestic flight from Six Senses Laamu’s 2022 transfer guide. This is a presentation estimate, not a retained dated flight timetable; excludes check-in and connection waits.',
+				'Approximate 45-minute flight, using Maldivian’s published Malé–Hanimaadhoo destination estimate for the reverse connection. This is not a retained dated HAQ–MLE flight timetable; excludes check-in and connection waits.',
 			sourceUrl: FLIGHT_DURATION_SOURCE
 		};
 	const ferry = story.timing.ferry.minutes,
-		flight = story.timing.flight.minutes;
+		flight = story.timing.flight.minutes,
+		connection = story.timing.connection.minutes;
+	const completeArrival = ferry != null && flight != null && connection != null;
 	story.timing.arrival = {
-		minutes: ferry != null && flight != null ? ferry + flight : null,
-		basis: ferry != null && flight != null ? 'presentation_estimate' : 'unavailable',
+		minutes: completeArrival ? ferry + connection + flight : null,
+		basis: completeArrival ? 'presentation_estimate' : 'unavailable',
 		qualification:
-			'Approximate ferry + flight travel time to Velana airport, serving Hulhumalé. Excludes ferry waiting, coast-to-terminal transfer, check-in, flight connection waits and the onward journey into Hulhumalé.'
+			'Captured ferry waits and crossings + a 90-minute assumed harbour transfer and airport connection + an approximate 45-minute flight to Velana airport, serving Hulhumalé. This is a presentation estimate, not a confirmed flight connection or earliest possible arrival. Actual flight waiting is unknown; onward travel into Hulhumalé is excluded.'
 	};
 	const completeJourney =
 		story.journey?.status === 'ok' &&
@@ -425,8 +488,9 @@ async function fetchPresentationStory(
 		api<SeaNetwork>('planning/sea-network?date=2026-10-10', undefined, signal),
 		(value) => {
 			story.seaNetwork = value;
-			story.ferry = presentationFerry(value);
-			if (!story.ferry) story.errors.ferry = 'The retained source ferry corridor is unavailable.';
+			story.ferryLegs = presentationFerryLegs(value);
+			if (!story.ferryLegs.length)
+				story.errors.ferry = 'One or more retained source ferry corridors are unavailable.';
 		}
 	);
 	let busPatterns: TransitPattern[] = [];
@@ -447,15 +511,16 @@ async function fetchPresentationStory(
 		(value) => {
 			story.airNetwork = value;
 			story.airports = {
-				kdo: value.airports.find((item) => item.iata === 'KDO') ?? null,
+				haq: value.airports.find((item) => item.iata === 'HAQ') ?? null,
 				mle: value.airports.find((item) => item.iata === 'MLE') ?? null
 			};
-			story.flight = value.routes.find((item) => item.id === 'maldivian-mle-kdo') ?? null;
+			story.flight = value.routes.find((item) => item.id === 'maldivian-mle-haq') ?? null;
 			const flight = story.flight;
-			if (flight?.geometry && (flight.from_iata === 'KDO' || flight.bidirectional)) {
+			if (flight?.geometry && (flight.from_iata === 'HAQ' || flight.bidirectional)) {
 				const path = flight.geometry.coordinates as Coordinates[];
-				story.flightGeometry = flight.from_iata === 'KDO' ? path : [...path].reverse();
-			} else story.errors.flight = 'The retained Kadhdhoo–Malé flight connection is unavailable.';
+				story.flightGeometry = flight.from_iata === 'HAQ' ? path : [...path].reverse();
+			} else
+				story.errors.flight = 'The retained Hanimaadhoo–Malé flight connection is unavailable.';
 		}
 	);
 	const islandRequests = Object.fromEntries(
@@ -526,50 +591,42 @@ async function fetchPresentationStory(
 		})
 	);
 	const ferryReady = seaReady.then(async () => {
-		if (!story.ferry) return;
-		await section(
-			'ferryTiming',
-			api<SeaConnections>(
-				'planning/sea-connections',
-				{
-					origin_island_id: 'island:697',
-					date: '2026-10-10',
-					departure_minutes: 455,
-					budget_minutes: 120,
-					max_transfers: 0
-				},
-				signal
-			),
-			(value) => {
-				const journey = value.baseline.destinations.find(
-					(item) => item.id === 'island:704'
-				)?.journey;
-				if (story.ferry)
-					story.ferry = {
-						...story.ferry,
-						journey: journey ?? null,
-						sourceMinutes: journey
-							? journey.arrival_minutes -
-								(journey.legs[0]?.departure_minutes ?? journey.departure_minutes)
-							: null,
-						// Published clocks belong to the source corridor, not the schematic crossing.
-						departure: null,
-						arrival: null
-					};
-			}
-		);
+		if (!story.ferryLegs.length) return;
+		let ready: { date: string; minutes: number } = { ...story.travelStart };
+		for (let index = 0; index < FERRY_CONNECTIONS.length; index++) {
+			let confirmed = false;
+			await section(
+				`ferryTiming:${index}`,
+				nextPresentationFerry(story.ferryLegs[index], ready, signal),
+				(value) => {
+					const ferry = story.ferryLegs[index];
+					const waiting =
+						index === 1
+							? `${value.waitMinutes}-minute dwell in Vashafaru`
+							: index === 2
+								? `${value.waitMinutes}-minute connection wait in Dhidhdhoo`
+								: `${value.waitMinutes}-minute wait from the stated Baarah start`;
+					story.ferryLegs = story.ferryLegs.map((item, i) =>
+						i === index
+							? {
+									...item,
+									...value,
+									sourceMinutes: value.minutes,
+									qualification: `${ferry.qualification} Includes a ${waiting} before the crossing on ${value.serviceDate}.`
+								}
+							: item
+					);
+					ready = serviceTime(value.serviceDate, value.arrival);
+					confirmed = true;
+				}
+			);
+			// Later waits cannot be calculated without the preceding confirmed arrival.
+			if (!confirmed) break;
+		}
 	});
 	const busReady = islandRequests['island:1442'].baseline.then(async () => {
 		if (!story.origin) return;
-		const assumptions = {
-			date: story.serviceDate,
-			departure_minutes: story.departureMinutes,
-			goal: 'transport',
-			target_minutes: 10,
-			include_journey_geometry: false,
-			include_world: false
-		};
-		const journey = section(
+		await section(
 			'journey',
 			api<SearchDirectionsResult>(
 				'routing/journey',
@@ -620,64 +677,6 @@ async function fetchPresentationStory(
 						value.reason ?? 'The airport journey is not confirmed by the retained timetables.';
 			}
 		);
-		const proposal = section(
-			'proposal',
-			api<BusConnectionDraft>(
-				'planning/bus-connection',
-				{
-					island_id: 'island:1442',
-					coordinates: story.origin.coordinates,
-					stop_name: 'Closer neighbourhood stop',
-					headway_minutes: 10,
-					assumptions
-				},
-				signal
-			),
-			(value) => {
-				if (value.status !== 'ready' || !value.operations.length) {
-					story.errors.proposal =
-						value.reasons[0] ??
-						'The closer-stop proposal could not be connected to the road network.';
-					return;
-				}
-				story.proposal = {
-					operations: value.operations,
-					connection: value,
-					evaluation: null,
-					comparisonFeatures: emptyFeatures(),
-					originBeforeMinutes: null,
-					originAfterMinutes: null
-				};
-			}
-		).then(async () => {
-			// Preserve early map/network availability before starting the comparison model.
-			await Promise.allSettled([seaReady, airReady, islandRequests['island:1442'].access]);
-			if (!story.proposal || !story.baseline) return;
-			await section(
-				'evaluation',
-				api<MapEvaluation>(
-					'planning/evaluate',
-					{ island_id: 'island:1442', assumptions, operations: story.proposal.operations },
-					signal
-				),
-				(value) => {
-					const row = value.origins.find((item) => item.origin_id === story.origin?.id);
-					story.proposal = {
-						...story.proposal!,
-						evaluation: value,
-						comparisonFeatures: displayComparisonHexes(
-							story.baseline!.origins,
-							value.origins,
-							story.grid,
-							10
-						),
-						originBeforeMinutes: row?.before.minutes ?? null,
-						originAfterMinutes: row?.after.minutes ?? null
-					};
-				}
-			);
-		});
-		await Promise.allSettled([journey, proposal]);
 	});
 	await Promise.allSettled([
 		seaReady,

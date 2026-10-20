@@ -1,6 +1,10 @@
 import type { FeatureCollection } from 'geojson';
 import type { PlanningOperation } from './planning-map.js';
-import type { PlanningEconomics, PlanningReviewRequest } from './proposal-review.js';
+import type {
+	PlanningEconomics,
+	PlanningEvaluation,
+	PlanningReviewRequest
+} from './proposal-review.js';
 import type { Coordinates } from './types.js';
 import type { TransportImpactData } from './transport-impact.js';
 
@@ -77,6 +81,44 @@ export type FerryServiceSettings = {
 	end: string;
 	speed: number | string;
 };
+export type FerrySuggestion = FerryDraft & {
+	inputs: {
+		origin_island_id: string;
+		destination_island_id: string;
+		origin_terminal_id?: string;
+		destination_terminal_id?: string;
+		headway_minutes: number;
+		start_minutes: number;
+		end_minutes: number;
+		speed_kph: number;
+		assumptions: PlanningReviewRequest['assumptions'];
+		operations: PlanningOperation[];
+	} | null;
+	suggestion: {
+		id: string;
+		title: string;
+		origin_island_id: string;
+		destination_island_id: string;
+		rationale: string;
+		evidence: { title: string; url?: string; value?: string; qualification?: string }[];
+		qualifications: string[];
+		assessment_date: string;
+	} | null;
+	impact: PlanningEvaluation | null;
+};
+
+/** Warm the exact proposal, including its access goal, bus work and spending limits. */
+export function ferrySuggestionInput(originId: string | null, request: PlanningReviewRequest) {
+	return originId === 'island:1442' &&
+		request.operations.length <= 96 &&
+		!request.operations.some((operation) => operation.metadata?.ferry_suggestion)
+		? {
+				origin_island_id: originId,
+				assumptions: request.assumptions,
+				operations: request.operations
+			}
+		: null;
+}
 
 function clockMinutes(value: string): number | null {
 	if (!/^\d{2}:\d{2}$/.test(value)) return null;

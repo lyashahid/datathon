@@ -1,5 +1,6 @@
 import type { FeatureCollection, LineString, Point } from 'geojson';
 import type { Coordinates } from './types.js';
+import type { PresentationPlaybackLeg } from './presentation-timeline.js';
 
 export type PresentationMode = 'ferry' | 'air' | 'bus' | 'walk' | 'transfer';
 export type PresentationProgress = {
@@ -10,6 +11,8 @@ export type PresentationProgress = {
 type PresentationCameraMotion = { durationMs?: number; pitch?: number; bearing?: number };
 export type PresentationMapScene = {
 	key: string;
+	/** Adjacent views of the same place can retain their settled map composition. */
+	continuityKey?: string;
 	paths: Array<{ mode: PresentationMode; coordinates: Coordinates[] }>;
 	camera: (
 		{ center: Coordinates; zoom: number } | { bounds: [Coordinates, Coordinates]; maxZoom?: number }
@@ -20,10 +23,22 @@ export type PresentationMapScene = {
 		follow?: boolean;
 		label?: string;
 		clockMinutes?: number;
+		/** Reuse this immediately preceding inspector's camera rather than establishing it twice. */
+		continueFrom?: string;
+		timeline?: PresentationPlaybackLeg[];
 		/** Hold the full route before approaching the vehicle; journey time stays paused. */
 		establishMs?: number;
 	};
+	handoff?: {
+		from: Coordinates;
+		to: Coordinates;
+		fromLabel: string;
+		toLabel: string;
+		holdMs?: number;
+	};
 	population?: FeatureCollection;
+	/** Source-backed island names and optional published times beside the active route. */
+	stops?: Array<{ coordinates: Coordinates; label: string; detail?: string }>;
 	panel?: 'island' | 'route';
 	emphasis?: { quietContext?: boolean; proposalPoint?: Coordinates };
 	inspect?: {
@@ -47,7 +62,7 @@ export function presentationCameraPadding(
 	height: number,
 	panel?: PresentationMapScene['panel']
 ) {
-	const top = Math.min(width <= 700 ? 176 : 184, Math.max(24, height * 0.27));
+	const top = Math.min(width <= 700 ? 160 : 150, Math.max(24, height * 0.27));
 	const bottom = Math.min(
 		panel && width <= 700 ? Math.round(height * 0.43) + 98 : 104,
 		Math.max(24, height - top - 140)
@@ -150,8 +165,10 @@ export function presentationPosition(paths: PreparedPath[], fraction: number) {
 	if (!paths.length || !Number.isFinite(fraction)) return null;
 	let target = Math.max(0, Math.min(1, fraction)) * total;
 	let path = paths.at(-1)!;
-	for (const candidate of paths) {
+	let pathIndex = 0;
+	for (const [index, candidate] of paths.entries()) {
 		path = candidate;
+		pathIndex = index;
 		if (target <= path.length) break;
 		target -= path.length;
 	}
@@ -163,6 +180,8 @@ export function presentationPosition(paths: PreparedPath[], fraction: number) {
 		const part =
 			distance > 0 ? Math.max(0, Math.min(1, (target - path.distances[index - 1]) / distance)) : 0;
 		return {
+			pathIndex,
+			pathProgress: path.length > 0 ? target / path.length : 0,
 			point: [
 				start[0] + (end[0] - start[0]) * part,
 				start[1] + (end[1] - start[1]) * part
@@ -172,6 +191,33 @@ export function presentationPosition(paths: PreparedPath[], fraction: number) {
 		};
 	}
 	return null;
+}
+
+/** Keep completed source geometry visible; never draw across a missing transfer. */
+export function presentationTrailFeatures(
+	paths: PreparedPath[],
+	pathIndex: number,
+	pathProgress: number
+): FeatureCollection<LineString> {
+	const features = paths.flatMap((path, index) => {
+		if (index > pathIndex) return [];
+		if (index < pathIndex || pathProgress >= 1) return presentationRouteFeatures([path]).features;
+		const position = presentationPosition([path], pathProgress);
+		if (!position || pathProgress <= 0) return [];
+		const target = Math.max(0, pathProgress) * path.length;
+		const coordinates = path.coordinates.filter((_, vertex) => path.distances[vertex] < target);
+		coordinates.push(position.point);
+		return coordinates.length > 1
+			? [
+					{
+						type: 'Feature' as const,
+						properties: { mode: path.mode },
+						geometry: { type: 'LineString' as const, coordinates }
+					}
+				]
+			: [];
+	});
+	return { type: 'FeatureCollection', features };
 }
 
 export function presentationVehicleFeatures(

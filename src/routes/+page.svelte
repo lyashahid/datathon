@@ -1777,14 +1777,15 @@
 		if (
 			activeWorkspace === 'atlas' &&
 			event.shiftKey &&
-			event.key.toLowerCase() === 's' &&
+			['p', 's'].includes(event.key.toLowerCase()) &&
+			!event.repeat &&
 			!event.altKey &&
 			!event.ctrlKey &&
 			!event.metaKey &&
 			!event.defaultPrevented &&
 			!(
 				event.target instanceof HTMLElement &&
-				event.target.closest('input, textarea, select, [contenteditable="true"]')
+				(event.target.isContentEditable || event.target.closest('input, textarea, select'))
 			)
 		) {
 			event.preventDefault();
@@ -2317,7 +2318,7 @@
 						<Button
 							variant="ghost"
 							aria-label="Start scenario"
-							title="The Last Few Kilometres · Shift+S"
+							title="Presentation · Shift+P"
 							disabled={loading}
 							onclick={startPresentation}><Clapperboard size={16} />Scenario</Button
 						>

@@ -14,10 +14,13 @@ from pypdf import PdfReader
 
 from app.api.routes.planning import get_transport_planning, router
 from app.api.routes.planning_reports import report_pdf
+from app.data.computed_cache import ComputedCache
 from app.planning.bus_connection import BusConnectionPlanner, BusConnectionRequest
+from app.planning.ferry_suggestions import FerrySuggestionRequest, FerrySuggestionService
 from app.planning.models import PlanningRequest
-from app.planning.report import build_planning_report, proposal_map
+from app.planning.report import build_planning_report, island_service_summary, proposal_map
 from app.planning.repository import PlanningRepository
+from app.planning.routing import service_day_trips
 from app.planning.service import PlanningService
 from app.planning.transport import FerryServiceRequest, TransportPlanningService, terminal_catalogue
 from app.planning.world import apply_operations
@@ -270,7 +273,7 @@ def test_existing_proposal_costs_and_budget_gate_are_authoritative(transport):
     standalone = draft(transport)
     assert (
         combined["quote"]["economics"]["delta"]["capital_mvr"]
-        == standalone["quote"]["economics"]["delta"]["capital_mvr"] + 100_000
+        == standalone["quote"]["economics"]["delta"]["capital_mvr"] + 250_000
     )
 
 
@@ -323,7 +326,7 @@ def test_ferry_water_corridor_geometry_timing_and_costs_agree(transport):
     daily_km = distance / 1000 * sum(len(service["timing"]["trips"]) for service in services)
     assert activity["routes"][0]["service_day_vehicle_km"] == pytest.approx(daily_km, abs=0.001)
     annual_km = daily_km * activity["annual_operating_days_assumption"]
-    assert economics["delta"]["annual_operating_mvr"] == pytest.approx(round(annual_km * 250, 2))
+    assert economics["delta"]["annual_operating_mvr"] == pytest.approx(round(annual_km * 100, 2))
     assert economics["delta"]["annual_fleet_operating_kg_co2e"] == pytest.approx(
         round(annual_km * 25, 2)
     )
@@ -442,11 +445,174 @@ def test_ferry_forecast_and_pdf_keep_connections_separate_from_health(transport)
     assert "RESIDENT ACCESS GAIN" in cover
     assert "RESIDENTS GAINING TARGET ACCESS" not in cover
     assert "Public transport and island connections" in text
+    assert "Impact on both islands" in text
     assert "New terminal / port construction: MVR 0" in text
     assert "Terminal 1 to Terminal 2" in text
     assert "1 to 2" in text and "2 to 1" in text
     evidence = json.loads(reader.attachments["evaluation-evidence.json"][0])
     assert evidence["transport_connectivity"]["after"]["ferry_lines"] == 2
+    assert {row["island_id"] for row in evidence["island_impacts"]} == {"island:1442", "island:500"}
+
+
+def test_ferry_both_islands_use_the_complete_bus_and_ferry_proposal(transport):
+    baseline = transport.planning.repository.baseline
+    node = next(row for row in baseline["network"]["nodes"] if row["id"] == "c")
+    baseline["origins"].append(dict(node, id="resident:c", population2026=75))
+    connection = BusConnectionPlanner(transport.planning).preview(
+        BusConnectionRequest(island_id="island:1442", coordinates=[73.54, 4.22])
+    )
+    assert connection["status"] == "ready"
+    ferry = draft(transport, operations=connection["operations"])
+    payload = PlanningRequest.model_validate(
+        {
+            "island_id": "island:1442",
+            "assumptions": {"goal": "transport", "target_minutes": 10, "include_world": False},
+            "operations": [*connection["operations"], *ferry["operations"]],
+        }
+    )
+    result = transport.planning.evaluate(payload)
+    assert result["economics"]["delta"]["new_stops"] == 1
+    for row in result["island_impacts"]:
+        exact = transport.planning._cached_evaluate(
+            payload.model_copy(update={"island_id": row["island_id"]})
+        )
+        assert row["summary"] == exact["summary"]
+        assert row["transport_connectivity"] == exact["transport_connectivity"]
+        assert row["target_minutes"] == 10
+    assert result["summary"] == result["island_impacts"][0]["summary"]
+    assert result["island_impacts"][1]["summary"]["population"] == 75
+    bus_departures = sum(
+        len(service_day_trips(operation["service"], payload.assumptions.date))
+        for operation in connection["operations"]
+        if operation["type"] == "add_service"
+    )
+    one_way_ferry_departures = len(
+        service_day_trips(
+            next(
+                operation["service"]
+                for operation in ferry["operations"]
+                if operation["type"] == "add_service"
+            ),
+            payload.assumptions.date,
+        )
+    )
+    origin, destination = [island_service_summary(row) for row in result["island_impacts"]]
+    assert origin == {
+        "departures_before": None,
+        "departures_after": bus_departures + one_way_ferry_departures,
+        "added_connections": 1,
+    }
+    assert destination == {
+        "departures_before": None,
+        "departures_after": one_way_ferry_departures,
+        "added_connections": 1,
+    }
+
+
+def test_suggestion_cache_keys_complete_draft_date_and_shorelines(transport, tmp_path, monkeypatch):
+    artifact = {
+        "suggestions": [
+            {
+                "id": "test-existing-terminals",
+                "title": "Fixture connection",
+                "origin_island_id": "island:1442",
+                "destination_island_id": "island:500",
+                "settings": {"headway_minutes": 120},
+                "rationale": "Source-backed fixture",
+                "evidence": [{"title": "Fixture terminal source"}],
+                "qualifications": ["Demand is unknown"],
+                "assessment_date": "2026-10-20",
+            }
+        ]
+    }
+    path = tmp_path / "policy-evidence/ferry-suggestions.json"
+    path.parent.mkdir()
+    path.write_text(json.dumps(artifact), encoding="utf8")
+    transport.planning.computed_cache = ComputedCache(tmp_path / "runtime")
+    calls = []
+    original = transport.ferry_service
+
+    def counted(body):
+        calls.append(body.model_dump(mode="json"))
+        return original(body)
+
+    monkeypatch.setattr(transport, "ferry_service", counted)
+    service = FerrySuggestionService(transport)
+    body = FerrySuggestionRequest(assumptions={"goal": "transport", "target_minutes": 10})
+    first = service.suggest(body)
+    assert first["status"] == "ready"
+    assert service.suggest(body) == first
+    assert len(calls) == 1
+    assert first["operations"][0]["metadata"]["ferry_suggestion"]["id"] == "test-existing-terminals"
+    assert first["inputs"]["operations"] == []
+    stop = {"type": "add_stop", "island_id": "island:1442", "coordinates": [73.54, 4.22]}
+    combined = service.suggest(
+        FerrySuggestionRequest.model_validate(
+            {**body.model_dump(mode="json"), "operations": [stop]}
+        )
+    )
+    assert len(calls) == 2
+    assert combined["request_fingerprint"] != first["request_fingerprint"]
+    assert combined["impact"]["economics"]["delta"]["capital_mvr"] == (
+        first["impact"]["economics"]["delta"]["capital_mvr"] + 250_000
+    )
+    assert combined["inputs"]["operations"][0]["type"] == "add_stop"
+    display_stop = {
+        **stop,
+        "metadata": {
+            "ui_capital": 100_000,
+            "ui_annual": 500,
+            "ui_package": "bus-route:accepted",
+            "ui_map_features": {"type": "FeatureCollection", "features": []},
+            "ui_bus_summary": {"name": "Bus display summary"},
+            "ui_ferry_summary": {"name": "Ferry display summary"},
+        },
+    }
+    display_body = FerrySuggestionRequest.model_validate(
+        {**body.model_dump(mode="json"), "operations": [display_stop]}
+    )
+    displayed = service.suggest(display_body)
+    assert len(calls) == 2
+    assert displayed["inputs"]["operations"][0]["metadata"] == display_stop["metadata"]
+    assert displayed["request_fingerprint"] != combined["request_fingerprint"]
+    assert displayed["impact"]["request_fingerprint"] == transport.planning._digest(
+        PlanningRequest.model_validate(
+            {
+                "island_id": "island:1442",
+                "assumptions": display_body.assumptions.model_dump(mode="json"),
+                "operations": [*display_body.operations, *displayed["operations"]],
+            }
+        ).model_dump(mode="json")
+    )
+    assert displayed["impact"]["summary"] == combined["impact"]["summary"]
+    assert displayed["impact"]["economics"] == combined["impact"]["economics"]
+    # Real cost metadata and unknown future metadata remain model inputs.
+    for semantic in ({"costs": {"capital_mvr": 1234}}, {"ui_future_model_input": 1}):
+        service.suggest(
+            FerrySuggestionRequest.model_validate(
+                {
+                    **body.model_dump(mode="json"),
+                    "operations": [{**display_stop, "metadata": semantic}],
+                }
+            )
+        )
+    assert len(calls) == 4
+    later = body.model_copy(
+        update={"assumptions": body.assumptions.model_copy(update={"date": date(2026, 10, 11)})}
+    )
+    assert service.suggest(later)["request_fingerprint"] != first["request_fingerprint"]
+    assert len(calls) == 5
+    transport.repository.islands_by_id["island:501"]["properties"]["name"] = "Revised source"
+    service.suggest(body)
+    assert len(calls) == 6
+    app = FastAPI()
+    app.include_router(router)
+    app.dependency_overrides[get_transport_planning] = lambda: transport
+    response = TestClient(app).post(
+        "/api/v1/planning/ferry-suggestion", json=body.model_dump(mode="json")
+    )
+    assert response.status_code == 200
+    assert len(response.json()["impact"]["island_impacts"]) == 2
 
 
 def test_transport_api_validation_and_response(transport):
@@ -515,3 +681,18 @@ def test_grouped_ui_pdf_resolves_terminal_names_with_compact_impact_flags(transp
     drawing = proposal_map(placed, transport.planning.baseline(None), 480, world_stops)
     labels = [item.text for item in drawing.contents if hasattr(item, "text")]
     assert sorted(labels) == ["1", "2", "N"]
+    baseline = transport.planning.baseline(None)
+    baseline["graph_edges"].extend(
+        [
+            {"geometry": [[72.9, -0.5], [73.0, -0.49]]},
+            {"geometry": [[72.0, 4.22], [75.0, 4.22]]},
+        ]
+    )
+    framed = proposal_map(placed, baseline, 480, world_stops)
+    assert [(item.cx, item.cy) for item in framed.contents if hasattr(item, "cx")] == [
+        (item.cx, item.cy) for item in drawing.contents if hasattr(item, "cx")
+    ]
+    for item in framed.contents:
+        if hasattr(item, "points"):
+            assert all(0 <= coordinate <= framed.width for coordinate in item.points[::2])
+            assert all(0 <= coordinate <= framed.height for coordinate in item.points[1::2])

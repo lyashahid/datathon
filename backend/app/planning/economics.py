@@ -6,30 +6,11 @@ import math
 from typing import Any
 
 from app.planning.calibration import calibrate
+from app.planning.costs import COST_DEFAULTS, cost_basis, default_factor_basis
 from app.planning.models import PlanningAssumptions
 from app.planning.resources import resource_audit
 from app.planning.routing import service_day_trips
 from app.routing.engine import _distance_m
-
-# These are editable illustrations, deliberately not labeled as official local prices.
-COST_DEFAULTS = {
-    "stop_capital_mvr": 100_000.0,
-    "hospital_capital_mvr": 120_000_000.0,
-    "school_capital_mvr": 25_000_000.0,
-    "hospital_annual_operating_mvr": 20_000_000.0,
-    "school_annual_operating_mvr": 5_000_000.0,
-    "diesel_bus_capital_mvr": 3_000_000.0,
-    "electric_bus_capital_mvr": 4_500_000.0,
-    "electric_charging_capital_mvr": 750_000.0,
-    "diesel_operating_mvr_per_km": 25.0,
-    "electric_operating_mvr_per_km": 18.0,
-    "diesel_kg_co2e_per_km": 1.3,
-    "electric_kg_co2e_per_km": 0.8,
-    "displaced_kg_co2e_per_passenger_km": 0.12,
-    "ferry_capital_mvr": 15_000_000.0,
-    "ferry_operating_mvr_per_km": 250.0,
-    "ferry_kg_co2e_per_km": 25.0,
-}
 
 
 def fleet_activity(
@@ -177,6 +158,7 @@ def economics(
         assumptions.cost_overrides,
         assumptions.energy_overrides,
         assumptions.date,
+        default_basis=default_factor_basis(),
     )
     costs = calibration["costs"]
     fleets = [
@@ -374,9 +356,9 @@ def economics(
     net_emissions = delta_emissions - displaced if delta_emissions is not None else None
     return {
         "currency": "MVR",
-        "basis": "source-linked and editable planning inputs; inspect factor provenance"
-        if calibration["receipts"] or calibration["derived"]
-        else "editable planning assumptions; not official quotations",
+        "basis": "MVR planning allowances with local benchmarks and explicit assumptions; "
+        "inspect cost sources and factor provenance. Not supplier quotations.",
+        "cost_basis": cost_basis(),
         "before": results[0],
         "after": results[1],
         "delta": {
@@ -424,7 +406,8 @@ def economics(
             set(
                 reasons
                 + [
-                    "Costs are editable illustrations. Construction land, capacity, staffing, "
+                    "Costs are editable planning allowances, not supplier quotations. "
+                    "Construction land, capacity, staffing, "
                     "facility energy, embodied emissions and lifecycle maintenance require "
                     "explicit estimates. Baseline existing facility emissions are outside "
                     "this project-change account; vehicle embodied emissions are unmeasured.",

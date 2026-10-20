@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FeatureCollection, Position } from 'geojson';
+import { restorePlanningBudget, TRANSPORT_PILOT_BUDGET } from './planning-budget.js';
 import {
 	assessDraftBudget,
 	draftCosts,
@@ -17,6 +18,17 @@ const defaults = {
 };
 
 describe('saved proposal recovery', () => {
+	it('uses the transport pilot budget and migrates only the previous default pair', () => {
+		expect(TRANSPORT_PILOT_BUDGET).toEqual({ capital: 50_000_000, annual: 12_000_000 });
+		expect(restorePlanningBudget(undefined, undefined)).toEqual(TRANSPORT_PILOT_BUDGET);
+		expect(restorePlanningBudget(150_000_000, 25_000_000)).toEqual(TRANSPORT_PILOT_BUDGET);
+		for (const [capital, annual] of [
+			[0, 0],
+			[150_000_000, 7_000_000],
+			[8_000_000, 25_000_000]
+		])
+			expect(restorePlanningBudget(capital, annual)).toEqual({ capital, annual });
+	});
 	const stop = { type: 'add_stop', coordinates: [73.5, 4.2], name: 'New stop' };
 	it('recovers valid changes alongside corrupt or obsolete browser entries without crashing', () => {
 		expect(

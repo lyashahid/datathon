@@ -5,6 +5,7 @@ import {
 	fiscalProjections,
 	formatAmount,
 	operationName,
+	proposalContents,
 	planningFinancialKey,
 	proposedBusServiceGroups,
 	proposedFerryServiceGroups,
@@ -65,6 +66,37 @@ describe('planning cost request identity', () => {
 });
 
 describe('decision brief arithmetic', () => {
+	it('shows the combined bus stop, bus route and ferry package without counting return directions twice', () => {
+		expect(
+			proposalContents([
+				{ type: 'add_stop', metadata: { mode: 'bus', ui_package: 'bus-route:one' } },
+				{ type: 'add_service', service: { mode: 'bus', routeId: 'bus:one', id: 'outbound' } },
+				{ type: 'add_service', service: { mode: 'bus', routeId: 'bus:one', id: 'return' } },
+				{ type: 'use_existing_ferry_terminal', target_id: 'terminal:a' },
+				{ type: 'use_existing_ferry_terminal', target_id: 'terminal:b' },
+				{ type: 'use_existing_ferry_terminal', target_id: 'terminal:a' },
+				{
+					type: 'add_service',
+					service: { mode: 'ferry' },
+					metadata: { ui_package: 'ferry-service:one' }
+				},
+				{
+					type: 'add_service',
+					service: { mode: 'ferry' },
+					metadata: { ui_package: 'ferry-service:one' }
+				}
+			])
+		).toEqual({ busStops: 1, busRoutes: 1, ferryRoutes: 1, existingFerryLandings: 2 });
+	});
+	it('keeps distinct routes separate and never labels a ferry stop as a new bus stop', () => {
+		expect(
+			proposalContents([
+				{ type: 'add_stop', metadata: { mode: 'ferry' } },
+				{ type: 'add_service', service: { mode: 'bus', routeId: 'one' } },
+				{ type: 'add_service', service: { mode: 'bus', routeId: 'two' } }
+			])
+		).toMatchObject({ busStops: 0, busRoutes: 2, ferryRoutes: 0 });
+	});
 	it('pays capital once and repeats added annual cost at each explicit horizon', () => {
 		expect(fiscalProjections(25_000_000, 5_000_000)).toEqual([
 			{ years: 1, capital: 25_000_000, operating: 5_000_000, total: 30_000_000 },

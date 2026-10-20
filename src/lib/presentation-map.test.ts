@@ -6,6 +6,7 @@ import {
 	presentationClock,
 	presentationPosition,
 	presentationRouteFeatures,
+	presentationTrailFeatures,
 	presentationVehicleFeatures
 } from './presentation-map.js';
 
@@ -101,6 +102,46 @@ describe('presentation clock', () => {
 });
 
 describe('presenter map geometry', () => {
+	it('reveals only traveled vertices and keeps transfers disconnected', () => {
+		const paths = preparePresentationPaths([
+			{
+				mode: 'ferry',
+				coordinates: [
+					[0, 0],
+					[1, 0],
+					[1, 1]
+				]
+			},
+			{
+				mode: 'bus',
+				coordinates: [
+					[3, 0],
+					[4, 0]
+				]
+			}
+		]);
+		expect(presentationTrailFeatures(paths, 0, 0).features).toEqual([]);
+		expect(presentationTrailFeatures(paths, 0, 0.75).features[0].geometry.coordinates).toEqual([
+			[0, 0],
+			[1, 0],
+			[1, 0.5]
+		]);
+		expect(
+			presentationTrailFeatures(paths, 1, 0.5).features.map(
+				(feature) => feature.geometry.coordinates
+			)
+		).toEqual([
+			[
+				[0, 0],
+				[1, 0],
+				[1, 1]
+			],
+			[
+				[3, 0],
+				[3.5, 0]
+			]
+		]);
+	});
 	it('follows a bent source path and clamps progress at its endpoints', () => {
 		const paths = preparePresentationPaths([
 			{

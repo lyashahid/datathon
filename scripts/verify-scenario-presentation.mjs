@@ -6,6 +6,7 @@ import { browserBaseURL } from './browser-config.mjs';
 
 const baseURL = browserBaseURL();
 const selectedCheck = process.env.MOBILITY_QA_CHECK;
+const selectedChecks = selectedCheck?.split('|').map((name) => name.trim());
 const output = path.resolve('artifacts/qa/scenario-presentation');
 const reportFilename = selectedCheck ? 'verification-targeted.json' : 'verification.json';
 await mkdir(output, { recursive: true });
@@ -34,6 +35,81 @@ page.on('pageerror', (error) => {
 const atlas = page.locator('.national-map');
 const presenter = page.getByRole('region', { name: 'Scenario presentation', exact: true });
 const scope = page.getByTestId('map-search-scope');
+const scenes = [
+	{ island: 'island:640', kind: 'island', chapter: 1, title: 'Baarah, Haa Alifu' },
+	{ island: 'island:640', kind: 'ferry-inspect', chapter: 2, title: 'Baarah → Vashafaru' },
+	{
+		island: 'island:640',
+		destination: 'island:611',
+		kind: 'ferry-travel',
+		chapter: 2,
+		title: 'Ferry to Vashafaru'
+	},
+	{ island: 'island:611', kind: 'island', chapter: 2, title: 'Vashafaru, Haa Alifu' },
+	{ island: 'island:611', kind: 'ferry-inspect', chapter: 2, title: 'Vashafaru → Dhidhdhoo' },
+	{
+		island: 'island:611',
+		destination: 'island:625',
+		kind: 'ferry-travel',
+		chapter: 2,
+		title: 'Ferry to Dhidhdhoo'
+	},
+	{ island: 'island:625', kind: 'island', chapter: 2, title: 'Dhidhdhoo, Haa Alifu' },
+	{ island: 'island:625', kind: 'ferry-inspect', chapter: 2, title: 'Dhidhdhoo → Hanimaadhoo' },
+	{
+		island: 'island:625',
+		destination: 'island:684',
+		kind: 'ferry-travel',
+		chapter: 2,
+		title: 'Ferry to Hanimaadhoo'
+	},
+	{ island: 'island:684', kind: 'airport', chapter: 3, title: 'Hanimaadhoo Airport' },
+	{ island: 'island:684', kind: 'flight-inspect', chapter: 3, title: 'Hanimaadhoo → Velana' },
+	{
+		island: 'island:684',
+		destination: 'island:1442',
+		kind: 'flight-travel',
+		chapter: 3,
+		title: 'Landing at Velana'
+	},
+	{ island: 'island:1442', kind: 'access', chapter: 4, title: 'The last few kilometres' },
+	{ island: 'island:1442', kind: 'population', chapter: 4, title: 'People behind the map' },
+	{ island: 'island:1442', kind: 'walk', chapter: 5, title: 'The walk to a bus' },
+	{ island: 'island:1442', kind: 'bus', chapter: 5, title: 'The bus to the airport' }
+];
+const lastStep = scenes.length - 1;
+const ferryLegs = [
+	{
+		inspect: 1,
+		travel: 2,
+		from: 'Baarah',
+		to: 'Vashafaru',
+		code: 'S1C5',
+		minutes: 15,
+		waitMinutes: 1420,
+		endpoint: [73.16241, 6.89618]
+	},
+	{
+		inspect: 4,
+		travel: 5,
+		from: 'Vashafaru',
+		to: 'Dhidhdhoo',
+		code: 'S1C5',
+		minutes: 10,
+		waitMinutes: 5,
+		endpoint: [73.11511, 6.8881]
+	},
+	{
+		inspect: 7,
+		travel: 8,
+		from: 'Dhidhdhoo',
+		to: 'Hanimaadhoo',
+		code: 'S1C6',
+		minutes: 25,
+		waitMinutes: 170,
+		endpoint: [73.17379, 6.76686]
+	}
+];
 /** @type {Record<string, unknown>} */
 const evidence = {};
 /** @type {Promise<void>[]} */
@@ -41,13 +117,13 @@ const responseReads = [];
 page.on('response', (response) => {
 	const endpoint = new URL(response.url()).pathname.split('/api/backend/')[1];
 	if (
-		![
+		(![
 			'planning/sea-network',
 			'planning/air-network',
 			'routing/journey',
-			'planning/bus-connection',
-			'planning/evaluate'
-		].includes(endpoint) ||
+			'planning/bus-connection'
+		].includes(endpoint) &&
+			!endpoint?.startsWith('planning/opportunities/')) ||
 		!response.ok()
 	)
 		return;
@@ -55,7 +131,16 @@ page.on('response', (response) => {
 		response
 			.json()
 			.then((value) => {
-				evidence[endpoint] = value;
+				if (endpoint.startsWith('planning/opportunities/')) {
+					const islandId = decodeURIComponent(endpoint.split('/').at(-1) ?? '');
+					evidence[`presentation:layers:${islandId}`] = {
+						gaps:
+							value.hex_grid?.features?.length ||
+							(value.gap_cells ?? value.features)?.features?.length ||
+							0,
+						coverage: value.coverage_fill?.features?.length ?? 0
+					};
+				} else evidence[endpoint] = value;
 			})
 			.catch(() => {})
 	);
@@ -63,7 +148,7 @@ page.on('response', (response) => {
 
 /** @param {string} name @param {()=>Promise<unknown>} action */
 async function check(name, action) {
-	if (selectedCheck && !name.includes(selectedCheck)) return;
+	if (selectedChecks && !selectedChecks.some((selection) => name.includes(selection))) return;
 	console.log(`RUN ${name}`);
 	/** @type {{name:string,status:string,detail?:unknown}} */
 	const result = { name, status: 'running' };
@@ -102,11 +187,16 @@ async function logScene(checkpoint) {
 	console.log(`${checkpoint} ${JSON.stringify(state)}`);
 }
 
-/** @param {number} step @param {string} island */
-async function expectStep(step, island) {
+/** @param {number} step */
+async function expectStep(step) {
 	await expect(presenter).toHaveAttribute('data-step', String(step));
+	await expect(presenter).toHaveAttribute('data-chapter', String(scenes[step].chapter));
+	await expect(presenter).toHaveAttribute('data-scene', scenes[step].kind);
 	await expect(atlas).toHaveAttribute('data-presentation-key', new RegExp(`^${step}:`));
-	await expect(scope).toHaveAttribute('data-island-id', island);
+	await expect(scope).toHaveAttribute(
+		'data-island-id',
+		new RegExp(`^(${scenes[step].island}|${scenes[step].destination ?? scenes[step].island})$`)
+	);
 	await presentationChromeHidden();
 	await visibleClocks();
 }
@@ -128,6 +218,29 @@ async function noOverflow() {
 
 const next = () => presenter.getByRole('button', { name: 'Next scenario step', exact: true });
 const details = () => presenter.getByRole('complementary', { name: 'Scenario island details' });
+/** @param {string} name */
+async function islandStats(name) {
+	await expect(details().getByRole('heading', { name, exact: true })).toBeVisible();
+	await expect(
+		details().getByRole('region', { name: 'Island access index', exact: true })
+	).toBeVisible();
+}
+/** @param {string} islandId */
+async function islandMapLayers(islandId) {
+	await Promise.all(responseReads);
+	const expected = /** @type {{gaps:number,coverage:number}|undefined} */ (
+		evidence[`presentation:layers:${islandId}`]
+	);
+	assert.ok(expected, `The ${islandId} heatmap response must be available`);
+	await expect(scope).toHaveAttribute('data-island-id', islandId);
+	await expect(atlas).toHaveAttribute('data-presentation-island-id', islandId);
+	await expect(atlas).toHaveAttribute('data-presentation-gap-count', String(expected.gaps));
+	await expect(atlas).toHaveAttribute(
+		'data-presentation-coverage-count',
+		String(expected.coverage)
+	);
+	return expected;
+}
 const arrivalClock = () => page.getByTestId('presentation-arrival-clock');
 const pickupClock = () => page.getByTestId('presentation-pickup-clock');
 async function presentationChromeHidden() {
@@ -141,11 +254,16 @@ async function presentationChromeHidden() {
 async function visibleClocks() {
 	await expect(arrivalClock()).toBeInViewport();
 	await expect(pickupClock()).toBeInViewport();
+	for (const clock of [arrivalClock(), pickupClock()]) {
+		await expect(clock.locator('.clock-value > strong')).toHaveText(
+			/^(?:\d+d )?\d+(?:h \d{2}m| min)\+?$/
+		);
+	}
 	const step = Number(await presenter.getAttribute('data-step'));
-	await expect(arrivalClock()).toHaveAttribute('data-active', String(step < 6));
-	await expect(pickupClock()).toHaveAttribute('data-active', String(step >= 6));
-	const active = step < 6 ? arrivalClock() : pickupClock();
-	const secondary = step < 6 ? pickupClock() : arrivalClock();
+	await expect(arrivalClock()).toHaveAttribute('data-active', String(step < 12));
+	await expect(pickupClock()).toHaveAttribute('data-active', String(step >= 12));
+	const active = step < 12 ? arrivalClock() : pickupClock();
+	const secondary = step < 12 ? pickupClock() : arrivalClock();
 	const activeBox = await active.boundingBox();
 	const secondaryBox = await secondary.boundingBox();
 	assert.ok(activeBox && secondaryBox);
@@ -275,62 +393,39 @@ async function camera() {
 	};
 }
 
-async function comparisonMetric() {
-	const outcome = presenter.locator('[aria-label="Walking time to a stop"]');
-	await expect(outcome).toBeInViewport();
-	await expect(outcome).toContainText('Walk to a stop');
-	await clocksClearOf(outcome);
-	for (const control of [
-		presenter.getByRole('navigation', { name: 'Scenario controls', exact: true }),
-		presenter.getByRole('button', { name: 'Before', exact: true }),
-		presenter.getByRole('button', { name: 'Closer stop', exact: true })
-	]) {
-		await separated(
-			outcome,
-			control,
-			'The walking-time metric must not cover presentation controls'
-		);
-	}
-	await Promise.all(responseReads);
-	const evaluation =
-		/** @type {{origins:Array<{origin_id:string,before:{minutes:number|null},after:{minutes:number|null}}>}} */ (
-			evidence['planning/evaluate']
-		);
-	const origin = evaluation.origins.find((item) => item.origin_id === 'wp:hulhumale:3443:1080');
-	assert.ok(origin?.before.minutes != null && origin.after.minutes != null);
-	assert.ok(origin.before.minutes > origin.after.minutes);
-	const values = await outcome.locator('strong').allTextContents();
-	assert.equal(values.length, 2);
-	for (const [index, expected] of [origin.before.minutes, origin.after.minutes].entries()) {
-		if (expected > 0 && expected < 1) assert.equal(values[index], '<1 min');
-		else assert.equal(values[index], `${Math.round(expected)} min`);
-	}
-	return { beforeMinutes: origin.before.minutes, afterMinutes: origin.after.minutes, values };
-}
-
-async function comparisonOriginInViewport() {
-	const journey =
-		/** @type {{segments:Array<{result:{journey:{legs:Array<{geometry:number[][]}>}}|null}>}} */ (
-			evidence['routing/journey']
-		);
-	const origin = journey.segments.flatMap((segment) => segment.result?.journey.legs ?? [])[0]
-		?.geometry[0];
-	assert.ok(origin?.length === 2, 'The retained airport itinerary must provide its origin');
-	const view = await camera();
-	const box = await atlas.boundingBox();
-	assert.ok(box);
-	// Presentation cameras are north-up at zero pitch, so Web Mercator gives screen position.
-	/** @param {number} latitude */
-	const mercatorY = (latitude) =>
-		(1 - Math.log(Math.tan(Math.PI / 4 + (latitude * Math.PI) / 360)) / Math.PI) / 2;
-	const worldSize = 512 * 2 ** view.zoom;
-	const x = box.width / 2 + ((origin[0] - view.longitude) / 360) * worldSize;
-	const y = box.height / 2 + (mercatorY(origin[1]) - mercatorY(view.latitude)) * worldSize;
-	assert.ok(
-		x > 0 && x < box.width && y > 0 && y < box.height,
-		'The final view must include the actual origin'
-	);
-	return { origin, x, y };
+/** Read the brief moving state in one browser turn before slower layout checks. */
+async function motionSnapshot() {
+	const sample = await page.waitForFunction(() => {
+		const map = document.querySelector('.national-map');
+		const progress = Number(map?.getAttribute('data-presentation-progress'));
+		if (
+			map?.getAttribute('data-presentation-phase') !== 'playing' ||
+			map.getAttribute('data-presentation-stationary') === 'true' ||
+			progress <= 0.05 ||
+			progress >= 0.95
+		)
+			return null;
+		return {
+			step: document
+				.querySelector('[aria-label="Scenario presentation"]')
+				?.getAttribute('data-step'),
+			key: map.getAttribute('data-presentation-key'),
+			progress,
+			reused: map.getAttribute('data-presentation-reused-camera'),
+			following: map.getAttribute('data-presentation-following'),
+			running: document
+				.querySelector('[data-testid="presentation-arrival-clock"]')
+				?.getAttribute('data-running'),
+			elapsedSeconds: Number(
+				document
+					.querySelector('[data-testid="presentation-arrival-clock"]')
+					?.getAttribute('data-elapsed-seconds')
+			)
+		};
+	});
+	const snapshot = await sample.jsonValue();
+	assert.ok(snapshot, 'A playing vehicle must provide a motion snapshot');
+	return snapshot;
 }
 
 /** @param {{longitude:number,latitude:number,zoom:number}} before @param {{longitude:number,latitude:number,zoom:number}} after */
@@ -338,7 +433,7 @@ function unchangedCamera(before, after) {
 	for (const property of /** @type {const} */ (['longitude', 'latitude', 'zoom'])) {
 		assert.ok(
 			Math.abs(before[property] - after[property]) < 0.000001,
-			`The before/after comparison must keep the same ${property}: ${before[property]} → ${after[property]}`
+			`The lens change must keep the same ${property}: ${before[property]} → ${after[property]}`
 		);
 	}
 }
@@ -357,18 +452,16 @@ try {
 			await expect(scope).toHaveAttribute('data-island-id', 'island:1443');
 			const input = page.getByTestId('map-search-input');
 			await input.focus();
-			await input.press('Shift+S');
+			await input.press('Shift+P');
 			await expect(presenter).toHaveCount(0);
 			await input.fill('');
 			await input.press('Escape');
 			await page.getByRole('button', { name: 'Start scenario', exact: true }).click();
-			await expectStep(0, 'island:697');
-			console.log('READY Hithadhoo scenario entered; awaiting shared data');
+			await expectStep(0);
+			console.log('READY Baarah scenario entered; awaiting shared data');
 			await expect(presenter).toHaveAttribute('aria-busy', 'false', { timeout: 180000 });
 			console.log('READY Shared scenario data settled');
-			await expect(
-				details().getByRole('heading', { name: 'Hithadhoo', exact: true })
-			).toBeVisible();
+			await expect(details().getByRole('heading', { name: 'Baarah', exact: true })).toBeVisible();
 			await expect(
 				details().getByRole('region', { name: 'Island access index', exact: true })
 			).toBeVisible();
@@ -384,15 +477,16 @@ try {
 			await expect(pickupClock()).toHaveAttribute('data-elapsed-seconds', '0');
 			await staticSceneSurvivesVisibilityChange();
 			await clocksClearOf(details());
-			await expect(details().getByTestId('island-overview-population')).toBeVisible();
 			const secondaryDetails = details().locator('details.presentation-details');
 			const secondaryToggle = secondaryDetails.locator(':scope > summary');
-			await expect(secondaryToggle).toHaveText('Services, demographics & data');
+			await expect(secondaryToggle).toHaveText('Connections, services & data');
 			await expect(secondaryDetails).toHaveJSProperty('open', false);
+			await expect(details().getByTestId('island-overview-population')).toBeHidden();
 			await page.screenshot({ path: path.join(output, 'desktop-start.png'), fullPage: true });
 			await secondaryToggle.focus();
 			await secondaryToggle.press('Enter');
 			await expect(secondaryDetails).toHaveJSProperty('open', true);
+			await expect(details().getByTestId('island-overview-population')).toBeVisible();
 			await expect(
 				details().getByRole('region', { name: 'Island services', exact: true })
 			).toBeVisible();
@@ -410,89 +504,199 @@ try {
 			return { gapCells, coverageCells, seaRoutes, dimensions: await noOverflow() };
 		}
 	);
-	await check('Ferry inspector is readable and the presentation arrives at Kadhdhoo', async () => {
-		await next().click();
-		await expectStep(1, 'island:697');
-		await expect(
-			atlas.getByRole('heading', { name: 'Hithadhoo → Kadhdhoo', exact: true })
-		).toBeVisible();
-		await expect(atlas.getByRole('region', { name: 'Sea route', exact: true })).toBeVisible();
-		await expect(atlas.getByRole('region', { name: 'Sea route', exact: true })).toContainText(
-			'Estimated crossing'
-		);
-		await expect(atlas.locator('.sea-route-summary')).toContainText('35 min');
-		await expect(atlas.locator('.sea-route-summary')).toContainText('6 sailings / week');
-		await expect(atlas.locator('.sea-route-presentation-qualification')).toContainText(
-			'No public ferry berth'
-		);
-		await frozenClocks();
-		const inspectorType = await readableInspector('.map-sea-route-popup');
-		await clocksClearOf(atlas.locator('.map-sea-route-popup'));
-		await positiveCount('data-presentation-paths');
-		await page.screenshot({
-			path: path.join(output, 'desktop-ferry-inspector.png'),
-			fullPage: true
-		});
-		await sourceDisclosure('.map-sea-route-popup', 'Source corridor details');
-		await presenter.getByRole('button', { name: 'Previous scenario step' }).click();
-		await expectStep(0, 'island:697');
-		await page.keyboard.press('ArrowRight');
-		await expectStep(1, 'island:697');
-		await page.keyboard.press('PageDown');
-		await expectStep(2, 'island:697');
-		await expect(atlas).toHaveAttribute('data-presentation-progress', '1.000');
-		await expect(atlas).toHaveAttribute('data-presentation-animating', 'false');
-		await frozenClocks();
-		const ferrySeconds = Number(await arrivalClock().getAttribute('data-elapsed-seconds'));
-		assert.ok(ferrySeconds > 0);
-		evidence['presentation:ferry-seconds'] = ferrySeconds;
-		const ferryEndpoint = [
-			Number(await atlas.getAttribute('data-presentation-end-longitude')),
-			Number(await atlas.getAttribute('data-presentation-end-latitude'))
-		];
-		assert.ok(Math.hypot(ferryEndpoint[0] - 73.5219, ferryEndpoint[1] - 1.8591) < 0.015);
-		await expect(atlas.getByRole('region', { name: 'Sea route', exact: true })).toHaveCount(0);
-		await page.screenshot({ path: path.join(output, 'desktop-ferry.png'), fullPage: true });
-		await Promise.all(responseReads);
-		const sea =
-			/** @type {{routes:Array<{route_code:string,stops:Array<{island_id:string}>,geometry:{coordinates:number[][]}|null}>}} */ (
-				evidence['planning/sea-network']
-			);
-		const route = sea.routes.find(
-			(item) =>
-				item.route_code === 'Z4R17' && item.stops.some((stop) => stop.island_id === 'island:697')
-		);
-		assert.ok(route?.geometry?.coordinates.length);
-		assert.ok(route.stops.some((stop) => stop.island_id === 'island:704'));
-		return {
-			code: route.route_code,
-			sourceVertices: route.geometry.coordinates.length,
-			ferrySeconds,
-			ferryEndpoint,
-			inspectorType
-		};
-	});
 	await check(
-		'Kadhdhoo airport and northbound flight retain the correct island and air source',
+		'Ferry inspections and crossings retain waiting and destination map layers',
 		async () => {
+			await page.setViewportSize({ width: 1440, height: 1000 });
+			await page.emulateMedia({ reducedMotion: 'no-preference' });
+			if ((await presenter.count()) === 0) {
+				await page.getByRole('button', { name: 'Start scenario', exact: true }).click();
+				await expectStep(0);
+				await expect(presenter).toHaveAttribute('aria-busy', 'false', { timeout: 180000 });
+			}
+			await settled();
+			let cumulativeMinutes = 0;
+			const crossings = [];
+			for (const leg of ferryLegs) {
+				if (leg.inspect > 1) {
+					await page.keyboard.press('ArrowRight');
+					await expectStep(leg.inspect - 1);
+					await islandStats(leg.from);
+					await settled();
+					await frozenClocks();
+				}
+				await next().click();
+				await expectStep(leg.inspect);
+				const inspector = atlas.locator('.map-sea-route-popup');
+				await expect(inspector.getByRole('heading')).toContainText(leg.from);
+				await expect(inspector.getByRole('heading')).toContainText(leg.to);
+				await expect(inspector.locator('.sea-route-summary')).toContainText(`${leg.minutes} min`);
+				await expect(inspector.locator('.sea-route-summary')).toContainText('6 sailings / week');
+				await frozenClocks();
+				await readableInspector('.map-sea-route-popup');
+				await clocksClearOf(inspector);
+				await sourceDisclosure('.map-sea-route-popup', 'Source corridor details');
+				await next().click();
+				await expectStep(leg.travel);
+				const summary = details().getByRole('region', { name: 'Ferry connection', exact: true });
+				await expect(summary).toBeVisible();
+				await expect(summary.getByRole('heading')).toContainText(leg.from);
+				await expect(summary.getByRole('heading')).toContainText(leg.to);
+				await expect(summary).toContainText(`${leg.minutes} min`);
+				await expect(summary).toContainText(/6(?: sailings)?(?: \/ week| weekly)?/);
+				const waiting = await page.waitForFunction(() => {
+					const map = document.querySelector('.national-map');
+					if (
+						map?.getAttribute('data-presentation-phase') !== 'playing' ||
+						map.getAttribute('data-presentation-playback-mode') !== 'wait'
+					)
+						return null;
+					return {
+						key: map.getAttribute('data-presentation-key'),
+						stationary: map.getAttribute('data-presentation-stationary'),
+						island: map.getAttribute('data-presentation-island-id'),
+						gapCount: Number(map.getAttribute('data-presentation-gap-count')),
+						coverageCount: Number(map.getAttribute('data-presentation-coverage-count')),
+						point: [
+							map.getAttribute('data-presentation-vehicle-longitude'),
+							map.getAttribute('data-presentation-vehicle-latitude')
+						],
+						clock: Number(
+							document
+								.querySelector('[data-testid="presentation-arrival-clock"]')
+								?.getAttribute('data-elapsed-seconds')
+						)
+					};
+				});
+				const waitStart = await waiting.jsonValue();
+				assert.ok(waitStart);
+				assert.equal(waitStart.stationary, 'true');
+				assert.equal(waitStart.island, scenes[leg.travel].island);
+				const departureLayers = /** @type {{gaps:number,coverage:number}} */ (
+					evidence[`presentation:layers:${scenes[leg.travel].island}`]
+				);
+				assert.equal(waitStart.gapCount, departureLayers.gaps);
+				assert.equal(waitStart.coverageCount, departureLayers.coverage);
+				await page.waitForTimeout(150);
+				const waitEnd = await atlas.evaluate((map) => ({
+					mode: map.getAttribute('data-presentation-playback-mode'),
+					point: [
+						map.getAttribute('data-presentation-vehicle-longitude'),
+						map.getAttribute('data-presentation-vehicle-latitude')
+					],
+					clock: Number(
+						document
+							.querySelector('[data-testid="presentation-arrival-clock"]')
+							?.getAttribute('data-elapsed-seconds')
+					)
+				}));
+				assert.equal(waitEnd.mode, 'wait');
+				assert.deepEqual(
+					waitEnd.point,
+					waitStart.point,
+					'The ferry must remain at the departure harbour during the wait'
+				);
+				assert.ok(waitEnd.clock > waitStart.clock, 'Waiting must count toward the arrival journey');
+				if (leg.travel === 2) {
+					await expect(summary).toContainText(/11 Oct|2026-10-11/);
+					await page.screenshot({
+						path: path.join(output, 'desktop-overnight-ferry-wait.png'),
+						fullPage: true
+					});
+				}
+				const motion = await motionSnapshot();
+				assert.equal(motion.step, String(leg.travel));
+				assert.equal(motion.key, waitStart.key, 'Waiting and sailing must use the same scene');
+				assert.equal(motion.following, 'true');
+				assert.equal(motion.running, 'true');
+				await islandStats(leg.from);
+				await islandMapLayers(scenes[leg.travel].island);
+				await expect(summary).toHaveAttribute('data-stage', 'ferry');
+				await expect(atlas.locator('.map-sea-route-popup')).toHaveCount(0);
+				if (leg.travel === 2)
+					await page.screenshot({
+						path: path.join(output, 'desktop-ferry-crossing.png'),
+						fullPage: true
+					});
+				await settled();
+				await expectStep(leg.travel);
+				await islandStats(leg.to);
+				const destination = scenes[leg.travel].destination;
+				assert.ok(destination, 'A ferry travel scene must declare its destination island');
+				const layers = await islandMapLayers(destination);
+				await expect(summary).toHaveAttribute('data-stage', 'complete');
+				await clocksClearOf(details());
+				await frozenClocks();
+				cumulativeMinutes += leg.waitMinutes + leg.minutes;
+				const ferrySeconds = Number(await arrivalClock().getAttribute('data-elapsed-seconds'));
+				assert.equal(ferrySeconds, cumulativeMinutes * 60);
+				const endpoint = [
+					Number(await atlas.getAttribute('data-presentation-end-longitude')),
+					Number(await atlas.getAttribute('data-presentation-end-latitude'))
+				];
+				assert.ok(Math.hypot(endpoint[0] - leg.endpoint[0], endpoint[1] - leg.endpoint[1]) < 0.015);
+				const source = summary.locator('details');
+				await expect(source.locator(':scope > summary')).toHaveText('Source corridor details');
+				await source.locator(':scope > summary').click();
+				await expect(source).toHaveJSProperty('open', true);
+				await expect(source).toContainText(/timetable|retained|captured|published/i);
+				await source.locator(':scope > summary').click();
+				await page.screenshot({
+					path: path.join(output, `desktop-ferry-${leg.travel}.png`),
+					fullPage: true
+				});
+				crossings.push({
+					code: leg.code,
+					waitingMinutes: leg.waitMinutes,
+					ferrySeconds,
+					endpoint,
+					motionProgress: motion.progress,
+					arrivalLayers: layers
+				});
+			}
+			evidence['presentation:ferry-seconds'] = cumulativeMinutes * 60;
+			assert.equal(cumulativeMinutes, 1645);
+			await Promise.all(responseReads);
+			const sea =
+				/** @type {{routes:Array<{route_code:string,stops:Array<{island_id:string}>,geometry:{coordinates:number[][]}|null}>}} */ (
+					evidence['planning/sea-network']
+				);
+			for (const code of ['S1C5', 'S1C6']) {
+				const route = sea.routes.find((item) => item.route_code === code);
+				assert.ok(route?.geometry?.coordinates.length);
+			}
+			await page.emulateMedia({ reducedMotion: 'reduce' });
+			return crossings;
+		}
+	);
+	await check(
+		'Hanimaadhoo airport and southbound flight retain the correct island and air source',
+		async () => {
+			if ((await presenter.count()) === 0) {
+				await page.getByRole('button', { name: 'Start scenario', exact: true }).click();
+				await expect(presenter).toHaveAttribute('aria-busy', 'false', { timeout: 180000 });
+				for (let step = 1; step <= 8; step++) {
+					await page.keyboard.press('ArrowRight');
+					await expectStep(step);
+					await settled();
+				}
+				evidence['presentation:ferry-seconds'] = Number(
+					await arrivalClock().getAttribute('data-elapsed-seconds')
+				);
+				assert.equal(evidence['presentation:ferry-seconds'], 1645 * 60);
+			}
 			await page.keyboard.press('ArrowRight');
-			await expectStep(3, 'island:706');
-			await expect(details().getByRole('heading', { name: 'Kadhdhoo', exact: true })).toBeVisible();
+			await expectStep(9);
+			await expect(
+				details().getByRole('heading', { name: 'Hanimaadhoo', exact: true })
+			).toBeVisible();
 			await expect(
 				details().getByRole('region', { name: 'Island access index', exact: true })
 			).toBeVisible();
 			await expect(
-				details().getByRole('region', { name: 'Island access index', exact: true })
-			).toContainText('Limited evidence');
-			await expect(details().getByTestId('island-overview-score')).toContainText('11.1');
-			await expect(
-				details()
-					.getByRole('region', { name: 'Island access index', exact: true })
-					.locator('[data-domain="transport"]')
-			).toContainText('33.3');
-			await expect(
-				details().getByRole('region', { name: 'Island connections', exact: true })
-			).toContainText('Airport');
+				details().getByRole('region', { name: 'Airport connection', exact: true })
+			).toContainText('HAQ');
+			await expect(details().locator('details.presentation-details')).toContainText('Airport');
 			const airportCoverageCells = await positiveCount('data-policy-coverage-fill-cells');
 			await settled();
 			await frozenClocks();
@@ -501,23 +705,23 @@ try {
 				Number(await arrivalClock().getAttribute('data-elapsed-seconds')),
 				evidence['presentation:ferry-seconds']
 			);
-			await page.screenshot({ path: path.join(output, 'desktop-kadhdhoo.png'), fullPage: true });
+			await page.screenshot({ path: path.join(output, 'desktop-hanimaadhoo.png'), fullPage: true });
 			await page.keyboard.press('ArrowRight');
-			await expectStep(4, 'island:706');
+			await expectStep(10);
 			await positiveCount('data-presentation-paths');
 			await expect(atlas.locator('.map-air-route-popup')).toBeVisible();
 			await expect(
 				atlas
 					.locator('.map-air-route-popup')
-					.getByRole('heading', { name: 'Kadhdhoo → Velana', exact: true })
+					.getByRole('heading', { name: 'Hanimaadhoo → Velana', exact: true })
 			).toBeVisible();
 			await expect(atlas.locator('.map-air-route-popup .presentation-route-summary')).toContainText(
 				'Estimated flight'
 			);
 			await expect(atlas.locator('.map-air-route-popup .presentation-route-summary')).toContainText(
-				'50 min'
+				'45 min'
 			);
-			await expect(atlas).toHaveAttribute('data-air-selected-route', 'maldivian-mle-kdo');
+			await expect(atlas).toHaveAttribute('data-air-selected-route', 'maldivian-mle-haq');
 			await frozenClocks();
 			assert.equal(
 				Number(await arrivalClock().getAttribute('data-elapsed-seconds')),
@@ -530,12 +734,38 @@ try {
 				fullPage: true
 			});
 			await sourceDisclosure('.map-air-route-popup', 'Route details');
+			await page.emulateMedia({ reducedMotion: 'no-preference' });
 			await page.keyboard.press('ArrowRight');
-			await expectStep(5, 'island:706');
-			await expect(atlas).toHaveAttribute('data-presentation-progress', '1.000');
+			await expectStep(11);
+			await expect(atlas).toHaveAttribute('data-presentation-playback-mode', 'wait');
+			await expect(atlas).toHaveAttribute('data-presentation-stationary', 'true');
+			const allowance = details().getByRole('region', {
+				name: 'Airport connection allowance',
+				exact: true
+			});
+			await expect(allowance).toContainText('Demo assumption');
+			await expect(allowance).toContainText('1h 30m');
+			await islandStats('Hanimaadhoo');
+			await page.screenshot({
+				path: path.join(output, 'desktop-flight-connection.png'),
+				fullPage: true
+			});
+			const flightMotion = await motionSnapshot();
+			assert.equal(flightMotion.step, '11');
+			assert.equal(flightMotion.running, 'true');
+			await settled();
+			await islandStats('Hulhumalé');
+			const arrivalLayers = await islandMapLayers('island:1442');
+			await expectStep(11);
+			await clocksClearOf(details());
 			await frozenClocks();
 			const arrivalSeconds = Number(await arrivalClock().getAttribute('data-elapsed-seconds'));
 			assert.ok(arrivalSeconds > Number(evidence['presentation:ferry-seconds']));
+			assert.equal(
+				arrivalSeconds,
+				1780 * 60,
+				'Arrival must include ferry waits and the explicit flight connection'
+			);
 			assert.ok(
 				Math.abs(
 					arrivalSeconds - Number(await arrivalClock().getAttribute('data-total-seconds'))
@@ -568,58 +798,78 @@ try {
 				/** @type {{routes:Array<{id:string,bidirectional:boolean,geometry:{coordinates:number[][]}|null}>}} */ (
 					evidence['planning/air-network']
 				);
-			const route = air.routes.find((item) => item.id === 'maldivian-mle-kdo');
+			const route = air.routes.find((item) => item.id === 'maldivian-mle-haq');
 			assert.ok(route?.bidirectional && route.geometry?.coordinates.length);
+			await page.emulateMedia({ reducedMotion: 'reduce' });
 			return {
 				route: route.id,
 				sourceVertices: route.geometry.coordinates.length,
 				airportCoverageCells,
 				inspectorType,
 				airplaneImage,
-				arrivalSeconds
+				arrivalSeconds,
+				arrivalLayers
 			};
 		}
 	);
 	await check('Hulhumalé transport and population stages reuse the resident model', async () => {
 		await page.keyboard.press('ArrowRight');
-		await expectStep(6, 'island:1442');
+		await expectStep(12);
 		const gapCells = await positiveCount('data-policy-gap-cells');
 		await expect(atlas).toHaveAttribute('data-policy-lens', 'transport');
 		await expect(details().getByRole('heading', { name: 'Hulhumalé', exact: true })).toBeVisible();
 		await settled();
 		await frozenClocks();
 		await clocksClearOf(details());
+		await expect(
+			details().getByRole('region', { name: 'Walk to the nearest bus stop', exact: true })
+		).toContainText('13 min');
+		await expect(presenter.getByLabel('Transport heatmap legend')).toBeVisible();
 		evidence['presentation:hulhumale-access-camera'] = await camera();
 		await page.screenshot({ path: path.join(output, 'desktop-access.png'), fullPage: true });
 		await page.keyboard.press('ArrowRight');
-		await expectStep(7, 'island:1442');
+		await expectStep(13);
 		const populationCells = await positiveCount('data-presentation-population');
 		await expect(atlas).toHaveAttribute('data-policy-gap-cells', '0');
-		await expect(presenter).toContainText('Modeled residents');
+		await expect(details()).toContainText('Census residents');
 		await expect(
 			details().getByRole('region', { name: 'Island population', exact: true })
 		).toBeInViewport();
 		await settled();
 		await frozenClocks();
 		await clocksClearOf(details());
+		unchangedCamera(
+			/** @type {{longitude:number,latitude:number,zoom:number}} */ (
+				evidence['presentation:hulhumale-access-camera']
+			),
+			await camera()
+		);
 		await page.screenshot({ path: path.join(output, 'desktop-population.png'), fullPage: true });
 		return { gapCells, populationCells };
 	});
 	await check('Walk and airport bus playback use the calculated itinerary', async () => {
 		await page.keyboard.press('ArrowRight');
-		await expectStep(8, 'island:1442');
+		await expectStep(14);
 		const walkingPaths = await positiveCount('data-presentation-paths');
+		await expect(
+			presenter.getByLabel('Airport journey breakdown').getByText('32 min', { exact: true })
+		).toBeVisible();
 		await expect(atlas).toHaveAttribute('data-presentation-progress', '1.000');
 		await frozenClocks();
 		const walkSeconds = Number(await pickupClock().getAttribute('data-elapsed-seconds'));
 		assert.ok(walkSeconds > 0);
 		await page.keyboard.press('ArrowRight');
-		await expectStep(9, 'island:1442');
+		await expectStep(15);
 		const journeyPaths = await positiveCount('data-presentation-paths');
 		await expect(atlas).toHaveAttribute('data-presentation-progress', '1.000');
 		await frozenClocks();
 		const pickupSeconds = Number(await pickupClock().getAttribute('data-elapsed-seconds'));
 		assert.ok(pickupSeconds > walkSeconds);
+		assert.equal(
+			Math.round(pickupSeconds / 60),
+			51,
+			'The displayed airport journey includes walking, waiting and riding'
+		);
 		assert.ok(
 			Math.abs(pickupSeconds - Number(await pickupClock().getAttribute('data-total-seconds'))) <= 1,
 			'A completed pickup clock should match its rounded total within one second'
@@ -652,110 +902,119 @@ try {
 			modes: legs.map((leg) => leg.mode)
 		};
 	});
-	await check(
-		'Closer-stop comparison uses evaluated cells and restores the prior map on exit',
-		async () => {
-			await page.keyboard.press('ArrowRight');
-			await expectStep(10, 'island:1442');
-			await settled();
-			await expect(presenter.getByRole('button', { name: 'Before', exact: true })).toHaveAttribute(
-				'aria-pressed',
-				'true'
-			);
-			await expect(atlas).toHaveAttribute('data-policy-impact-view', 'before');
-			await expect(atlas).toHaveAttribute('data-policy-proposal-points', '0');
-			await expect(atlas).toHaveAttribute('data-presentation-source-paths', '0');
-			const comparisonCamera = await camera();
-			const outcome = await comparisonMetric();
-			const originPosition = await comparisonOriginInViewport();
-			await presenter.getByRole('button', { name: 'Closer stop', exact: true }).click();
-			await expect(atlas).toHaveAttribute('data-policy-impact-view', 'after');
-			const comparisonCells = await positiveCount('data-policy-impact-cells');
-			const proposalPoints = await positiveCount('data-policy-proposal-points');
-			const changedCells = await positiveCount('data-policy-comparison-changed-cells');
-			const marker = atlas.locator('.policy-proposal-marker').first();
-			await expect(marker).toBeInViewport();
-			await expect(marker).toHaveAttribute('aria-disabled', 'true');
-			await expect(marker).toHaveAttribute('tabindex', '-1');
-			await expect(marker).toHaveCSS('pointer-events', 'none');
-			await marker.evaluate((element) =>
-				element.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-			);
-			await expect(page.getByTestId('proposal-marker-actions')).toHaveCount(0);
-			await atlas.locator('.maplibregl-canvas').click({ position: { x: 1000, y: 300 } });
-			await expectStep(10, 'island:1442');
-			await expect(atlas.locator('.map-footer')).toBeHidden();
+	await check('Airport arrival finishes the presentation and restores the prior map', async () => {
+		async function reachAirport(shortcut = 'Shift+P') {
+			const start = page.getByRole('button', { name: 'Start scenario', exact: true });
+			await expect(start).toBeEnabled();
+			await expect(start).toHaveAttribute('title', 'Presentation · Shift+P');
+			const input = page.getByTestId('map-search-input');
+			await input.focus();
+			await input.press(shortcut);
+			await expect(presenter).toHaveCount(0);
+			await input.fill('');
+			await input.press('Escape');
+			await start.focus();
+			await page.keyboard.press(shortcut);
+			await expect(presenter).toHaveAttribute('aria-busy', 'false', { timeout: 180000 });
+			if (shortcut === 'Shift+P') {
+				await page.screenshot({
+					path: path.join(output, 'desktop-baarah-start.png'),
+					fullPage: true
+				});
+			}
+			for (let step = 0; step <= lastStep; step++) {
+				await expect(presenter).toHaveAttribute('data-step', String(step));
+				await expect(presenter).not.toContainText(/\b(?:mom|mother)\b/i);
+				const state = await presenter.evaluate((element) => ({
+					chapter: Number(element.getAttribute('data-chapter')),
+					kind: element.getAttribute('data-scene'),
+					caption: element.querySelector('.scene-caption')?.textContent?.trim(),
+					comparison: [...element.querySelectorAll('button')].some((button) =>
+						['Before', 'Closer stop'].includes(button.textContent?.trim() ?? '')
+					)
+				}));
+				assert.equal(state.chapter, scenes[step].chapter);
+				assert.equal(state.kind, scenes[step].kind);
+				assert.equal(state.caption, scenes[step].title);
+				assert.equal(state.comparison, false);
+				if (scenes[step].kind === 'ferry-travel')
+					await expect(
+						details().getByRole('region', { name: 'Ferry connection', exact: true })
+					).toBeVisible();
+				if (scenes[step].kind === 'flight-inspect') {
+					await expect
+						.poll(
+							() =>
+								page.evaluate(
+									() => document.querySelector('.map-air-route-popup h3')?.textContent ?? ''
+								),
+							{ timeout: 10000 }
+						)
+						.toBe(scenes[step].title);
+				}
+				if (step < lastStep) await page.keyboard.press('ArrowRight');
+			}
+		}
+		if (selectedCheck) await reachAirport();
+		else {
+			await expectStep(15);
 			await frozenClocks();
-			await expect(page.getByTestId('map-controls-dock')).toBeHidden();
-			await settled();
-			unchangedCamera(comparisonCamera, await camera());
-			const accessCamera = /** @type {{zoom:number}} */ (
-				evidence['presentation:hulhumale-access-camera']
-			);
-			assert.ok(
-				comparisonCamera.zoom > accessCamera.zoom + 0.25,
-				'The final comparison must focus more closely on the affected neighbourhood'
-			);
-			await presenter.getByRole('button', { name: 'Before', exact: true }).click();
-			await expect(presenter.getByRole('button', { name: 'Before', exact: true })).toHaveAttribute(
-				'aria-pressed',
-				'true'
-			);
-			await expect(atlas).toHaveAttribute('data-policy-impact-view', 'before');
-			await expect(atlas).toHaveAttribute('data-policy-proposal-points', '0');
-			await expect(atlas).toHaveAttribute('data-presentation-source-paths', '0');
-			await page.waitForTimeout(350);
-			unchangedCamera(comparisonCamera, await camera());
-			await page.screenshot({
-				path: path.join(output, 'desktop-comparison-before.png'),
-				fullPage: true
-			});
-			await presenter.getByRole('button', { name: 'Closer stop', exact: true }).click();
-			await expect(atlas).toHaveAttribute('data-policy-impact-view', 'after');
-			const feederPaths = await positiveCount('data-presentation-source-paths');
-			await page.waitForTimeout(350);
-			unchangedCamera(comparisonCamera, await camera());
-			await Promise.all(responseReads);
-			assert.ok(evidence['planning/evaluate']);
-			await page.screenshot({
-				path: path.join(output, 'desktop-comparison-after.png'),
-				fullPage: true
-			});
-			await presenter.getByRole('button', { name: 'Exit scenario', exact: true }).click();
+		}
+		await expect(presenter.locator('.scene-caption')).toHaveText('The bus to the airport');
+		await expect(presenter.locator('.step-number')).toHaveText('05 / 05');
+		await expect(
+			presenter.getByRole('button', { name: 'Finish scenario', exact: true })
+		).toBeVisible();
+		await expect(presenter.getByRole('button', { name: 'Before', exact: true })).toHaveCount(0);
+		await expect(presenter.getByRole('button', { name: 'Closer stop', exact: true })).toHaveCount(
+			0
+		);
+		await page.keyboard.press('ArrowRight');
+		await expect(presenter).toHaveCount(0);
+		await expect(scope).toHaveAttribute('data-island-id', 'island:1443');
+		await expect(atlas).toHaveAttribute('data-presentation-key', '');
+		await expect(atlas).toHaveAttribute('data-presentation-population', '0');
+		await expect(page.getByRole('button', { name: 'Directions', exact: true })).toBeVisible();
+		await expect(page.getByRole('navigation', { name: 'Workspace', exact: true })).toBeVisible();
+		await expect(scope).toBeVisible();
+		await expect(page.getByRole('button', { name: 'Start scenario', exact: true })).toBeFocused();
+		assert.deepEqual(
+			await page.evaluate(() => JSON.parse(localStorage.getItem('mobility-v2-scenario') ?? 'null')),
+			savedScenario
+		);
+		if (selectedCheck) {
+			await reachAirport('Shift+S');
+			await presenter
+				.getByRole('button', { name: 'Finish scenario', exact: true })
+				.click({ noWaitAfter: true });
 			await expect(presenter).toHaveCount(0);
 			await expect(scope).toHaveAttribute('data-island-id', 'island:1443');
-			await expect(atlas).toHaveAttribute('data-presentation-key', '');
-			await expect(atlas).toHaveAttribute('data-presentation-population', '0');
-			await expect(page.getByRole('button', { name: 'Directions', exact: true })).toBeVisible();
-			await expect(page.getByRole('navigation', { name: 'Workspace', exact: true })).toBeVisible();
 			await expect(scope).toBeVisible();
-			await expect(page.getByRole('button', { name: 'Start scenario', exact: true })).toBeFocused();
 			assert.deepEqual(
 				await page.evaluate(() =>
 					JSON.parse(localStorage.getItem('mobility-v2-scenario') ?? 'null')
 				),
 				savedScenario
 			);
-			return {
-				comparisonCells,
-				proposalPoints,
-				changedCells,
-				feederPaths,
-				comparisonCamera,
-				outcome,
-				originPosition
-			};
 		}
-	);
+		return {
+			scenes: scenes.length,
+			chapters: 5,
+			route: ['Baarah', 'Vashafaru', 'Dhidhdhoo', 'Hanimaadhoo', 'Velana', 'Hulhumalé'],
+			shortcuts: selectedCheck ? ['Shift+P', 'Shift+S'] : [],
+			finalScene: 'The bus to the airport',
+			keyboardFinish: true
+		};
+	});
 	await check(
 		'Shortcut restart, replay and Escape work without automatic stage advancement',
 		async () => {
 			await page.locator('body').click({ position: { x: 5, y: 5 } });
-			await page.keyboard.press('Shift+S');
-			await expectStep(0, 'island:697');
+			await page.keyboard.press('Shift+P');
+			await expectStep(0);
 			await page.keyboard.press('ArrowRight');
 			await page.keyboard.press('ArrowRight');
-			await expectStep(2, 'island:697');
+			await expectStep(2);
 			await page.keyboard.press('r');
 			await expect(atlas).toHaveAttribute('data-presentation-key', '2:1');
 			await expect(atlas).toHaveAttribute('data-presentation-progress', '1.000');
@@ -767,14 +1026,14 @@ try {
 	await check('Tablet journey clocks stay beside native island and route panels', async () => {
 		await page.setViewportSize({ width: 1024, height: 900 });
 		await page.getByRole('button', { name: 'Start scenario', exact: true }).click();
-		await expectStep(0, 'island:697');
+		await expectStep(0);
 		await settled();
 		await visibleClocks();
 		await clocksClearOf(details());
 		await noOverflow();
 		await page.screenshot({ path: path.join(output, 'tablet-start.png'), fullPage: true });
 		await page.keyboard.press('ArrowRight');
-		await expectStep(1, 'island:697');
+		await expectStep(1);
 		await settled();
 		await expect(atlas.locator('.map-sea-route-popup')).toBeInViewport();
 		await clocksClearOf(atlas.locator('.map-sea-route-popup'));
@@ -784,32 +1043,17 @@ try {
 			path: path.join(output, 'tablet-ferry-inspector.png'),
 			fullPage: true
 		});
-		for (let step = 2; step <= 10; step++) {
+		for (let step = 2; step <= lastStep; step++) {
 			await page.keyboard.press('ArrowRight');
-			await expectStep(step, step <= 2 ? 'island:697' : step <= 5 ? 'island:706' : 'island:1442');
+			await expectStep(step);
 			await settled();
 		}
-		const tabletComparisonCamera = await camera();
-		await comparisonMetric();
-		await comparisonOriginInViewport();
-		await presenter.getByRole('button', { name: 'Before', exact: true }).click();
-		await expect(atlas).toHaveAttribute('data-policy-impact-view', 'before');
-		await page.waitForTimeout(350);
-		unchangedCamera(tabletComparisonCamera, await camera());
-		await page.screenshot({
-			path: path.join(output, 'tablet-comparison-before.png'),
-			fullPage: true
-		});
-		await presenter.getByRole('button', { name: 'Closer stop', exact: true }).click();
-		await expect(atlas).toHaveAttribute('data-policy-impact-view', 'after');
-		await page.waitForTimeout(350);
-		unchangedCamera(tabletComparisonCamera, await camera());
 		await noOverflow();
 		await page.screenshot({
-			path: path.join(output, 'tablet-comparison-after.png'),
+			path: path.join(output, 'tablet-airport-arrival.png'),
 			fullPage: true
 		});
-		await page.keyboard.press('Escape');
+		await presenter.getByRole('button', { name: 'Finish scenario', exact: true }).click();
 		await expect(presenter).toHaveCount(0);
 		return { viewport: 1024 };
 	});
@@ -818,15 +1062,15 @@ try {
 		async () => {
 			await page.setViewportSize({ width: 390, height: 844 });
 			await page.getByRole('button', { name: 'Start scenario', exact: true }).click();
-			await expectStep(0, 'island:697');
+			await expectStep(0);
 			await expect(presenter).toHaveAttribute('aria-busy', 'false', { timeout: 180000 });
-			for (let step = 0; step < 11; step++) {
+			for (let step = 0; step < scenes.length; step++) {
 				await expect(presenter).toHaveAttribute('data-step', String(step));
 				await expect(
 					presenter.getByRole('button', { name: 'Exit scenario', exact: true })
 				).toBeInViewport();
 				const next = presenter.getByRole('button', {
-					name: step === 10 ? 'Finish scenario' : 'Next scenario step',
+					name: step === lastStep ? 'Finish scenario' : 'Next scenario step',
 					exact: true
 				});
 				await next.scrollIntoViewIfNeeded();
@@ -835,43 +1079,46 @@ try {
 				await presentationChromeHidden();
 				await visibleClocks();
 				await settled();
-				if ([0, 3, 6, 7].includes(step)) await clocksClearOf(details());
-				if (step === 1) await clocksClearOf(atlas.locator('.map-sea-route-popup'));
-				if (step === 4) await clocksClearOf(atlas.locator('.map-air-route-popup'));
-				if ([0, 1, 4, 6, 10].includes(step)) {
+				if ([0, 2, 3, 5, 6, 8, 9, 11, 12, 13].includes(step)) await clocksClearOf(details());
+				if ([1, 4, 7].includes(step)) await clocksClearOf(atlas.locator('.map-sea-route-popup'));
+				if (step === 10) await clocksClearOf(atlas.locator('.map-air-route-popup'));
+				if ([0, 1, 2, 4, 7, 9, 10, 12, 15].includes(step)) {
 					if (step === 1) await expect(atlas.locator('.map-sea-route-popup')).toBeInViewport();
-					if (step === 4) await expect(atlas.locator('.map-air-route-popup')).toBeInViewport();
+					if (step === 10) await expect(atlas.locator('.map-air-route-popup')).toBeInViewport();
 					await page.screenshot({
 						path: path.join(output, `mobile-step-${step + 1}.png`),
 						fullPage: true
 					});
+					if (step === 2) {
+						const accessIndex = details().getByRole('region', {
+							name: 'Island access index',
+							exact: true
+						});
+						const accessScores = accessIndex.locator('.presentation-value > strong');
+						await expect(accessScores).toHaveCount(2);
+						for (const score of await accessScores.all()) await expect(score).toBeInViewport();
+						const visibleBeforeScroll = await accessIndex.evaluate((element) => {
+							const box = element.getBoundingClientRect();
+							const body = element.closest('.island-panel-body')?.getBoundingClientRect();
+							return !!body && box.top >= body.top && box.bottom <= body.bottom;
+						});
+						evidence['presentation:mobile-access-index-with-route-facts'] = visibleBeforeScroll;
+						await accessIndex.scrollIntoViewIfNeeded();
+						await expect(accessIndex).toBeInViewport();
+						await page.screenshot({
+							path: path.join(output, 'mobile-ferry-access-index.png'),
+							fullPage: true
+						});
+					}
 				}
-				if (step === 10) {
-					const phoneComparisonCamera = await camera();
-					await comparisonMetric();
-					await comparisonOriginInViewport();
-					await presenter.getByRole('button', { name: 'Before', exact: true }).click();
-					await expect(atlas).toHaveAttribute('data-policy-impact-view', 'before');
-					await page.waitForTimeout(350);
-					unchangedCamera(phoneComparisonCamera, await camera());
-					await page.screenshot({
-						path: path.join(output, 'mobile-comparison-before.png'),
-						fullPage: true
-					});
-					await presenter.getByRole('button', { name: 'Closer stop', exact: true }).click();
-					await expect(atlas).toHaveAttribute('data-policy-impact-view', 'after');
-					await page.waitForTimeout(350);
-					unchangedCamera(phoneComparisonCamera, await camera());
-					await page.screenshot({
-						path: path.join(output, 'mobile-comparison-after.png'),
-						fullPage: true
-					});
-				}
-				if (step < 10) await next.click();
+				if (step < lastStep) await next.click();
 			}
 			await presenter.getByRole('button', { name: 'Previous scenario step' }).click();
-			await expectStep(9, 'island:1442');
-			await page.keyboard.press('Escape');
+			await expectStep(14);
+			await next().click();
+			await expectStep(15);
+			await settled();
+			await presenter.getByRole('button', { name: 'Finish scenario', exact: true }).click();
 			await expect(presenter).toHaveCount(0);
 			return noOverflow();
 		}
@@ -882,32 +1129,35 @@ try {
 			await page.setViewportSize({ width: 1440, height: 1000 });
 			await page.emulateMedia({ reducedMotion: 'no-preference' });
 			await page.getByRole('button', { name: 'Start scenario', exact: true }).click();
-			await expectStep(0, 'island:697');
+			await expectStep(0);
 			await expect(presenter).toHaveAttribute('aria-busy', 'false', { timeout: 180000 });
 			await page.keyboard.press('ArrowRight');
+			await expectStep(1);
+			await settled();
 			await page.keyboard.press('ArrowRight');
-			await expectStep(2, 'island:697');
-			await expect(atlas).toHaveAttribute('data-presentation-phase', /entering|playing/);
-			await expect(atlas).toHaveAttribute('data-presentation-animating', 'true');
-			await expect(atlas).toHaveAttribute('data-presentation-following', 'true');
-			await expect
-				.poll(async () => Number(await atlas.getAttribute('data-presentation-progress')))
-				.toBeGreaterThan(0.05);
-			const ferryProgress = Number(await atlas.getAttribute('data-presentation-progress'));
-			assert.ok(ferryProgress < 1);
-			await page.screenshot({
-				path: path.join(output, 'desktop-ferry-motion.png'),
-				fullPage: true
-			});
-			await visibleClocks();
-			await expect(arrivalClock()).toHaveAttribute('data-running', 'true');
-			const arrivalDuringFerry = Number(await arrivalClock().getAttribute('data-elapsed-seconds'));
+			const ferryMotion = await motionSnapshot();
+			assert.equal(ferryMotion.step, '2');
+			assert.equal(ferryMotion.following, 'true');
+			assert.equal(ferryMotion.running, 'true');
+			const ferryProgress = ferryMotion.progress;
+			const arrivalDuringFerry = ferryMotion.elapsedSeconds;
+			assert.ok(ferryProgress > 0 && ferryProgress < 1);
 			assert.ok(arrivalDuringFerry > 0);
+			await islandStats('Baarah');
+			await expect(atlas).toHaveAttribute('data-presentation-phase', 'playing');
+			// Pause before the slower layout/screenshot assertions consume the short crossing.
 			await page.mouse.move(620, 600);
 			await page.mouse.down();
 			await expect(atlas).toHaveAttribute('data-presentation-following', 'false');
 			await expect(atlas).toHaveAttribute('data-presentation-phase', 'paused');
 			await expect(atlas).toHaveAttribute('data-presentation-animating', 'false');
+			await islandStats('Baarah');
+			await clocksClearOf(details());
+			await page.screenshot({
+				path: path.join(output, 'desktop-ferry-motion.png'),
+				fullPage: true
+			});
+			await visibleClocks();
 			const pausedProgress = await atlas.getAttribute('data-presentation-progress');
 			const pausedClock = await arrivalClock().getAttribute('data-elapsed-seconds');
 			const gestureStart = [
@@ -937,50 +1187,78 @@ try {
 			await frozenClocks();
 			await atlas.locator('.maplibregl-canvas').focus();
 			await page.keyboard.press('r');
-			await expect(atlas).toHaveAttribute('data-presentation-key', '2:1');
-			await expect(atlas).toHaveAttribute('data-presentation-following', 'true');
-			await expect(atlas).toHaveAttribute('data-presentation-animating', 'true');
-			await expect
-				.poll(async () => Number(await atlas.getAttribute('data-presentation-progress')))
-				.toBeGreaterThan(0.01);
-			await expect(arrivalClock()).toHaveAttribute('data-running', 'true');
-			await page.keyboard.press('ArrowRight');
-			await expectStep(3, 'island:706');
+			const replayMotion = await motionSnapshot();
+			assert.equal(replayMotion.key, '2:1');
+			assert.equal(replayMotion.following, 'true');
+			assert.equal(replayMotion.running, 'true');
+			await islandStats('Baarah');
+			await islandMapLayers('island:640');
+			await settled();
+			await expect(presenter).toHaveAttribute('data-step', '2');
+			await islandStats('Vashafaru');
+			await islandMapLayers('island:611');
+			await frozenClocks();
+			// Replaying an arrived crossing must restore the departure profile immediately.
+			await page.keyboard.press('r');
+			const completedFerryReplay = await motionSnapshot();
+			assert.equal(completedFerryReplay.key, '2:2');
+			await islandStats('Baarah');
+			await islandMapLayers('island:640');
+			await page.keyboard.press('ArrowLeft');
+			await expectStep(1);
+			await expect(atlas.locator('.map-sea-route-popup')).toBeVisible();
+			await islandMapLayers('island:640');
 			await expect(atlas).toHaveAttribute('data-presentation-animating', 'false');
 			await expect(atlas).toHaveAttribute('data-presentation-progress', '0.000');
 			const afterFerry = await frozenClocks();
-			assert.ok(Number(afterFerry[0]) >= arrivalDuringFerry);
-			await page.keyboard.press('ArrowRight');
+			assert.equal(Number(afterFerry[0]), 0);
+			for (let scene = 2; scene <= 10; scene++) {
+				await page.keyboard.press('ArrowRight');
+				await expect(presenter).toHaveAttribute('data-step', String(scene));
+			}
 			await logScene('Motion next to flight inspector');
-			await expectStep(4, 'island:706');
+			await expectStep(10);
+			await settled();
 			await page.keyboard.press('ArrowRight');
 			await logScene('Motion next to flight');
-			await expectStep(5, 'island:706');
-			await expect(atlas).toHaveAttribute('data-presentation-phase', /entering|playing/);
+			const firstFlight = await motionSnapshot();
+			assert.equal(firstFlight.step, '11');
+			assert.equal(firstFlight.reused, 'true');
+			await islandStats('Hanimaadhoo');
 			await page.keyboard.press('ArrowLeft');
 			await logScene('Motion back to flight inspector');
-			await expectStep(4, 'island:706');
+			await expectStep(10);
 			await expect(atlas).toHaveAttribute('data-presentation-animating', 'false');
+			await expect(atlas.locator('.map-air-route-popup')).toBeVisible();
+			await expect(details()).toHaveCount(0);
 			await logScene('Motion flight inspector reset');
 			await page.keyboard.press('ArrowRight');
-			await expectStep(5, 'island:706');
-			await expect(atlas).toHaveAttribute('data-presentation-animating', 'true');
-			await expect
-				.poll(async () => Number(await atlas.getAttribute('data-presentation-progress')))
-				.toBeGreaterThan(0.05);
+			const flightMotion = await motionSnapshot();
+			assert.equal(flightMotion.step, '11');
+			assert.equal(flightMotion.running, 'true');
+			assert.ok(flightMotion.progress > 0 && flightMotion.progress < 1);
+			await islandStats('Hanimaadhoo');
+			await expect(atlas).toHaveAttribute('data-presentation-phase', 'playing');
 			await page.screenshot({
 				path: path.join(output, 'desktop-flight-motion.png'),
 				fullPage: true
 			});
 			await visibleClocks();
-			await expect(arrivalClock()).toHaveAttribute('data-running', 'true');
 			await expect(atlas).toHaveAttribute('data-route-vehicles', '0');
-			const flightKey = await atlas.getAttribute('data-presentation-key');
+			await settled();
+			await expect(presenter).toHaveAttribute('data-step', '11');
+			await islandStats('Hulhumalé');
+			await clocksClearOf(details());
+			await frozenClocks();
+			const flightKey = flightMotion.key;
 			assert.ok(flightKey);
 			const flightReplay = Number(flightKey.split(':')[1]) + 1;
 			await presenter.getByRole('button', { name: 'Replay scenario step' }).click();
-			await expect(atlas).toHaveAttribute('data-presentation-key', `5:${flightReplay}`);
+			await expect(atlas).toHaveAttribute('data-presentation-key', `11:${flightReplay}`);
 			await expect(atlas).toHaveAttribute('data-presentation-phase', /entering|playing/);
+			const replayedFlight = await motionSnapshot();
+			assert.equal(replayedFlight.key, `11:${flightReplay}`);
+			await islandStats('Hanimaadhoo');
 			await page.keyboard.press('Escape');
 			await expect(presenter).toHaveCount(0);
 			await expect(atlas).toHaveAttribute('data-presentation-key', '');
@@ -990,6 +1268,138 @@ try {
 			return { ferryProgress, pausedProgress, pausedClock, gestureStart, pannedCenter, heldCenter };
 		}
 	);
+	await check('Stationary bus waiting advances time before the direct airport ride', async () => {
+		await page.setViewportSize({ width: 1440, height: 1000 });
+		await page.emulateMedia({ reducedMotion: 'no-preference' });
+		await page.getByRole('button', { name: 'Start scenario', exact: true }).click();
+		await expect(presenter).toHaveAttribute('aria-busy', 'false', { timeout: 180000 });
+		let accessCamera;
+		let walkArrivalCamera;
+		for (let step = 1; step <= lastStep; step++) {
+			await page.keyboard.press('ArrowRight');
+			await expect(presenter).toHaveAttribute('data-step', String(step));
+			if (step === 12) {
+				await expect(atlas).toHaveAttribute('data-presentation-handoff', 'overview');
+				// Labels exist during the long approach; capture once both endpoints are framed.
+				await page.waitForFunction(() => {
+					const map = document.querySelector('.national-map');
+					const bounds = map?.getBoundingClientRect();
+					if (!map || !bounds || map.getAttribute('data-presentation-handoff') !== 'overview')
+						return false;
+					const latitude = Number(map.getAttribute('data-center-latitude'));
+					const longitude = Number(map.getAttribute('data-center-longitude'));
+					const labels = [...map.querySelectorAll('.presentation-handoff-label')];
+					return (
+						latitude > 4.18 &&
+						latitude < 4.25 &&
+						longitude > 73.5 &&
+						longitude < 73.58 &&
+						Number(map.getAttribute('data-zoom')) > 12 &&
+						labels.length === 2 &&
+						labels.every((label) => {
+							const box = label.getBoundingClientRect();
+							return (
+								box.left >= bounds.left &&
+								box.right <= bounds.right &&
+								box.top >= bounds.top &&
+								box.bottom <= bounds.bottom
+							);
+						})
+					);
+				});
+				await page.screenshot({
+					path: path.join(output, 'desktop-airport-handoff.png'),
+					fullPage: true
+				});
+				await settled();
+				await expect(atlas).toHaveAttribute('data-presentation-handoff', 'focus');
+				await staticSceneSurvivesVisibilityChange();
+				accessCamera = await camera();
+				await page.screenshot({ path: path.join(output, 'desktop-access.png'), fullPage: true });
+			}
+			if (step === 13) {
+				await settled();
+				assert.ok(accessCamera);
+				unchangedCamera(accessCamera, await camera());
+				await page.screenshot({
+					path: path.join(output, 'desktop-population.png'),
+					fullPage: true
+				});
+			}
+			if (step === 14) {
+				await settled();
+				walkArrivalCamera = await camera();
+			}
+		}
+		await page.waitForFunction(() => {
+			const map = document.querySelector('.national-map');
+			return (
+				map?.getAttribute('data-presentation-phase') === 'playing' &&
+				Number(map.getAttribute('data-presentation-progress')) > 0.03
+			);
+		});
+		const readWait = () =>
+			atlas.evaluate((map) => ({
+				mode: map.getAttribute('data-presentation-playback-mode'),
+				stationary: map.getAttribute('data-presentation-stationary'),
+				vehicle: map.getAttribute('data-presentation-vehicle-mode'),
+				reused: map.getAttribute('data-presentation-reused-camera'),
+				point: [
+					map.getAttribute('data-presentation-vehicle-longitude'),
+					map.getAttribute('data-presentation-vehicle-latitude')
+				],
+				clock: Number(
+					document
+						.querySelector('[data-testid="presentation-pickup-clock"]')
+						?.getAttribute('data-elapsed-seconds')
+				),
+				camera: {
+					longitude: Number(map.getAttribute('data-center-longitude')),
+					latitude: Number(map.getAttribute('data-center-latitude')),
+					zoom: Number(map.getAttribute('data-zoom'))
+				}
+			}));
+		const startWait = await readWait();
+		assert.equal(startWait.mode, 'wait');
+		assert.equal(startWait.stationary, 'true');
+		assert.equal(startWait.vehicle, 'walk');
+		assert.equal(startWait.reused, 'true');
+		assert.ok(walkArrivalCamera);
+		unchangedCamera(walkArrivalCamera, startWait.camera);
+		const waitingPoint = startWait.point;
+		const waitingClock = startWait.clock;
+		await page.waitForTimeout(600);
+		const duringWait = await readWait();
+		assert.equal(duringWait.mode, 'wait');
+		assert.deepEqual(
+			duringWait.point,
+			waitingPoint,
+			'The traveller must remain at the boarding point while waiting'
+		);
+		assert.ok(duringWait.clock > waitingClock);
+		unchangedCamera(startWait.camera, duringWait.camera);
+		await page.screenshot({ path: path.join(output, 'desktop-bus-wait.png'), fullPage: true });
+		await expect(atlas).toHaveAttribute('data-presentation-playback-mode', 'bus');
+		await expect(atlas).toHaveAttribute('data-presentation-stationary', 'false');
+		await expect
+			.poll(async () =>
+				[
+					await atlas.getAttribute('data-presentation-vehicle-longitude'),
+					await atlas.getAttribute('data-presentation-vehicle-latitude')
+				].join(',')
+			)
+			.not.toBe(waitingPoint.join(','));
+		await expect(presenter.getByLabel('Airport journey breakdown')).toHaveAttribute(
+			'data-stage',
+			'bus'
+		);
+		await page.screenshot({ path: path.join(output, 'desktop-bus-ride.png'), fullPage: true });
+		await settled();
+		await frozenClocks();
+		await page.keyboard.press('Escape');
+		await expect(presenter).toHaveCount(0);
+		return { waitingPoint, waitingClock };
+	});
 	await check(
 		'An open ferry inspector refreshes when delayed crossing timing arrives',
 		async () => {
@@ -1008,7 +1418,7 @@ try {
 			let timingRequested = false;
 			await delayedPage.route('**/api/backend/planning/sea-connections', async (route) => {
 				const payload = route.request().postDataJSON();
-				if (payload?.origin_island_id === 'island:697') {
+				if (payload?.origin_island_id === 'island:640') {
 					timingRequested = true;
 					await timingGate;
 				}
@@ -1016,26 +1426,37 @@ try {
 			});
 			try {
 				await delayedPage.goto(`${baseURL}/?view=map&tool=explore&island=island%3A1442`);
+				await expect(delayedPage.locator('.national-map')).toBeVisible();
 				await delayedPage.getByRole('button', { name: 'Start scenario', exact: true }).click();
 				const delayedPresenter = delayedPage.getByRole('region', {
 					name: 'Scenario presentation',
 					exact: true
 				});
+				await expect(delayedPresenter).toHaveAttribute('data-step', '0');
+				await expect(delayedPage.locator('.national-map')).toHaveAttribute(
+					'data-presentation-phase',
+					'complete'
+				);
 				await delayedPresenter
 					.getByRole('button', { name: 'Next scenario step', exact: true })
 					.click();
-				const popup = delayedPage.locator('.map-sea-route-popup');
-				await expect(popup).toBeVisible();
+				await expect(delayedPresenter).toHaveAttribute('data-step', '1');
+				const summary = delayedPage.locator('.map-sea-route-popup');
+				await expect(summary).toBeVisible();
 				await expect.poll(() => timingRequested).toBe(true);
-				const estimate = popup.locator('.sea-route-summary > dt', {
-					hasText: 'Estimated crossing'
+				const estimate = summary.locator('dt', {
+					hasText: /^(?:Route|Scheduled|Estimated) crossing$/
 				});
 				await expect(estimate.locator('+ dd')).toHaveText('Unavailable');
+				await expect(delayedPage.getByTestId('presentation-arrival-clock')).toHaveAttribute(
+					'data-running',
+					'false'
+				);
 				const beforeKey = await delayedPage
 					.locator('.national-map')
 					.getAttribute('data-presentation-key');
 				releaseTiming();
-				await expect(estimate.locator('+ dd')).toHaveText('35 min');
+				await expect(estimate.locator('+ dd')).toHaveText('15 min');
 				await expect(delayedPresenter).toHaveAttribute('data-step', '1');
 				await expect(delayedPage.locator('.national-map')).toHaveAttribute(
 					'data-presentation-key',
@@ -1045,7 +1466,17 @@ try {
 					path: path.join(output, 'desktop-delayed-ferry-timing.png'),
 					fullPage: true
 				});
-				return { initialEstimate: 'Unavailable', updatedEstimate: '35 min', key: beforeKey };
+				return { initialEstimate: 'Unavailable', updatedEstimate: '15 min', key: beforeKey };
+			} catch (error) {
+				console.log(
+					'Delayed inspector failure state',
+					await delayedPage.locator('.national-map').evaluate((element) => ({ ...element.dataset }))
+				);
+				await delayedPage.screenshot({
+					path: path.join(output, 'delayed-failure.png'),
+					fullPage: true
+				});
+				throw error;
 			} finally {
 				releaseTiming();
 				await delayedContext.close();

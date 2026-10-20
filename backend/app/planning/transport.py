@@ -519,7 +519,7 @@ class TransportPlanningService:
             }
         if self.water_corridors.features is not self.repository.islands_by_id:
             self.water_corridors = WaterCorridorPlanner(self.repository.islands_by_id)
-        corridor = self.water_corridors.corridor(first, second)
+        corridor = self.water_corridors.corridor(first, second, cache=self.planning.computed_cache)
         if not corridor:
             return {
                 "status": "evidence_needed",

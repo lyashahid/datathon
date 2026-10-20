@@ -20,6 +20,8 @@
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Badge } from '#lib/components/ui/badge/index.js';
 	import TransportImpact from './TransportImpact.svelte';
+	import IslandProposalImpacts from './IslandProposalImpacts.svelte';
+	import CostAssumptions from './CostAssumptions.svelte';
 	import AnimatedNumber from './AnimatedNumber.svelte';
 	import { transportImpactHeadline } from '#lib/transport-impact.js';
 	import { planningEvidence } from '#lib/planning-evidence.js';
@@ -30,6 +32,7 @@
 		formatAmount,
 		operationLabel,
 		operationName,
+		proposalContents,
 		proposedBusServiceGroups,
 		proposedFerryServiceGroups,
 		type PlanningEvaluation,
@@ -69,6 +72,65 @@
 	let dialogAnimation: Animation | null = null;
 	let dialogMotionVersion = 0;
 	let expectedCloseEvents = 0;
+	type FerryResearch = {
+		title: string;
+		rationale: string;
+		assessmentDate?: string;
+		evidence: { title: string; url?: string; value?: string; qualification?: string }[];
+		qualifications: string[];
+	};
+	function record(value: unknown): value is Record<string, unknown> {
+		return value !== null && typeof value === 'object' && !Array.isArray(value);
+	}
+	function text(value: unknown): string | undefined {
+		return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+	}
+	function sourceUrl(value: unknown): string | undefined {
+		if (typeof value !== 'string') return;
+		try {
+			const url = new URL(value);
+			return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : undefined;
+		} catch {
+			return;
+		}
+	}
+	function ferryResearchMetadata(value: unknown): FerryResearch | null {
+		if (!record(value)) return null;
+		const title = text(value.title);
+		const rationale = text(value.rationale);
+		if (!title || !rationale) return null;
+		return {
+			title,
+			rationale,
+			assessmentDate: text(value.assessment_date),
+			evidence: Array.isArray(value.evidence)
+				? value.evidence.flatMap((item: unknown) => {
+						if (!record(item)) return [];
+						const title = text(item.title);
+						return title
+							? [
+									{
+										title,
+										url: sourceUrl(item.url),
+										value: text(item.value),
+										qualification: text(item.qualification)
+									}
+								]
+							: [];
+					})
+				: [],
+			qualifications: Array.isArray(value.qualifications)
+				? value.qualifications.flatMap((item: unknown) => (text(item) ? [text(item)!] : []))
+				: []
+		};
+	}
+	const ferryResearch = $derived.by(() => {
+		for (const operation of request.operations) {
+			const research = ferryResearchMetadata(operation.metadata?.ferry_suggestion);
+			if (research) return research;
+		}
+		return null;
+	});
 	const summary = $derived(evaluation?.summary);
 	const economics = $derived(evaluation?.economics);
 	const capital = $derived(finiteValue(economics?.delta.capital_mvr));
@@ -132,6 +194,7 @@
 				: [{ operation, index }]
 		)
 	);
+	const contents = $derived(proposalContents(request.operations));
 	const maximumBand = $derived(
 		Math.max(
 			1,
@@ -404,6 +467,47 @@
 						><span>Capital + 10 years of added operating cost</span>
 					</article>
 				</div>
+				{#if ferryResearch}<section
+						class="report-card suggestion-research"
+						aria-label="Why this ferry destination was suggested"
+					>
+						<div class="section-heading">
+							<div>
+								<span class="eyebrow">Suggested direct connection</span>
+								<h2>{ferryResearch.title}</h2>
+							</div>
+							<Ship size={21} />
+						</div>
+						<p>{ferryResearch.rationale}</p>
+						{#if ferryResearch.evidence.length || ferryResearch.qualifications.length}<details
+								class="evidence-disclosure"
+							>
+								<summary>Sources and qualifications</summary>
+								{#if ferryResearch.assessmentDate}<p class="research-date">
+										Evidence reviewed {ferryResearch.assessmentDate}.
+									</p>{/if}
+								{#if ferryResearch.evidence.length}<ul class="research-sources">
+										{#each ferryResearch.evidence as item, index (index)}<li>
+												{#if item.url}<a href={item.url} target="_blank" rel="noreferrer"
+														>{item.title}</a
+													>{:else}<strong>{item.title}</strong>{/if}
+												{#if item.value}<span> · {item.value}</span>{/if}
+												{#if item.qualification}<p>{item.qualification}</p>{/if}
+											</li>{/each}
+									</ul>{/if}
+								{#if ferryResearch.qualifications.length}<ul>
+										{#each ferryResearch.qualifications as qualification, index (index)}<li>
+												{qualification}
+											</li>{/each}
+									</ul>{/if}
+							</details>{/if}
+					</section>{/if}
+				<IslandProposalImpacts
+					impacts={evaluation.island_impacts}
+					{pending}
+					{stale}
+					goal={String(displayedAssumptions.goal ?? '')}
+				/>
 				{#if transport && hasTransportProposal}<section
 						class="report-card transport-card"
 						class:outdated={stale || pending}
@@ -448,7 +552,11 @@
 						<div class="section-heading">
 							<div>
 								<span class="eyebrow">Resident access</span>
-								<h2>Before and after</h2>
+								<h2>
+									{evaluation.island_impacts?.length
+										? `Before and after · ${islandName}`
+										: 'Before and after'}
+								</h2>
 							</div>
 							<Badge variant="secondary"
 								>{target === null ? 'Target unavailable' : `${target}-minute target`}</Badge
@@ -520,6 +628,31 @@
 							</div>
 							<MapPin size={19} />
 						</div>
+						{#if contents.busStops || contents.busRoutes || contents.ferryRoutes}
+							<div class="package-contents" aria-label="Combined proposal contents">
+								{#if contents.busStops}<span
+										><MapPin size={13} />{contents.busStops} new bus {contents.busStops === 1
+											? 'stop'
+											: 'stops'}</span
+									>{/if}
+								{#if contents.busRoutes}<span
+										><BusFront size={13} />{contents.busRoutes} bus {contents.busRoutes === 1
+											? 'route'
+											: 'routes'}</span
+									>{/if}
+								{#if contents.ferryRoutes}<span
+										><Ship size={13} />{contents.ferryRoutes} ferry {contents.ferryRoutes === 1
+											? 'service'
+											: 'services'}</span
+									>{/if}
+								{#if contents.existingFerryLandings}<span
+										>{contents.existingFerryLandings} existing landing {contents.existingFerryLandings ===
+										1
+											? 'place'
+											: 'places'}</span
+									>{/if}
+							</div>
+						{/if}
 						<ol class="site-list">
 							{#each proposalItems as { operation, index }, rowNumber (index)}<li>
 									<span class="site-number">{rowNumber + 1}</span>
@@ -611,6 +744,7 @@
 							)}–{formatAmount(economics.sensitivity.capital_mvr.high)}. {economics.sensitivity
 								.meaning}
 						</p>{/if}
+					<CostAssumptions {economics} />
 				</section>
 				<div class="report-grid">
 					<section class="report-card">
@@ -966,6 +1100,40 @@
 		padding: 26px;
 		min-width: 0;
 	}
+	.suggestion-research {
+		margin-bottom: 20px;
+	}
+	.suggestion-research > p {
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.7;
+	}
+	.suggestion-research .section-heading {
+		margin-bottom: 10px;
+	}
+	.suggestion-research .section-heading h2 {
+		font-size: 19px;
+	}
+	.research-date {
+		margin: 14px 0 0;
+		color: var(--muted-foreground);
+		font-size: 11px;
+	}
+	.research-sources a {
+		color: var(--foreground);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		overflow-wrap: anywhere;
+	}
+	.research-sources p {
+		margin: 3px 0 0;
+	}
+	.suggestion-research summary:focus-visible,
+	.research-sources a:focus-visible {
+		outline: 2px solid var(--ring);
+		outline-offset: 4px;
+		border-radius: 2px;
+	}
 	.section-heading {
 		display: flex;
 		align-items: center;
@@ -1042,6 +1210,27 @@
 		line-height: 1.7;
 		color: var(--muted-foreground);
 		margin-top: 14px;
+	}
+	.package-contents {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 7px;
+		margin: 0 0 16px;
+	}
+	.package-contents > span {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		padding: 6px 8px;
+		border-radius: 6px;
+		background: var(--theme-color-f7faf8);
+		border: 1px solid var(--border);
+		font-size: 10px;
+		line-height: 1.4;
+	}
+	.package-contents :global(svg) {
+		flex-shrink: 0;
+		color: var(--muted-foreground);
 	}
 	.site-list {
 		list-style: none;

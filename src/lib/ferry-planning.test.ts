@@ -4,6 +4,7 @@ import {
 	ferryFeatureBounds,
 	ferryPlanningDate,
 	ferryServiceInput,
+	ferrySuggestionInput,
 	type FerryDraft,
 	type FerryServiceSettings
 } from './ferry-planning.js';
@@ -22,6 +23,32 @@ const request = {
 };
 
 describe('ferry service plan authorization', () => {
+	it('prepares suggestions for the exact accepted bus draft, date and budgets', () => {
+		const input = ferrySuggestionInput('island:1442', {
+			...request,
+			assumptions: { ...request.assumptions, date: '2026-10-10', goal: 'healthcare' }
+		});
+		expect(input).toMatchObject({
+			origin_island_id: 'island:1442',
+			operations: request.operations,
+			assumptions: { ...request.assumptions, date: '2026-10-10', goal: 'healthcare' }
+		});
+		expect(ferrySuggestionInput('island:1380', request)).toBeNull();
+		expect(
+			ferrySuggestionInput('island:1442', {
+				...request,
+				operations: [
+					{ type: 'add_service', metadata: { ferry_suggestion: { id: 'reviewed-connection' } } }
+				]
+			})
+		).toBeNull();
+		expect(
+			ferrySuggestionInput('island:1442', {
+				...request,
+				operations: Array(97).fill(request.operations[0])
+			})
+		).toBeNull();
+	});
 	it('quotes the inspected service date instead of a restored draft date', () => {
 		const serviceDate = ferryPlanningDate('2026-10-11');
 		const result = ferryServiceInput('island:1442', settings, {

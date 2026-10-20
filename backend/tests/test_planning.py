@@ -140,8 +140,43 @@ def test_fleet_accounts_for_previous_service_day_overnight_departures(service):
     empty = dict(world, patterns=[])
     result = economics(empty, world, assumptions)
     assert result["delta"]["capital_mvr"] == 30_000_000
-    assert result["delta"]["annual_operating_mvr"] == 150_000
+    assert result["delta"]["annual_operating_mvr"] == 60_000
     assert result["delta"]["annual_operating_kg_co2e"] == 15_000
+
+
+def test_mvr_cost_profile_and_manual_prices_keep_distinct_provenance(service):
+    baseline = service.baseline("male")
+    profile = baseline["cost_basis"]
+    assert profile["currency"] == "MVR"
+    assert baseline["cost_defaults"]["stop_capital_mvr"] == 250_000
+    source_ids = {source["id"] for source in profile["sources"]}
+    assert all(
+        factor["unit"].startswith("MVR") and set(factor["source_ids"]) <= source_ids
+        for factor in profile["factors"].values()
+    )
+    result = service.evaluate(
+        PlanningRequest(
+            island_id="male",
+            operations=[{"type": "add_stop", "coordinates": [73.5, 4.17]}],
+            assumptions={
+                "cost_overrides": {"stop_capital_mvr": 321_000},
+                "capital_budget_mvr": 2_000_000,
+                "annual_operating_budget_mvr": 1_000_000,
+            },
+        )
+    )["economics"]
+    assert result["delta"]["capital_mvr"] == 321_000
+    assert result["budget"]["capital_remaining_mvr"] == 1_679_000
+    assert result["assumptions"]["stop_capital_mvr"] == 321_000
+    assert result["calibration"]["factor_basis"]["stop_capital_mvr"] == "manual_scenario_override"
+    assert result["calibration"]["factor_basis"]["diesel_operating_mvr_per_km"] == (
+        "benchmark_informed_allowance"
+    )
+    assert result["cost_basis"]["factors"]["stop_capital_mvr"]["value"] == 250_000
+    assert result["cost_basis"]["budget"]["capital_mvr"] == 50_000_000
+    # A proposal's audit metadata cannot mutate later default profiles.
+    result["cost_basis"]["sources"].clear()
+    assert service.baseline("male")["cost_basis"]["sources"]
 
 
 def test_walk_reverses_motor_oneway_but_drive_does_not(service):
@@ -429,7 +464,7 @@ def test_mixed_propulsion_has_separate_blocks_and_conversion_capital(service):
     assert {route["fleet_type"] for route in routes} == {"diesel", "electric"}
     assert all(route["required_fleet"] == 1 for route in routes)
     assert result["delta"]["capital_mvr"] == 5_250_000  # electric bus plus charging
-    assert result["after"]["annual_operating_mvr"] == 2 * 18 + 2 * 25
+    assert result["after"]["annual_operating_mvr"] == 2 * 25 + 2 * 30
     assert result["delta"]["annual_operating_kg_co2e"] == -1
 
 

@@ -8,6 +8,7 @@ import math
 from datetime import UTC, datetime
 from html import escape
 from typing import Any
+from urllib.parse import urlsplit
 
 from pypdf import PdfReader, PdfWriter
 from reportlab.graphics.shapes import Circle, Drawing, Line, PolyLine, Rect, String
@@ -23,7 +24,9 @@ from reportlab.platypus import (
     Table,
     TableStyle,
 )
+from shapely.geometry import LineString, box
 
+from app.planning.calibration import FACTOR_UNITS
 from app.planning.models import PlanningRequest
 from app.planning.routing import service_day_trips
 
@@ -69,6 +72,47 @@ def population_description(value: Any) -> str:
     return "Resident allocation unavailable"
 
 
+def island_service_summary(island: dict[str, Any]) -> dict[str, Any]:
+    """Attribute changed outgoing connections and local buses to their own island.
+
+    The transport model also retains edited services outside the selected scope.
+    Its network summary therefore cannot be used as an island benefit total.
+    """
+    impact = (island.get("transport_connectivity") or {}).get("impact") or {}
+    identity = island["island_id"]
+    connections = [
+        row
+        for row in impact.get("connections", [])
+        if row.get("change") != "unchanged" and row.get("from_island_id") == identity
+    ]
+    local_buses = [
+        row
+        for row in impact.get("lines", [])
+        if row.get("change") != "unchanged"
+        and row.get("mode") == "bus"
+        and row.get("island_ids")
+        and all(value == identity for value in row["island_ids"])
+    ]
+    services = connections + local_buses
+
+    def departures(phase: str) -> float | None:
+        counts = [
+            finite(row[phase].get("departure_count"))
+            if row.get(phase) is not None
+            else None
+            if phase == "before"
+            else 0
+            for row in services
+        ]
+        return None if any(count is None for count in counts) else sum(counts)
+
+    return {
+        "departures_before": departures("before"),
+        "departures_after": departures("after"),
+        "added_connections": sum(row.get("change") == "added" for row in connections),
+    }
+
+
 def fiscal_projection(capital: Any, annual: Any) -> list[dict[str, Any]]:
     """Explicit constant-service, undiscounted arithmetic, preserving unknowns."""
     one_time, recurring = finite(capital), finite(annual)
@@ -88,7 +132,14 @@ def fiscal_projection(capital: Any, annual: Any) -> list[dict[str, Any]]:
 def printable(value: Any) -> str:
     # Standard PDF fonts support accented Latin names; escape other codepoints visibly
     # rather than emitting missing glyph boxes or losing the underlying source value.
-    text = str(value).replace("\u2013", "-").replace("\u2014", "-").replace("\u2011", "-")
+    text = (
+        str(value)
+        .replace("\u2013", "-")
+        .replace("\u2014", "-")
+        .replace("\u2011", "-")
+        .replace("\u2194", " / ")
+        .replace("\u2192", " to ")
+    )
     return text.encode("cp1252", errors="backslashreplace").decode("cp1252")
 
 
@@ -508,7 +559,11 @@ def proposal_map(
                 sites.extend([(index, coordinates[0]), (index, coordinates[-1])])
     # Shared landings and outbound/return corridors must not stack numbered markers.
     sites = list({tuple(point): (index, point) for index, point in reversed(sites)}.values())
-    points = [point for line in edges + corridors for point in line] + [point for _, point in sites]
+    # A national baseline may contain roads from every atoll. Frame the proposal,
+    # then clip the road context to it; background inventory must not set the zoom.
+    points = [point for line in corridors for point in line] + [point for _, point in sites]
+    if not points:
+        points = [point for line in edges for point in line]
     points = [
         point
         for point in points
@@ -518,10 +573,14 @@ def proposal_map(
             for coordinate in point
         )
     ]
-    if not sites or len(points) < 2:
+    if not sites or not points:
         return None
     west, east = min(point[0] for point in points), max(point[0] for point in points)
     south, north = min(point[1] for point in points), max(point[1] for point in points)
+    margin_x = max((east - west) * 0.12, 0.001)
+    margin_y = max((north - south) * 0.12, 0.001)
+    west, east = west - margin_x, east + margin_x
+    south, north = south - margin_y, north + margin_y
     cos_lat = math.cos(math.radians((north + south) / 2))
     span_x = max((east - west) * cos_lat, 0.001)
     span_y = max(north - south, 0.001)
@@ -547,11 +606,29 @@ def proposal_map(
             strokeWidth=0.5,
         )
     )
+    extent = box(west, south, east, north)
     for line in edges:
-        if len(line) >= 2:
+        if len(line) < 2:
+            continue
+        if not all(
+            len(point) == 2 and all(finite(value) is not None for value in point) for point in line
+        ):
+            continue
+        if (
+            max(point[0] for point in line) < west
+            or min(point[0] for point in line) > east
+            or max(point[1] for point in line) < south
+            or min(point[1] for point in line) > north
+        ):
+            continue
+        clipped = LineString(line).intersection(extent)
+        segments = [clipped] if clipped.geom_type == "LineString" else getattr(clipped, "geoms", [])
+        for segment in segments:
+            if segment.geom_type != "LineString" or segment.is_empty:
+                continue
             drawing.add(
                 PolyLine(
-                    [value for point in line for value in xy(point)],
+                    [value for point in segment.coords for value in xy(point)],
                     strokeColor=colors.HexColor("#c5d1c7"),
                     strokeWidth=0.45,
                 )
@@ -650,6 +727,23 @@ def build_planning_report(
     def p(value: Any, style: str = "Body") -> Paragraph:
         return Paragraph(escape(printable(value)).replace("\n", "<br/>"), styles[style])
 
+    def source_link(source: dict[str, Any]) -> Paragraph:
+        label = escape(
+            printable(f"[{source.get('id', 'Source')}] {source.get('title') or 'Cost reference'}")
+        )
+        url = str(source.get("url") or "").strip()
+        try:
+            parts = urlsplit(url)
+            valid = parts.scheme.lower() in {"http", "https"} and bool(parts.netloc)
+        except ValueError:
+            valid = False
+        if valid:
+            return Paragraph(
+                f'<link href="{escape(url, quote=True)}" color="#27876a">{label}</link>',
+                styles["Note"],
+            )
+        return Paragraph(label, styles["Note"])
+
     def table(rows: list[list[Any]], widths: list[float] | None = None) -> Table:
         result = Table(
             [[p(cell, "Cell") for cell in row] for row in rows],
@@ -685,6 +779,8 @@ def build_planning_report(
     a = payload.assumptions
     summary = evaluation.get("summary") or {}
     economics = evaluation.get("economics") or {}
+    cost_basis = economics.get("cost_basis") or {}
+    default_factors = cost_basis.get("factors") or {}
     delta = economics.get("delta") or {}
     budget = economics.get("budget") or {}
     bands = evaluation.get("travel_time_bands") or {}
@@ -716,6 +812,8 @@ def build_planning_report(
     scoped_names = [
         island.get("name", island["id"]) for island in (baseline or {}).get("islands", [])
     ]
+    if evaluation.get("island_impacts"):
+        scoped_names = [row["island_name"] for row in evaluation["island_impacts"]]
     scope = ", ".join(scoped_names) or payload.island_id or "National supported resident areas"
     goal = {
         "education": "education",
@@ -822,6 +920,67 @@ def build_planning_report(
             ),
         ]
     )
+    if evaluation.get("island_impacts"):
+        story.extend(
+            [
+                p("Impact on both islands", "Section"),
+                p(
+                    evaluation.get(
+                        "impact_scope", "The same complete proposal is evaluated for each island."
+                    ),
+                    "Note",
+                ),
+            ]
+        )
+        for island in evaluation["island_impacts"]:
+            island_summary = island.get("summary") or {}
+            island_transport = island_service_summary(island)
+            story.extend(
+                [
+                    p(island.get("island_name") or island["island_id"], "Section"),
+                    table(
+                        [
+                            ["Island outcome", "Current services", "With complete proposal"],
+                            [
+                                "Residents within "
+                                f"{island.get('target_minutes', a.target_minutes):g} min target",
+                                amount(island_summary.get("baseline_reachable_residents")),
+                                amount(island_summary.get("scenario_reachable_residents")),
+                            ],
+                            [
+                                "Departures from this island on changed services",
+                                amount(island_transport.get("departures_before")),
+                                amount(island_transport.get("departures_after")),
+                            ],
+                            [
+                                "New outgoing directed connections",
+                                "-",
+                                amount(island_transport.get("added_connections")),
+                            ],
+                        ],
+                        [available * 0.5, available * 0.25, available * 0.25],
+                    ),
+                    p(
+                        "Residents gaining target access: "
+                        f"{amount(island_summary.get('gained_residents'))}. "
+                        + str(island.get("access_method") or "Access method unavailable")
+                        + ". "
+                        + population_description(island.get("population_basis")),
+                        "Note",
+                    ),
+                    p(
+                        "Service counts include changed connections departing this island "
+                        "and its local bus lines; the return direction belongs "
+                        "to the other island. "
+                        "Through services can serve several destinations, so connection counts "
+                        "must not be summed as unique vehicle trips. "
+                        "Walking gains may remain zero when an existing terminal is reused. "
+                        "Missing dated service is an evidence gap, "
+                        "not proof that no ferry operates.",
+                        "Note",
+                    ),
+                ]
+            )
     story.extend(
         new_page(
             "03",
@@ -862,8 +1021,10 @@ def build_planning_report(
                 "Note",
             ),
             p(
-                "Costs are editable planning assumptions, not official local quotations. "
-                "Confirm site feasibility and obtain cost estimates before an investment decision.",
+                "Costs are editable MVR planning benchmarks, not supplier quotations. "
+                "The evidence appendix gives default scopes, sources and the pilot budget basis. "
+                "Applied overrides and your chosen budget limits take precedence. "
+                "Confirm site feasibility and obtain estimates before an investment decision.",
                 "Note",
             ),
         ]
@@ -1036,6 +1197,38 @@ def build_planning_report(
                 p(transport.get("after", {}).get("qualification", ""), "Note"),
             ]
         )
+        suggestions = {
+            value["id"]: value
+            for operation in payload.operations
+            if isinstance(value := (operation.metadata or {}).get("ferry_suggestion"), dict)
+            and value.get("id")
+        }
+        for suggestion in suggestions.values():
+            story.extend(
+                [
+                    p("Why this suggested connection?", "Section"),
+                    p(suggestion.get("title") or suggestion["id"]),
+                    p(suggestion.get("rationale") or "", "Note"),
+                    p(
+                        f"Evidence reviewed: {suggestion.get('assessment_date', 'Unavailable')}",
+                        "Note",
+                    ),
+                ]
+            )
+            for evidence in suggestion.get("evidence", []):
+                if isinstance(evidence, dict):
+                    story.append(
+                        p(
+                            "; ".join(
+                                str(evidence[key])
+                                for key in ("title", "value", "qualification", "url")
+                                if evidence.get(key)
+                            ),
+                            "Note",
+                        )
+                    )
+            for qualification in suggestion.get("qualifications", []):
+                story.append(p(qualification, "Note"))
     story.extend(
         [
             p("Fleet and environmental implications", "Section"),
@@ -1289,13 +1482,19 @@ def build_planning_report(
             p(economics.get("basis") or "Cost provenance unavailable.", "SectionIntro"),
             table(
                 [
-                    ["Factor", "Applied value"],
+                    ["Factor", "Applied value", "Unit / scope"],
                     *[
-                        [key.replace("_", " "), factor_amount(value)]
+                        [
+                            default_factors.get(key, {}).get("title")
+                            or key.replace("_", " "),
+                            factor_amount(value),
+                            default_factors.get(key, {}).get("unit")
+                            or FACTOR_UNITS.get(key, "Unavailable"),
+                        ]
                         for key, value in (economics.get("assumptions") or {}).items()
                     ],
                 ],
-                [available * 0.7, available * 0.3],
+                [available * 0.52, available * 0.23, available * 0.25],
             ),
         ]
     )
@@ -1308,6 +1507,70 @@ def build_planning_report(
         for basis, factors in factor_groups.items():
             names = "All displayed factors" if len(factor_groups) == 1 else ", ".join(factors)
             story.append(p(f"{names}: {basis.replace('_', ' ')}.", "Note"))
+    if cost_basis:
+        pilot_budget = cost_basis.get("budget") or {}
+        story.extend(
+            [
+                p("Reviewed default cost basis", "Section"),
+                p(
+                    f"Revision {cost_basis.get('revision', 'Unavailable')}; "
+                    f"reviewed {cost_basis.get('reviewed_at', 'Unavailable')}; currency: MVR. "
+                    f"{cost_basis.get('price_basis', '')}",
+                    "SectionIntro",
+                ),
+                p(
+                    "The following values explain the default planning benchmarks, not "
+                    "supplier quotations. The applied-factor table above is authoritative "
+                    "for this proposal and can differ because of selected calibration, "
+                    "manual overrides or individual facility estimates. Source references "
+                    "do not certify all-in delivery prices for a particular site or vehicle.",
+                    "SectionIntro",
+                ),
+                p(
+                    f"Default pilot allowance: MVR {amount(pilot_budget.get('capital_mvr'))} "
+                    f"upfront and MVR {amount(pilot_budget.get('annual_operating_mvr'))} "
+                    f"per year. {pilot_budget.get('basis', '')} "
+                    "This describes the default envelope; the budget chart and budget detail "
+                    "use your actual chosen limits.",
+                    "SectionIntro",
+                ),
+            ]
+        )
+        if default_factors:
+            story.append(
+                table(
+                    [
+                        ["Default factor", "Default value, scope and evidence basis"],
+                        *[
+                            [
+                                factor.get("title") or key.replace("_", " "),
+                                f"{factor_amount(factor.get('value'))} "
+                                f"{factor.get('unit', 'unit unavailable')}\n"
+                                f"{factor.get('evidence_type', 'assumption').replace('_', ' ')}. "
+                                f"{factor.get('basis', '')}"
+                                + (
+                                    "\nSources: " + ", ".join(map(str, factor["source_ids"]))
+                                    if factor.get("source_ids")
+                                    else ""
+                                ),
+                            ]
+                            for key, factor in default_factors.items()
+                        ],
+                    ],
+                    [available * 0.30, available * 0.70],
+                )
+            )
+        if cost_basis.get("sources"):
+            story.append(p("Cost reference sources", "Section"))
+            for source in cost_basis["sources"]:
+                story.append(source_link(source))
+                attribution = "; ".join(
+                    str(source[key]) for key in ("publisher", "published_date") if source.get(key)
+                )
+                if attribution:
+                    story.append(p(attribution, "Note"))
+                if source.get("qualification"):
+                    story.append(p(source["qualification"], "Note"))
     before_bands = {row["label"]: row.get("residents") for row in bands.get("before", [])}
     after_bands = {row["label"]: row.get("residents") for row in bands.get("after", [])}
     story.extend(
@@ -1425,6 +1688,9 @@ def build_planning_report(
                     "transport_connectivity",
                     "economics",
                     "island_summaries",
+                    "island_impacts",
+                    "impact_scope",
+                    "request_fingerprint",
                     "coverage",
                     "source_receipts",
                     "version_pins",

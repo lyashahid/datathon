@@ -14,6 +14,7 @@ import logging
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any, Awaitable, Callable
 
 import httpx
@@ -76,6 +77,25 @@ def _jobs(*, include_planning: bool, include_analysis: bool) -> list[WarmupJob]:
             ]
         )
     if include_planning:
+        jobs.append(
+            WarmupJob(
+                "hulhumale_ferry_suggestion",
+                "/api/v1/planning/ferry-suggestion",
+                {
+                    "origin_island_id": "island:1442",
+                    "assumptions": {
+                        "goal": "transport",
+                        "target_minutes": 30,
+                        "capital_budget_mvr": 50_000_000,
+                        "annual_operating_budget_mvr": 12_000_000,
+                        "include_origin_geometry": False,
+                        "include_journey_geometry": False,
+                        "include_world": False,
+                    },
+                    "operations": [],
+                },
+            )
+        )
         jobs.append(
             WarmupJob("opportunities", "/api/v1/planning/opportunities?include_geometry=false")
         )
@@ -252,12 +272,47 @@ async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--include-planning", action="store_true")
     parser.add_argument("--skip-analysis", action="store_true")
+    parser.add_argument("--ferry-suggestion-only", action="store_true")
+    parser.add_argument(
+        "--output", type=Path, help="Save the exact suggested-ferry response as JSON"
+    )
     args = parser.parse_args()
     app = create_app(Settings(vela_browser_enabled=False, computed_cache_prewarm=False))
     async with app.router.lifespan_context(app):
         cache = app.state.computed_cache
         source_version = app.state.source_version.version()
         await cache.restore_public_results(source_version)
+        if args.ferry_suggestion_only:
+            job = next(
+                job
+                for job in _jobs(include_planning=True, include_analysis=False)
+                if job.name == "hulhumale_ferry_suggestion"
+            )
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=app), base_url="http://precompute.local"
+            ) as client:
+                response = await client.post(job.url, json=job.body, timeout=120)
+                response.raise_for_status()
+                result = response.json()
+            if args.output:
+                args.output.parent.mkdir(parents=True, exist_ok=True)
+                args.output.write_text(
+                    json.dumps(result, ensure_ascii=False, indent=2), encoding="utf8"
+                )
+            await cache.mirror_public_results(source_version)
+            print(
+                json.dumps(
+                    {
+                        "precomputed_views": 1,
+                        "status": result["status"],
+                        "request_fingerprint": result.get("request_fingerprint"),
+                        "output": str(args.output) if args.output else None,
+                        "cache": cache.status(),
+                    }
+                ),
+                flush=True,
+            )
+            return
         results = await warm_application(
             app,
             include_planning=args.include_planning,

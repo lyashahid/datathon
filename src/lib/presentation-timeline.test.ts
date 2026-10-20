@@ -1,9 +1,166 @@
 import { describe, expect, it } from 'vitest';
 import {
 	formatPresentationElapsed,
+	formatPresentationElapsedMinutes,
 	formatPresentationTotal,
+	presentationJourneySummary,
+	presentationPlaybackLegs,
+	presentationPlaybackState,
 	presentationTimeline
 } from './presentation-timeline.js';
+import type { Coordinates } from './types.js';
+
+describe('timed presentation movement and waiting', () => {
+	const legs = [
+		{
+			mode: 'walk' as const,
+			minutes: 13.054,
+			geometry: [
+				[73.5404, 4.2371],
+				[73.541, 4.23]
+			] as Coordinates[]
+		},
+		{ mode: 'wait' as const, minutes: 31.946, geometry: [] },
+		{
+			mode: 'bus' as const,
+			minutes: 6,
+			geometry: [
+				[73.541, 4.23],
+				[73.5271, 4.1901]
+			] as Coordinates[]
+		},
+		{
+			mode: 'walk' as const,
+			minutes: 0.396,
+			geometry: [
+				[73.5271, 4.1901],
+				[73.527056, 4.190044]
+			] as Coordinates[]
+		}
+	];
+	const airportLegs = legs.slice(1);
+	const weights = { wait: 3, bus: 6, walk: 1 };
+
+	it('holds at the boarding stop as the captured wait advances, then moves each timed path', () => {
+		const timeline = presentationPlaybackLegs(airportLegs, { weights });
+		expect(timeline.map(({ mode, pathIndex, weight }) => ({ mode, pathIndex, weight }))).toEqual([
+			{ mode: 'wait', pathIndex: 0, weight: 3 },
+			{ mode: 'bus', pathIndex: 0, weight: 6 },
+			{ mode: 'walk', pathIndex: 1, weight: 1 }
+		]);
+		const waiting = presentationPlaybackState(0.15, timeline)!;
+		expect(waiting).toMatchObject({
+			mode: 'wait',
+			pathIndex: 0,
+			pathProgress: 0,
+			stationary: true
+		});
+		expect(waiting.elapsedMinutes).toBeCloseTo(31.946 / 2);
+		expect(presentationPlaybackState(0.29, timeline)?.pathProgress).toBe(0);
+		const boarding = presentationPlaybackState(0.3, timeline)!;
+		expect(boarding).toMatchObject({
+			mode: 'bus',
+			pathIndex: 0,
+			pathProgress: 0,
+			stationary: false
+		});
+		expect(boarding.elapsedMinutes).toBeCloseTo(31.946);
+		const riding = presentationPlaybackState(0.6, timeline)!;
+		expect(riding.pathProgress).toBeCloseTo(0.5);
+		expect(riding.elapsedMinutes).toBeCloseTo(31.946 + 3);
+		const terminal = presentationPlaybackState(0.95, timeline)!;
+		expect(terminal).toMatchObject({ mode: 'walk', pathIndex: 1, stationary: false });
+		expect(terminal.pathProgress).toBeCloseTo(0.5);
+		expect(terminal.elapsedMinutes).toBeCloseTo(31.946 + 6 + 0.396 / 2);
+		expect(presentationPlaybackState(1, timeline)).toMatchObject({
+			pathProgress: 1,
+			clockProgress: 1
+		});
+	});
+
+	it('retains exact cumulative source time with visual weighting and deterministic replay', () => {
+		const timeline = presentationPlaybackLegs(airportLegs, { weights });
+		let previous = 0;
+		for (const fraction of [0, 0.15, 0.3, 0.6, 0.9, 0.95, 1]) {
+			const playback = presentationPlaybackState(fraction, timeline)!;
+			const clock = presentationTimeline(9, playback.clockProgress, [
+				{ step: 8, minutes: legs[0].minutes },
+				{ step: 9, minutes: playback.totalMinutes }
+			]);
+			expect(clock.elapsedSeconds).toBeGreaterThanOrEqual(previous);
+			expect(clock.elapsedSeconds).toBe(
+				Math.floor((legs[0].minutes + playback.elapsedMinutes) * 60)
+			);
+			expect(clock.totalSeconds).toBe(Math.round(51.396 * 60));
+			previous = clock.elapsedSeconds;
+		}
+		expect(presentationPlaybackState(0, timeline)).toMatchObject({
+			elapsedMinutes: 0,
+			pathProgress: 0
+		});
+		expect(presentationPlaybackState(-1, timeline)).toEqual(presentationPlaybackState(0, timeline));
+		expect(presentationPlaybackState(NaN, timeline)).toEqual(
+			presentationPlaybackState(0, timeline)
+		);
+		expect(presentationPlaybackState(2, timeline)).toEqual(presentationPlaybackState(1, timeline));
+	});
+
+	it('anchors trailing waits at the previous path end and shares weights across like modes', () => {
+		const source = [legs[1], legs[2], { ...legs[1], minutes: 10 }];
+		const before = structuredClone(source);
+		const timeline = presentationPlaybackLegs(source, { weights });
+		expect(timeline[0]).toMatchObject({ pathIndex: 0, holdAt: 'start' });
+		expect(timeline[2]).toMatchObject({ pathIndex: 0, holdAt: 'end' });
+		expect(
+			timeline.filter((leg) => leg.mode === 'wait').reduce((sum, leg) => sum + leg.weight!, 0)
+		).toBeCloseTo(3);
+		expect(presentationPlaybackState(0.99, timeline)).toMatchObject({
+			mode: 'wait',
+			pathProgress: 1,
+			stationary: true
+		});
+		expect(source).toEqual(before);
+	});
+
+	it('uses source minutes as the default visual weight and summarizes the full pickup', () => {
+		const timeline = presentationPlaybackLegs(airportLegs);
+		const halfWait = 31.946 / 2 / (31.946 + 6 + 0.396);
+		expect(presentationPlaybackState(halfWait, timeline)).toMatchObject({
+			mode: 'wait',
+			pathProgress: 0
+		});
+		expect(presentationPlaybackState(halfWait, timeline)?.elapsedMinutes).toBeCloseTo(31.946 / 2);
+		const summary = presentationJourneySummary(legs);
+		expect(summary.walkMinutes).toBeCloseTo(13.45);
+		expect(summary.waitMinutes).toBeCloseTo(31.946);
+		expect(summary.rideMinutes).toBe(6);
+		expect(summary.totalMinutes).toBeCloseTo(51.396);
+		expect(summary.incomplete).toBe(false);
+	});
+
+	it('keeps unavailable durations and missing moving geometry out of timed playback', () => {
+		expect(presentationPlaybackLegs([])).toEqual([]);
+		expect(presentationPlaybackLegs([legs[1]])).toEqual([]);
+		expect(presentationPlaybackLegs([{ ...legs[2], geometry: [] }])).toEqual([]);
+		for (const minutes of [null, undefined, NaN, Infinity, -1]) {
+			const source = [legs[0], { ...legs[1], minutes }];
+			expect(presentationPlaybackLegs(source)).toEqual([]);
+			expect(presentationJourneySummary(source)).toMatchObject({
+				waitMinutes: null,
+				totalMinutes: null,
+				incomplete: true
+			});
+		}
+		expect(presentationJourneySummary([])).toEqual({
+			walkMinutes: null,
+			waitMinutes: null,
+			rideMinutes: null,
+			totalMinutes: null,
+			incomplete: true
+		});
+		expect(presentationPlaybackState(0.5, [])).toBeNull();
+	});
+});
 
 describe('persistent presentation journey clocks', () => {
 	const arrival = [
@@ -71,6 +228,23 @@ describe('persistent presentation journey clocks', () => {
 		expect(formatPresentationElapsed(NaN)).toBe('00:00');
 		expect(formatPresentationTotal(4800)).toBe('1h 20m');
 		expect(formatPresentationTotal(2100)).toBe('35 min');
+		expect(formatPresentationTotal(1439 * 60)).toBe('23h 59m');
+		expect(formatPresentationTotal(1440 * 60)).toBe('1d 0h 0m');
+		expect(formatPresentationTotal(1780 * 60)).toBe('1d 5h 40m');
 		expect(formatPresentationTotal(null)).toBe('unconfirmed');
+	});
+
+	it('formats whole elapsed minutes for a calm presenter clock without rounding ahead', () => {
+		expect(formatPresentationElapsedMinutes(0)).toBe('0 min');
+		expect(formatPresentationElapsedMinutes(59.9)).toBe('0 min');
+		expect(formatPresentationElapsedMinutes(3599)).toBe('59 min');
+		expect(formatPresentationElapsedMinutes(3600)).toBe('1h 00m');
+		expect(formatPresentationElapsedMinutes(3900)).toBe('1h 05m');
+		expect(formatPresentationElapsedMinutes(7200)).toBe('2h 00m');
+		expect(formatPresentationElapsedMinutes(1440 * 60 - 1)).toBe('23h 59m');
+		expect(formatPresentationElapsedMinutes(1440 * 60)).toBe('1d 0h 00m');
+		expect(formatPresentationElapsedMinutes(1780 * 60)).toBe('1d 5h 40m');
+		expect(formatPresentationElapsedMinutes(NaN)).toBe('0 min');
+		expect(formatPresentationElapsedMinutes(-5)).toBe('0 min');
 	});
 });

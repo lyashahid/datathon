@@ -11,9 +11,11 @@ from __future__ import annotations
 
 import heapq
 import math
+from copy import deepcopy
 from functools import lru_cache
 from typing import Any
 
+import shapely
 from shapely import make_valid
 from shapely.affinity import affine_transform
 from shapely.errors import GEOSException
@@ -21,6 +23,7 @@ from shapely.geometry import LineString, MultiPolygon, Point, Polygon, box, shap
 from shapely.ops import nearest_points, unary_union
 from shapely.strtree import STRtree
 
+from app.data.computed_cache import ComputedCache, model_code_version
 from app.routing.engine import _distance_m
 
 CORRIDOR_SOURCE = "coastline_avoiding_planning_corridor"
@@ -85,7 +88,37 @@ class WaterCorridorPlanner:
         self._index = STRtree([land[identity] for identity in self._identities])
         self._loaded = True
 
-    def corridor(self, first: dict[str, Any], second: dict[str, Any]) -> dict[str, Any] | None:
+    def corridor(
+        self,
+        first: dict[str, Any],
+        second: dict[str, Any],
+        *,
+        cache: ComputedCache | None = None,
+    ) -> dict[str, Any] | None:
+        if cache is not None:
+            # Share only shoreline validation, never a service quote or proposal
+            # impact. Validate the same snapshot as the key, including changes
+            # to intervening islands or either complete source terminal record.
+            first, second, features = deepcopy((first, second, self.features))
+            return cache.get_or_compute(
+                "planning-water-corridor",
+                {
+                    "model_code": model_code_version(),
+                    "corridor_model": CORRIDOR_MODEL_VERSION,
+                    "geometry_engine": [shapely.__version__, shapely.geos_version_string],
+                    "settings": {
+                        "max_vertices": MAX_VERTICES,
+                        "max_shore_approach_m": MAX_SHORE_APPROACH_M,
+                        "clearance_m": CLEARANCE_M,
+                    },
+                    "first": first,
+                    "second": second,
+                    "shorelines": features,
+                },
+                # A fresh planner cannot retain an old spatial index or LRU
+                # result if a repository's source records changed in place.
+                lambda: WaterCorridorPlanner(features).corridor(first, second),
+            )
         try:
             self._load()
             return self._corridor(

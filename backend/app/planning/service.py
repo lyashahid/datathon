@@ -11,6 +11,7 @@ from threading import RLock
 from typing import Any
 
 from app.data.computed_cache import ComputedCache, model_code_version
+from app.planning.costs import cost_basis
 from app.planning.economics import COST_DEFAULTS, economics
 from app.planning.models import JourneyRequest, PlanningAssumptions, PlanningRequest
 from app.planning.repository import IDENTITY_BRIDGE, PlanningRepository
@@ -251,6 +252,7 @@ class PlanningService:
             if not scope or nodes.get(e["from"], {}).get("islandId") == scope
         ]
         result["cost_defaults"] = COST_DEFAULTS
+        result["cost_basis"] = cost_basis()
         return result
 
     def coverage(self, request: PlanningRequest) -> dict[str, Any]:
@@ -288,6 +290,84 @@ class PlanningService:
         }
 
     def evaluate(self, request: PlanningRequest) -> dict[str, Any]:
+        """Evaluate one exact draft, with both sides of proposed ferry connections."""
+        result = self._cached_evaluate(request)
+        islands = self._ferry_impact_islands(request)
+        if not islands:
+            return result
+        result["request_fingerprint"] = self._digest(request.model_dump(mode="json"))
+        result["island_impacts"] = []
+        for island_id in islands:
+            scoped = request.model_copy(update={"island_id": island_id})
+            evaluation = (
+                result
+                if self.repository.planning_id(request.island_id or "")
+                == self.repository.planning_id(island_id)
+                else self._cached_evaluate(scoped)
+            )
+            result["island_impacts"].append(
+                {
+                    "island_id": island_id,
+                    "island_name": self.repository.island_names.get(island_id, island_id),
+                    **{
+                        key: evaluation[key]
+                        for key in (
+                            "status",
+                            "summary",
+                            "target_minutes",
+                            "population_basis",
+                            "access_method",
+                            "transport_connectivity",
+                            "warnings",
+                        )
+                    },
+                }
+            )
+        result["impact_scope"] = (
+            "Each island compares the same complete proposal and assumptions against the "
+            "same source baseline. Island resident totals are separate cohorts; costs "
+            "belong to the whole proposal and must not be added across islands. Walking "
+            "access, dated ferry connections and modeled waiting are separate measures, "
+            "not passenger demand, occupancy or ridership."
+        )
+        return result
+
+    def _ferry_impact_islands(self, request: PlanningRequest) -> list[str]:
+        operations = [operation.model_dump(mode="json") for operation in request.operations]
+        operations += (request.scenario or {}).get("operations", [])
+        ferry_services = [
+            operation.get("service") or {}
+            for operation in operations
+            if isinstance(operation, dict)
+            and (operation.get("service") or {}).get("mode") == "ferry"
+        ]
+        if not ferry_services:
+            return []
+        islands = set()
+        if request.island_id:
+            islands.add(IDENTITY_BRIDGE.get(request.island_id, request.island_id))
+        stops = {
+            stop["id"]: IDENTITY_BRIDGE.get(stop["islandId"], stop["islandId"])
+            for stop in self.repository.baseline.get("transit", {}).get("stops", [])
+        }
+        stops.update(
+            {
+                identity: terminal["island_id"]
+                for identity, terminal in self.repository.ferry_terminals.items()
+            }
+        )
+        for service in ferry_services:
+            proposal = service.get("transportProposal") or {}
+            for key in ("origin_island_id", "destination_island_id"):
+                if proposal.get(key):
+                    islands.add(IDENTITY_BRIDGE.get(proposal[key], proposal[key]))
+            for identity in service.get("stopIds", []):
+                if identity in stops:
+                    islands.add(stops[identity])
+        selected = IDENTITY_BRIDGE.get(request.island_id, request.island_id)
+        return ([selected] if selected in islands else []) + sorted(islands - {selected})
+
+    def _cached_evaluate(self, request: PlanningRequest) -> dict[str, Any]:
         if self.computed_cache is not None:
             # Hash all source content, including origins/calendar mutations and
             # every model input. Compact/full representations never collide.

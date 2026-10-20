@@ -206,7 +206,7 @@ def test_selected_candidate_duplicate_and_existing_proposal_costs(bus_planner):
     assert combined["status"] == "ready"
     assert (
         same["quote"]["economics"]["delta"]["capital_mvr"]
-        == result["quote"]["economics"]["delta"]["capital_mvr"] + 100_000
+        == result["quote"]["economics"]["delta"]["capital_mvr"] + 250_000
     )
 
 

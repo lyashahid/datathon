@@ -41,6 +41,7 @@ SHARED_NAMESPACES = frozenset(
         "passenger-forecast",
         "evidence-analysis",
         "planning-public-baseline",
+        "ferry-suggestion-public",
     }
 )
 
@@ -199,16 +200,20 @@ class PostgresStore:
             if self._closed or time.monotonic() < self._retry_after:
                 return {}
             try:
-                rows = self._connect().execute(
-                    "WITH selected AS (SELECT cache_key, payload, "
-                    "sum(octet_length(payload)) OVER (ORDER BY cache_key) AS total "
-                    "FROM mobility_computed_cache "
-                    "WHERE cache_key = ANY(%s) "
-                    "AND created_at >= now() - interval '7 days' "
-                    "AND octet_length(payload) <= %s) "
-                    "SELECT cache_key,payload FROM selected WHERE total <= %s",
-                    (keys, MAX_ITEM_BYTES + 1024, MAX_SHARED_BATCH_BYTES),
-                ).fetchall()
+                rows = (
+                    self._connect()
+                    .execute(
+                        "WITH selected AS (SELECT cache_key, payload, "
+                        "sum(octet_length(payload)) OVER (ORDER BY cache_key) AS total "
+                        "FROM mobility_computed_cache "
+                        "WHERE cache_key = ANY(%s) "
+                        "AND created_at >= now() - interval '7 days' "
+                        "AND octet_length(payload) <= %s) "
+                        "SELECT cache_key,payload FROM selected WHERE total <= %s",
+                        (keys, MAX_ITEM_BYTES + 1024, MAX_SHARED_BATCH_BYTES),
+                    )
+                    .fetchall()
+                )
                 return {key: bytes(payload) for key, payload in rows}
             except Exception:
                 self._failure()
@@ -558,7 +563,7 @@ class ComputedCache:
                 not isinstance(key, str) or not re.fullmatch(r"[0-9a-f]{64}", key) for key in keys
             ):
                 return 0
-        except (ValueError, KeyError, TypeError):
+        except ValueError, KeyError, TypeError:
             return 0
         remaining = deadline - time.monotonic()
         if remaining <= 0:

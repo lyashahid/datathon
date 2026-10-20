@@ -18,6 +18,7 @@ from app.planning.calibration import (
     tariff_delta,
 )
 from app.planning.economics import COST_DEFAULTS
+from app.planning.ferry_suggestions import FerrySuggestionRequest, FerrySuggestionService
 from app.planning.models import JourneyRequest, PlanningRequest
 from app.planning.opportunities import BudgetSuggestionRequest, OpportunityService
 from app.planning.repository import PlanningRepository
@@ -119,6 +120,17 @@ def ferry_service(
 ) -> dict[str, Any]:
     try:
         return service.ferry_service(payload)
+    except (ValueError, KeyError, TypeError, IndexError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@router.post("/ferry-suggestion")
+def ferry_suggestion(
+    payload: FerrySuggestionRequest,
+    service: TransportPlanningService = Depends(get_transport_planning),
+) -> dict[str, Any]:
+    try:
+        return FerrySuggestionService(service).suggest(payload)
     except (ValueError, KeyError, TypeError, IndexError) as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
 

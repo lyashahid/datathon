@@ -75,13 +75,19 @@ Local bus-stop, school and hospital construction is blocked outside the supporte
 		"goal": "transport",
 		"target_minutes": 10,
 		"capital_budget_mvr": 50000000,
-		"annual_operating_budget_mvr": 100000000
+		"annual_operating_budget_mvr": 12000000
 	},
 	"operations": []
 }
 ```
 
 Supply existing proposal operations when requesting a quote so both budget limits are checked against the combined proposal. Optional `origin_terminal_id` and `destination_terminal_id` select an identified landing place on each chosen island. Without sufficient terminal evidence, the response has no addable service. A returned draft is not a saved or approved operating service; the frontend confirms the exact quoted operations into the proposal only when its budget allows.
+
+The UI starts with **MVR 50 million capital and MVR 12 million annual operation**:
+an editable envelope for a local transport pilot, not an official appropriation or
+an estimate of the whole island's budget. Restoring the former default pair of MVR
+150 million / MVR 25 million migrates both limits to this pilot envelope. Every
+other saved budget pair, calibration selection and cost override is preserved.
 
 The service includes outbound and return sailings plus terminal layovers within the chosen operating window. The scenario date controls the generated service day. Annual operating costs multiply that service-day activity by the explicit annual operating-days assumption, rather than claiming that the source supplies an annual timetable. Vessel procurement includes the configured fleet reserve. The new `use_existing_ferry_terminal` operation references the reviewed catalogue; it does not charge for new terminal construction.
 
@@ -92,6 +98,53 @@ Each ferry package retains two terminal-reuse references and two directional ser
 Local bus-stop, school and hospital construction is limited to islands in the detailed resident and road model. The interface disables these placement controls elsewhere, and the quote and evaluation APIs reject unsupported construction rather than silently returning a zero-cost proposal. National islands can still plan a ferry service between sufficiently evidenced existing landing places; resident access impacts remain unavailable outside the detailed model. The service-evidence date carries into the ferry composer and can be changed explicitly in the proposal assumptions.
 
 ## Verification
+
+### Suggested direct connection and two-island review
+
+`POST /api/v1/planning/ferry-suggestion` accepts `origin_island_id`, the complete
+`assumptions`, and all accepted draft `operations`. For Hulhumalé it returns the
+reviewed **direct Vilimalé connection** from
+`data/public/policy-evidence/ferry-suggestions.json`. The artifact retains candidate
+screening, source links and qualifications. Vilimalé already has frequent Malé
+ferries: the suggestion explores removing a transfer, rather than claiming that
+Vilimalé is underserved or that existing ferry movements predict this new route's
+demand. Its default 60-minute headway, 06:00–20:00 window and 25 km/h speed are
+editable model inputs, not an optimized timetable.
+
+The response preserves the ordinary ferry draft fields and adds `inputs` (the
+exact full ferry-service request), `suggestion` (reviewed rationale, evidence and
+qualifications), `impact` (the complete combined proposal evaluation), and
+`request_fingerprint`. Only the new ferry package is returned in `operations`;
+the impact includes all existing bus-stop, bus-route and ferry operations.
+Ordinary manual ferry previews remain cheap quotes; accepted evaluations include
+the same two-island review.
+
+`evaluate.island_impacts` contains the selected island first and the other ferry
+endpoints after it. Each row retains `island_id`, `island_name`, `status`,
+`summary`, `target_minutes`, `population_basis`, `access_method`,
+`transport_connectivity: {before, after, impact}`, and `warnings`. The top-level
+summary keeps its selected-island scope. Each endpoint uses the identical full
+proposal, service date, time and assumptions. Shared service counts and project
+costs must not be summed across endpoint rows. Walking-access gains may be zero
+when existing terminals are reused; dated connections and departure supply remain
+separate measures. Neither is observed demand, occupancy or ridership.
+
+The exact combined draft, complete assumptions, reviewed artifact, model code and
+source inputs key the persistent cache. Adding or editing a bus operation, date,
+cost factor or source shoreline creates a distinct calculation. Only the empty
+draft with the actual default UI assumptions is eligible for shared public
+caching; custom drafts remain in the local cache. Startup warms that canonical
+suggestion, and the UI prefetches the exact current combined draft.
+
+Reproduce just this model result without a broad warmup:
+
+```powershell
+uv run --directory backend python -m app.cli.precompute --ferry-suggestion-only --output ../artifacts/qa/ferry-suggestion/precomputed-default.json
+```
+
+The PDF includes a two-island section from the same canonical evaluation and the
+suggestion evidence saved in `operation.metadata.ferry_suggestion`. Its attached
+JSON retains the endpoint rows and exact proposal inputs for inspection.
 
 After `npm start` has launched the application, run `npm run test:browser -- sea-network directions proposal-experience` for the current network, directions and proposal workflows. See [browser verification](browser-verification.md) for the suite catalogue, server configuration and artifact locations. Backend regressions cover terminal reuse, both budget limits, grouped ferry removal and unsupported national construction. These checks do not substitute for operator review of terminal permission, sailing suitability or actual service operation.
 

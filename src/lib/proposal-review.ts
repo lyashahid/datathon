@@ -26,6 +26,37 @@ export function planningFinancialKey(request: PlanningReviewRequest): string {
 	});
 }
 
+export type PlanningCostBasis = {
+	revision: string;
+	reviewed_at: string;
+	currency: 'MVR';
+	price_basis: string;
+	budget: {
+		capital_mvr: number;
+		annual_operating_mvr: number;
+		basis: string;
+	};
+	factors: Record<
+		string,
+		{
+			value: number;
+			unit: string;
+			title: string;
+			evidence_type: string;
+			basis: string;
+			source_ids: string[];
+		}
+	>;
+	sources: {
+		id: string;
+		title: string;
+		publisher: string;
+		url: string;
+		published_date?: string;
+		qualification?: string;
+	}[];
+};
+
 export type PlanningEconomics = {
 	currency: string;
 	basis: string;
@@ -34,6 +65,7 @@ export type PlanningEconomics = {
 	delta: Record<string, number | null>;
 	budget: Record<string, number | boolean | null>;
 	assumptions: Record<string, number>;
+	cost_basis?: PlanningCostBasis;
 	warnings: string[];
 	sensitivity?: {
 		capital_mvr: { low: number; central: number; high: number };
@@ -63,11 +95,9 @@ export type PlanningEvaluation = {
 		after: { label: string; residents: number | null }[];
 	};
 	economics: PlanningEconomics;
-	transport_connectivity?: {
-		before: TransportConnectivitySummary;
-		after: TransportConnectivitySummary;
-		impact?: TransportImpactData;
-	};
+	transport_connectivity?: PlanningTransportConnectivity;
+	/** Each island is evaluated with the same complete proposal and assumptions. */
+	island_impacts?: PlanningIslandImpact[];
 	warnings: string[];
 	coverage: { service_date?: string; bus_calendar?: string; meaning: string };
 	assumptions: unknown;
@@ -75,6 +105,24 @@ export type PlanningEvaluation = {
 	version_pins: unknown;
 	population_basis: PopulationBasis | null;
 	access_method: string;
+};
+
+export type PlanningTransportConnectivity = {
+	before: TransportConnectivitySummary;
+	after: TransportConnectivitySummary;
+	impact?: TransportImpactData;
+};
+
+export type PlanningIslandImpact = {
+	island_id: string;
+	island_name: string;
+	status: string;
+	summary: Record<string, number | null>;
+	target_minutes?: number;
+	population_basis?: PopulationBasis | null;
+	access_method?: string;
+	transport_connectivity?: PlanningTransportConnectivity;
+	warnings?: string[];
 };
 
 export type TransportConnectivitySummary = {
@@ -217,6 +265,33 @@ export function operationName(operation: PlanningOperation): string {
 		(typeof operation.service?.name === 'string' ? operation.service.name : '') ||
 		operationLabel(operation)
 	);
+}
+
+/** A return timetable is one route; its stop and landing places remain distinct contents. */
+export function proposalContents(operations: PlanningOperation[]) {
+	const routes = { bus: new Set<string>(), ferry: new Set<string>() };
+	const landings = new Set<string>();
+	let busStops = 0;
+	for (const [index, operation] of operations.entries()) {
+		if (operation.type === 'add_stop' && operation.metadata?.mode !== 'ferry') busStops += 1;
+		if (operation.type === 'use_existing_ferry_terminal')
+			landings.add(operation.target_id ?? String(operation.metadata?.proposal_id ?? index));
+		const mode = operation.service?.mode;
+		if (operation.type !== 'add_service' || (mode !== 'bus' && mode !== 'ferry')) continue;
+		const identity =
+			operation.service?.routeId ??
+			operation.service?.route_id ??
+			operation.metadata?.ui_package ??
+			operation.service?.id ??
+			index;
+		routes[mode].add(String(identity));
+	}
+	return {
+		busStops,
+		busRoutes: routes.bus.size,
+		ferryRoutes: routes.ferry.size,
+		existingFerryLandings: landings.size
+	};
 }
 
 export async function downloadProposalPdf(request: PlanningReviewRequest, title: string) {

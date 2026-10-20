@@ -160,6 +160,7 @@ describe('backend integration boundary', () => {
 		'planning/connectivity',
 		'planning/sea-connections',
 		'planning/ferry-service',
+		'planning/ferry-suggestion',
 		'planning/bus-connection',
 		'forecasts/analysis',
 		'forecasts/sources',
