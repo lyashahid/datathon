@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { PUBLIC_BASE_PATH } from '$app/env/public';
 	import { themeColors } from '#lib/theme.js';
 	import { onMount, tick, untrack } from 'svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
@@ -4009,7 +4010,7 @@
 					for (const [id, data] of Object.entries(atlasSymbols()))
 						instance.addImage(id, data, { pixelRatio: 2 });
 					void instance
-						.loadImage('/images/scenario-airplane.png')
+						.loadImage(`${PUBLIC_BASE_PATH}/images/scenario-airplane.png`)
 						.then(({ data }) => {
 							if (disposed || map !== instance) return;
 							// Keep the detailed transparent artwork, with a small GPU texture.
