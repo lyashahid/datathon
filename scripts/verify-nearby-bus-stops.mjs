@@ -125,7 +125,6 @@ try {
 			await expect
 				.poll(async () => Number(await atlas.getAttribute('data-rendered-place-icons')))
 				.toBeGreaterThanOrEqual(maleStops.length);
-			await expect(atlas.getByText('Streets · OpenStreetMap', { exact: true })).toBeVisible();
 			await expect
 				.poll(async () => Number(await atlas.getAttribute('data-rendered-roads')))
 				.toBeGreaterThan(0);

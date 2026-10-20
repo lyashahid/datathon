@@ -255,11 +255,6 @@ try {
 	const navigation = page.getByRole('navigation', { name: 'Workspace', exact: true });
 	const policyPanel = page.getByRole('region', { name: 'Island needs and proposal', exact: true });
 	const workbench = page.getByRole('region', { name: 'Policy planning workbench', exact: true });
-	const connections = page.getByRole('region', {
-		name: 'Island connections',
-		exact: true,
-		includeHidden: true
-	});
 	const expectedCapital = '123000000';
 	const expectedAnnual = '19000000';
 	const specialistCapital = '230000000';
@@ -271,8 +266,6 @@ try {
 		coordinates: [73.538, 4.214],
 		metadata: { proposal_id: 'proposal:add_stop:qa-retained' }
 	};
-	const connectionQuery =
-		'?origin_island_id=island:1443&date=2026-10-14&destination_island_id=island:1442';
 	let selectedAtoll = '';
 	/** @param {string} path @param {string | undefined} query */
 	function requestsFor(path, query = undefined) {
@@ -295,8 +288,7 @@ try {
 			forecastIssues: requestsFor('forecasts/issues').length,
 			catalogue: requestsFor('datasets').length,
 			chart: requestsFor('datasets/passenger-monthly/chart').length,
-			advancedBaseline: requestsFor('planning/baseline', '?island_id=').length,
-			connections: requestsFor('planning/connectivity', connectionQuery).length
+			advancedBaseline: requestsFor('planning/baseline', '?island_id=').length
 		};
 	}
 	/** @param {string} name */
@@ -438,47 +430,11 @@ try {
 			};
 		}
 	);
-	await check(
-		'Island connection geometry and service evidence are warm before acceptance',
-		async () => {
-			await expect(policyPanel).toBeVisible();
-			await policyPanel
-				.getByRole('button', { name: 'Close island planning panel', exact: true })
-				.click();
-			await page.getByRole('button', { name: 'Directions', exact: true }).click();
-			await page.getByRole('button', { name: 'Island connections', exact: true }).click();
-			await connections.getByLabel('From island', { exact: true }).selectOption('island:1443');
-			await connections.getByLabel('Travel date', { exact: true }).fill('2026-10-14');
-			const pending = page.waitForResponse((response) => {
-				const value = new URL(response.url());
-				return (
-					value.pathname.endsWith('/planning/connectivity') &&
-					value.searchParams.get('origin_island_id') === 'island:1443' &&
-					value.searchParams.get('destination_island_id') === 'island:1442' &&
-					value.searchParams.get('date') === '2026-10-14'
-				);
-			});
-			await connections.getByLabel('To island', { exact: true }).selectOption('island:1442');
-			const evidence = await (await pending).json();
-			assert.notEqual(evidence.status, 'dated_service');
-			await expect(connections).toHaveAttribute('aria-busy', 'false');
-			await expect(connections.locator('.connection-verdict')).toBeVisible();
-			await expect
-				.poll(async () =>
-					Number(
-						await page.locator('.national-map').getAttribute('data-island-connection-features')
-					)
-				)
-				.toBeGreaterThan(0);
-			await connections.evaluate((element) =>
-				element.setAttribute('data-qa-retained', 'connections')
-			);
-			await navigation.getByRole('button', { name: 'Analytics', exact: true }).click();
-			await page.getByRole('tab', { name: 'Timetables', exact: true }).click();
-			await expect(page).toHaveURL(/analytics=timetables/);
-			return { status: evidence.status, connections: refreshCounts().connections };
-		}
-	);
+	await policyPanel
+		.getByRole('button', { name: 'Close island planning panel', exact: true })
+		.click();
+	await navigation.getByRole('button', { name: 'Analytics', exact: true }).click();
+	await page.getByRole('tab', { name: 'Timetables', exact: true }).click();
 	await check('Schedules workspace loads and routing stays disabled before import', async () => {
 		await expect(
 			page.getByRole('heading', { name: 'Nationwide timetables', exact: true })
@@ -588,24 +544,7 @@ try {
 				beforeAcceptance.advancedBaseline,
 				'Hidden specialist service tools defer their Greater Malé baseline'
 			);
-			await expect.poll(() => refreshCounts().connections).toBe(beforeAcceptance.connections + 1);
-			await expect(connections).toHaveAttribute('data-qa-retained', 'connections');
-			await expect(connections).toHaveAttribute('aria-busy', 'false');
-			await expect(connections.locator('.connection-verdict')).toContainText(
-				'A published service connects these islands'
-			);
-			await expect(connections.locator('.service-evidence').first()).toContainText(
-				'SYNTHETIC QA ONLY first leg'
-			);
-			await expect
-				.poll(async () =>
-					Number(
-						await page.locator('.national-map').getAttribute('data-island-connection-features')
-					)
-				)
-				.toBeGreaterThan(2);
 			await expect(page).toHaveURL((value) => value.searchParams.get('island') === 'island:1442');
-			await page.getByRole('button', { name: 'Close directions', exact: true }).click();
 			await page.getByRole('button', { name: /^Create (?:a )?proposal$/ }).click();
 			if (!(await policyPanel.getByLabel('Capital budget · MVR').isVisible()))
 				await policyPanel.getByRole('button', { name: 'Edit budget limits', exact: true }).click();

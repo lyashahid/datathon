@@ -59,6 +59,42 @@ def test_exact_airport_crossing_uses_actual_national_polygons():
     assert 5_000 < corridor["distance_m"] < 8_000
 
 
+@pytest.mark.parametrize(
+    "first,second",
+    [
+        (
+            {"island_id": "island:1075", "coordinates": [73.027272, 5.667634]},
+            {"island_id": "island:945", "coordinates": [73.4136, 5.76687]},
+        ),
+        (
+            {"island_id": "island:470", "coordinates": [72.997885, 0.525797]},
+            {"island_id": "island:510", "coordinates": [73.272506, 0.23194]},
+        ),
+    ],
+)
+def test_dense_atoll_crossings_keep_every_shoreline_obstacle(first, second):
+    path = Path(__file__).resolve().parents[1] / "data/cache/normalized/islands.geojson"
+    features = json.loads(path.read_text(encoding="utf8"))["features"]
+    islands = {item["properties"]["id"]: item for item in features}
+    corridor = WaterCorridorPlanner(islands).corridor(first, second)
+
+    assert corridor is not None
+    coordinates = corridor["geometry"]
+    assert coordinates[0] == first["coordinates"]
+    assert coordinates[-1] == second["coordinates"]
+    assert 44_000 < corridor["distance_m"] < 47_000
+    water = LineString(coordinates[1:-1])
+    assert all(not water.intersects(shape(item["geometry"])) for item in islands.values())
+    for port, approach in (
+        (first, LineString(coordinates[:2])),
+        (second, LineString(coordinates[-2:])),
+    ):
+        assert all(
+            identity == port["island_id"] or not approach.intersects(shape(item["geometry"]))
+            for identity, item in islands.items()
+        )
+
+
 def test_missing_shoreline_cannot_establish_water_route(crossing):
     islands, first, second = crossing
     islands["island:3"].pop("geometry")

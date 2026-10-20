@@ -93,7 +93,7 @@ Local bus-stop, school and hospital construction is limited to islands in the de
 
 ## Verification
 
-After `npm start` has launched the application, run `node scripts/verify-island-connections.mjs` for the real API and browser journey. Set `BASE_URL` only when using a non-default local port. The check covers dated evidence and date preservation, ten-minute local access, terminal reuse, outward and return service patterns, both budget limits, map previews, clear/reset, grouped proposal removal, analytics handoff, mobile layout and PDF export. It also checks that terminal endpoints remain visible outside map controls and panels, and that unsupported national construction is blocked by both the interface and backend while ferry planning remains available. It saves its JSON report, screenshots and downloaded decision brief under `artifacts/qa/island-connections/`. These checks do not substitute for operator review of terminal permission, sailing suitability or actual service operation.
+After `npm start` has launched the application, run `npm run test:browser -- sea-network directions proposal-experience` for the current network, directions and proposal workflows. See [browser verification](browser-verification.md) for the suite catalogue, server configuration and artifact locations. Backend regressions cover terminal reuse, both budget limits, grouped ferry removal and unsupported national construction. These checks do not substitute for operator review of terminal permission, sailing suitability or actual service operation.
 
 ## Useful next source additions
 

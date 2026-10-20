@@ -24,6 +24,7 @@
 	} from '@lucide/svelte';
 	import type { NationalSummary } from '../types';
 	import SourceUpdatesWorkspace from './SourceUpdatesWorkspace.svelte';
+	import LoadingSkeleton from './LoadingSkeleton.svelte';
 
 	let {
 		summary,
@@ -224,26 +225,28 @@
 					>{summary ? 'Current inventory' : 'Loading'}</Badge
 				>
 			</div>
-			<div class="inventory-grid" aria-live="polite">
-				<div>
-					<Globe2 size={16} /><strong>{count(summary?.island_count)}</strong><span>Islands</span>
-				</div>
-				<div>
-					<Hospital size={16} /><strong>{count(summary?.facility_count)}</strong><span
-						>Official facilities</span
-					>
-				</div>
-				<div>
-					<Users size={16} /><strong>{count(summary?.population_record_count)}</strong><span
-						>Population records</span
-					>
-				</div>
-				<div>
-					<BusFront size={16} /><strong
-						>{count(summary?.transport?.feature_count ?? summary?.osm.feature_count)}</strong
-					><span>Transport records</span>
-				</div>
-			</div>
+			{#if !summary}<div class="inventory-skeleton">
+					<LoadingSkeleton variant="metrics" label="Loading the national inventory…" />
+				</div>{:else}<div class="inventory-grid">
+					<div>
+						<Globe2 size={16} /><strong>{count(summary?.island_count)}</strong><span>Islands</span>
+					</div>
+					<div>
+						<Hospital size={16} /><strong>{count(summary?.facility_count)}</strong><span
+							>Official facilities</span
+						>
+					</div>
+					<div>
+						<Users size={16} /><strong>{count(summary?.population_record_count)}</strong><span
+							>Population records</span
+						>
+					</div>
+					<div>
+						<BusFront size={16} /><strong
+							>{count(summary?.transport?.feature_count ?? summary?.osm.feature_count)}</strong
+						><span>Transport records</span>
+					</div>
+				</div>{/if}
 			<div class="population-linking">
 				<div>
 					<span>Population records linked to an island</span><strong
@@ -296,7 +299,9 @@
 								></span>
 							</div>
 						</div>{/each}
-				</div>{:else}<p class="summary-loading">Loading the national inventory…</p>{/if}
+				</div>{:else if !summary}<div class="matching-skeleton">
+					<LoadingSkeleton rows={4} label="Loading facility matching…" />
+				</div>{/if}
 			<div class="evidence-note">
 				<Info size={13} /><span
 					>An identity match does not prove an exact entrance, audited service suitability, capacity
@@ -598,10 +603,11 @@
 		color: var(--theme-color-ada3bc);
 		margin-top: 2px;
 	}
-	.summary-loading {
-		padding: 22px 0;
-		font-size: 12px;
-		color: var(--theme-color-9d96a8);
+	.inventory-skeleton {
+		padding-block: 24px;
+	}
+	.matching-skeleton {
+		padding-top: 14px;
 	}
 	.capability-list,
 	.missing-list {

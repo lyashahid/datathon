@@ -68,16 +68,9 @@ European Clinic's exact **HF-16/ALP/PVT/455** row was independently re-fetched f
 
 For the unresolved healthcare points, this review found no stronger new primary location/eligibility evidence to change the existing conservative exclusions: Family Care Clinic has conflicting addresses; MACL Clinic's map point is not reconciled to the current registered address; National Drug Agency is not established as a general-care destination; Senahiya's general-public care eligibility remains unverified. No claim is made that these institutions are all closed.
 
-## Reproduce and refresh
+## Preserve and refresh the review
 
-```powershell
-python scripts/review-facility-operation.py
-python scripts/review-facility-operation.py --validate
-python scripts/review-facility-operation.py --fetch
-```
+The committed overlay and its source checksums preserve the dated decisions above. The original review acquisition utility is no longer a maintained repository command. Running the application uses the reviewed overlay and does not require the ignored raw captures.
 
-Preparation validates the archived capture hashes, source URLs, expected primary identities and exact HEMS closed rows before atomically writing the overlay. New/missing mapped education IDs fail preparation rather than inheriting an unaudited eligibility value. Validation checks all 32 records and the 17 eligible school decisions.
-
-Fetching writes timestamped **candidate** captures into the ignored archive and preserves the current reviewed capture manifest/public overlay. Network failure, an HTML challenge, changed addresses or newly changed operating statuses do not silently replace the validated snapshot. A later reviewer must compare changed pages, update the curated decisions/date and adopt the checked capture manifest before preparing a new public version. Fetch time alone is not a fresh operating-status review.
-
+A new review must compare changed primary pages, reconcile identities and locations, record supporting excerpts, hashes and retrieval times, and explicitly adopt new decisions. Fetch time alone is not a fresh operating-status review. Preserve the previous validated overlay on network failure, changed page structure or unresolved addresses; new mapped IDs require new decisions rather than an inherited eligibility value.
 The overlay carries a deterministic content-derived version and per-source checksums. Raw pages are public institutional/government documents whose explicit reuse licence has not been established; the committed assets contain compact review metadata and paraphrased evidence rather than reproducing website content.

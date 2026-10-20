@@ -4,8 +4,13 @@ from __future__ import annotations
 
 import hashlib
 import re
+from collections.abc import Callable
+from datetime import UTC, date, datetime, timedelta, timezone
 from typing import Any
 from urllib.parse import parse_qs
+
+from starlette.concurrency import run_in_threadpool
+from starlette.requests import Request
 
 from app.data.computed_cache import ComputedCache, SourceVersion
 
@@ -14,6 +19,30 @@ SNAPSHOT_PATH = re.compile(
     r"islands(?:/[^/]+(?:/profile)?)?|planning/(?:baseline|opportunities(?:/[^/]+)?)|"
     r"datasets(?:/[^/]+/schema)?)$"
 )
+NETWORK_PATHS = {"/api/v1/planning/sea-network", "/api/v1/planning/air-network"}
+
+
+def network_snapshot_inputs(scope: dict[str, Any]) -> Any:
+    """Use the service's complete key, including mutable reviewed source evidence."""
+    from app.api.routes.air import get_air_network
+    from app.api.routes.planning import (
+        DEFAULT_SEA_NETWORK_DATE,
+        get_planning,
+        get_sea_connections,
+        get_transport_planning,
+    )
+
+    request = Request(scope)
+    query = parse_qs(scope.get("query_string", b"").decode())
+    selected = date.fromisoformat(query["date"][-1]) if "date" in query else None
+    planning = get_planning(request)
+    if scope["path"] == "/api/v1/planning/air-network":
+        selected = selected or datetime.now(UTC).astimezone(timezone(timedelta(hours=5))).date()
+        return get_air_network(request, planning).network_inputs(selected)
+    transport = get_transport_planning(request, planning)
+    return get_sea_connections(request, transport).network_inputs(
+        selected or DEFAULT_SEA_NETWORK_DATE
+    )
 
 
 class UncacheableResponse(Exception):
@@ -29,10 +58,17 @@ class SnapshotCacheMiddleware:
     immutable until the application's reload/restart boundary.
     """
 
-    def __init__(self, app: Any, cache: ComputedCache, source: SourceVersion) -> None:
+    def __init__(
+        self,
+        app: Any,
+        cache: ComputedCache,
+        source: SourceVersion,
+        network_inputs: Callable[[dict[str, Any]], Any] | None = None,
+    ) -> None:
         self.app = app
         self.cache = cache
         self.source = source
+        self.network_inputs = network_inputs
 
     async def __call__(self, scope: dict[str, Any], receive: Any, send: Any) -> None:
         if (
@@ -40,6 +76,7 @@ class SnapshotCacheMiddleware:
             or scope["method"] != "GET"
             or not (
                 SNAPSHOT_PATH.fullmatch(scope["path"])
+                or (scope["path"] in NETWORK_PATHS and self.network_inputs is not None)
                 or (
                     scope["path"] == "/api/v1/forecasts"
                     and parse_qs(scope.get("query_string", b"").decode())
@@ -50,6 +87,15 @@ class SnapshotCacheMiddleware:
         ):
             await self.app(scope, receive, send)
             return
+        inputs = None
+        if scope["path"] in NETWORK_PATHS:
+            try:
+                inputs = await run_in_threadpool(self.network_inputs, scope)
+            except ValueError, KeyError, TypeError, IndexError:
+                # Preserve the endpoint's validation/error response; never cache
+                # a failed source receipt or an invalid service date.
+                await self.app(scope, receive, send)
+                return
         version = self.source.version()
         messages: list[dict[str, Any]] = []
 
@@ -74,7 +120,7 @@ class SnapshotCacheMiddleware:
         try:
             payload = await self.cache.aget_or_compute_bytes(
                 "snapshot-http",
-                [version, scope["path"], scope.get("query_string", b"").hex()],
+                [version, scope["path"], scope.get("query_string", b"").hex(), inputs],
                 calculate,
             )
         except UncacheableResponse as response:

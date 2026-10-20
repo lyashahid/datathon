@@ -25,6 +25,8 @@ const explorer = page.getByRole('region', { name: 'Accessibility explorer', exac
 const header = page.locator('.app-header');
 const planning = page.getByRole('region', { name: 'Island needs and proposal', exact: true });
 const navigation = page.getByRole('navigation', { name: 'Workspace', exact: true });
+const search = page.getByTestId('map-search-input');
+const searchScope = page.getByTestId('map-search-scope');
 
 /** @param {string} name @param {()=>Promise<unknown>} action */
 async function check(name, action) {
@@ -118,6 +120,8 @@ async function hulhumaleReady() {
 		(url) => url.searchParams.get('island') === 'island:1442' && !url.searchParams.has('scope')
 	);
 	await expect(page.getByLabel('Service coverage map', { exact: true })).toBeVisible();
+	await expect(search).toHaveAttribute('role', 'combobox');
+	await expect(searchScope).toHaveAttribute('data-island-id', 'island:1442');
 	await expect(page.getByRole('button', { name: 'Create proposal', exact: true })).toBeVisible();
 	await floatingNavigation();
 	await noOverflow();
@@ -140,6 +144,8 @@ async function countryReady() {
 	).toBeInViewport();
 	await expect(atlas).toHaveAttribute('aria-busy', 'false');
 	await expect(atlas).toHaveAttribute('data-accessibility-overview', 'true');
+	await expect(searchScope).toHaveCount(0);
+	await expect(search).toHaveAttribute('aria-label', 'Search islands and atolls');
 	await expect.poll(async () => Number(await atlas.getAttribute('data-zoom'))).toBeLessThan(8);
 	await floatingNavigation();
 	const bounds = await atlas.boundingBox();
@@ -248,15 +254,18 @@ try {
 				.toBeGreaterThan(11);
 			await expect(explorer).not.toBeVisible();
 			await expect(page.getByLabel('Service coverage map', { exact: true })).toBeVisible();
-			await expect(page.getByLabel('Explore supporting tools', { exact: true })).toBeVisible();
+			await expect(page.getByRole('button', { name: 'Directions', exact: true })).toBeVisible();
 			await expect(
 				page.getByRole('button', { name: 'Create proposal', exact: true })
 			).toBeVisible();
 			await floatingNavigation();
 			await page.locator('.policy-inspect-trigger').click();
 			await expect(planning).toBeVisible();
-			await expect(planning).toHaveAttribute('data-policy-section', 'proposal');
+			await expect(planning).toHaveAttribute('data-policy-section', 'needs');
 			await expect(planning.getByRole('heading', { name: target.name, exact: true })).toBeVisible();
+			await expect(planning.getByTestId('island-overview')).toBeVisible();
+			await planning.getByRole('button', { name: 'Build proposal', exact: true }).click();
+			await expect(planning).toHaveAttribute('data-policy-section', 'proposal');
 			await expect(
 				planning.getByRole('button', { name: 'Add bus stop', exact: true })
 			).toBeVisible();
@@ -264,8 +273,8 @@ try {
 				0
 			);
 			await expect(
-				planning.getByRole('button', { name: 'Selected area', exact: true })
-			).toHaveCount(0);
+				planning.getByRole('button', { name: 'Island overview', exact: true })
+			).toBeVisible();
 			await noOverflow();
 			await page.screenshot({ path: path.join(output, 'island-desktop.png') });
 			return { island: target.id, cameraZoom: await atlas.getAttribute('data-zoom') };

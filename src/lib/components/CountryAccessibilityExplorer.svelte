@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ArrowLeft, ArrowRight, ChevronRight, ChevronUp, Search } from '@lucide/svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
+	import LoadingSkeleton from '#lib/components/LoadingSkeleton.svelte';
 	import {
 		accessibilityDomains,
 		accessibilityExplorerIslands,
@@ -96,10 +97,8 @@
 	data-testid="country-accessibility-explorer"
 >
 	{#if loading && !scores}
-		<div class="status-content" role="status">
-			<p class="eyebrow">Maldives</p>
-			<h2>Loading island access…</h2>
-			<p>Loading services and accessibility scores.</p>
+		<div class="status-content">
+			<LoadingSkeleton variant="score" label="Loading island access…" />
 		</div>
 	{:else if error && !scores}
 		<div class="status-content">
@@ -181,7 +180,7 @@
 				size="sm"
 				class="search-action"
 				data-island-search-trigger
-				aria-haspopup="dialog"
+				aria-haspopup="listbox"
 				aria-expanded={searchOpen}
 				aria-controls={searchOpen ? 'island-search-results' : undefined}
 				onclick={onSearch}

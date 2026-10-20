@@ -1,42 +1,39 @@
-# Current browser verification
+# Browser verification
 
-This is the maintained guide for the current interface. Earlier design and migration documents retain historical results; their counts and screenshots describe the application at that time.
-
-Install dependencies with `npm ci` and `npm run setup`, then install Chromium once with `npx playwright install chromium`. Start both services with `npm start`. In another terminal:
+Install dependencies with `npm ci` and `npm run setup`, install Chromium once with `npx playwright install chromium`, then start both services with `npm start`.
 
 ```powershell
 npm run test:browser
 npm run test:browser:list
+npm run test:browser -- directions sea-network
 ```
 
-The default command runs the 13 core suites sequentially: analytics, decision priorities, forecasts/Data Studio, capital entry, navigation, nearby bus stops, nearby access analysis, map controls, proposal experience, map comparisons, motion/windows, proposal review and island connections. The suite catalogue in `scripts/browser-suites.mjs` is the source of truth. Listing suites does not need a running application.
+The default runs six current journeys sequentially:
 
-Select focused suites by their listed IDs. Repeated IDs run once, in the requested order. Unknown IDs fail before launching Chromium:
+| Suite                 | Purpose                                                                                        |
+| --------------------- | ---------------------------------------------------------------------------------------------- |
+| `analytics`           | Dashboard charts, filters, exports and responsive layout                                       |
+| `navigation`          | Workspace links, country drill-down and return to island planning                              |
+| `search`              | Inline scoped place search, English aliases, keyboard selection and provider recovery          |
+| `directions`          | Integrated multistop routes, modes, dated transfers and map endpoints                          |
+| `proposal-experience` | Explicit placement, budgets, native drag, undo and bus/ferry editors                           |
+| `sea-network`         | Sea/air networks, line-only toggles, retained vehicle inspection, caching and pressure colours |
 
-```powershell
-npm run test:browser -- overlays map-legibility
-npm run test:browser -- planning delivery timetables
-npm run test:browser:all
-```
+Run only the suites affected by a change. `scripts/browser-suites.mjs` is the catalogue; `--list` works without starting the application. Repeated IDs run once in the requested order. Unknown or retired IDs fail before launching Chromium. The former per-suite npm aliases have been removed; use `npm run test:browser -- <suite IDs>`.
 
-`test:browser:all` includes every browser suite, including the provider-dependent and advanced workbenches, and takes substantially longer than the core journey. It excludes the separate direct API harness. Do not run multiple map suites concurrently: Chromium rendering and shared planning caches compete for resources.
+Specialist regressions remain available on demand:
 
-Focused coverage includes:
+- Analytics and evidence: `decisions`, `forecasts`, `accessibility`, `resilience`.
+- Map scope and evidence: `capital`, `country`, `map`, `nearby-stops`, `nearby-access`, `map-controls`.
+- Rendering and interaction: `map-legibility`, `bus-vehicles`, `map-audit`, `overlays`, `motion`.
+- Proposal impact and review: `map-comparison`, `map-transport`, `transport-impact`, `review-window`.
+- Specialist workbenches: `planning`, `delivery`, `timetables`, `conditions`.
 
-- Scores and geography: `accessibility`, `country`, `map`, `map-focus`.
-- Movement and map interpretation: `map-legibility`, `bus-vehicles`, `overlays`, `map-audit`.
-- Places, directions and external conditions: `places`, `conditions`.
-- Advanced planning and delivery: `planning`, `delivery`, `timetables`.
-- Proposal creation and service benefits: `unified-policy`, `policy-drag`, `map-transport`, `transport-impact`.
-- Delayed or failed requests and retained drafts: `resilience`.
-
-Existing `test:browser:*` commands remain shortcuts for the corresponding catalogue IDs. `test:browser:places` and `test:browser:map-first-places` are compatibility aliases for the same `places` suite.
+`npm run test:browser:all` runs all maintained browser suites, including provider-dependent checks and the isolated timetable import. Reserve it for a broad release check. Do not run map suites concurrently: Chromium rendering and shared planning caches compete for resources. The direct API contract check remains separate as `npm run test:policy-api`.
 
 ## URLs and evidence
 
-Every browser harness defaults to `http://127.0.0.1:5173`, matching `npm start`. `MOBILITY_QA_URL` overrides that frontend address consistently; `BASE_URL` remains a legacy fallback. The direct API check, `npm run test:policy-api`, instead uses `MOBILITY_API_QA_URL` and defaults to port 8000.
-
-For an already running production preview on another port, with FastAPI still available:
+Browser harnesses default to `http://127.0.0.1:5173`. Set `MOBILITY_QA_URL` to use another frontend; `BASE_URL` remains a legacy fallback. The API check uses `MOBILITY_API_QA_URL`, defaulting to port 8000.
 
 ```powershell
 $env:MOBILITY_QA_URL = 'http://127.0.0.1:5180'
@@ -44,12 +41,12 @@ npm run test:browser -- map-comparison overlays
 Remove-Item Env:MOBILITY_QA_URL
 ```
 
-Suites save their own JSON report, screenshots and relevant exports under `artifacts/qa`; the command output identifies the exact report. Check the exit status and failure details as well as the number of checks. Failed runs can leave older screenshots beside a new report. Reports are local verification evidence, not deployment benchmarks or guarantees of external provider availability.
+Suites write reports, screenshots and exports under `artifacts/qa`. Read the exit status and report failures; older screenshots may remain after a failed run. Browser storage is disposable. Source-backed journeys use the real backend; synthetic movement fixtures and delayed/failed responses are identified in their reports. The timetable suite uses an isolated backend copy and checks that the main source stores remain unchanged.
 
-Each browser context has disposable storage. Core journeys use real backend calculations and source geometry. Controlled movement fixtures and delayed/failed response regressions are qualified in their suite reports; they do not establish live provider coverage. The timetable suite runs against an isolated backend copy and checks that source-store hashes remain unchanged. Advanced planning checks exercise ingestion and service workbenches; run those against a local or disposable test instance.
+## Maintenance
 
-## Consolidated coverage
+The catalogue, file existence and unique suite selection are checked by `npm run test:startup`; this does not launch Chromium. Keep a regression in one focused suite rather than adding another complete navigation-to-proposal journey.
 
-The retired `verify-continuous-hex-map.mjs` was a before/after design-pass capture with obsolete controls. Its geometry, population conservation, holes, shared borders and cache checks remain in `backend/tests/test_display_grid.py`; aggregation and unknown evidence remain in `src/lib/display-grid.test.ts`. The maintained `map-comparison` suite checks actual local impact and rendered colours, while `overlays` checks shared hex IDs, keyboard opacity, persistence, unchanged camera and absence of recalculation on desktop and mobile. Historical continuous-mesh receipts remain historical evidence.
+Retired harnesses targeted the removed standalone Places and journey-connections panels, old native placement confirmations, or an earlier omnibus proposal interface. Current scoped search, directions, proposal experience and map comparison suites own those active workflows. Obsolete embedded-weather, legacy endpoint and Places-inspector checks were removed from otherwise useful suites; weather and traffic still have the separate `conditions` suite. Historical reports remain historical evidence.
 
-Shared browser helpers now resolve the frontend URL and project map gestures through the displayed camera, including panel padding. The runner's command selection, typo handling and URL compatibility are covered by `npm run test:startup`. Individual behavioral suites remain separate where they cover distinct import, failure, routing, drag, budget or service-impact regressions.
+Ordinary map clicks must not offer proposal creation. After changing click handling, spot-check a blank Explore click and mapped-feature inspection, then explicit **Create proposal → Hospital → Add to proposal**, another blank click after closing, and endpoint actions with Directions open. This focused manual check was used for the passive-click fix; it is not an additional browser suite.

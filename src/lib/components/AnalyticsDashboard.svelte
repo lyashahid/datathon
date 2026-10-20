@@ -27,6 +27,7 @@
 	import MobilityPulse from '#lib/components/MobilityPulse.svelte';
 	import IslandAccessibilityDetails from '#lib/components/IslandAccessibilityDetails.svelte';
 	import AnimatedNumber from '#lib/components/AnimatedNumber.svelte';
+	import LoadingSkeleton from '#lib/components/LoadingSkeleton.svelte';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
 	import {
 		atollInventory,
@@ -493,6 +494,9 @@
 				class="atoll-chart"
 				aria-label="Facilities by atoll, showing leading atolls and the current selection"
 			>
+				{#if initialLoading}<div class="chart-loading">
+						<LoadingSkeleton variant="chart" label="Loading facilities by atoll…" />
+					</div>{/if}
 				<div class="chart-gridlines" aria-hidden="true">
 					<span>{number(chartMaximum)}</span><span>{number(Math.round(chartMaximum / 2))}</span
 					><span>0</span>
@@ -564,6 +568,9 @@
 				</div>
 			</div>
 			<div class="facility-mix-chart">
+				{#if initialLoading}<div class="chart-loading">
+						<LoadingSkeleton variant="ring" label="Loading facility categories…" />
+					</div>{/if}
 				<svg
 					viewBox="0 0 220 220"
 					role="img"
@@ -652,6 +659,9 @@
 				>
 			</div>
 			<div class="coverage-gauge">
+				{#if initialLoading}<div class="chart-loading">
+						<LoadingSkeleton variant="ring" label="Loading facility coverage…" />
+					</div>{/if}
 				<svg
 					viewBox="0 0 220 124"
 					role="img"
@@ -724,6 +734,9 @@
 				><span>average across {number(scoredRows.length)} islands</span>
 			</div>
 			<div class="distribution-chart" aria-label="Distribution of island accessibility scores">
+				{#if initialLoading}<div class="chart-loading">
+						<LoadingSkeleton variant="chart" label="Loading accessibility score distribution…" />
+					</div>{/if}
 				{#each distribution.bins as bin, index (bin.label)}
 					<div class="distribution-column">
 						<span class="distribution-count">{number(bin.count)}</span>
@@ -1067,14 +1080,26 @@
 	.analytics-grid.initial-loading .coverage-gauge,
 	.analytics-grid.initial-loading .distribution-chart {
 		position: relative;
-		border-radius: 12px;
-		background: var(--theme-color-f6f3f9);
 	}
-	.analytics-grid.initial-loading .atoll-chart > *,
-	.analytics-grid.initial-loading .facility-mix-chart > *,
-	.analytics-grid.initial-loading .coverage-gauge > *,
-	.analytics-grid.initial-loading .distribution-chart > * {
+	.analytics-grid.initial-loading .atoll-chart > :not(.chart-loading),
+	.analytics-grid.initial-loading .facility-mix-chart > :not(.chart-loading),
+	.analytics-grid.initial-loading .coverage-gauge > :not(.chart-loading),
+	.analytics-grid.initial-loading .distribution-chart > :not(.chart-loading) {
 		visibility: hidden;
+	}
+	.chart-loading {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		pointer-events: none;
+		--skeleton-chart-height: 210px;
+	}
+	.coverage-gauge .chart-loading {
+		--skeleton-ring-size: 110px;
+	}
+	.distribution-chart .chart-loading {
+		--skeleton-chart-height: 110px;
 	}
 	.analysis-error details {
 		font-size: 10px;

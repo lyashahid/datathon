@@ -75,13 +75,12 @@ class Settings(BaseSettings):
 
     @property
     def shared_cache_database_url(self) -> str:
-        """Production and tests never connect to the optional shared cache DB.
+        """Use an explicitly configured shared cache outside isolated tests.
 
-        Bundled source files remain authoritative. Production computations use
-        memory/local disk, including the automatic background warmup, so an
-        inherited development DSN cannot trigger remote reads or writes.
+        Memory and persistent local disk remain the request fast path; the
+        database shares public precomputations across production deployments.
         """
-        if self.environment != "development" or not self.computed_cache_postgres_enabled:
+        if self.environment == "test" or not self.computed_cache_postgres_enabled:
             return ""
         return self.database_url.get_secret_value()
 

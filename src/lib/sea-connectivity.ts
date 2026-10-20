@@ -1,10 +1,28 @@
-import { themeColors } from '#lib/theme.js';
+import { themeColors, themePalette } from '#lib/theme.js';
 import type { FeatureCollection } from 'geojson';
 import type { Coordinates } from './types.js';
 import { validPoint } from './planning-map.js';
 
 export type SeaConnectionStatus = 'direct' | 'transfer' | 'unverified' | 'unknown';
 export type SeaConnectionMode = 'baseline' | 'scenario';
+export type SeaServicePressure = {
+	level: 'low' | 'medium' | 'high' | 'unknown';
+	label: string;
+	explanation: string;
+	population: number | null;
+	population_year: number;
+	departures_per_week: number | null;
+	known_departures_per_week?: number | null;
+	residents_per_weekly_departure: number | null;
+	headway_minutes: number | null;
+	headway_min_minutes?: number | null;
+	headway_max_minutes?: number | null;
+	capacity: number | null;
+	capacity_basis: string | null;
+	basis: 'population_per_weekly_departure' | 'unknown';
+	frequency_basis?: string;
+	frequency_complete?: boolean;
+};
 export type SeaJourney = {
 	departure_minutes: number;
 	arrival_minutes: number;
@@ -52,6 +70,7 @@ export type SeaRoute = {
 		coordinates: Coordinates | null;
 	}[];
 	departure_count: number | null;
+	scheduled_sailings?: { departure_minutes: number; arrival_minutes: number }[];
 	departures: number[];
 	origin_departures?: number[];
 	published_departures?: number[];
@@ -70,6 +89,9 @@ export type SeaRoute = {
 	timing_status: string;
 	qualifications: string[];
 	geometry: { type: 'LineString'; coordinates: number[][] } | null;
+	geometry_basis?: string;
+	geometry_status?: string;
+	pressure?: SeaServicePressure;
 };
 export type SeaServiceWindow = {
 	days: number[];
@@ -100,6 +122,14 @@ export type SeaSource = {
 	publisher?: string;
 	retrieved_at?: string;
 	published_at?: string;
+};
+export type SeaNetwork = {
+	service_date: string;
+	timezone: string;
+	routes: SeaRoute[];
+	map_features: FeatureCollection;
+	sources: SeaSource[];
+	coverage: Record<string, unknown>;
 };
 export type SeaConnections = {
 	origin: { id: string; name: string; coordinates: Coordinates | null };
@@ -140,6 +170,10 @@ export type SeaMapState = {
 	selectedRouteId: string;
 	originIslandId: string;
 	mode: SeaConnectionMode;
+	routes?: SeaRoute[];
+	serviceDate?: string;
+	sources?: SeaSource[];
+	coverage?: Record<string, unknown>;
 };
 
 export type SeaConnectivityRating = {
@@ -198,6 +232,14 @@ export const seaColors = {
 	unknown: themeColors.color87939b,
 	proposal: themeColors.colord08a28,
 	improved: themeColors.color22824e
+};
+
+/** Relative population-to-published-service pressure, not observed vessel congestion. */
+export const seaPressureColors = {
+	low: themePalette.success,
+	medium: themePalette.warning,
+	high: themePalette.danger,
+	unknown: themePalette.unknown
 };
 
 export function seaServiceDate(now = Date.now()): string {
@@ -372,6 +414,10 @@ export function seaMapState(
 		});
 	return {
 		features: { type: 'FeatureCollection', features },
+		routes: view.routes,
+		serviceDate: data.service_date,
+		sources: data.sources,
+		coverage: data.coverage,
 		destinations: view.destinations.map((item) => ({
 			id: item.id,
 			status: item.status,
@@ -383,6 +429,64 @@ export function seaMapState(
 		selectedRouteId,
 		originIslandId: data.origin.id,
 		mode: currentMode
+	};
+}
+
+/** An island inspection may emphasize connections without replacing the national network. */
+export function seaNetworkMapState(
+	network: SeaNetwork,
+	inspection: SeaMapState | null = null,
+	originIslandId = ''
+): SeaMapState {
+	// Never combine one day's departure records with another week's pressure assessment.
+	if (inspection?.serviceDate && inspection.serviceDate !== network.service_date) inspection = null;
+	const routes = new Map(network.routes.map((route) => [route.id, route]));
+	for (const route of inspection?.routes ?? []) {
+		const baseline = routes.get(route.id);
+		routes.set(route.id, { ...baseline, ...route, pressure: baseline?.pressure ?? route.pressure });
+	}
+	const inspected = new Map(
+		(inspection?.features.features ?? [])
+			.filter((feature) => feature.properties?.route_id)
+			.map((feature) => [String(feature.properties!.route_id), feature.properties!])
+	);
+	const existing = new Set<string>();
+	const features: FeatureCollection['features'] = network.map_features.features.map((feature) => {
+		const properties = feature.properties ?? {};
+		const id = String(properties.route_id ?? '');
+		if (id) existing.add(id);
+		const pressure = routes.get(id)?.pressure;
+		return {
+			...feature,
+			properties: {
+				...properties,
+				selected: inspected.get(id)?.selected ?? false,
+				dimmed: false,
+				pressure_level: pressure?.level ?? 'unknown',
+				color: seaPressureColors[pressure?.level ?? 'unknown']
+			}
+		};
+	});
+	for (const feature of inspection?.features.features ?? []) {
+		const id = String(feature.properties?.route_id ?? '');
+		if (!id || existing.has(id)) continue;
+		features.push({ ...feature, properties: { ...feature.properties, dimmed: false } });
+	}
+	return {
+		features: { type: 'FeatureCollection', features },
+		destinations: inspection?.destinations ?? [],
+		selectedDestinationId: inspection?.selectedDestinationId ?? '',
+		selectedRouteId: inspection?.selectedRouteId ?? '',
+		originIslandId: inspection?.originIslandId || originIslandId,
+		mode: inspection?.mode ?? 'baseline',
+		routes: [...routes.values()],
+		serviceDate: network.service_date,
+		sources: [
+			...new Map(
+				[...network.sources, ...(inspection?.sources ?? [])].map((item) => [item.id, item])
+			).values()
+		],
+		coverage: network.coverage
 	};
 }
 

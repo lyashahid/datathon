@@ -369,28 +369,6 @@ try {
 		}
 	);
 
-	await check(
-		'Returning from directions clears journey mode and stays at the country after a reload',
-		async () => {
-			await drillAtoll(island.atoll);
-			await explorer.locator(`[data-island-id="${islandId}"]`).click();
-			await expect(explorer).not.toBeVisible();
-			await page
-				.locator('.map-action-dock')
-				.getByRole('button', { name: 'Directions', exact: true })
-				.click();
-			await expect(page).toHaveURL((url) => url.searchParams.get('profile') === 'route');
-			await atlas.getByRole('button', { name: 'Show all Maldives islands', exact: true }).click();
-			await countryReady();
-			assert.equal(new URL(page.url()).searchParams.has('profile'), false);
-			await page.reload({ waitUntil: 'domcontentloaded' });
-			await countryReady();
-			assert.equal(new URL(page.url()).searchParams.has('island'), false);
-			assert.equal(new URL(page.url()).searchParams.has('profile'), false);
-			return { url: page.url() };
-		}
-	);
-
 	await check('Analytics remains directly reachable from the floating navigation', async () => {
 		await navigation.getByRole('button', { name: 'Analytics', exact: true }).click();
 		const dashboard = page.getByRole('region', { name: 'National analytics', exact: true });

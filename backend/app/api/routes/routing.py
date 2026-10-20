@@ -3,18 +3,19 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Any
+from typing import Any, Callable
 
 from fastapi import APIRouter, Depends, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.routes.planning import get_planning
 from app.models.coordinates import Coordinates
 from app.planning.repository import IDENTITY_BRIDGE
-from app.planning.routing import service_day_trips
+from app.planning.routing import pattern_trips
 from app.planning.service import PlanningService
 from app.routing.engine import RoutingRepository
 from app.routing.journeys import route_journey
+from app.routing.multistop import TravelMode, route_multistop
 
 router = APIRouter(prefix="/api/v1/routing", tags=["routing"])
 
@@ -34,29 +35,76 @@ class MarineRouteRequest(BaseModel):
     include_unverified: bool = False
 
 
+class MapJourneyRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    points: list[Coordinates] = Field(min_length=2, max_length=10)
+    mode: TravelMode = "walk"
+    service_date: date | None = None
+    departure_minutes: float = Field(default=920, ge=0, lt=1440, allow_inf_nan=False)
+
+
 def get_routing(request: Request) -> RoutingRepository:
     return request.app.state.routing
+
+
+def _cached_direction(
+    request: Request, payload: BaseModel, compute: Callable[[], dict[str, Any]]
+) -> dict[str, Any]:
+    """Private, deterministic POST results reuse the source-versioned disk cache."""
+    state = request.app.state
+    cache, source = getattr(state, "computed_cache", None), getattr(state, "source_version", None)
+    if cache is None or source is None:
+        return compute()
+    repository = state.planning.repository
+    fingerprint = getattr(repository, "baseline_fingerprint", lambda: repository.baseline)()
+    resolved_date = (
+        payload.service_date.isoformat()
+        if payload.service_date
+        else repository.baseline.get("referenceDate") or date.today().isoformat()
+    )
+    return cache.get_or_compute(
+        "map-directions",
+        [
+            request.url.path,
+            source.version(),
+            fingerprint,
+            state.routing.revision,
+            resolved_date,
+            payload.model_dump(mode="json"),
+        ],
+        compute,
+    )
 
 
 @router.post("/land")
 def route_land(
     payload: LandRouteRequest,
+    request: Request,
     routing: RoutingRepository = Depends(get_routing),
     planning: PlanningService = Depends(get_planning),
 ) -> dict[str, Any]:
     if payload.mode in {"bus", "transit"}:
-        return route_journey(
-            planning.repository,
+        return _cached_direction(
+            request,
+            payload,
+            lambda: route_journey(
+                planning.repository,
+                list(payload.start),
+                list(payload.end),
+                payload.service_date,
+                payload.departure_minutes,
+            ),
+        )
+    return _cached_direction(
+        request,
+        payload,
+        lambda: routing.route_land(
             list(payload.start),
             list(payload.end),
-            payload.service_date,
-            payload.departure_minutes,
-        )
-    return routing.route_land(
-        list(payload.start),
-        list(payload.end),
-        payload.mode,
-        payload.island_id,
+            payload.mode,
+            payload.island_id,
+        ),
     )
 
 
@@ -69,6 +117,27 @@ def route_marine(
         payload.start_node_id,
         payload.end_node_id,
         payload.include_unverified,
+    )
+
+
+@router.post("/journey")
+def map_journey(
+    payload: MapJourneyRequest,
+    request: Request,
+    routing: RoutingRepository = Depends(get_routing),
+    planning: PlanningService = Depends(get_planning),
+) -> dict[str, Any]:
+    return _cached_direction(
+        request,
+        payload,
+        lambda: route_multistop(
+            routing,
+            planning.repository,
+            [list(point) for point in payload.points],
+            payload.mode,
+            payload.service_date,
+            payload.departure_minutes,
+        ),
     )
 
 
@@ -103,9 +172,9 @@ def transit_stops(
     departures = [
         trip["stopTimes"][index]["departureMinutes"]
         for pattern in patterns
+        for trip in pattern_trips(pattern, selected_date)
         for index, stop_id in enumerate(pattern.get("stopIds", [])[:-1])
-        if stop_id in scoped_stops
-        for trip in service_day_trips(pattern, selected_date, stop_index=index)
+        if stop_id in scoped_stops and 0 <= trip["stopTimes"][index]["departureMinutes"] < 1440
     ]
     return {
         "stops": [

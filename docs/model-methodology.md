@@ -25,6 +25,12 @@ Report residents with access to essential services within a stated threshold, an
 
 [Javanmard et al. (2025)](https://www.sciencedirect.com/science/article/pii/S2214367X25000729) show a practical way to compare scheduled, typical and conservative travel times using GTFS real-time observations. Implement reliability estimates only when sufficient local observations exist. [Tokey et al. (2025)](https://www.sciencedirect.com/science/article/pii/S2590198225002556) show why a general street network can overstate accessibility for people who depend on sidewalks. Wheelchair access cannot be inferred simply from proximity to a stop.
 
+## Road-closure scenarios
+
+The backend applies explicit road-closure operations to the permitted graph. For affected bus segments it preserves the published reference runtime and adds the extra shortest driving-path distance at an assumed 15 km/h. A segment without a resolved permitted driving connection disables the affected pattern with a warning. Returned detour geometry is modeled, rather than an observed operator diversion.
+
+This is a conditional closure screen. It does not measure queues, calibrate traffic speeds or prove that spare vehicles and accessible boarding points exist. Reviewed public notices remain separate evidence until an operation is explicitly applied; see [operations evidence](operations-data.md). Current implementation details are in the [backend planning guide](../backend/app/planning/README.md).
+
 ## Service cost and resources
 
 Calculate service vehicle-kilometres and vehicle-hours from route length, service span, departures and round trips. Do not count a one-way route as a round trip, or count an added bus as a free-standing asset without a service pattern. Fleet needs depend on round-trip cycle time, layover and headway. Display capital expenditure and recurring annual operating costs separately.
@@ -60,4 +66,4 @@ Destination suitability can require emergency/specialist care, school level, pub
 
 Optional 2030 housing redistribution preserves the official island total, allocating an editable share to selected same-island origins and the remainder to other origins. Construction completion, occupied units and neighborhood demographics are not observed. Constituency Census profiles remain contextual until official boundaries are matched. The school statistics' institution totals and the current mapped-site subset require reconciliation across dates/categories. HIES 2019 is historical expenditure context; editable fare affordability is not a neighborhood income estimate. IGMH encounters are institutional activity, not unique residents or accessible appointment slots.
 
-The brief carries source/version pins, gains/losses/unknowns, cost/carbon assumptions, agency, phases and unresolved verification. Automated source/API checks, rendered PDF/browser review and the five-person nontechnical study are distinct acceptance steps. See [policy investment release](policy-investment-release.md) for requirement mapping, exact acquired counts, blockers and the uncompleted human-study protocol.
+The brief carries source/version pins, gains/losses/unknowns, cost/carbon assumptions, agency, phases and unresolved verification. Automated source/API checks, rendered PDF/browser review and the five-person nontechnical study are distinct acceptance steps. See [policy investment evidence](policy-investment-release.md) for acquired source counts, agency inputs and the uncompleted human-study protocol.

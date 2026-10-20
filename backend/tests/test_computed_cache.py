@@ -2,6 +2,8 @@
 
 import asyncio
 import json
+import os
+import queue
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -72,6 +74,33 @@ def test_integrity_expiry_and_decompression_limits(monkeypatch):
     assert decode(stored) is None
     monkeypatch.setattr("app.data.computed_cache.MAX_ITEM_BYTES", 10)
     assert decode(encode(b"x" * 11)) is None
+
+
+def test_disk_pruning_continues_after_a_locked_expired_file(tmp_path, monkeypatch):
+    cache = ComputedCache(tmp_path)
+    cache.root.mkdir(parents=True)
+    locked, expired, fresh = [
+        cache.root / name for name in ("locked.cache", "old.cache", "new.cache")
+    ]
+    for path in (locked, expired, fresh):
+        path.write_bytes(encode(b"{}"))
+    for path in (locked, expired):
+        os.utime(path, (1, 1))
+    temporary = cache.root / "active.tmp"
+    temporary.write_bytes(b"incomplete write")
+    unlink = os.unlink
+
+    def remove(path, *args, **kwargs):
+        if str(path) == str(locked):
+            raise PermissionError("Entry currently open in another worker")
+        return unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr("app.data.computed_cache.os.unlink", remove)
+    cache._prune()
+    assert locked.exists()
+    assert not expired.exists()
+    assert fresh.exists()
+    assert temporary.exists()
 
 
 def test_single_flight_parallel_callers_only_calculate_once(tmp_path):
@@ -347,6 +376,57 @@ def test_only_public_namespaces_mirror_to_database(tmp_path, monkeypatch):
     cache.close()
 
 
+@pytest.mark.asyncio
+async def test_public_manifest_restores_a_fresh_disk_without_recomputing_private_results(tmp_path):
+    class SharedStore:
+        def __init__(self):
+            self.values = {}
+            self._queue = queue.Queue()
+            self.batches = []
+
+        def enqueue(self, key, payload):
+            self.values[key] = payload
+
+        def read(self, key, on_result=None, timeout=0.01):
+            return self.values.get(key)
+
+        def read_many(self, keys, timeout=3):
+            self.batches.append(keys)
+            return {key: self.values[key] for key in keys if key in self.values}
+
+    shared = SharedStore()
+    first = ComputedCache(tmp_path / "original")
+    first.shared = shared
+    for number in range(2):
+        first.get_or_compute("snapshot-http", number, lambda: {"public": True})
+    first.get_or_compute("directions", "private", lambda: {"coordinates": [73, 4]})
+    await first.mirror_public_results("source-v1")
+
+    restarted = ComputedCache(tmp_path / "fresh")
+    restarted.shared = shared
+    assert await restarted.restore_public_results("source-v1") == 2
+    assert len(shared.batches) == 1
+    assert len(list(restarted.root.glob("*.cache"))) == 2
+    for number in range(2):
+        assert restarted.get_or_compute(
+            "snapshot-http", number, lambda: pytest.fail("recomputed restored public view")
+        ) == {"public": True}
+    assert restarted.get_or_compute("directions", "private", lambda: {"new": True}) == {"new": True}
+    assert await restarted.restore_public_results("source-v2") == 0
+    assert restarted.counts["shared_hits"] == 2
+
+    # A retained runtime disk must avoid downloading the same shared entries.
+    disk_restart = ComputedCache(tmp_path / "fresh")
+    disk_restart.shared = shared
+    assert await disk_restart.restore_public_results("source-v1") == 0
+    assert shared.batches[-1] == []
+    for number in range(2):
+        disk_restart.get_or_compute("snapshot-http", number, lambda: pytest.fail("missed disk"))
+    await disk_restart.mirror_public_results("source-v1")
+    manifest = json.loads(decode(shared.values[first.key("public-manifest", "source-v1")]))
+    assert len(manifest["keys"]) == 2
+
+
 def test_compact_country_data_preserves_scores_and_full_profile_reasons(tmp_path):
     from app.config.settings import Settings
     from app.main import create_app
@@ -425,8 +505,8 @@ async def test_prewarm_creates_country_snapshots_and_history_validators(tmp_path
     )
     async with app.router.lifespan_context(app):
         results = await warm_application(app)
-        assert len(results) == 4
-        assert app.state.computed_cache.status()["memory_entries"] >= 4
+        assert len(results) == 6
+        assert app.state.computed_cache.status()["memory_entries"] >= 6
         import httpx
 
         async with httpx.AsyncClient(

@@ -36,4 +36,4 @@ Three published coordinate pairs represent opposite-direction identities at the 
 
 ## Reproduction
 
-Run `python scripts/transit-operation-review.py --refresh` to fetch and validate a new raw audit capture; run it without `--refresh` to reproduce the report from checksum-verified cached bytes. The command writes only the separate review report, never the planning baseline. On fetch or schema failure the last validated audit capture remains untouched, and no demo records substitute for unavailable evidence. The report records reference periods, retrieval time, source checksum, transformation version and licensing limits.
+The committed report preserves this dated review; the original acquisition utility is no longer a maintained repository command. A refresh requires a new bounded public-source capture, schema and checksum validation, comparison of every stop identity and explicit adoption of changed decisions. Preserve the previous reviewed report on fetch or schema failure. Record the reference period, retrieval time, source checksum, transformation identity and reuse qualifications; do not substitute demo records for unavailable evidence.

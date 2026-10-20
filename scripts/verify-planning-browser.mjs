@@ -373,9 +373,9 @@ try {
 				.getByRole('button', { name: 'Back to Explore', exact: true })
 				.click();
 			async function openNotices() {
-				await page.getByRole('button', { name: 'Directions', exact: true }).click();
-				await page.locator('.journey-conditions > summary').click();
-				await page.getByRole('button', { name: 'View notices & disruptions', exact: true }).click();
+				await page.goto(`${baseURL}/?view=map&explorer=notices&island=island%3A1443`, {
+					waitUntil: 'domcontentloaded'
+				});
 				await page.getByRole('tab', { name: /Public notices/ }).click();
 			}
 			async function mapDraft() {

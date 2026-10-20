@@ -53,7 +53,7 @@ async function session() {
 		const endpoint = new URL(response.url()).pathname.split('/').at(-1);
 		if (
 			!endpoint ||
-			!['evaluate', 'quote', 'ferry-service'].includes(endpoint) ||
+			!['evaluate', 'quote'].includes(endpoint) ||
 			!response.url().includes('/planning/') ||
 			response.request().method() !== 'POST' ||
 			!response.ok()
@@ -379,115 +379,6 @@ try {
 	);
 	await bus.context.close();
 
-	const ferry = await session();
-	await ferry.page.getByRole('button', { name: 'Directions', exact: true }).click();
-	const journey = ferry.page.getByRole('region', {
-		name: 'Explore journey directions',
-		exact: true
-	});
-	await journey.getByRole('button', { name: 'Island connections', exact: true }).click();
-	const connections = journey.getByRole('region', { name: 'Island connections', exact: true });
-	await connections.getByLabel('From island', { exact: true }).selectOption('island:1442');
-	await connections.getByLabel('Travel date', { exact: true }).fill('2026-10-11');
-	await connections.getByLabel('To island', { exact: true }).selectOption('island:1443');
-	await expect(connections).toHaveAttribute('aria-busy', 'false');
-	await expect(connections.locator('.connection-verdict')).toBeVisible();
-	await connections.getByRole('button', { name: 'Plan a ferry service', exact: true }).click();
-	const ferryEditor = ferry.page.getByRole('region', { name: 'Plan a ferry service', exact: true });
-	await expect(ferryEditor).toBeVisible();
-	await ferryEditor.getByLabel('A ferry every · min', { exact: true }).fill('120');
-	const ferryImpact = ferryEditor.getByRole('region', {
-		name: 'Transport service impact',
-		exact: true
-	});
-	/** @type {Impact} */
-	let ferryPreview;
-	await check(
-		'New ferry preview names both directed connections without inventing saved waiting',
-		async () => {
-			const selectedDraft = () =>
-				ferry.responses.findLast(
-					(row) =>
-						row.endpoint === 'ferry-service' && row.request.assumptions?.date === '2026-10-11'
-				);
-			await expect
-				.poll(() => selectedDraft()?.body.quote?.transport_connectivity?.impact)
-				.toBeTruthy();
-			const draft = selectedDraft();
-			assert.ok(draft, 'The matching dated ferry quote completed.');
-			assert.ok(draft.body.quote?.transport_connectivity?.impact);
-			ferryPreview = draft.body.quote.transport_connectivity.impact;
-			const newConnections = ferryPreview.connections?.filter((row) => row.change === 'added');
-			assert.ok(newConnections);
-			assert.equal(newConnections?.length, 2);
-			assert.ok(
-				newConnections.some(
-					(row) => row.from_island_name === 'Hulhumalé' && row.to_island_name === 'Malé'
-				)
-			);
-			assert.ok(
-				newConnections.some(
-					(row) => row.from_island_name === 'Malé' && row.to_island_name === 'Hulhumalé'
-				)
-			);
-			assert.ok(ferryPreview.lines?.every((row) => row.expected_wait_saved_minutes === null));
-			await expect(ferryImpact).toContainText('2 new');
-			await ferryImpact.getByText('Route and island connection details', { exact: true }).click();
-			await expect(ferryImpact).toContainText('Hulhumalé → Malé');
-			await expect(ferryImpact).toContainText('Malé → Hulhumalé');
-			await expect(ferryImpact).toContainText('No service listed for this date');
-			await expect(ferryImpact).toContainText('Sailing time');
-			await expect(ferryImpact).not.toContainText('shorter expected wait');
-			await assertDatedDepartures(ferryImpact, ferryPreview);
-			await ferryImpact.scrollIntoViewIfNeeded();
-			await ferry.page.screenshot({ path: path.join(output, 'ferry-connections-preview.png') });
-			return {
-				serviceDate: ferryPreview.service_date,
-				connections: newConnections,
-				summary: ferryPreview.summary
-			};
-		}
-	);
-
-	await check('Accepted ferry shows connection gains independently of walking access', async () => {
-		await ferryEditor.getByRole('button', { name: 'Accept ferry service', exact: true }).click();
-		await expect(ferryEditor).not.toBeVisible();
-		const value = await evaluated(ferry);
-		const impact = value.transport_connectivity?.impact;
-		assert.ok(impact, 'The confirmed ferry evaluation includes transport service impact.');
-		assertWalkingUnchanged(value);
-		await showProposal(ferry);
-		await ferry.panel.getByRole('button', { name: 'Review full impact', exact: true }).click();
-		const review = ferry.page.getByRole('dialog');
-		const component = review.getByRole('region', { name: 'Transport service impact', exact: true });
-		await expect(component).toContainText('Hulhumalé → Malé');
-		await expect(component).toContainText('Malé → Hulhumalé');
-		await expect(component).toContainText('Sailing time');
-		await expect(component).not.toContainText('shorter expected wait');
-		await component.scrollIntoViewIfNeeded();
-		await ferry.page.screenshot({ path: path.join(output, 'ferry-connections-full-review.png') });
-		return {
-			walkingGains: value.summary.gained_residents,
-			impact
-		};
-	});
-
-	await check('Transport impact fits a 390px mobile review without page overflow', async () => {
-		await ferry.page.setViewportSize({ width: 390, height: 844 });
-		const review = ferry.page.getByRole('dialog');
-		const component = review.getByRole('region', { name: 'Transport service impact', exact: true });
-		await component.scrollIntoViewIfNeeded();
-		await expect
-			.poll(() => ferry.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1))
-			.toBe(true);
-		assert.ok(
-			await component.evaluate((element) => element.scrollWidth <= element.clientWidth + 1)
-		);
-		const bounds = await component.boundingBox();
-		assert.ok(bounds && bounds.x >= 0 && bounds.x + bounds.width <= 391);
-		await ferry.page.screenshot({ path: path.join(output, 'ferry-impact-mobile.png') });
-		return { viewport: '390x844', componentBounds: bounds, horizontalOverflow: false };
-	});
 	await check('Service-impact journeys complete without browser runtime errors', async () => {
 		assert.deepEqual(report.pageErrors, []);
 		return { errors: 0 };

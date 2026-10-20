@@ -140,9 +140,9 @@ invent intermediate timing, a berth transfer or vessel assignment.
 From the repository root, using the existing backend Python environment:
 
 ```powershell
-backend/.venv/Scripts/python backend/scripts/prepare_sea_services.py --download
-backend/.venv/Scripts/python backend/scripts/prepare_sea_corridors.py
-backend/.venv/Scripts/python -m pytest backend/tests/test_prepare_sea_services.py -q
+uv run --directory backend python scripts/prepare_sea_services.py --download
+uv run --directory backend python scripts/prepare_sea_corridors.py
+uv run --directory backend pytest tests/test_prepare_sea_services.py -q
 ```
 
 Omit `--download` to reproduce the checked model from the ignored originals and
@@ -159,55 +159,16 @@ invariants, plus departure-only calendars, frequency windows and explicit gaps.
 
 ## Application integration and loading
 
-`POST /api/v1/planning/sea-connections` returns the selected origin's documented
-network, timetable journeys and an isolated proposal comparison. Timed journeys
-include boarding buffers, waiting, direction, operating weekdays and transfers
-at an identified shared terminal. A day return needs a separate feasible journey
-after the minimum stay. The map highlights newly reachable or quicker islands;
-thin connection lines follow planning corridors around the official OneMap land
-polygons and end at the exact recorded terminals. Missing or inconsistent ports,
-and corridors that cannot be resolved safely against the mapped shoreline, omit
-the line while retaining the timetable evidence. These are modelled connections:
-they are not surveyed sailing tracks and do not establish reef clearance, depth
-or a navigable channel. AIS positions remain separate because no authoritative
-vessel-to-service assignment was found.
+`GET /api/v1/planning/sea-network?date=YYYY-MM-DD` supplies the full national route inventory, independently of an island inspector. The main map enables this layer by default. Selecting an island or hiding/restoring Sea connections reuses the loaded network. The sea layer and local resident heatmap are independent: selecting an access lens retains both where detailed resident data exists. A matching service date keeps the inspector and national pressure week aligned. Source PDFs are acquired during preparation, never when the map opens.
 
-Clicking an island shows its own sea connectivity rating: the number of islands
-reachable within the selected time budget, with a reason and direct/transfer
-counts. Date, departure time, waiting and available timetable evidence determine
-the result. An island without verified timing is marked unverified. The selected
-origin follows the baseline/proposal toggle; inspecting another island requests
-that island's existing network without replaying the origin's draft operations.
+Routes retain their source records even when they lack usable map geometry. A line requires recorded terminal coordinates and a coastline-avoiding planning corridor. Missing or inconsistent ports, and unresolved corridors, omit the line while preserving timetable evidence. These are illustrative model connections: they do not establish surveyed sailing tracks, reef clearance, depth, channel navigability or a licensed service. AIS positions remain separate because no authoritative vessel-to-service assignment was found.
 
-Complete timetable calls also enter the existing planning/routing repository.
-Historical, departure-only and spatially unresolved evidence stays inspectable
-without producing invented arrivals or resident-access gains. The island access
-index retains its existing calculation and explains that sea journeys are a
-separate assessment.
+The map's **Estimated service pressure** colors are relative screening categories, based on linked whole-island projected residents per modeled weekly departure. The seven-day supply combines published timetable departures and estimates from complete frequency windows; overlapping evidence is deduplicated. Missing population or incomplete service windows leave pressure unknown. Low/moderate/high split the computable network's ratios into relative thirds, so their thresholds depend on the included records. Whole-island population is potential context shared by overlapping routes, not allocated route demand. The proxy cannot establish occupancy, congestion, ferry capacity or an insufficient fleet. Those inputs remain unavailable.
 
-The normalized timetable bundle is 260,170 bytes. The prepared corridor model is
-118,066 bytes and covers 159 unique terminal pairs: 148 have usable planning
-corridors and 11 are explicitly unavailable. Preparation took about 89 seconds;
-reusing all unchanged prepared pairs took about 1.1 seconds. The backend checks
-the model version and shoreline fingerprint before reuse. Only previously unseen
-terminal pairs need runtime corridor calculation; a bounded 512-pair cache reuses
-both directions. Map geometry is assembled only for the visible network.
+Route popups expose the source, evidence status, pressure basis and qualifications. **Open connections** carries that route's origin into the dated inspector. `POST /api/v1/planning/sea-connections` returns its documented network, timetable journeys and an isolated proposal comparison. Timed journeys account for boarding buffers, waiting, direction, weekdays and transfers at a shared terminal. A day return requires a separate feasible journey after the requested stay. Departure-only and unresolved timing do not acquire invented arrivals.
 
-The backend reads these files as application snapshots and invalidates its
-bounded 24-entry baseline response cache when source/evidence or the prepared
-corridor file changes. Proposal responses remain isolated. The UI debounces
-input, cancels superseded requests and switches baseline/proposal views from the
-same response. Timetable PDFs are acquired during preparation, never on map open.
-This addition needs no new database table or migration; it does not change the
-existing Postgres/PostGIS configuration or live-position providers.
+Complete timetable calls also enter the planning/routing repository. Historical, departure-only and spatially unresolved evidence stays inspectable without producing invented resident-access gains. The island access index retains its separate calculation; sea network colors are not a component of that score.
 
-Local validation on 17 October 2026 passed 962 backend tests and 343 frontend
-tests, type checking, lint and the production build. Browser checks covered the
-official Kulhudhuffushi–Hanimaadhoo outbound/return itinerary, proposal gains,
-baseline isolation, preserved drafts, historical Hithadhoo evidence and the
-existing capital street/hexagon views, thinner shoreline-avoiding connections,
-recorded port markers and map-click island ratings. With the prepared corridor
-model, subsequent uncached origin requests took about 53–114 ms and cached
-requests about 5–20 ms. The first request needing lazy planning initialization
-took about 1.9 seconds; these local measurements are not production-server
-benchmarks. No deployment was performed.
+The backend validates the corridor model version and shoreline fingerprint before reuse. Prepared pairs and bounded runtime caches avoid repeated geometry work; baseline response caches are keyed by source/evidence, date and corridor content. Failed bounded corridor searches remain explicitly unavailable. Proposal responses remain isolated, and superseded browser requests are cancelled. This feature adds no database migration.
+
+Use the [browser verification guide](browser-verification.md) for maintained integration suites. Focused backend contracts are covered by `backend/tests/test_prepare_sea_services.py`, `test_sea_network.py`, `test_sea_map_geometry.py` and `test_water_corridor.py`; frontend merge/selection contracts are in `src/lib/sea-network.test.ts`. Reports and screenshots are regenerated under ignored `artifacts/qa/sea-network/`.

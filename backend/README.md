@@ -100,13 +100,17 @@ contain only public, optional settings.
 The API reuses exact calculations in bounded memory and compressed files under
 ignored `backend/data/runtime/computed-json-v1/`. A fresh clone works with those
 local caches automatically. Startup prepares country snapshots first, followed by
-heavier analytics and the three supported island planning views in the background.
+heavier analytics and supported island planning views in the background.
 The API serves requests without waiting for this preparation. Jobs run sequentially
-and reuse valid memory/local-disk results. Development can also opt into the
-shared PostgreSQL cache; production never connects to it.
+and reuse valid memory/local-disk results. The production `state/runtime` mount
+preserves compressed results across container restarts; changed code, sources or
+calculation inputs invalidate their keys. The sea network also persists reviewed
+schedule/date-specific geometry and pressure results, separately from live feeds. Development and production can opt into the
+shared PostgreSQL cache through server-only settings.
 
-The automatic preparation covers 33 views: country geometry, scores, summary and
-passenger history; fitted forecasts, data analysis and the dataset catalogue;
+The automatic preparation covers 36 jobs: country geometry, scores, summary,
+passenger history and the national sea/air networks; the default directions indexes;
+fitted forecasts, data analysis and the dataset catalogue;
 planning opportunities; profiles, baselines, gap views and connectivity for Malé,
 Hulhumalé, Hulhulé and Vilimalé; and nine default health/education/transport
 baseline impact calculations where resident projections exist. Each failed
@@ -135,8 +139,9 @@ explicit preparation precomputes arbitrary user scenarios: new proposals still
 calculate their actual operations and assumptions. Requests arriving before a view
 is prepared calculate normally and can share an identical in-flight calculation.
 
-For development cross-machine reuse, optionally set `MOBILITY_DATABASE_URL` in
-ignored `backend/.env`. The example file intentionally contains no connection string.
+For cross-machine reuse, optionally set `MOBILITY_DATABASE_URL` in
+ignored `backend/.env`, or the protected production backend environment, and enable
+`MOBILITY_COMPUTED_CACHE_POSTGRES_ENABLED=true`. The example file contains no connection string.
 The optional `psycopg` dependency is installed by normal setup. A Prisma-style
 `schema` option becomes a validated PostgreSQL search path; connections require
 TLS and have connection/query time limits. Prepare the `mobility_computed_cache`
@@ -149,9 +154,11 @@ uv run --directory backend python -m app.cli.database_setup
 This command uses the existing configured schema; it does not create a database
 or change source-data tables. It refuses production/test mode and must never run
 in deployment workflows. The runtime never creates or migrates PostgreSQL tables.
-`MOBILITY_COMPUTED_CACHE_POSTGRES_ENABLED=false` disables development DB caching.
-Production and tests always use memory/local disk, even if a database URL is
-inherited. Production needs no database credentials or database setup.
+`MOBILITY_COMPUTED_CACHE_POSTGRES_ENABLED=false` disables DB caching.
+Production works without a database and uses memory/disk for normal reads.
+When enabled, background preparation restores a source/model-specific manifest
+and a bounded batch of public results from the existing table, then mirrors prepared
+results for reuse after restarts. Tests always disable database connections.
 
 Production also rejects passenger-source and timetable stage/accept maintenance
 with HTTP 403. Their status responses expose `source_mutations_allowed=false`,
@@ -171,8 +178,8 @@ entries. Each item is at most 32 MiB before compression. Shared storage retains
 at most 512 MiB/4,096 entries with a seven-day age limit. Interactive remote
 lookups wait at most 10 ms; background mirroring handles slower connections.
 A failed database uses local calculations and a 60-second retry cooldown.
-Database exceptions and connection strings are not logged. Production and tests
-disable the shared database even when a developer has a local `.env`.
+Database exceptions and connection strings are not logged. The production image
+disables the shared database by default; only the protected server environment opts in.
 
 Keys include source content, model implementation, scoring configuration and
 all calculation inputs; exact source receipts participate in planning keys.
@@ -247,7 +254,7 @@ collector. Missing Chromium is reported as a feature-specific `503` rather than
 preventing API startup. Optional `VELA_API_KEY`, `VELA_CACHE_TTL`, `VELA_RATE_LIMIT_PER_MINUTE`
 and other original settings are documented in [the preserved Vela README](vendor/vela_api/README.md).
 The frontend proxy forwards the caller key without exposing it to browser JavaScript.
-Read [the policy implementation report](../docs/policy-expansion.md) for model coverage.
+Read [the model methodology](../docs/model-methodology.md) for model coverage.
 
 ## Island access index
 

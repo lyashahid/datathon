@@ -10,19 +10,16 @@ export const browserSuites = [
 	{
 		id: 'decisions',
 		file: 'verify-analytics-decision-flow.mjs',
-		core: true,
 		covers: 'Source-backed priorities, refresh and map handoffs'
 	},
 	{
 		id: 'forecasts',
 		file: 'verify-forecast-data-browser.mjs',
-		core: true,
 		covers: 'Forecast/backtest receipts, Data Studio and import validation'
 	},
 	{
 		id: 'capital',
 		file: 'verify-capital-map-start.mjs',
-		core: true,
 		covers: 'Analytics entry, capital camera and history'
 	},
 	{
@@ -34,19 +31,16 @@ export const browserSuites = [
 	{
 		id: 'nearby-stops',
 		file: 'verify-nearby-bus-stops.mjs',
-		core: true,
 		covers: 'Malé stops remain visible when another island is selected'
 	},
 	{
 		id: 'nearby-access',
 		file: 'verify-nearby-access-analysis.mjs',
-		core: true,
 		covers: 'Nearby island access, delayed evidence and correct source scope'
 	},
 	{
 		id: 'map-controls',
 		file: 'verify-map-floating-controls.mjs',
-		core: true,
 		covers: 'Search dropdown, controls and responsive placement'
 	},
 	{
@@ -58,26 +52,35 @@ export const browserSuites = [
 	{
 		id: 'map-comparison',
 		file: 'verify-proposal-map-comparison.mjs',
-		core: true,
 		covers: 'Actual local impact, cached comparisons and rendered colours'
 	},
 	{
 		id: 'motion',
 		file: 'verify-motion-windows.mjs',
-		core: true,
 		covers: 'Navigation motion, resizing, persistence and reduced motion'
 	},
 	{
 		id: 'review-window',
 		file: 'verify-review-window.mjs',
-		core: true,
 		covers: 'Read-only review, stale results, error/retry and focus'
 	},
 	{
-		id: 'connections',
-		file: 'verify-island-connections.mjs',
+		id: 'search',
+		file: 'verify-scoped-map-search.mjs',
 		core: true,
-		covers: 'Dated ferry proposals, budgets, PDF and mobile terminals'
+		covers: 'Island-scoped place search, English aliases, keyboard selection and provider recovery'
+	},
+	{
+		id: 'directions',
+		file: 'verify-search-directions.mjs',
+		core: true,
+		covers: 'Integrated multistop directions, travel modes, dated transfers and map endpoints'
+	},
+	{
+		id: 'sea-network',
+		file: 'verify-sea-network-map.mjs',
+		core: true,
+		covers: 'Sea and domestic air connections, route illustrations, source popups and layer caching'
 	},
 	{
 		id: 'accessibility',
@@ -87,7 +90,7 @@ export const browserSuites = [
 	{
 		id: 'country',
 		file: 'verify-country-map-journey.mjs',
-		covers: 'Country/atoll scores, optional overview and return directions'
+		covers: 'Country/atoll scores, geographic bounds, history and optional overview'
 	},
 	{
 		id: 'map',
@@ -97,22 +100,12 @@ export const browserSuites = [
 	{
 		id: 'map-legibility',
 		file: 'verify-map-legibility-browser.mjs',
-		covers: 'Infrastructure, controlled live movement, routing and closures'
+		covers: 'Infrastructure, controlled live movement, grouped markers and closures'
 	},
 	{
 		id: 'conditions',
 		file: 'verify-map-first-conditions-browser.mjs',
 		covers: 'Real weather/traffic providers and map endpoints'
-	},
-	{
-		id: 'places',
-		file: 'verify-map-first-places-browser.mjs',
-		covers: 'Provider-status race, real places, directions and imagery'
-	},
-	{
-		id: 'map-focus',
-		file: 'verify-map-place-focus.mjs',
-		covers: 'Cross-island place camera with ordinary and reduced motion'
 	},
 	{
 		id: 'bus-vehicles',
@@ -135,16 +128,6 @@ export const browserSuites = [
 		covers: 'Isolated import acceptance, timetable versions and retained drafts'
 	},
 	{
-		id: 'unified-policy',
-		file: 'verify-unified-policy-journey.mjs',
-		covers: 'Generated budget suggestions, saved priorities and PDF journey'
-	},
-	{
-		id: 'policy-drag',
-		file: 'verify-policy-native-drag.mjs',
-		covers: 'Native school/hospital drag and pending budget quotes'
-	},
-	{
 		id: 'map-transport',
 		file: 'verify-map-transport-planning.mjs',
 		covers: 'Bus connection targets, accepted paths and package undo'
@@ -157,7 +140,7 @@ export const browserSuites = [
 	{
 		id: 'resilience',
 		file: 'verify-secondary-audit-browser.mjs',
-		covers: 'Slow/failed responses, chart sharing, notices and inspector focus'
+		covers: 'Slow/failed responses, chart sharing and deferred notices'
 	},
 	{
 		id: 'overlays',
@@ -167,7 +150,7 @@ export const browserSuites = [
 	{
 		id: 'transport-impact',
 		file: 'verify-transport-service-impact.mjs',
-		covers: 'Expected waits and dated departures independent of walking access'
+		covers: 'Bus waits and dated departures independent of walking access'
 	},
 	{
 		id: 'policy-api',

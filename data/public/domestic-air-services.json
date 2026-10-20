@@ -1,0 +1,872 @@
+{
+  "schema_version": "domestic-air-v2",
+  "retrieved_at": "2026-10-20T03:46:20Z",
+  "reviewed_local_date": "2026-10-20",
+  "timezone": "Indian/Maldives",
+  "qualification": "Manually reviewed airline-published domestic sectors, including explicitly published return and regional services. Lines show connectivity, not verified nonstop flights, current aircraft positions, or an exhaustive date-valid timetable.",
+  "sources": [
+    {
+      "id": "maldivian-business-services",
+      "title": "Maldivian Business Services",
+      "url": "https://maldivian.aero/corporate/business-services.html",
+      "publisher": "Island Aviation Services Limited (Maldivian)",
+      "retrieved_at": "2026-10-20T03:46:20Z",
+      "published_at": null,
+      "qualification": "The airline lists connections from Velana International Airport to 17 domestic airports. Its baggage-sector table separately establishes return directions and regional sectors. This corporate page does not publish a current calendar, frequency, or nonstop guarantee."
+    },
+    {
+      "id": "maldivian-destinations",
+      "title": "Maldivian destinations",
+      "url": "https://maldivian.aero/destinations/",
+      "publisher": "Island Aviation Services Limited (Maldivian)",
+      "retrieved_at": "2026-10-20T03:46:20Z",
+      "published_at": null,
+      "qualification": "The current directory corroborates domestic airport names, including Kudahuvadhoo. Route pairs require separate explicit sector evidence; a destination directory does not establish frequencies or aircraft positions."
+    },
+    {
+      "id": "maldivian-muli-evening-2025-12-31",
+      "title": "Maldivian Enhances Connectivity with Additional Evening Flight to Muli",
+      "url": "https://maldivian.aero/media/2025/12/31/maldivian-enhances-connectivity-with-additional-evening-flight-to-muli.html",
+      "publisher": "Island Aviation Services Limited (Maldivian)",
+      "retrieved_at": "2026-10-20T03:46:20Z",
+      "published_at": "2025-12-31",
+      "qualification": "Historical published announcement of a daily evening departure from Male, commencing 27 December 2025. The announcement has no expiry and does not validate a departure calendar for 20 October 2026."
+    },
+    {
+      "id": "maldivian-baggage-sectors",
+      "title": "Maldivian baggage policy: published domestic sectors",
+      "url": "https://maldivian.aero/flying-with-us/before-you-fly/baggage-policy.html",
+      "publisher": "Island Aviation Services Limited (Maldivian)",
+      "retrieved_at": "2026-10-20T03:46:20Z",
+      "published_at": null,
+      "qualification": "The airline explicitly marks domestic sectors with two-way arrows: 17 Male connections and 13 regional airport pairs. This supports both directions, but not a nonstop guarantee, flight identity, current operating dates, or frequency."
+    },
+    {
+      "id": "maldivian-southern-connectivity-2026-01-29",
+      "title": "Maldivian: Enhancing Southern Connectivity",
+      "url": "https://twitter.com/MaldivianAero/status/2016903134355083338",
+      "publisher": "Island Aviation Services Limited (Maldivian), official @MaldivianAero account",
+      "retrieved_at": "2026-10-20T03:46:20Z",
+      "published_at": "2026-01-29",
+      "qualification": "Three airline-published timetable images explicitly identify five two-way southern sectors with directional weekdays and departure times. The January publication is retained as announced schedule evidence; a current October calendar, arrival times, flight numbers, or unchanged operation is not verified.",
+      "media_urls": [
+        "https://pbs.twimg.com/media/G_16tGQbUAArUku.jpg",
+        "https://pbs.twimg.com/media/G_16tN9bQAASTvN.jpg",
+        "https://pbs.twimg.com/media/G_16tGObUAMvb8l.jpg"
+      ]
+    },
+    {
+      "id": "presidency-southern-connectivity-2026-02-05",
+      "title": "Presidential Address 2026: integrated transport network",
+      "url": "https://presidency.gov.mv/Press/Article/36143?term=0",
+      "publisher": "The President's Office, Republic of Maldives",
+      "retrieved_at": "2026-10-20T03:46:20Z",
+      "published_at": "2026-02-05",
+      "qualification": "Confirms that wheeled Twin Otter services connecting Gan, Fuvahmulah and Huvadhu in the four southernmost atolls began on 1 February 2026. Used to corroborate the regional network, not to infer additional airport pairs or an October timetable."
+    },
+    {
+      "id": "maldivian-kudahuvadhoo-2026-09-13",
+      "title": "Maldivian: daily Male-Kudahuvadhoo flights from 17 September 2026",
+      "url": "https://x.com/MaldivianAero/status/2099172385840910628",
+      "publisher": "Island Aviation Services Limited (Maldivian), official @MaldivianAero account",
+      "retrieved_at": "2026-10-20T03:46:20Z",
+      "published_at": "2026-09-13",
+      "qualification": "The airline announces daily services between Male and Kudahuvadhoo from 17 September 2026. Directional departure times, flight numbers, arrival times and the current selected-date calendar are not published in this announcement."
+    },
+    {
+      "id": "maldivian-south-connectivity-2024-04-04",
+      "title": "Maldivian: South Connectivity Gan-Kooddoo timetable announcement",
+      "url": "https://maldivian.aero/assets/files/Press%20Statement%20-%20South%20Connectivity_V1_2%20ammended.pdf",
+      "publisher": "Island Aviation Services Limited (Maldivian)",
+      "retrieved_at": "2026-10-20T03:46:20Z",
+      "published_at": "2024-04-04",
+      "qualification": "Explicitly publishes both Gan-Kooddoo directions with Tuesday/Saturday departure and arrival times, announced from 29 October 2024. This is historical context, superseded in the retained published timetable by the January 2026 southern announcement; neither source establishes a current October 2026 calendar."
+    }
+  ],
+  "routes": [
+    {
+      "id": "maldivian-mle-hrf",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "HRF",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-haq",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "HAQ",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-hdk",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "HDK",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-fnd",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "FND",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-nmf",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "NMF",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-ifu",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "IFU",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-drv",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "DRV",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-tmf",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "TMF",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-gkk",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "GKK",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-kdm",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "KDM",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-rul",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "RUL",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-kdo",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "KDO",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-fvm",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "FVM",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-fmt",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "FMT",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-gan",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "GAN",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-lmv",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "LMV",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-mle-mum",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "MUM",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-business-services",
+        "maldivian-destinations",
+        "maldivian-muli-evening-2025-12-31",
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed. The retained announcement is historical schedule evidence, not a current departure calendar.",
+      "published_schedule": {
+        "publication_date": "2025-12-31",
+        "announced_start_date": "2025-12-27",
+        "description": "Daily evening departure from Male at 18:00 was announced. Current operating dates and frequency have not been confirmed.",
+        "source_ids": [
+          "maldivian-muli-evening-2025-12-31"
+        ],
+        "current_calendar_verified": false
+      }
+    },
+    {
+      "id": "maldivian-fvm-kdm",
+      "operator": "Maldivian",
+      "from_iata": "FVM",
+      "to_iata": "KDM",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-baggage-sectors",
+        "maldivian-southern-connectivity-2026-01-29"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed. Published January 2026 departure patterns are retained separately and have not been revalidated for the selected date.",
+      "published_schedule": {
+        "publication_date": "2026-01-29",
+        "announced_start_date": "2026-02-01",
+        "timezone": "Indian/Maldives",
+        "weekday_numbering": "ISO 8601: Monday=1, Sunday=7",
+        "description": "Airline-published January 2026 departure pattern; current calendar and arrival times are not verified. Each entry is a directional sector, not evidence of a through flight or guaranteed transfer.",
+        "departures": [
+          {
+            "from_iata": "FVM",
+            "to_iata": "KDM",
+            "iso_weekdays": [
+              4,
+              7
+            ],
+            "departure_times": [
+              "08:40"
+            ]
+          },
+          {
+            "from_iata": "KDM",
+            "to_iata": "FVM",
+            "iso_weekdays": [
+              4,
+              7
+            ],
+            "departure_times": [
+              "14:00"
+            ]
+          },
+          {
+            "from_iata": "FVM",
+            "to_iata": "KDM",
+            "iso_weekdays": [
+              2,
+              6
+            ],
+            "departure_times": [
+              "10:20",
+              "15:20"
+            ]
+          },
+          {
+            "from_iata": "KDM",
+            "to_iata": "FVM",
+            "iso_weekdays": [
+              2,
+              6
+            ],
+            "departure_times": [
+              "11:15",
+              "16:15"
+            ]
+          }
+        ],
+        "source_ids": [
+          "maldivian-southern-connectivity-2026-01-29",
+          "presidency-southern-connectivity-2026-02-05"
+        ],
+        "current_calendar_verified": false
+      }
+    },
+    {
+      "id": "maldivian-fvm-kdo",
+      "operator": "Maldivian",
+      "from_iata": "FVM",
+      "to_iata": "KDO",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-gan-gkk",
+      "operator": "Maldivian",
+      "from_iata": "GAN",
+      "to_iata": "GKK",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-baggage-sectors",
+        "maldivian-southern-connectivity-2026-01-29",
+        "maldivian-south-connectivity-2024-04-04"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed. Published January 2026 departure patterns are retained separately and have not been revalidated for the selected date.",
+      "published_schedule": {
+        "publication_date": "2026-01-29",
+        "announced_start_date": "2026-02-01",
+        "timezone": "Indian/Maldives",
+        "weekday_numbering": "ISO 8601: Monday=1, Sunday=7",
+        "description": "Airline-published January 2026 departure pattern; current calendar and arrival times are not verified. Each entry is a directional sector, not evidence of a through flight or guaranteed transfer.",
+        "departures": [
+          {
+            "from_iata": "GAN",
+            "to_iata": "GKK",
+            "iso_weekdays": [
+              1,
+              3,
+              5
+            ],
+            "departure_times": [
+              "08:00"
+            ]
+          },
+          {
+            "from_iata": "GKK",
+            "to_iata": "GAN",
+            "iso_weekdays": [
+              1,
+              3,
+              5
+            ],
+            "departure_times": [
+              "14:00"
+            ]
+          }
+        ],
+        "source_ids": [
+          "maldivian-southern-connectivity-2026-01-29",
+          "presidency-southern-connectivity-2026-02-05"
+        ],
+        "current_calendar_verified": false
+      }
+    },
+    {
+      "id": "maldivian-gan-kdm",
+      "operator": "Maldivian",
+      "from_iata": "GAN",
+      "to_iata": "KDM",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-baggage-sectors",
+        "maldivian-southern-connectivity-2026-01-29"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed. Published January 2026 departure patterns are retained separately and have not been revalidated for the selected date.",
+      "published_schedule": {
+        "publication_date": "2026-01-29",
+        "announced_start_date": "2026-02-01",
+        "timezone": "Indian/Maldives",
+        "weekday_numbering": "ISO 8601: Monday=1, Sunday=7",
+        "description": "Airline-published January 2026 departure pattern; current calendar and arrival times are not verified. Each entry is a directional sector, not evidence of a through flight or guaranteed transfer.",
+        "departures": [
+          {
+            "from_iata": "GAN",
+            "to_iata": "KDM",
+            "iso_weekdays": [
+              4,
+              7
+            ],
+            "departure_times": [
+              "08:00"
+            ]
+          },
+          {
+            "from_iata": "KDM",
+            "to_iata": "GAN",
+            "iso_weekdays": [
+              4,
+              7
+            ],
+            "departure_times": [
+              "14:00"
+            ]
+          },
+          {
+            "from_iata": "GAN",
+            "to_iata": "KDM",
+            "iso_weekdays": [
+              2,
+              6
+            ],
+            "departure_times": [
+              "09:40",
+              "14:40"
+            ]
+          },
+          {
+            "from_iata": "KDM",
+            "to_iata": "GAN",
+            "iso_weekdays": [
+              2,
+              6
+            ],
+            "departure_times": [
+              "11:15",
+              "16:15"
+            ]
+          }
+        ],
+        "source_ids": [
+          "maldivian-southern-connectivity-2026-01-29",
+          "presidency-southern-connectivity-2026-02-05"
+        ],
+        "current_calendar_verified": false
+      }
+    },
+    {
+      "id": "maldivian-gan-kdo",
+      "operator": "Maldivian",
+      "from_iata": "GAN",
+      "to_iata": "KDO",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-ifu-haq",
+      "operator": "Maldivian",
+      "from_iata": "IFU",
+      "to_iata": "HAQ",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-ifu-nmf",
+      "operator": "Maldivian",
+      "from_iata": "IFU",
+      "to_iata": "NMF",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-haq-lmv",
+      "operator": "Maldivian",
+      "from_iata": "HAQ",
+      "to_iata": "LMV",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-kdo-kdm",
+      "operator": "Maldivian",
+      "from_iata": "KDO",
+      "to_iata": "KDM",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-lmv-ifu",
+      "operator": "Maldivian",
+      "from_iata": "LMV",
+      "to_iata": "IFU",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-lmv-nmf",
+      "operator": "Maldivian",
+      "from_iata": "LMV",
+      "to_iata": "NMF",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-kdm-gkk",
+      "operator": "Maldivian",
+      "from_iata": "KDM",
+      "to_iata": "GKK",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-nmf-hdk",
+      "operator": "Maldivian",
+      "from_iata": "NMF",
+      "to_iata": "HDK",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-baggage-sectors"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed."
+    },
+    {
+      "id": "maldivian-gan-fvm",
+      "operator": "Maldivian",
+      "from_iata": "GAN",
+      "to_iata": "FVM",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-southern-connectivity-2026-01-29",
+        "presidency-southern-connectivity-2026-02-05"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed. Published January 2026 departure patterns are retained separately and have not been revalidated for the selected date.",
+      "published_schedule": {
+        "publication_date": "2026-01-29",
+        "announced_start_date": "2026-02-01",
+        "timezone": "Indian/Maldives",
+        "weekday_numbering": "ISO 8601: Monday=1, Sunday=7",
+        "description": "Airline-published January 2026 departure pattern; current calendar and arrival times are not verified. Each entry is a directional sector, not evidence of a through flight or guaranteed transfer.",
+        "departures": [
+          {
+            "from_iata": "GAN",
+            "to_iata": "FVM",
+            "iso_weekdays": [
+              1,
+              3,
+              4,
+              5,
+              7
+            ],
+            "departure_times": [
+              "08:00"
+            ]
+          },
+          {
+            "from_iata": "FVM",
+            "to_iata": "GAN",
+            "iso_weekdays": [
+              1,
+              3,
+              4,
+              5,
+              7
+            ],
+            "departure_times": [
+              "14:55"
+            ]
+          },
+          {
+            "from_iata": "GAN",
+            "to_iata": "FVM",
+            "iso_weekdays": [
+              2,
+              6
+            ],
+            "departure_times": [
+              "09:40",
+              "14:40"
+            ]
+          },
+          {
+            "from_iata": "FVM",
+            "to_iata": "GAN",
+            "iso_weekdays": [
+              2,
+              6
+            ],
+            "departure_times": [
+              "12:10",
+              "17:10"
+            ]
+          }
+        ],
+        "source_ids": [
+          "maldivian-southern-connectivity-2026-01-29",
+          "presidency-southern-connectivity-2026-02-05"
+        ],
+        "current_calendar_verified": false
+      }
+    },
+    {
+      "id": "maldivian-fvm-gkk",
+      "operator": "Maldivian",
+      "from_iata": "FVM",
+      "to_iata": "GKK",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-southern-connectivity-2026-01-29",
+        "presidency-southern-connectivity-2026-02-05"
+      ],
+      "valid_from": null,
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed. Published January 2026 departure patterns are retained separately and have not been revalidated for the selected date.",
+      "published_schedule": {
+        "publication_date": "2026-01-29",
+        "announced_start_date": "2026-02-01",
+        "timezone": "Indian/Maldives",
+        "weekday_numbering": "ISO 8601: Monday=1, Sunday=7",
+        "description": "Airline-published January 2026 departure pattern; current calendar and arrival times are not verified. Each entry is a directional sector, not evidence of a through flight or guaranteed transfer.",
+        "departures": [
+          {
+            "from_iata": "FVM",
+            "to_iata": "GKK",
+            "iso_weekdays": [
+              1,
+              3,
+              5
+            ],
+            "departure_times": [
+              "08:40"
+            ]
+          },
+          {
+            "from_iata": "GKK",
+            "to_iata": "FVM",
+            "iso_weekdays": [
+              1,
+              3,
+              5
+            ],
+            "departure_times": [
+              "14:00"
+            ]
+          }
+        ],
+        "source_ids": [
+          "maldivian-southern-connectivity-2026-01-29",
+          "presidency-southern-connectivity-2026-02-05"
+        ],
+        "current_calendar_verified": false
+      }
+    },
+    {
+      "id": "maldivian-mle-ddd",
+      "operator": "Maldivian",
+      "from_iata": "MLE",
+      "to_iata": "DDD",
+      "bidirectional": true,
+      "evidence": "published_route",
+      "source_ids": [
+        "maldivian-kudahuvadhoo-2026-09-13",
+        "maldivian-destinations"
+      ],
+      "valid_from": "2026-09-17",
+      "valid_until": null,
+      "qualification": "Airline-published two-way sector; nonstop routing and operation on the selected date are unconfirmed. Daily service was announced in September 2026; current departure times and a selected-date calendar are unavailable.",
+      "published_schedule": {
+        "publication_date": "2026-09-13",
+        "announced_start_date": "2026-09-17",
+        "description": "Daily services between Male and Kudahuvadhoo were announced from 17 September 2026. Directional departure times, arrival times and current calendar are not verified.",
+        "source_ids": [
+          "maldivian-kudahuvadhoo-2026-09-13"
+        ],
+        "current_calendar_verified": false
+      }
+    }
+  ]
+}

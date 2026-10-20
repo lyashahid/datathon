@@ -13,9 +13,11 @@ import json
 import logging
 import time
 from dataclasses import dataclass
-from typing import Any, Callable
+from datetime import UTC, datetime, timedelta, timezone
+from typing import Any, Awaitable, Callable
 
 import httpx
+from starlette.concurrency import run_in_threadpool
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,8 +25,21 @@ LOGGER = logging.getLogger(__name__)
 @dataclass(frozen=True)
 class WarmupJob:
     name: str
-    url: str
+    url: str | None = None
     body: dict[str, Any] | None = None
+    prepare: Callable[[Any], Awaitable[None]] | None = None
+
+
+async def _prepare_directions(app: Any) -> None:
+    from app.routing.journeys import prepare_journeys
+
+    await run_in_threadpool(prepare_journeys, app.state.planning.repository)
+
+
+def _sea_date(now: datetime | None = None) -> str:
+    # Match seaServiceDate() in the website: the current date at UTC+05:00,
+    # rather than the historical default accepted by the API.
+    return (now or datetime.now(UTC)).astimezone(timezone(timedelta(hours=5))).date().isoformat()
 
 
 def _jobs(*, include_planning: bool, include_analysis: bool) -> list[WarmupJob]:
@@ -33,7 +48,11 @@ def _jobs(*, include_planning: bool, include_analysis: bool) -> list[WarmupJob]:
         WarmupJob("country_scores", "/api/v1/accessibility/summary?compact=true"),
         WarmupJob("country_summary", "/api/v1/national/summary"),
         WarmupJob("published_history", "/api/v1/forecasts?history_only=true"),
+        WarmupJob("sea_network", f"/api/v1/planning/sea-network?date={_sea_date()}"),
+        WarmupJob("air_network", f"/api/v1/planning/air-network?date={_sea_date()}"),
     ]
+    if include_planning:
+        jobs.append(WarmupJob("directions_index", prepare=_prepare_directions))
     if include_analysis:
         jobs.extend(
             [
@@ -115,11 +134,15 @@ async def warm_application(
         async def run(job: WarmupJob, attempt: int) -> dict[str, Any]:
             started = time.perf_counter()
             try:
-                response = await client.request(
-                    "POST" if job.body is not None else "GET", job.url, json=job.body
-                )
-                response.raise_for_status()
-                size = len(response.content)
+                if job.prepare is not None:
+                    await job.prepare(app)
+                    size = 0  # Internal indexes have no serialized HTTP response.
+                else:
+                    response = await client.request(
+                        "POST" if job.body is not None else "GET", job.url, json=job.body
+                    )
+                    response.raise_for_status()
+                    size = len(response.content)
                 status = "ready"
             except Exception:
                 if not continue_on_error:
@@ -171,6 +194,10 @@ async def precompute_startup(app: Any) -> None:
     started = time.perf_counter()
     LOGGER.info("Preparing analytics and planning in the background; the app is available.")
     try:
+        source_version = app.state.source_version.version()
+        restored = await app.state.computed_cache.restore_public_results(source_version)
+        if restored:
+            LOGGER.info("Reused %d precomputed public views from the shared cache.", restored)
         results = await warm_application(
             app,
             include_planning=True,
@@ -194,7 +221,7 @@ async def precompute_startup(app: Any) -> None:
         )
         # Mirror local hits too. The database worker and its bounded wait stay
         # outside the app's startup/readiness path.
-        await app.state.computed_cache.mirror_public_results()
+        await app.state.computed_cache.mirror_public_results(source_version)
     except asyncio.CancelledError:
         state["status"] = "cancelled"
         raise
@@ -213,14 +240,16 @@ async def main() -> None:
     args = parser.parse_args()
     app = create_app(Settings(vela_browser_enabled=False, computed_cache_prewarm=False))
     async with app.router.lifespan_context(app):
+        cache = app.state.computed_cache
+        source_version = app.state.source_version.version()
+        await cache.restore_public_results(source_version)
         results = await warm_application(
             app,
             include_planning=args.include_planning,
             include_analysis=not args.skip_analysis,
             progress=True,
         )
-        cache = app.state.computed_cache
-        await cache.mirror_public_results()
+        await cache.mirror_public_results(source_version)
         print(json.dumps({"precomputed_views": len(results), "cache": cache.status()}), flush=True)
 
 

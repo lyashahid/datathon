@@ -56,11 +56,10 @@ def test_absolute_override_paths_stay_absolute(tmp_path: Path) -> None:
     assert settings.public_data_dir == tmp_path / "public"
 
 
-@pytest.mark.parametrize("environment", ["production", "test"])
-def test_shared_database_is_disabled_outside_development(environment: str) -> None:
+def test_shared_database_is_disabled_in_tests() -> None:
     settings = Settings(
         _env_file=None,
-        environment=environment,
+        environment="test",
         computed_cache_postgres_enabled=True,
         database_url="postgresql://example.invalid/private-cache",
     )
@@ -68,9 +67,10 @@ def test_shared_database_is_disabled_outside_development(environment: str) -> No
     assert settings.shared_cache_database_url == ""
 
 
-def test_development_shared_database_respects_explicit_disable() -> None:
+@pytest.mark.parametrize("environment", ["development", "production"])
+def test_shared_database_respects_explicit_disable(environment: str) -> None:
     url = "postgresql://example.invalid/private-cache"
-    settings = Settings(_env_file=None, database_url=url)
+    settings = Settings(_env_file=None, environment=environment, database_url=url)
     assert settings.shared_cache_database_url == url
     assert (
         settings.model_copy(

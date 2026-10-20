@@ -269,6 +269,52 @@ describe('shared browser API reads', () => {
 		expect(fetcher.mock.calls[1][1]?.headers).toEqual({ 'If-None-Match': 'W/"a"' });
 	});
 
+	it('retains startup networks through viewport and island churn within the same disk cap', async () => {
+		const storage = browserStorage();
+		const fetcher = vi.fn<typeof fetch>().mockImplementation(async (url, options) =>
+			new Headers(options?.headers).has('If-None-Match')
+				? new Response(null, {
+						status: 304,
+						headers: { etag: 'W/"current"', 'cache-control': 'private, max-age=0, must-revalidate' }
+					})
+				: snapshot({ path: String(url) }, 'W/"current"', 0)
+		);
+		const client = createApiClient({ fetcher, storage: () => storage });
+		const startup = [
+			'national/summary',
+			'map/features?layer=islands&simplify_m=25',
+			'accessibility/summary?compact=true',
+			'planning/sea-network?date=2026-10-19',
+			'planning/air-network?date=2026-10-19'
+		];
+		for (const path of startup) {
+			await client.request(path);
+			await settleStorage();
+		}
+		for (let index = 0; index < 40; index++) {
+			await client.request(
+				index % 2 ? `islands/island:${index}/profile` : `map/context?bbox=${index},4,74,5`
+			);
+			await settleStorage();
+		}
+		expect(storage.entries.size).toBe(32);
+		expect(storage.entries.has('/api/backend/map/context?bbox=0%2C4%2C74%2C5')).toBe(false);
+		expect(storage.entries.has('/api/backend/islands/island:39/profile')).toBe(true);
+
+		const reload = createApiClient({ fetcher, storage: () => storage });
+		fetcher.mockClear();
+		for (const path of startup) {
+			await expect(reload.request(path)).resolves.toEqual({ path: `/api/backend/${path}` });
+		}
+		expect(fetcher).toHaveBeenCalledTimes(startup.length);
+		expect(
+			fetcher.mock.calls.every(
+				([, options]) => new Headers(options?.headers).get('If-None-Match') === 'W/"current"'
+			)
+		).toBe(true);
+		expect(storage.entries.size).toBe(32);
+	});
+
 	it('honors no-store, source age, and failures without returning stale data', async () => {
 		let clock = 10_000;
 		const old = snapshot({ score: 20 }, 'W/"old"', 60);
@@ -288,6 +334,49 @@ describe('shared browser API reads', () => {
 		await expect(client.request('accessibility/summary')).resolves.toEqual({ score: 30 });
 		await expect(client.request('accessibility/summary')).resolves.toEqual({ score: 31 });
 		expect(fetcher).toHaveBeenCalledTimes(4);
+	});
+
+	it('validates street context before reading stale disk bytes and reuses the matching parsed map', async () => {
+		const storage = browserStorage();
+		const stale = new Response('{"features":["old"]}', {
+			headers: { etag: 'W/"old"', 'x-mobility-cache-expires': '1000' }
+		});
+		const readStale = vi.spyOn(stale, 'text');
+		storage.open.mockResolvedValueOnce({ match: async () => stale } as unknown as Cache);
+		const fetcher = vi
+			.fn<typeof fetch>()
+			.mockResolvedValueOnce(snapshot({ features: ['new'] }, 'W/"new"', 0))
+			.mockResolvedValueOnce(
+				new Response(null, {
+					status: 304,
+					headers: { etag: 'W/"new"', 'cache-control': 'private, max-age=0, must-revalidate' }
+				})
+			);
+		const client = createApiClient({ fetcher, storage: () => storage, now: () => 2000 });
+		const context = await client.request('map/context?bbox=73.4,4.1,73.6,4.3');
+		expect(context).toEqual({ features: ['new'] });
+		expect(readStale).not.toHaveBeenCalled();
+		expect(fetcher.mock.calls[0][1]?.headers).toEqual({ 'If-None-Match': 'W/"old"' });
+		expect(await client.request('map/context?bbox=73.4,4.1,73.6,4.3')).toBe(context);
+		expect(fetcher.mock.calls[1][1]?.headers).toEqual({ 'If-None-Match': 'W/"new"' });
+	});
+
+	it('recovers from corrupt saved bytes after a matching validator without returning stale data', async () => {
+		const storage = browserStorage();
+		storage.open.mockResolvedValueOnce({
+			match: async () =>
+				new Response('{broken', {
+					headers: { etag: 'W/"a"', 'x-mobility-cache-expires': '1000' }
+				})
+		} as unknown as Cache);
+		const fetcher = vi
+			.fn<typeof fetch>()
+			.mockResolvedValueOnce(new Response(null, { status: 304 }))
+			.mockResolvedValueOnce(snapshot({ features: ['source'] }));
+		const client = createApiClient({ fetcher, storage: () => storage, now: () => 2000 });
+		await expect(client.request('map/features')).resolves.toEqual({ features: ['source'] });
+		expect(fetcher).toHaveBeenCalledTimes(2);
+		expect(fetcher.mock.calls[1][1]?.headers).toBeUndefined();
 	});
 
 	it('invalidates public snapshots after an accepted source change and does not join older reads', async () => {

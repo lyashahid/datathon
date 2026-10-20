@@ -1,12 +1,12 @@
 # Prediction source receipt
 
-Checked 11 October 2026. The application uses an audited experimental monthly outlook, and a bounded private capture utility for evaluating whether a future passage-time pilot is feasible. No evaluated bus arrival model is claimed.
+This is the retained **11 October 2026 acquisition and historical-model receipt**. It documents the checked source bytes and a completed bounded capture, not the current forecasting policy. Use the [forecast issue workflow](forecast-issue-workflow.md) for the active model, source acceptance and maintained verification commands. No evaluated bus arrival model is claimed.
 
 ## Monthly statistics
 
-`scripts/prediction-data.py` produces `data/public/prediction-source.json`. Its default mode downloads the four official publication workbooks, reads their first publication worksheet, verifies exact calendar ranges and category labels, and records SHA-256 checksums and historical overlap comparisons. It does not use internal Workings sheets. `--audit PATH` supports rebuilding from the independently saved audit artifact.
+The original acquisition pipeline produced `data/public/prediction-source.json`. It downloaded the four official publication workbooks, reads their first publication worksheet, verifies exact calendar ranges and category labels, and records SHA-256 checksums and historical overlap comparisons. It did not use internal Workings sheets. The former acquisition utility is not shipped as a maintained refresh command; retain original workbook bytes and receipts when reproducing this audit.
 
-The importer checks every row-4 month header before assigning dates, accepts only explicit English month aliases and surrounding whitespace, and verifies every January row-3 year anchor plus any repeated year cells. Source-specific worksheet titles and calendar starts are pinned: June and May 2026 begin January 2022 at column AB; the December 2024 issue begins at BJ. The December 2023 issue's actual first-sheet title is `Nov 2022`, retained as an audited layout exception rather than inferred from its filename. The latest table headings and exact trusted column-C labels (`Male' ( VM Ferry )`, `Villigili' ( VM Ferry )`, `Male'/Hulhumale`) are checked; all six bus quarantine labels are pinned in both latest and prior-May sheets. A layout or category change stops preparation instead of silently relabeling values. Older overlap rows are located by these trusted constants, never by a newly discovered latest label. The `--audit` path also checks exact category/row identity, every month in order, finite nonnegative integer counts, and quarantine labels.
+The importer checks every row-4 month header before assigning dates, accepts only explicit English month aliases and surrounding whitespace, and verifies every January row-3 year anchor plus any repeated year cells. Source-specific worksheet titles and calendar starts are pinned: June and May 2026 begin January 2022 at column AB; the December 2024 issue begins at BJ. The December 2023 issue's actual first-sheet title is `Nov 2022`, retained as an audited layout exception rather than inferred from its filename. The latest table headings and exact trusted column-C labels (`Male' ( VM Ferry )`, `Villigili' ( VM Ferry )`, `Male'/Hulhumale`) are checked; all six bus quarantine labels are pinned in both latest and prior-May sheets. A layout or category change stops preparation instead of silently relabeling values. Older overlap rows are located by these trusted constants, never by a newly discovered latest label. The independent audit also checked exact category/row identity, every month in order, finite nonnegative integer counts, and quarantine labels.
 
 On 11 October 2026, all four official workbooks passed these guards in a fresh in-memory import, producing the expected 54/54/53 observations. No app source or capture was rewritten in this verification; `data/public/prediction-source.json` remained SHA-256 `b472467e54fabfc5b61cbf3c8d0e46279609f7accf5fe609e8a88add4d0d3742`.
 
@@ -20,7 +20,7 @@ Two separately labeled VM ferry endpoint series have 54 contiguous monthly obser
 
 The published quantity is passenger movement. Boarding/alighting, endpoint direction and unique-person interpretations are unresolved. Ferry endpoints remain separate; free-of-charge passengers are not added to route categories. No route/stop/peak demand allocation, occupancy or congestion measure is inferred. The already explored history and revised-vintage evaluation cannot be described as an untouched final test. Publication lag is distinct from forecast issue time.
 
-`src/lib/server/data/predictionSource.ts` validates the durable JSON before the read-only `/api/prediction` endpoint uses it. Calendar gaps, duplicates, invalid counts/units, unverified source URLs, quarantine leakage and raw vehicle identity fields cause validation failure.
+The current backend reads the durable source through its forecasting service. Calendar gaps, duplicates, invalid counts/units, unverified source URLs and quarantine leakage are invalid. The active source contract and explicit staged acceptance flow are documented in the [forecast issue workflow](forecast-issue-workflow.md).
 
 The validator now also requires the complete declared workbook receipt set and publication-sheet labels, a preparation version and consistent actual publication/check dates. Forecast API responses expose these workbook hashes and the revised-vintage qualification. Deliberate issue/score records and the resource review are documented in the [forecast issue workflow](forecast-issue-workflow.md). The source snapshot itself was not regenerated for this feature.
 
@@ -30,11 +30,11 @@ The [official RTL public client](https://rtl.mv/) uses an unauthenticated POST t
 
 [Public RTL terms](https://rtl.mv:7781/maldives/cms/CMSAllGetTermsCondition) were retrievable and describe carriage/sales/as-is conditions; an explicit open redistribution licence has not been established. Public access and private research capture are not a claim of open reuse authority.
 
-Run `node scripts/collect-bus-positions.mjs --minutes 10`. Default sampling is approximately once per 60 seconds, bounded to ten minutes. `--minutes` permits 1–120 minutes; faster-than-minute collection is rejected. Source refusal (401/403/404/429), schema/route failures or three consecutive request failures stop collection. Transient errors use bounded backoff and each request has a timeout.
+The completed collector sampled approximately once per 60 seconds for ten minutes. Its acquisition-time bounds allowed 1–120 minutes and rejected faster-than-minute collection. This collector is no longer a maintained command in the repository. Source refusal (401/403/404/429), schema/route failures or three consecutive request failures stop collection. Transient errors use bounded backoff and each request has a timeout.
 
 The parser immediately discards plates and raw identifiers, creates session-specific salted vehicle pseudonyms, excludes invalid coordinates and logs only aggregate counts. Normalized snapshots, quality/checksum records and dated replay are retained beneath ignored `data/raw/prediction/`. Repeated positions remain a quality flag: stationary buses cannot be declared stale from position equality alone. Retrieval time does not certify GPS measurement freshness. No persistent automation was installed.
 
-After a capture completes, `scripts/prediction-data.py --capture-receipt PATH` can include its aggregate receipt in the public source audit. It publishes snapshot/vehicle/day counts and changing-position intervals, source/request identity, timestamps and qualifications. It does not copy coordinates, vehicle pseudonyms or plates into the public source.
+The acquisition pipeline included an aggregate capture receipt in the public source audit. It published snapshot/vehicle/day counts and changing-position intervals, source/request identity, timestamps and qualifications. It does not copy coordinates, vehicle pseudonyms or plates into the public source.
 
 The bounded ten-minute sample is source-readiness evidence, not enough independent trips/days to train or evaluate a passage-time forecast. A later pilot needs trustworthy label timing, directional anchors, trip/day separation, mandatory baseline evaluation and calibrated uncertainty before release.
 
@@ -42,7 +42,7 @@ The performed capture ran 11 October 2026, 16:48:56–16:58:56 Maldives time (UT
 
 ## Independent statistical release check
 
-The October 2026 outlook uses a four-month horizon for ferry and five-month horizon for bus. An independent Python calculation reproduced the model selection, all six later evaluation rows, MAE, WAPE, and empirical range coverage from the checked source; these matched the live `/api/prediction` response. MAE has units of passenger movements. WAPE below is an aggregate error percentage, not accuracy.
+The October 2026 outlook uses a four-month horizon for ferry and five-month horizon for bus. An independent Python calculation reproduced the model selection, all six later evaluation rows, MAE, WAPE, and empirical range coverage from the checked source; these matched the historical prediction response on the review date. The table below belongs to that earlier policy and must not be presented as the active v4 result. MAE has units of passenger movements. WAPE below is an aggregate error percentage, not accuracy.
 
 | Series             | Earlier-selected model | Later-six MAE | Selected WAPE | Persistence WAPE | Seasonal WAPE | Mean-three WAPE | Mean-six WAPE | Empirical range coverage |
 | ------------------ | ---------------------- | ------------: | ------------: | ---------------: | ------------: | --------------: | ------------: | -----------------------: |
@@ -56,15 +56,8 @@ The selection/evaluation embargo is correct for reference-month order. Ferry use
 
 Public capture receipts are source/route-pinned, checked for nonnegative integer counts and changing intervals no greater than snapshots minus one, and checked for actual sample times inside the collection window. Accidental position metadata is removed by an allowlist; raw identity fields are rejected. API coverage uses actual first/last sample receipts, rather than collection start/stop clocks. The verified endpoint publishes ten snapshots/four vehicles/nine changing intervals, an explicit stopped-collector qualification, and `replay: null`.
 
-## Verification commands
+## Current verification and refresh
 
-```text
-python scripts/prediction-data.py
-python -m unittest discover -s scripts -p test_prediction_data.py -v
-node --test scripts/collect-bus-positions.test.mjs
-npx vitest run src/lib/server/data/predictionSource.test.ts
-npx eslint scripts/collect-bus-positions.mjs scripts/collect-bus-positions.test.mjs src/lib/server/data/predictionSource.ts src/lib/server/data/predictionSource.test.ts src/routes/api/prediction/+server.ts
-npm run check
-```
+Use the maintained [forecast issue workflow](forecast-issue-workflow.md) for source staging, acceptance, frozen issues and test commands. `backend/tests/test_forecasts.py` and `backend/tests/test_datasets.py` cover the active contracts; the current audit generator is `scripts/analyse-mobility-data.py`.
 
-The Python preparation requires `requests` and `openpyxl`; its default command writes the source asset, while the six Python regression tests are network-free and do not write it. They cover checked month aliases, shifted month headers, year-anchor/repeated-year drift, swapped category labels, middle-calendar drift through `--audit`, invalid counts and changed quarantine labels. Capture tests cover identity removal/session pseudonym stability, source/schema/coordinate checks, unresolved freshness and bounded conservative sampling. Source tests cover real checked calendar ranges, missing/duplicate periods, invalid counts/units, quarantine handling and nested identity leakage.
+These checks validate the retained structured evidence and model behavior. They do not redownload the original workbooks, authenticate a newly uploaded workbook against its publisher, run a position collector or turn this dated receipt into a new source review. New data requires its own source hashes, publication dates and explicit review.

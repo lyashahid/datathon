@@ -24,12 +24,16 @@ from shapely.strtree import STRtree
 from app.routing.engine import _distance_m
 
 CORRIDOR_SOURCE = "coastline_avoiding_planning_corridor"
+CORRIDOR_MODEL_VERSION = 2
 CORRIDOR_QUALIFICATION = (
     "Modeled corridor avoiding mapped island shorelines, with short approaches to "
     "the existing mapped terminals. Depth, reefs, navigable channels, berth access "
     "and operator approval are unverified; this is not navigation clearance."
 )
-MAX_VERTICES = 200
+# Dense atoll crossings need more shoreline vertices than short local hops.
+# Keep the graph bounded without discarding any obstacle or weakening the
+# source-land validation, shore approach limit or water clearance.
+MAX_VERTICES = 512
 MAX_SHORE_APPROACH_M = 250
 CLEARANCE_M = 30
 

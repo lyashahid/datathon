@@ -14,7 +14,7 @@ await mkdir(output, { recursive: true });
 const report = {
 	baseURL,
 	fixtureQualification:
-		'Synthetic movement observations are browser-only QA fixtures. Actual map geometry, infrastructure targets and land route use the backend. Draft changes use disposable browser storage; no backend/source stores are written.',
+		'Synthetic movement observations are browser-only QA fixtures. Actual map geometry and infrastructure targets use the backend. Draft changes use disposable browser storage; no backend/source stores are written.',
 	checks: [],
 	errors: []
 };
@@ -91,35 +91,6 @@ async function check(name, work) {
 		});
 		throw error;
 	}
-}
-/** @param {'start'|'end'} endpoint @param {[number,number]} coordinates */
-async function pick(endpoint, coordinates) {
-	const map = page.locator('.national-map');
-	const endpointsBefore = Number(await map.getAttribute('data-journey-endpoints'));
-	// Choosing A automatically arms B and keeps the endpoint controls available.
-	const autoChoosingEnd =
-		endpoint === 'end' &&
-		endpointsBefore === 1 &&
-		(await map.getAttribute('class'))?.includes('is-picking');
-	if (!autoChoosingEnd)
-		await page
-			.getByRole('button', {
-				name: endpoint === 'start' ? 'Choose start on map' : 'Choose destination on map',
-				exact: true
-			})
-			.click();
-	await expect(map).toHaveClass(/is-picking/);
-	const point = await project(coordinates);
-	assert.ok(
-		await page.evaluate(
-			({ x, y }) => document.elementFromPoint(x, y)?.matches('.maplibregl-canvas') ?? false,
-			point
-		),
-		'The selected real street must be unobscured'
-	);
-	await page.mouse.click(point.x, point.y);
-	if (endpoint === 'start' && endpointsBefore === 0) await expect(map).toHaveClass(/is-picking/);
-	else await expect(map).not.toHaveClass(/is-picking/);
 }
 /** @param {[number,number]} position @param {import('@playwright/test').Page} [targetPage] */
 async function project(position, targetPage = page) {
@@ -212,10 +183,11 @@ try {
 	);
 	await check('Aircraft, vessel and undated bus observations are visible in Explore', async () => {
 		await expect(page.locator('.national-map')).toHaveAttribute('data-movement-positions', '3');
-		await expect(page.locator('.map-movement-status')).toContainText(
-			'2 dated · 1 time unknown · 0 stale'
+		const movement = page.locator('.map-movement-status');
+		await expect(movement.locator('.movement-counts > span')).toHaveText(['1', '1', '1']);
+		await expect(movement).not.toContainText(
+			/time unknown|freshness|provider observation times|Checking nearby movement|Provider observations/
 		);
-		await expect(page.locator('.map-movement-status')).toContainText('Received');
 		await page.getByRole('button', { name: 'View', exact: true }).click();
 		await expect(page.getByLabel('Movement feed coverage', { exact: true })).toContainText(
 			'browser-qa'
@@ -316,114 +288,7 @@ try {
 		);
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 	});
-	await check(
-		'Start and destination pins appear before calculation, real route appears and clears on edited input',
-		async () => {
-			await page.getByRole('button', { name: 'Directions', exact: true }).click();
-			const streetsResponse = await page.request.get(
-				`${baseURL}/api/backend/map/context?bbox=73.48,4.15,73.54,4.21`
-			);
-			assert.equal(streetsResponse.status(), 200);
-			/** @type {import('geojson').FeatureCollection<import('geojson').Geometry, {kind:string}>} */
-			const streets = await streetsResponse.json();
-			/** @type {Array<[number,number]>} */
-			let endpoints = [];
-			/** @type {[number,number]|undefined} */
-			let editedEnd;
-			for (const road of streets.features) {
-				if (road.properties?.kind !== 'road' || road.geometry.type !== 'LineString') continue;
-				const coordinates = road.geometry.coordinates;
-				const pair = /** @type {Array<[number,number]>} */ ([coordinates[0], coordinates.at(-1)]);
-				if (pair.some((point) => !point)) continue;
-				const projected = await Promise.all(pair.map((point) => project(point)));
-				if (Math.hypot(projected[0].x - projected[1].x, projected[0].y - projected[1].y) < 40)
-					continue;
-				if (
-					!(await page.evaluate(
-						(points) =>
-							points.every(
-								({ x, y }) =>
-									x > 100 &&
-									y > 180 &&
-									x < innerWidth - 100 &&
-									y < innerHeight - 180 &&
-									document.elementFromPoint(x, y)?.matches('.maplibregl-canvas')
-							),
-						projected
-					))
-				)
-					continue;
-				// A third point on this same real road avoids clicking the existing A pin when editing B.
-				for (let index = 1; index < coordinates.length; index++) {
-					const candidate = /** @type {[number,number]} */ ([
-						(coordinates[index - 1][0] + coordinates[index][0]) / 2,
-						(coordinates[index - 1][1] + coordinates[index][1]) / 2
-					]);
-					const point = await project(candidate);
-					if (
-						projected.every((end) => Math.hypot(point.x - end.x, point.y - end.y) > 30) &&
-						(await page.evaluate(
-							({ x, y }) => document.elementFromPoint(x, y)?.matches('.maplibregl-canvas'),
-							point
-						))
-					) {
-						editedEnd = candidate;
-						break;
-					}
-				}
-				if (!editedEnd) continue;
-				endpoints = pair;
-				break;
-			}
-			assert.equal(
-				endpoints.length,
-				2,
-				'Two visible points on the same real mapped road are available'
-			);
-			assert.ok(editedEnd, 'A distinct point on the same real road is available for editing B');
-			await pick('start', endpoints[0]);
-			await expect(page.locator('.national-map')).toHaveAttribute('data-journey-endpoints', '1');
-			await pick('end', endpoints[1]);
-			await expect(page.locator('.national-map')).toHaveAttribute('data-journey-endpoints', '2');
-			await expect(page.locator('.national-map')).toHaveAttribute(
-				'data-journey-route-segments',
-				'0'
-			);
-			const response = page.waitForResponse((response) =>
-				response.url().includes('/api/backend/routing/land')
-			);
-			await page.getByRole('button', { name: 'Find directions', exact: true }).click();
-			const routeResponse = await response;
-			const route = await routeResponse.json();
-			await writeFile(
-				path.join(output, 'actual-land-route-response.json'),
-				JSON.stringify({ httpStatus: routeResponse.status(), body: route }, null, 2)
-			);
-			assert.equal(routeResponse.status(), 200, JSON.stringify(route));
-			assert.equal(route.status, 'ok');
-			assert.ok(route.geometry.length > 1);
-			await expect(page.locator('.national-map')).toHaveAttribute(
-				'data-journey-route-segments',
-				'1'
-			);
-			await page.screenshot({ path: path.join(output, 'actual-land-route-endpoints.png') });
-			await pick('end', editedEnd);
-			await expect(page.locator('.national-map')).toHaveAttribute(
-				'data-journey-route-segments',
-				'0'
-			);
-			return {
-				endpoints,
-				editedEnd,
-				distance_m: route.distance_m,
-				snap_distance_m: route.snap_distance_m,
-				points: route.geometry.length
-			};
-		}
-	);
 	await check('Mobile map key stays compact, opens its full meanings and closes', async () => {
-		await page.getByRole('button', { name: 'Close directions', exact: true }).click();
-		await expect(page.locator('.explore-journey')).toBeHidden();
 		await page.setViewportSize({ width: 390, height: 844 });
 		const toggle = page
 			.locator('.mobile-key-toggle')

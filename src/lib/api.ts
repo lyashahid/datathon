@@ -18,6 +18,7 @@ const MAX_MEMORY_ENTRIES = 40;
 const MAX_PERSISTENT_ENTRIES = 32;
 
 type CachedValue = { value: unknown; expires: number; bytes: number; etag?: string };
+type SavedValue = { response: Response; expires: number; etag: string };
 type Flight = { controller: AbortController; promise: Promise<unknown>; subscribers: number };
 type Storage = Pick<CacheStorage, 'open' | 'delete'>;
 
@@ -84,23 +85,48 @@ export function createApiClient({
 		};
 	}
 
-	async function persisted(path: string): Promise<CachedValue | null> {
+	async function persisted(path: string): Promise<SavedValue | null> {
 		try {
 			const cache = await storage()?.open(cacheName);
 			const response = await cache?.match(backendUrl(path, basePath));
 			if (!response?.headers.get('etag')) return null;
 			const expires = Number(response.headers.get('x-mobility-cache-expires'));
 			if (!Number.isFinite(expires) || expires <= 0) return null;
-			const text = await response.clone().text();
 			return {
-				value: JSON.parse(text),
+				response,
 				expires,
-				bytes: text.length * 2,
 				etag: response.headers.get('etag')!
 			};
 		} catch {
 			return null;
 		}
+	}
+
+	async function restore(saved: SavedValue): Promise<CachedValue | null> {
+		try {
+			const text = await saved.response.text();
+			return {
+				value: JSON.parse(text),
+				expires: saved.expires,
+				bytes: text.length * 2,
+				etag: saved.etag
+			};
+		} catch {
+			return null;
+		}
+	}
+
+	function startupSnapshot(request: Request) {
+		const url = new URL(request.url);
+		const path = url.pathname.slice(backendUrl('', basePath).length);
+		return (
+			/^(?:national\/summary|accessibility\/summary|planning\/(?:baseline|sea-network|air-network))$/.test(
+				path
+			) ||
+			(path === 'map/features' &&
+				url.searchParams.get('layer') === 'islands' &&
+				!url.searchParams.has('island_id'))
+		);
 	}
 
 	async function persist(
@@ -126,10 +152,15 @@ export function createApiClient({
 				return;
 			}
 			const keys = await cache.keys();
+			// Viewport and island browsing should not evict the national snapshots
+			// needed on restart. Keep FIFO order within each group and the same cap.
+			const eviction = keys
+				.map((key, order) => ({ key, order, priority: Number(startupSnapshot(key)) }))
+				.sort((a, b) => a.priority - b.priority || a.order - b.order);
 			await Promise.all(
-				keys
+				eviction
 					.slice(0, Math.max(0, keys.length - MAX_PERSISTENT_ENTRIES))
-					.map((key) => cache.delete(key))
+					.map(({ key }) => cache.delete(key))
 			);
 		} catch {
 			// Cache Storage is an optional acceleration, including in private browsing.
@@ -166,22 +197,37 @@ export function createApiClient({
 			controller.signal.throwIfAborted();
 		}
 		let previous = memory.get(path);
+		let saved: SavedValue | null = null;
 		if (policy?.persistent && !previous) {
-			const stored = await persisted(path);
+			saved = await persisted(path);
 			controller.signal.throwIfAborted();
-			if (epoch === generation && stored) {
-				previous = stored;
-				if (previous.expires > now()) {
-					remember(path, previous);
+			if (epoch === generation && saved && saved.expires > now()) {
+				previous = (await restore(saved)) ?? undefined;
+				saved = null;
+				controller.signal.throwIfAborted();
+				if (previous) {
+					if (epoch === generation) remember(path, previous);
 					return previous.value;
 				}
 			}
 		}
-		const response = await fetcher(backendUrl(path, basePath), {
+		const validator = previous?.etag ?? saved?.etag;
+		let response = await fetcher(backendUrl(path, basePath), {
 			signal: controller.signal,
-			headers: previous?.etag ? { 'If-None-Match': previous.etag } : {}
+			headers: validator ? { 'If-None-Match': validator } : {}
 		});
 		controller.signal.throwIfAborted();
+		// Revalidate stale disk entries before reading/parsing their potentially large
+		// bodies. A changed source needs only its new response, with no obsolete parse.
+		if (response.status === 304 && !previous && saved) {
+			previous = (await restore(saved)) ?? undefined;
+			controller.signal.throwIfAborted();
+			if (!previous) {
+				// Corrupt or evicted local bytes cannot satisfy a 304; recover from the source.
+				response = await fetcher(backendUrl(path, basePath), { signal: controller.signal });
+				controller.signal.throwIfAborted();
+			}
+		}
 		const cacheControl = response.headers.get('cache-control') ?? '';
 		const maxAge = /(?:^|,)\s*max-age=(\d+)/i.exec(cacheControl)?.[1];
 		const age = Math.max(0, Number(response.headers.get('age')) || 0) * 1000;

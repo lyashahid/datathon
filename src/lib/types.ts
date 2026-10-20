@@ -37,6 +37,7 @@ export interface Facility {
 	match_status?: string;
 	source?: string;
 	island_id?: string;
+	tags?: Record<string, string>;
 }
 export interface TransportFeature extends Facility {
 	geometry: Geometry;
@@ -67,23 +68,65 @@ export interface AccessibilityAssessment {
 	>;
 	limitations: string[];
 }
+export interface IslandPopulation {
+	total: number | null;
+	year: number | null;
+	source?: string | null;
+	source_url?: string | null;
+	status?: 'census' | 'unavailable';
+	qualification?: string;
+	localities?: string[];
+	record_count?: number;
+	school_age?: number | null;
+	early_childhood?: number | null;
+	older_adult?: number | null;
+	working_age?: number | null;
+	demographic_breakdown?: boolean;
+	by_age_sex?: Record<string, { both?: number; female?: number; male?: number }>;
+	by_sex?: { both?: number; female?: number; male?: number };
+	by_nationality?: { total?: number; Maldivian?: number; foreign?: number };
+	area_ha?: number | null;
+	area_km2?: number | null;
+	density_persons_per_km2?: number | null;
+	density_pressure_score?: number | null;
+	density_data_available?: boolean;
+}
+export interface AccessibilityDomainEvidence {
+	score: number;
+	best_distance_m?: number | null;
+	distance_method?: string | null;
+	missing_data: string[];
+	population_pressure_factor?: number;
+	density_factor?: number;
+	mapped_counts?: {
+		bus_stop_count?: number;
+		airport_count?: number;
+		marine_terminal_count?: number;
+	};
+	ferry_access?: 'available' | 'provisional' | 'none';
+}
 export interface Accessibility {
 	island_id: string;
 	score: number;
 	confidence: number;
-	domains: Record<string, { score: number; best_distance_m?: number; missing_data: string[] }>;
+	domains: Record<string, AccessibilityDomainEvidence>;
 	missing_data: string[];
 	explanation: string[] | string;
 	config: Record<string, unknown>;
 	assessment?: AccessibilityAssessment;
-	population?: { total: number | null; year: number | null };
+	population?: IslandPopulation;
 }
 export interface OfficialIslandDemographics {
 	island_id: string;
 	year: number;
 	residents_total: number | null;
 	maldivians_total: number | null;
+	residents_female?: number | null;
+	residents_male?: number | null;
+	foreigners_total?: number | null;
 	maldivian_children_0_17_total: number | null;
+	maldivian_children_0_14_total?: number | null;
+	maldivian_working_age_15_64_total?: number | null;
 	maldivian_older_adults_65_plus_total: number | null;
 }
 export interface OfficialIslandProjection {
@@ -119,19 +162,7 @@ export interface IslandProfile {
 		centroid?: Coordinates;
 		area_ha?: number;
 	};
-	population: {
-		total: number | null;
-		year: number | null;
-		source: string | null;
-		source_url?: string | null;
-		status?: 'census' | 'unavailable';
-		qualification?: string;
-		localities?: string[];
-		record_count: number;
-		school_age?: number;
-		older_adult?: number;
-		demographic_breakdown: boolean;
-	};
+	population: IslandPopulation;
 	official_island_context?: OfficialIslandContext;
 	infrastructure: { items: Facility[]; total: number };
 	transport: { items: TransportFeature[]; total: number };
@@ -233,6 +264,9 @@ export interface LiveEvent {
 	observed_at: string | null;
 	retrieved_at: string;
 	stale: boolean;
+	position_age_seconds?: number | null;
+	position_time_quality?: 'provider_observed' | 'retrieval_only';
+	source_quality?: string;
 	properties: Record<string, unknown>;
 }
 export interface LiveProvider {

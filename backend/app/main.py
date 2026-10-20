@@ -19,6 +19,7 @@ from app.api.errors import (
 )
 from app.api.repository import NormalizedRepository
 from app.api.routes.accessibility import router as accessibility_router
+from app.api.routes.air import router as air_router
 from app.api.routes.conditions import router as conditions_router
 from app.api.routes.data_updates import router as data_updates_router
 from app.api.routes.datasets import router as datasets_router
@@ -32,7 +33,7 @@ from app.api.routes.planning_reports import router as planning_reports_router
 from app.api.routes.recommendations import router as recommendations_router
 from app.api.routes.routing import router as routing_router
 from app.api.routes.simulation import router as simulation_router
-from app.api.snapshot_cache import SnapshotCacheMiddleware
+from app.api.snapshot_cache import SnapshotCacheMiddleware, network_snapshot_inputs
 from app.cli.precompute import precompute_startup
 from app.conditions.service import ConditionsService
 from app.config.settings import Settings
@@ -125,6 +126,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         SnapshotCacheMiddleware,
         cache=app.state.computed_cache,
         source=app.state.source_version,
+        network_inputs=network_snapshot_inputs,
     )
     app.add_middleware(GZipMiddleware, minimum_size=2048, compresslevel=5)
     app.state.planning = PlanningService(
@@ -191,6 +193,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(forecasts_router)
     app.include_router(datasets_router)
     app.include_router(planning_router)
+    app.include_router(air_router)
     app.include_router(planning_reports_router)
     app.include_router(conditions_router)
     app.include_router(data_updates_router)

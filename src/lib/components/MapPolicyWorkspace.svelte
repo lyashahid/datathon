@@ -1,14 +1,16 @@
 <script lang="ts">
 	import { onMount, tick, untrack } from 'svelte';
+	import type { TransitionConfig } from 'svelte/transition';
 	import { resizable } from '#lib/resizable.js';
 	import { surfaceMotion } from '#lib/surface-motion.js';
 	import { mapPanelLayout } from '#lib/map-panel-layout.js';
-	import { animatedSelection } from '#lib/motion.js';
+	import { animatedSelection, shouldAnimateMotion } from '#lib/motion.js';
 	import type { BusConnectionDraft } from '#lib/bus-planning.js';
 	import {
 		ArrowRight,
 		BusFront,
 		Check,
+		ChevronUp,
 		GraduationCap,
 		Hospital,
 		Layers,
@@ -64,7 +66,7 @@
 		type PlanningReviewRequest
 	} from '#lib/proposal-review.js';
 	import type { PolicyLens, PolicyOpportunities, PolicyDomain } from '#lib/policy-opportunities.js';
-	import type { Coordinates, MapFeatures } from '#lib/types.js';
+	import type { Coordinates, IslandProfile, MapFeatures } from '#lib/types.js';
 	import {
 		canConfirmFerry,
 		ferryFeatureBounds,
@@ -77,6 +79,9 @@
 	import ProposalCostStrip from './ProposalCostStrip.svelte';
 	import ProposalForecastReview from './ProposalForecastReview.svelte';
 	import TransportImpact from './TransportImpact.svelte';
+	import IslandOverview from './IslandOverview.svelte';
+	import AccessScore from './AccessScore.svelte';
+	import { buildIslandOverview } from '#lib/island-overview.js';
 	import { transportImpactHeadline, type TransportImpactData } from '#lib/transport-impact.js';
 	import { serviceTimingSummary, transportServiceOperations } from '#lib/transport-service.js';
 
@@ -129,17 +134,22 @@
 		gap_cells?: FeatureCollection;
 		features?: FeatureCollection;
 		hex_grid?: FeatureCollection;
+		coverage_fill?: FeatureCollection;
 		population_basis?: PopulationBasis;
 		journey_population_basis?: PopulationBasis;
 		coverage?: PlanningCoverage;
 	};
 	const preparedGapDetails = new WeakMap<
 		LocalGapDetail,
-		{ grid: FeatureCollection; gaps: FeatureCollection }
+		{ grid: FeatureCollection; gaps: FeatureCollection; coverageFill: FeatureCollection }
 	>();
 	let {
 		islandId,
 		islandName,
+		profile = null,
+		profileLoading = false,
+		profileError = '',
+		onRetryProfile,
 		mapFeatures = null,
 		boundaryFeatures = null,
 		boundaryError = '',
@@ -171,6 +181,10 @@
 	}: {
 		islandId: string | null;
 		islandName: string;
+		profile?: IslandProfile | null;
+		profileLoading?: boolean;
+		profileError?: string;
+		onRetryProfile?: () => void;
 		mapFeatures?: MapFeatures | null;
 		boundaryFeatures?: MapFeatures | null;
 		boundaryError?: string;
@@ -206,13 +220,25 @@
 		onConsume?: () => void;
 	} = $props();
 	let mounted = $state(false);
+	let viewportWidth = $state(0);
+	let viewportHeight = $state(0);
+	const overviewMaxHeight = $derived(
+		Math.max(
+			180,
+			viewportHeight - (viewportWidth <= 700 ? 182 : viewportWidth < 1180 ? 136 : 74) - 24
+		)
+	);
 	let opened = $state(false);
 	let section = $state<'needs' | 'proposal'>('proposal');
+	let scoreDockBounds: DOMRect | null = null;
+	let returningToScore = false;
 	let national = $state.raw<PolicyOpportunities | null>(null);
 	let baseline = $state.raw<MapBaseline | null>(null);
 	let gapCells = $state.raw<FeatureCollection>(emptyFeatures());
+	let coverageFill = $state.raw<FeatureCollection>(emptyFeatures());
 	let displayGrid = $state.raw<FeatureCollection>(emptyFeatures());
 	let capitalGapMaps = $state.raw<Record<string, FeatureCollection>>({});
+	let capitalCoverageFills = $state.raw<Record<string, FeatureCollection>>({});
 	let nearbyGapVersion = $state(0);
 	let nearbyGapLoading = $state(false);
 	let nearbyGapError = $state('');
@@ -279,6 +305,10 @@
 	let ferryLoading = $state(false);
 	let ferryPreviewing = $state(false);
 	let ferryError = $state('');
+	let overviewConnection = $state.raw<{ key: string; value: FerryConnectivity } | null>(null);
+	let overviewConnectionLoading = $state(false);
+	let overviewConnectionError = $state('');
+	let overviewConnectionVersion = $state(0);
 
 	let capitalBudget = $state<number | string | null | undefined>(150_000_000);
 	let annualBudget = $state<number | string | null | undefined>(25_000_000);
@@ -408,6 +438,13 @@
 	);
 	const ferrySignature = $derived(JSON.stringify(ferryInput.payload));
 	const ferryConnectionKey = $derived(`${islandId}:${ferryDestination}:${date}`);
+	const overviewConnectionKey = $derived(`${islandId}:${date}:${overviewConnectionVersion}`);
+	const overviewScore = $derived(
+		profile?.island.id === islandId ? buildIslandOverview(profile).score : null
+	);
+	const islandConnection = $derived(
+		overviewConnection?.key === overviewConnectionKey ? overviewConnection.value : null
+	);
 	const connection = $derived(
 		ferryConnection?.key === ferryConnectionKey ? ferryConnection.value : null
 	);
@@ -723,6 +760,17 @@
 				? capitalIslandIds.flatMap((id) => capitalGapMaps[id]?.features ?? [])
 				: restoredScope === scopedKey
 					? gapCells.features
+					: []
+		};
+	});
+	const mapCoverageFill = $derived.by((): FeatureCollection => {
+		if (!islandId) return emptyFeatures();
+		return {
+			type: 'FeatureCollection',
+			features: capitalIslandIds.includes(islandId)
+				? capitalIslandIds.flatMap((id) => capitalCoverageFills[id]?.features ?? [])
+				: restoredScope === scopedKey
+					? coverageFill.features
 					: []
 		};
 	});
@@ -1132,9 +1180,13 @@
 			cancelSuggestions();
 			baseline = null;
 			gapCells = emptyFeatures();
+			coverageFill = emptyFeatures();
 			displayGrid = emptyFeatures();
 			capitalGapMaps = {};
+			capitalCoverageFills = {};
 			nearbyGapVersion += 1;
+			overviewConnection = null;
+			overviewConnectionVersion += 1;
 			nearbyGapError = '';
 			evaluation = null;
 			resultTime = '';
@@ -1243,12 +1295,16 @@
 			const source = detail.gap_cells ?? detail.features ?? emptyFeatures();
 			prepared = {
 				grid,
-				gaps: grid.features.length ? displayGapHexes(source, grid) : emptyFeatures()
+				gaps: grid.features.length ? displayGapHexes(source, grid) : emptyFeatures(),
+				// Colour interpolation is presentation only; keep it out of resident and proposal metrics.
+				coverageFill: detail.coverage_fill ?? emptyFeatures()
 			};
 			preparedGapDetails.set(detail, prepared);
 		}
 		if (capitalIslandIds.includes(scope) && capitalGapMaps[scope] !== prepared.gaps)
 			capitalGapMaps = { ...capitalGapMaps, [scope]: prepared.gaps };
+		if (capitalIslandIds.includes(scope) && capitalCoverageFills[scope] !== prepared.coverageFill)
+			capitalCoverageFills = { ...capitalCoverageFills, [scope]: prepared.coverageFill };
 		return {
 			...prepared,
 			baseline: {
@@ -1304,6 +1360,7 @@
 			ferrySearch = '';
 			ferryConnection = null;
 			gapCells = emptyFeatures();
+			coverageFill = emptyFeatures();
 			displayGrid = emptyFeatures();
 			operations = [];
 			history = [];
@@ -1380,6 +1437,7 @@
 			if (controller.signal.aborted) return;
 			displayGrid = evidence.grid;
 			gapCells = evidence.gaps;
+			coverageFill = evidence.coverageFill;
 			baseline = evidence.baseline;
 		} catch (cause) {
 			if (!controller.signal.aborted) {
@@ -1433,9 +1491,15 @@
 				adjustBudget();
 				return;
 			}
+			if (!opened && command!.kind !== 'close') rememberScoreDock();
 			opened = command!.kind !== 'close';
 			if (opened) {
-				section = command!.kind === 'compose' || !cell ? 'proposal' : 'needs';
+				section =
+					command!.kind === 'inspect'
+						? 'needs'
+						: command!.kind === 'compose' || !cell
+							? 'proposal'
+							: 'needs';
 				onCloseOthers();
 			} else close();
 		});
@@ -1531,6 +1595,35 @@
 	$effect(() => {
 		if (!ferryOpen || !ferryDestinationId || ferryDestinationId === islandId) return;
 		untrack(() => chooseFerryDestination(ferryDestinationId!));
+	});
+	$effect(() => {
+		const key = overviewConnectionKey;
+		const origin = islandId;
+		const serviceDate = date;
+		untrack(() => {
+			overviewConnectionLoading = false;
+			overviewConnectionError = '';
+		});
+		if (!mounted || !active || !opened || section !== 'needs' || !origin) return;
+		if (untrack(() => overviewConnection?.key === key)) return;
+		const controller = new AbortController();
+		untrack(() => (overviewConnectionLoading = true));
+		void api<FerryConnectivity>(
+			`planning/connectivity?${new URLSearchParams({ origin_island_id: origin, date: serviceDate })}`,
+			undefined,
+			controller.signal
+		)
+			.then((value) => {
+				if (!controller.signal.aborted) overviewConnection = { key, value };
+			})
+			.catch(() => {
+				if (!controller.signal.aborted)
+					overviewConnectionError = 'Connection evidence could not load.';
+			})
+			.finally(() => {
+				if (!controller.signal.aborted) overviewConnectionLoading = false;
+			});
+		return () => controller.abort();
 	});
 	$effect(() => {
 		const key = ferryConnectionKey;
@@ -1701,17 +1794,22 @@
 			pending: restoredScope === scopedKey ? pending : null,
 			pendingDecision: restoredScope === scopedKey ? pendingDecision : null,
 			gapFeatures: mapGaps,
+			coverageFillFeatures: mapCoverageFill,
 			impactFeatures: impact,
 			policyComparisonView: impactView,
 			comparisonPreview,
 			serviceFeatures,
 			serviceEditor,
 			serviceEditorContent,
+			mapControlsContent: active && !serviceEditor ? mapControlsContent : undefined,
 			calculating: calculating || previewCalculating,
 			policyEvaluationId:
 				evaluation && !stale && !calculating && !comparisonPreview ? evaluatedSignature : null,
 			stale: !comparisonPreview && stale,
 			panelOpen: opened,
+			proposalEditing:
+				active &&
+				((opened && section === 'proposal') || !!armedKind || !!pending || !!serviceEditor),
 			placementRoads: baseline?.graph_edges ?? []
 		};
 		untrack(() => onState(value));
@@ -2009,14 +2107,79 @@
 		budgetEditing = value === 'budget';
 		if (value === 'manual') cancelSuggestions();
 	}
+	function rememberScoreDock(node?: HTMLElement) {
+		const dock = node ?? document.querySelector<HTMLElement>('.policy-map-controls');
+		if (dock?.getClientRects().length) scoreDockBounds = dock.getBoundingClientRect();
+	}
+	function scoreDockMotion(
+		node: HTMLElement,
+		{ direction }: { direction: 'in' | 'out' }
+	): TransitionConfig {
+		if (direction === 'out') rememberScoreDock(node);
+		const returning = direction === 'in' && returningToScore;
+		if (direction === 'in') returningToScore = false;
+		const animate =
+			shouldAnimateMotion() && (returning || (direction === 'out' && section === 'needs'));
+		return {
+			delay: animate && returning ? 90 : 0,
+			duration: animate ? (returning ? 200 : 100) : 0,
+			easing: (value) => 1 - (1 - value) ** 3,
+			css: (value) => `opacity:${value};transform:translateY(${(1 - value) * 8}px)`
+		};
+	}
+	function overviewPanelMotion(
+		node: HTMLElement,
+		{ direction }: { direction: 'in' | 'out' }
+	): TransitionConfig {
+		if (node.dataset.policySection !== 'needs') return surfaceMotion(node, { direction });
+		if (!shouldAnimateMotion()) return { duration: 0 };
+		const panel = node.getBoundingClientRect();
+		const dock = document.querySelector<HTMLElement>('.policy-map-controls');
+		const origin = dock?.getBoundingClientRect() ?? scoreDockBounds;
+		const inset = {
+			top: Math.max(
+				0,
+				Math.min(panel.height - 1, origin ? origin.top - panel.top : panel.height - 110)
+			),
+			right: Math.max(0, origin ? panel.right - origin.right : 0),
+			bottom: Math.max(0, origin ? panel.bottom - origin.bottom : 0),
+			left: Math.max(
+				0,
+				Math.min(panel.width - 1, origin ? origin.left - panel.left : panel.width - 330)
+			)
+		};
+		const clamp = (value: number) => Math.max(0, Math.min(1, value));
+		return {
+			duration: direction === 'in' ? 300 : 240,
+			// Reveal the surface first; its content follows without ever scaling type or charts.
+			css: (value) => {
+				const reveal = direction === 'in' ? 1 - (1 - value) ** 4 : value ** 2;
+				const content =
+					direction === 'in'
+						? 1 - (1 - clamp((value - 0.2) / 0.75)) ** 3
+						: clamp((value - 0.65) / 0.35);
+				const hidden = 1 - reveal;
+				return `clip-path:inset(${inset.top * hidden}px ${inset.right * hidden}px ${inset.bottom * hidden}px ${inset.left * hidden}px round ${14 + reveal * 3}px);opacity:${direction === 'in' ? 0.9 + reveal * 0.1 : clamp(value * 2)};--overview-content-opacity:${content};--overview-content-offset:${(1 - content) * 14}px`;
+			}
+		};
+	}
 	function open(mode: 'needs' | 'proposal') {
+		if (!opened) rememberScoreDock();
 		opened = true;
-		section = mode === 'needs' && !cell ? 'proposal' : mode;
+		section = mode;
 		onCloseOthers();
+		if (mode === 'needs') {
+			void tick().then(() => {
+				document
+					.querySelector<HTMLElement>('#island-score-details h2')
+					?.focus({ preventScroll: true });
+			});
+		}
 	}
 	function close() {
 		quoteController?.abort();
 		checkingBudget = false;
+		returningToScore = opened && section === 'needs';
 		opened = false;
 		cancelPending();
 		review = false;
@@ -2024,6 +2187,13 @@
 		closeBusService();
 		cancelSuggestions();
 		onPickKind(null);
+	}
+	async function collapseOverview() {
+		close();
+		await tick();
+		document
+			.querySelector<HTMLButtonElement>('.policy-inspect-trigger')
+			?.focus({ preventScroll: true });
 	}
 	function begin(kind: PlacementKind) {
 		if (!supported) {
@@ -2556,6 +2726,8 @@
 		onLensChange(value);
 	}
 </script>
+
+<svelte:window bind:innerWidth={viewportWidth} bind:innerHeight={viewportHeight} />
 
 {#snippet comparisonViews()}
 	<div class="proposal-map-views" role="group" aria-label="Proposal map view">
@@ -3147,20 +3319,8 @@
 	</div>
 {/snippet}
 
-{#if active && !serviceEditor}
-	<div
-		class="policy-map-controls"
-		class:panel-open={opened}
-		class:comparing={operations.length > 0 || comparisonPreview}
-	>
-		{#if !opened}<Button
-				variant="ghost"
-				class="policy-inspect-trigger"
-				title={`${islandName} · ${cell ? 'selected area' : 'your proposal'}`}
-				onclick={() => open('needs')}
-				><MapPin size={15} /><span>{islandName} · {cell ? 'selected area' : 'your proposal'}</span
-				></Button
-			>{/if}
+{#snippet mapControlsContent()}
+	<div class="policy-coverage-controls">
 		{#if operations.length || comparisonPreview}<div class="proposal-map-metric">
 				<label for="map-comparison-goal">Access to</label>
 				<select
@@ -3218,7 +3378,9 @@
 			>
 				Local journey estimates are unavailable for this island. Transport services remain visible.
 			</p>
-		{:else if islandId && evidence.approximate}<p class="local-map-status">
+		{:else if islandId && evidence.approximate && (opened || operations.length)}<p
+				class="local-map-status"
+			>
 				Approximate resident distribution · inspect a tile for its evidence.
 			</p>{/if}
 		{#if impact.features.length && (previewCalculating || (!comparisonPreview && stale))}
@@ -3249,50 +3411,89 @@
 			</p>
 		{/if}
 	</div>
+{/snippet}
+
+{#if active && !serviceEditor && !opened}
+	<div
+		class="policy-map-controls"
+		in:scoreDockMotion={{ direction: 'in' }}
+		out:scoreDockMotion={{ direction: 'out' }}
+	>
+		{#if !opened}<button
+				class="policy-inspect-trigger"
+				aria-label={`${islandName} access index ${overviewScore?.value == null ? 'unavailable' : `${overviewScore.value} out of 100`}.${overviewScore?.label ? ` ${overviewScore.label}.` : ''} Why this score`}
+				aria-expanded="false"
+				aria-controls="island-score-details"
+				data-testid="island-score-toggle"
+				onclick={() => open('needs')}
+			>
+				<div class="score-dock-value" data-testid="island-score-value">
+					{#key islandId}<AccessScore
+							value={overviewScore?.value ?? null}
+							label={overviewScore?.label}
+							loading={profileLoading}
+						/>{/key}
+				</div>
+				<div class="score-dock-heading">
+					<span>ISLAND ACCESS INDEX</span><strong>{islandName}</strong>
+				</div>
+				<div class="score-dock-meta">
+					<span
+						>{profileLoading
+							? 'Loading assessment…'
+							: profileError
+								? 'Assessment unavailable'
+								: (overviewScore?.label ?? 'Not assessed')}</span
+					><span>Why this score <ChevronUp size={12} class="score-dock-chevron" /></span>
+				</div>
+			</button>{/if}
+	</div>
 {/if}
 {#if active}
 	{#if opened}<section
+			id="island-score-details"
 			class="policy-map-panel"
+			class:island-overview-panel={section === 'needs'}
 			use:resizable={{
-				key: 'map-proposal',
+				key: section === 'needs' ? 'map-island-overview' : 'map-proposal',
 				minWidth: 360,
-				minHeight: 460,
+				minHeight: section === 'needs' ? Math.min(460, overviewMaxHeight) : 460,
+				maxHeight: section === 'needs' ? overviewMaxHeight : undefined,
 				maxWidth: 640,
-				edges: ['left', 'bottom', 'bottom-left'],
-				anchor: 'top-right'
+				edges:
+					section === 'needs' ? ['left', 'top', 'top-left'] : ['left', 'bottom', 'bottom-left'],
+				anchor: section === 'needs' ? 'bottom-right' : 'top-right'
 			}}
 			use:mapPanelLayout
-			in:surfaceMotion
-			out:surfaceMotion={{ direction: 'out' }}
+			in:overviewPanelMotion={{ direction: 'in' }}
+			out:overviewPanelMotion={{ direction: 'out' }}
 			class:placing={(!!pending || !!armedKind) && !budgetEditing}
 			aria-label="Island needs and proposal"
-			data-policy-section={section === 'needs' && cell ? 'needs' : 'proposal'}
+			data-policy-section={section}
 		>
 			<header>
-				<div>
-					<span class="eyebrow"
-						>{section === 'needs' && cell ? 'SELECTED AREA' : 'BUILD YOUR PROPOSAL'}</span
-					>
-					<h2>{islandName}</h2>
-				</div>
+				<h2 tabindex="-1" title={islandName}>{islandName}</h2>
 				<Button
 					variant="ghost"
 					size="icon-sm"
+					class="policy-panel-close"
 					aria-label="Close island planning panel"
-					onclick={close}><X size={18} /></Button
+					title={section === 'needs' ? 'Close island overview' : 'Close proposal'}
+					onclick={() => (section === 'needs' ? void collapseOverview() : close())}
+					><X size={18} /></Button
 				>
 			</header>
-			{#if cell}<div
+			{#if islandId}<div
 					class="policy-panel-tabs"
-					data-variant="line"
 					use:animatedSelection={{ selector: 'button.active' }}
 				>
 					<button
 						class:active={section === 'needs'}
+						aria-label="Island overview"
 						aria-pressed={section === 'needs'}
 						onclick={() => {
 							section = 'needs';
-						}}>Selected area</button
+						}}>Island</button
 					><button
 						class:active={section === 'proposal'}
 						aria-pressed={section === 'proposal'}
@@ -3331,7 +3532,20 @@
 								>Reload island data</Button
 							>{/if}
 					</p>{/if}
-				{#if section === 'needs' && cell}
+				{#if section === 'needs'}
+					<IslandOverview
+						profile={profile?.island.id === islandId ? profile : null}
+						loading={profileLoading}
+						error={profileError}
+						onRetry={onRetryProfile}
+						connectivity={islandConnection}
+						connectivityLoading={overviewConnectionLoading}
+						connectivityDate={date}
+					/>
+					{#if overviewConnectionError}<p class="overview-connection-status" role="status">
+							{overviewConnectionError}
+							<button onclick={() => (overviewConnectionVersion += 1)}>Retry connections</button>
+						</p>{/if}
 					{#if selectedExplanation && impact.features.length}<div
 							class="policy-selected-cell"
 							aria-label="Selected neighbourhood impact"
@@ -3417,19 +3631,6 @@
 								</p>
 							</details>
 						</div>{/if}
-					<Button class="policy-primary" onclick={() => (section = 'proposal')}
-						><Sparkles size={16} />{operations.length
-							? 'Edit proposal'
-							: 'Build proposal'}<ArrowRight size={16} /></Button
-					>
-					<Button
-						variant="ghost"
-						class="policy-secondary"
-						onclick={() => {
-							close();
-							onDetails();
-						}}>Island details</Button
-					>
 				{:else}
 					<div
 						class="proposal-paths"
@@ -3836,6 +4037,21 @@
 					</details>
 				{/if}
 			</div>
+			{#if section === 'needs'}<div class="island-overview-actions">
+					<Button class="policy-primary" onclick={() => (section = 'proposal')}
+						><Sparkles size={16} />{operations.length
+							? 'Edit proposal'
+							: 'Build proposal'}<ArrowRight size={16} /></Button
+					>
+					<Button
+						variant="ghost"
+						class="policy-secondary"
+						onclick={() => {
+							close();
+							onDetails();
+						}}>Island details</Button
+					>
+				</div>{/if}
 			{#if baseline && (section === 'proposal' || operations.length || pending)}<footer>
 					<ProposalCostStrip
 						compact
@@ -4405,19 +4621,99 @@
 	}
 	.policy-map-controls {
 		position: absolute;
-		right: calc(var(--map-controls-right, 18px) + 108px);
-		bottom: 24px;
+		right: 20px;
+		bottom: 20px;
 		z-index: 5;
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
-		max-width: calc(100% - var(--map-controls-right, 18px) - 88px);
-		padding: 4px;
+		align-items: stretch;
+		width: 330px;
+		max-width: calc(100% - 40px);
+		padding: 0;
 		border: 1px solid var(--theme-color-d7e2dc);
 		border-radius: 14px;
 		background: var(--theme-color-fffffff5);
 		box-shadow: 0 4px 22px var(--theme-color-1a433f12);
 		backdrop-filter: blur(10px);
+	}
+	.policy-inspect-trigger {
+		display: grid;
+		grid-template-columns: 126px minmax(0, 1fr);
+		align-items: center;
+		gap: 4px 14px;
+		width: 100%;
+		min-height: 108px;
+		padding: 14px;
+		border-radius: 13px;
+		text-align: left;
+		color: var(--theme-color-293e36);
+		cursor: pointer;
+		transition: background-color 150ms ease;
+	}
+	@media (hover: hover) and (pointer: fine) {
+		.policy-inspect-trigger:hover {
+			background: var(--theme-color-f1f6ef);
+		}
+	}
+	.score-dock-heading {
+		display: grid;
+		gap: 4px;
+		min-width: 0;
+		align-self: end;
+	}
+	.score-dock-heading > span {
+		font-size: 8px;
+		font-weight: 650;
+		letter-spacing: 0.7px;
+		line-height: 1.3;
+		color: var(--theme-color-6b7b70);
+	}
+	.score-dock-heading > strong {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 17px;
+		font-weight: 650;
+		letter-spacing: -0.4px;
+		line-height: 1.2;
+	}
+	.score-dock-value {
+		grid-column: 1;
+		grid-row: 1 / 3;
+		min-width: 0;
+	}
+	.score-dock-value :global(.access-score .score-number strong) {
+		font-size: 48px;
+		line-height: 1;
+	}
+	.score-dock-value :global(.access-score .score-denominator) {
+		font-size: 11px;
+	}
+	.policy-inspect-trigger :global(.score-dock-chevron) {
+		color: var(--theme-color-48665d);
+	}
+	.score-dock-meta {
+		grid-column: 2;
+		display: grid;
+		align-self: start;
+		gap: 7px;
+		min-width: 0;
+		font-size: 9px;
+		line-height: 1.3;
+		color: var(--theme-color-6b7b70);
+	}
+	.score-dock-meta > span:first-child {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.score-dock-meta > span:last-child {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 10px;
+		font-weight: 600;
+		color: var(--theme-color-245b40);
 	}
 	.local-map-status {
 		display: flex;
@@ -4435,12 +4731,23 @@
 		text-decoration: underline;
 		text-underline-offset: 2px;
 	}
+	.policy-coverage-controls {
+		display: grid;
+		min-width: 0;
+	}
+	.policy-coverage-controls .proposal-map-views {
+		width: 100%;
+	}
+	.policy-coverage-controls .proposal-map-views button {
+		flex: 1;
+	}
 	.policy-lens-bar {
 		display: flex;
 		align-items: center;
 		gap: 3px;
 		padding: 2px;
 		white-space: nowrap;
+		justify-content: space-between;
 	}
 	.policy-lens-bar > span {
 		display: flex;
@@ -4451,9 +4758,10 @@
 		padding: 0 8px;
 	}
 	.policy-lens-bar button {
-		font-size: 12px;
-		border-radius: 7px;
-		padding: 7px 10px;
+		font-size: 11px;
+		border-radius: 9px;
+		min-height: 34px;
+		padding: 7px 9px;
 		color: var(--theme-color-53635c);
 	}
 	.policy-lens-bar button.active {
@@ -4478,7 +4786,7 @@
 		right: 18px;
 		top: calc(76px + var(--map-navigation-offset, 0px));
 		bottom: 20px;
-		width: 370px;
+		width: var(--policy-panel-default-width, 370px);
 		z-index: 7;
 		display: flex;
 		flex-direction: column;
@@ -4488,44 +4796,105 @@
 		box-shadow: 0 12px 38px var(--theme-color-1c3e3722);
 		overflow: hidden;
 	}
+	.island-overview-panel {
+		--policy-panel-default-width: 520px;
+		top: auto;
+		right: 20px;
+		height: min(780px, calc(100% - var(--map-toolbar-bottom, 76px) - 24px));
+		background: var(--theme-color-ffffff);
+	}
+	.island-overview-panel
+		> :is(header, .policy-panel-tabs, .policy-panel-scroll, .island-overview-actions, footer) {
+		opacity: var(--overview-content-opacity, 1);
+		transform: translateY(var(--overview-content-offset, 0px));
+	}
+	.island-overview-actions {
+		flex-shrink: 0;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		gap: 8px;
+		padding: 14px 20px;
+		border-top: 1px solid var(--theme-color-e3e9e4);
+		background: var(--theme-color-ffffff);
+	}
+	.overview-connection-status {
+		margin: 0;
+		font-size: 11px;
+		line-height: 1.5;
+		color: var(--theme-color-62786f);
+	}
+	.overview-connection-status button {
+		margin-left: 6px;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
 	.policy-map-panel > header {
 		flex-shrink: 0;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 20px 20px 14px;
+		padding: 12px 16px 8px;
 		gap: 12px;
 	}
 	.policy-map-panel h2 {
-		font-size: 22px;
-		line-height: 1.2;
-		margin: 6px 0 0;
-		letter-spacing: -0.6px;
+		flex: 1;
+		min-width: 0;
+		font-size: 18px;
+		font-weight: 600;
+		line-height: 24px;
+		margin: 0;
+		letter-spacing: -0.45px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
-	.policy-map-panel .eyebrow {
-		font-size: 9px;
-		color: var(--theme-color-6b7b70);
-		letter-spacing: 1.3px;
+	.policy-map-panel h2:focus {
+		outline: none;
+	}
+	.policy-map-panel :global(.policy-panel-close) {
+		flex: 0 0 32px;
+		width: 32px;
+		height: 32px;
+		border-radius: 8px;
+		color: var(--theme-color-62786f);
 	}
 	.policy-panel-tabs {
-		--foreground: var(--theme-color-245b40);
+		--selection-background: var(--theme-color-ffffff);
+		--selection-radius: 6px;
 		flex-shrink: 0;
 		display: flex;
-		border-bottom: 1px solid var(--theme-color-e3e9e4);
-		padding: 0 20px;
-		gap: 20px;
+		align-self: flex-start;
+		max-width: calc(100% - 32px);
+		margin: 0 16px;
+		padding: 3px;
+		gap: 2px;
+		border: 1px solid var(--theme-color-e3e9e4);
+		border-radius: 10px;
+		background: var(--theme-color-f7faf7);
 	}
 	.policy-panel-tabs button {
 		position: relative;
 		z-index: 1;
-		font-size: 13px;
-		padding: 10px 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 30px;
+		padding: 0 12px;
+		border-radius: 6px;
+		font-size: 11px;
+		font-weight: 550;
+		line-height: 1;
+		white-space: nowrap;
 		color: var(--theme-color-78847a);
-		border-bottom: 2px solid transparent;
 	}
 	.policy-panel-tabs button.active {
 		color: var(--theme-color-245b40);
 		font-weight: 650;
+		background: var(--theme-color-ffffff);
+	}
+	.policy-panel-tabs:global([data-selection-ready]) button.active {
+		background: transparent;
 	}
 	.policy-panel-tabs button span {
 		border-radius: 5px;
@@ -4986,22 +5355,6 @@
 		line-height: 1.5;
 		color: var(--theme-color-7b8570);
 	}
-	:global(.policy-inspect-trigger) {
-		max-width: 100%;
-		justify-content: flex-start;
-		height: 32px;
-		padding-inline: 10px;
-		font-size: 12px;
-		color: var(--theme-color-48665d);
-		background: transparent;
-		box-shadow: none;
-	}
-	:global(.policy-inspect-trigger span) {
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
 	@keyframes spin {
 		to {
 			transform: rotate(360deg);
@@ -5013,20 +5366,18 @@
 	}
 	@media (max-width: 1100px) {
 		.policy-map-controls {
-			max-width: 260px;
-		}
-		.policy-map-controls.panel-open {
-			display: none;
+			width: 330px;
 		}
 		.policy-lens-bar > span {
-			display: none;
+			font-size: 10px;
 		}
 		.policy-lens-bar .coverage-lens-option {
 			display: none;
 		}
 		.policy-lens-bar .compact-coverage-lens {
 			display: block;
-			width: 145px;
+			width: 170px;
+			min-height: 36px;
 			padding: 7px 9px;
 			font-size: 12px;
 		}
@@ -5034,6 +5385,12 @@
 			top: calc(116px + var(--map-navigation-offset, 0px));
 			bottom: 16px;
 			width: 340px;
+		}
+		.island-overview-panel {
+			top: auto;
+			bottom: 20px;
+			width: 440px;
+			max-width: calc(100% - 40px);
 		}
 		.policy-recalculating {
 			left: 20px;
@@ -5124,22 +5481,14 @@
 		.policy-map-controls {
 			left: 12px;
 			right: 12px;
-			bottom: 154px;
+			bottom: 12px;
+			width: auto;
 			max-width: none;
-			flex-direction: row;
-			flex-wrap: wrap;
-			align-items: center;
-			gap: 2px;
-		}
-		.local-map-status {
-			flex-basis: 100%;
-		}
-		.policy-map-controls.comparing {
 			flex-direction: column;
 			align-items: stretch;
 		}
-		.comparing .policy-lens-bar {
-			justify-content: center;
+		.local-map-status {
+			flex-basis: 100%;
 		}
 		.proposal-map-metric {
 			justify-content: center;
@@ -5152,13 +5501,17 @@
 			gap: 1px;
 			padding: 0;
 		}
-		:global(.policy-inspect-trigger) {
-			flex: 1;
-			min-width: 0;
-			max-width: none;
-			padding-inline: 6px;
-			gap: 5px;
-			font-size: 11px;
+		.policy-inspect-trigger {
+			grid-template-columns: 116px minmax(0, 1fr);
+			min-height: 98px;
+			padding: 12px;
+			gap: 4px 12px;
+		}
+		.score-dock-heading > strong {
+			font-size: 15px;
+		}
+		.score-dock-value :global(.access-score .score-number strong) {
+			font-size: 44px;
 		}
 	}
 	@media (max-width: 640px) {
@@ -5172,9 +5525,10 @@
 			font-size: 10px;
 		}
 		.policy-lens-bar .compact-coverage-lens {
-			width: 116px;
-			font-size: 11px;
-			padding: 7px 5px;
+			width: 170px;
+			min-height: 44px;
+			font-size: 12px;
+			padding: 7px 9px;
 		}
 		.policy-map-panel {
 			right: 10px;
@@ -5185,22 +5539,34 @@
 			max-height: min(80%, 680px);
 			border-radius: 17px;
 		}
-		.policy-map-panel > header {
-			padding: 10px 16px 8px;
+		.island-overview-panel {
+			height: calc(100% - var(--map-toolbar-bottom, 182px) - 24px);
+			max-height: 780px;
+			max-width: none;
 		}
-		.policy-map-panel h2 {
-			font-size: 19px;
+		.policy-map-panel > header {
+			padding: 8px 12px;
+		}
+		.policy-map-panel :global(.policy-panel-close) {
+			flex-basis: 44px;
+			width: 44px;
+			height: 44px;
 		}
 		.policy-panel-scroll {
 			padding: 14px 16px;
 			gap: 12px;
 			flex: 1;
 		}
+		.island-overview-actions {
+			padding: 10px 16px max(10px, env(safe-area-inset-bottom));
+		}
 		.policy-panel-tabs button {
-			padding-block: 8px;
+			height: 44px;
+			padding-inline: 13px;
+			font-size: 12px;
 		}
 		.policy-panel-tabs {
-			padding-inline: 16px;
+			max-width: calc(100% - 32px);
 		}
 		.policy-map-panel :global(input) {
 			font-size: 16px;

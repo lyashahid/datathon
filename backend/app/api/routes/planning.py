@@ -26,6 +26,7 @@ from app.planning.service import PlanningService
 from app.planning.transport import FerryServiceRequest, TransportPlanningService
 
 router = APIRouter(prefix="/api/v1/planning", tags=["policy-planning"])
+DEFAULT_SEA_NETWORK_DATE = ServiceDate(2026, 10, 19)
 
 
 def delivery_references(request: Request) -> dict[str, Any]:
@@ -122,16 +123,38 @@ def ferry_service(
         raise HTTPException(status_code=422, detail=str(error)) from error
 
 
+@router.get("/sea-network")
+def sea_network(
+    request: Request,
+    date: ServiceDate = Query(default=DEFAULT_SEA_NETWORK_DATE),
+    transport: TransportPlanningService = Depends(get_transport_planning),
+) -> dict[str, Any]:
+    service = get_sea_connections(request, transport)
+    try:
+        return service.network(date)
+    except (ValueError, KeyError, TypeError, IndexError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+def get_sea_connections(
+    request: Request, transport: TransportPlanningService
+) -> SeaConnectionsService:
+    service = getattr(request.app.state, "sea_connections", None)
+    if service is None or service.transport is not transport:
+        service = SeaConnectionsService(
+            transport, source_version=getattr(request.app.state, "source_version", None)
+        )
+        request.app.state.sea_connections = service
+    return service
+
+
 @router.post("/sea-connections")
 def sea_connections(
     payload: SeaConnectionsRequest,
     request: Request,
     transport: TransportPlanningService = Depends(get_transport_planning),
 ) -> dict[str, Any]:
-    service = getattr(request.app.state, "sea_connections", None)
-    if service is None or service.transport is not transport:
-        service = SeaConnectionsService(transport)
-        request.app.state.sea_connections = service
+    service = get_sea_connections(request, transport)
     try:
         return service.connections(payload)
     except (ValueError, KeyError, TypeError, IndexError) as error:

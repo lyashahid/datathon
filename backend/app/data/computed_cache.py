@@ -32,6 +32,7 @@ from starlette.concurrency import run_in_threadpool
 LOGGER = logging.getLogger(__name__)
 CACHE_FORMAT = "computed-json-v1"
 MAX_ITEM_BYTES = 32 * 1024 * 1024
+MAX_SHARED_BATCH_BYTES = 32 * 1024 * 1024
 MAX_AGE_SECONDS = 7 * 86400
 SHARED_NAMESPACES = frozenset(
     {
@@ -169,7 +170,12 @@ class PostgresStore:
                 )
                 self._worker.start()
 
-    def read(self, key: str, on_result: Callable[[bytes], None] | None = None) -> bytes | None:
+    def read(
+        self,
+        key: str,
+        on_result: Callable[[bytes], None] | None = None,
+        timeout: float = 0.01,
+    ) -> bytes | None:
         if self._closed or time.monotonic() < self._retry_after:
             return None
         self._start()
@@ -181,9 +187,46 @@ class PostgresStore:
         try:
             # Remote DNS/TLS/SQL never adds seconds to an interactive request.
             # A late hit still hydrates the local cache in the mirror worker.
-            return future.result(timeout=0.01)
+            return future.result(timeout=timeout)
         except TimeoutError:
             return None
+
+    def _read_many(self, keys: list[str]) -> dict[str, bytes]:
+        """Fetch only a bounded manifest's entries in one database round trip."""
+        if self._closed or time.monotonic() < self._retry_after:
+            return {}
+        with self._lock:
+            if self._closed or time.monotonic() < self._retry_after:
+                return {}
+            try:
+                rows = self._connect().execute(
+                    "WITH selected AS (SELECT cache_key, payload, "
+                    "sum(octet_length(payload)) OVER (ORDER BY cache_key) AS total "
+                    "FROM mobility_computed_cache "
+                    "WHERE cache_key = ANY(%s) "
+                    "AND created_at >= now() - interval '7 days' "
+                    "AND octet_length(payload) <= %s) "
+                    "SELECT cache_key,payload FROM selected WHERE total <= %s",
+                    (keys, MAX_ITEM_BYTES + 1024, MAX_SHARED_BATCH_BYTES),
+                ).fetchall()
+                return {key: bytes(payload) for key, payload in rows}
+            except Exception:
+                self._failure()
+                return {}
+
+    def read_many(self, keys: list[str], timeout: float = 3) -> dict[str, bytes]:
+        if not keys or self._closed or time.monotonic() < self._retry_after:
+            return {}
+        self._start()
+        future: Future[dict[str, bytes]] = Future()
+        try:
+            self._queue.put_nowait(("read_many", "", (keys[:1024], future)))
+        except queue.Full:
+            return {}
+        try:
+            return future.result(timeout=timeout)
+        except TimeoutError:
+            return {}
 
     def enqueue(self, key: str, payload: bytes) -> None:
         if self._closed or time.monotonic() < self._retry_after:
@@ -192,7 +235,7 @@ class PostgresStore:
         with self._start_lock:
             if self._closed:
                 return
-            if self._queued_bytes + len(payload) > 16 * 1024 * 1024:
+            if self._queued_bytes + len(payload) > MAX_SHARED_BATCH_BYTES:
                 return
             try:
                 self._queue.put_nowait(("write", key, payload))
@@ -213,6 +256,10 @@ class PostgresStore:
                     future.set_result(stored)
                     if stored and on_result:
                         on_result(stored)
+                    continue
+                if action == "read_many":
+                    keys, future = value
+                    future.set_result(self._read_many(keys))
                     continue
                 if self._closed or time.monotonic() < self._retry_after:
                     continue
@@ -326,6 +373,8 @@ class ComputedCache:
             entry = self._memory.get(key)
             if entry and time.monotonic() - entry[1] <= MAX_AGE_SECONDS:
                 self._memory.move_to_end(key)
+                if allow_shared:
+                    self._shareable_keys.add(key)
                 self.counts["memory_hits"] += 1
                 return entry[0]
         path = self.root / f"{key}.cache"
@@ -358,7 +407,7 @@ class ComputedCache:
                 return payload
         return None
 
-    def _write_disk(self, key: str, stored: bytes) -> None:
+    def _write_disk(self, key: str, stored: bytes, *, prune: bool = True) -> None:
         if not self.disk_bytes or len(stored) > self.disk_bytes:
             return
         temporary: Path | None = None
@@ -369,7 +418,8 @@ class ComputedCache:
                 stream.write(stored)
             os.replace(temporary, self.root / f"{key}.cache")
             temporary = None
-            self._prune()
+            if prune:
+                self._prune()
         except OSError:
             pass  # Read-only/full local storage must not prevent a valid calculation.
         finally:
@@ -379,18 +429,35 @@ class ComputedCache:
     def _prune(self) -> None:
         with self._lock:
             try:
-                files = sorted(
-                    ((p.stat().st_mtime, p.stat().st_size, p) for p in self.root.glob("*.cache")),
-                    reverse=True,
-                )
+                files = []
+                # DirEntry reuses directory metadata on Windows and needs only
+                # one stat per file elsewhere. Avoid two independent Path.stat
+                # calls for every retained entry on every cache write.
+                with os.scandir(self.root) as entries:
+                    for entry in entries:
+                        if not entry.name.endswith(".cache") or not entry.is_file():
+                            continue
+                        try:
+                            metadata = entry.stat()
+                        except OSError:
+                            continue  # Another worker may have removed this entry.
+                        files.append((metadata.st_mtime, metadata.st_size, entry.path))
+                files.sort(reverse=True)
                 total = 0
+                now = time.time()
                 for index, (modified, size, path) in enumerate(files):
                     if (
                         total + size > self.disk_bytes
                         or index >= self.max_entries * 4
-                        or time.time() - modified > MAX_AGE_SECONDS
+                        or now - modified > MAX_AGE_SECONDS
                     ):
-                        path.unlink(missing_ok=True)
+                        try:
+                            os.unlink(path)
+                        except FileNotFoundError:
+                            pass
+                        except OSError:
+                            # A locked file must not stop pruning other entries.
+                            total += size
                     else:
                         total += size
             except OSError:
@@ -469,7 +536,64 @@ class ComputedCache:
             worker.add_done_callback(self._async_workers.discard)
         return await asyncio.shield(asyncio.wrap_future(future))
 
-    async def mirror_public_results(self, timeout: float = 30) -> None:
+    async def restore_public_results(self, source_version: str, timeout: float = 6) -> int:
+        """Hydrate a new runtime disk before background warmup, never readiness.
+
+        A small source/model-specific manifest avoids downloading unrelated
+        vintages or performing a remote round trip for every precomputed view.
+        """
+        if self.shared is None:
+            return 0
+        deadline = time.monotonic() + timeout
+        manifest_key = self.key("public-manifest", source_version)
+        stored = await run_in_threadpool(self.shared.read, manifest_key, None, min(timeout, 3))
+        payload = decode(stored) if stored else None
+        if payload is None:
+            return 0
+        try:
+            keys = json.loads(payload)["keys"]
+            if not isinstance(keys, list) or len(keys) > self.max_entries:
+                return 0
+            if any(
+                not isinstance(key, str) or not re.fullmatch(r"[0-9a-f]{64}", key) for key in keys
+            ):
+                return 0
+        except (ValueError, KeyError, TypeError):
+            return 0
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return 0
+        # Repeated startup preparation with a retained local disk should not
+        # redownload data. Check the local tiers without remote fallbacks.
+        missing = await run_in_threadpool(
+            lambda: [key for key in dict.fromkeys(keys) if self._read(key) is None]
+        )
+        entries = await run_in_threadpool(self.shared.read_many, missing, remaining)
+
+        def hydrate() -> int:
+            restored = total = 0
+            for key in missing:
+                stored = entries.get(key)
+                payload = decode(stored) if stored else None
+                if payload is None:
+                    continue
+                total += len(payload)
+                if total > max(self.memory_bytes, MAX_ITEM_BYTES):
+                    break
+                self._remember(key, payload, True)
+                self._write_disk(key, stored, prune=False)
+                restored += 1
+            if restored:
+                self._prune()
+            with self._lock:
+                self.counts["shared_hits"] += restored
+            return restored
+
+        return await run_in_threadpool(hydrate)
+
+    async def mirror_public_results(
+        self, source_version: str | None = None, timeout: float = 30
+    ) -> None:
         """Explicit precomputation may seed shared public results from local hits."""
         if self.shared is None:
             return
@@ -489,6 +613,15 @@ class ComputedCache:
             self.shared.enqueue(key, stored)
         while self.shared._queue.unfinished_tasks and time.monotonic() < deadline:
             await asyncio.sleep(0.05)
+        if source_version and time.monotonic() < deadline:
+            # Publish only public entries, after their writes have drained.
+            # Private direction/proposal results never enter this manifest.
+            self.shared.enqueue(
+                self.key("public-manifest", source_version),
+                encode(json.dumps({"keys": [key for key, _ in entries]}).encode()),
+            )
+            while self.shared._queue.unfinished_tasks and time.monotonic() < deadline:
+                await asyncio.sleep(0.05)
 
     def get_or_compute(self, namespace: str, value: Any, compute: Callable[[], Any]) -> Any:
         # Decoding gives each caller independent mutable dictionaries/lists.

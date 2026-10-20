@@ -389,21 +389,3 @@ export function comparisonCellProperties(
 		partial_evidence: properties[`${phase}_partial_evidence`]
 	};
 }
-
-/** Current and proposed access reuse the improvement mesh and the evaluated journey evidence. */
-export function displayAccessHexes(
-	origins: PlanningPlace[],
-	comparisons: PlanningComparison[],
-	mesh: FeatureCollection,
-	phase: 'before' | 'after',
-	targetMinutes: number
-): FeatureCollection {
-	const comparison = displayComparisonHexes(origins, comparisons, mesh, targetMinutes);
-	return {
-		...comparison,
-		features: comparison.features.map((cell) => ({
-			...cell,
-			properties: comparisonCellProperties(cell.properties ?? {}, phase)
-		}))
-	};
-}

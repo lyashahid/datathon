@@ -271,6 +271,48 @@ def destination_eligible(facility: dict[str, Any], assumptions: PlanningAssumpti
 
 
 class JourneyRouter:
+    def for_destination(
+        self, destination: dict[str, Any], departure_minutes: float
+    ) -> JourneyRouter:
+        """Reuse a prepared day's stops, transfers and timetables for map directions.
+
+        Only the destination tree and departure time vary between queries. Reverse
+        walking trees retain one-way permissions for both direct walks and egress.
+        Per-query results and assumptions remain separate from the shared template.
+        """
+        router = copy.copy(self)
+        router.a = self.a.model_copy(update={"departure_minutes": departure_minutes})
+        router._routes, router._routes_lock = OrderedDict(), RLock()
+        router.facilities = [destination]
+        snap = self.network.snap(destination, router.a.max_snap_m)
+        router.facility_snaps = {destination["id"]: snap}
+        router.destination_trees = (
+            {
+                destination["id"]: self.network.tree(
+                    snap[0],
+                    router.a.max_journey_minutes * router.a.walk_m_per_minute,
+                    reverse=True,
+                )
+            }
+            if snap
+            else {}
+        )
+        router.egress = {}
+        if snap:
+            distances, previous = router.destination_trees[destination["id"]]
+            for stop_id, stop_snap in self.stop_snaps.items():
+                if not stop_snap:
+                    continue
+                metres = stop_snap[1] + distances.get(stop_snap[0], math.inf) + snap[1]
+                minutes = metres / router.a.walk_m_per_minute
+                if minutes <= router.a.max_access_walk_minutes:
+                    router.egress[stop_id] = (
+                        minutes,
+                        destination,
+                        list(reversed(self.network.geometry(previous, snap[0], stop_snap[0]))),
+                    )
+        return router
+
     def __init__(
         self,
         world: dict[str, Any],

@@ -5,6 +5,7 @@ export type JourneyPlace = {
 	id: string;
 	name: string;
 	coordinates: Coordinates;
+	islandId?: string;
 	category?: string;
 	stopRole?: 'platform' | 'stop_position';
 	stopCode?: string | null;

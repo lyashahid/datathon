@@ -3,6 +3,36 @@ import { forwardBackend } from './backend';
 import { gunzipSync } from 'node:zlib';
 
 describe('backend integration boundary', () => {
+	it('forwards ordered multi-stop directions through the public app boundary', async () => {
+		const payload = {
+			points: [
+				[73.504676, 4.169366],
+				[73.543088, 4.211553],
+				[73.540352, 4.21442]
+			],
+			mode: 'transit',
+			service_date: '2026-10-10',
+			departure_minutes: 920
+		};
+		const itinerary = { status: 'ok', segments: [{ index: 0 }, { index: 1 }] };
+		const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json(itinerary));
+		const response = await forwardBackend(
+			new Request('http://localhost/api/backend/routing/journey', {
+				method: 'POST',
+				body: JSON.stringify(payload)
+			}),
+			'routing/journey',
+			'http://127.0.0.1:8000',
+			fetcher
+		);
+		expect(response.status).toBe(200);
+		expect(fetcher.mock.calls[0][0].toString()).toBe(
+			'http://127.0.0.1:8000/api/v1/routing/journey'
+		);
+		expect(JSON.parse(String(fetcher.mock.calls[0][1]?.body))).toEqual(payload);
+		expect(await response.json()).toEqual(itinerary);
+		expect(response.headers.get('cache-control')).toBe('no-store');
+	});
 	it('keeps embedded API documentation and its schema inside the public app mount', async () => {
 		const fetcher = vi
 			.fn<typeof fetch>()
@@ -262,6 +292,23 @@ describe('backend integration boundary', () => {
 			'accept-encoding': 'identity'
 		});
 		expect(second.headers.get('vary')).toContain('Accept-Encoding');
+	});
+	it('forwards and caches the dated national sea network through the public boundary', async () => {
+		const payload = { service_date: '2026-10-19', routes: [], map_features: { features: [] } };
+		const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json(payload));
+		const response = await forwardBackend(
+			new Request('http://localhost/api/backend/planning/sea-network?date=2026-10-19'),
+			'planning/sea-network',
+			'http://127.0.0.1:8000',
+			fetcher
+		);
+		expect(response.status).toBe(200);
+		expect(fetcher.mock.calls[0][0].toString()).toBe(
+			'http://127.0.0.1:8000/api/v1/planning/sea-network?date=2026-10-19'
+		);
+		expect(response.headers.get('cache-control')).toContain('max-age=60');
+		expect(response.headers.get('etag')).toMatch(/^W\/"[a-f0-9]{64}"$/);
+		expect(await response.json()).toEqual(payload);
 	});
 
 	it('forwards backend 304/source-version metadata without consuming or inventing a body', async () => {

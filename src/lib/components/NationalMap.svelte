@@ -2,6 +2,7 @@
 	import { themeColors } from '#lib/theme.js';
 	import { onMount, tick, untrack } from 'svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import { slide } from 'svelte/transition';
 	import type { Feature, FeatureCollection, Geometry } from 'geojson';
 	import type {
 		GeoJSONSource,
@@ -55,6 +56,7 @@
 	} from '#lib/map-street-context.js';
 	import { mobileServiceRoutePadding, serviceCardMaxHeight } from '#lib/map-service-layout.js';
 	import { shouldAnimateMotion } from '#lib/motion.js';
+	import { surfaceMotion } from '#lib/surface-motion.js';
 	import type { MapPolicyState, PendingPlacementDecision, PlacementKind } from '#lib/map-policy.js';
 	import { api } from '#lib/api.js';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
@@ -67,6 +69,11 @@
 		overlayOpacityPreference
 	} from '#lib/map-overlay.js';
 	import { exploreJourneyFeatures, journeyClock } from '#lib/explore-journey.js';
+	import {
+		searchDirectionsFeatures,
+		type SearchDirectionPoint,
+		type SearchDirectionsResult
+	} from '#lib/search-directions.js';
 	import type {
 		Accessibility,
 		Coordinates,
@@ -77,13 +84,47 @@
 		LiveProvider
 	} from '../types';
 
-	import type { SeaMapState, SeaMapSelection } from '#lib/sea-connectivity.js';
+	import {
+		seaClock,
+		seaDuration,
+		seaPressureColors,
+		seaRouteEvidenceLabel,
+		type SeaMapState,
+		type SeaMapSelection
+	} from '#lib/sea-connectivity.js';
 	import { seaIslandFeatures } from '#lib/sea-map.js';
+	import { airNetworkFeatures, type AirNetwork } from '#lib/air-connectivity.js';
+	import { airRouteCard } from './map/air-route-card.js';
+	import {
+		prepareRouteVehicles,
+		routeVehicleFeatures,
+		type RouteVehiclePath
+	} from '#lib/route-vehicles.js';
+	interface SearchSelection {
+		id: string;
+		name: string;
+		coordinates: Coordinates;
+		category?: string;
+		feature?: Feature;
+	}
+	type DirectionWaypoint = SearchDirectionPoint & {
+		coordinates: Coordinates;
+		index: number;
+		letter: string;
+		role: 'start' | 'via' | 'end';
+	};
 	interface Props {
+		airState?: AirNetwork | null;
+		airLayerEnabled?: boolean;
+		airNetworkStatus?: 'loading' | 'ready' | 'error';
+		onAirRetry?: () => void;
+		onAirLayerChange?: (enabled: boolean) => void;
 		seaState?: SeaMapState | null;
 		seaView?: boolean;
 		seaLayerEnabled?: boolean;
 		seaInspectorOpen?: boolean;
+		seaNetworkStatus?: 'loading' | 'ready' | 'error';
+		onSeaRetry?: () => void;
 		onSeaLayerChange?: (enabled: boolean) => void;
 		onSeaSelect?: (selection: Omit<SeaMapSelection, 'key'>) => void;
 		features: MapFeatures | null;
@@ -91,7 +132,6 @@
 		atollScope?: string | null;
 		scopeBounds?: [Coordinates, Coordinates] | null;
 		focusBounds?: { id: number; bounds: [Coordinates, Coordinates] } | null;
-		connectionFeatures?: FeatureCollection;
 		islandPicking?: boolean;
 		accessibilityScores?: Accessibility[] | null;
 		onselect: (id: string) => void;
@@ -122,6 +162,8 @@
 		route: LandRoute | null;
 		routeStart?: Coordinates | null;
 		routeEnd?: Coordinates | null;
+		directions?: SearchDirectionsResult | null;
+		directionPoints?: SearchDirectionPoint[];
 		liveEvents: LiveEvent[];
 		liveStatus?: {
 			loading?: boolean;
@@ -131,9 +173,10 @@
 		};
 		focusVersion?: number;
 		journeyFocusVersion?: number;
-		mode?: 'explore' | 'proposal' | 'live' | 'places';
+		mode?: 'explore' | 'proposal';
 		active?: boolean;
 		gapFeatures?: FeatureCollection;
+		coverageFillFeatures?: FeatureCollection;
 		impactFeatures?: FeatureCollection;
 		policyComparisonView?: 'current' | 'proposal';
 		comparisonPreview?: boolean;
@@ -156,10 +199,12 @@
 		policyCalculating?: boolean;
 		policyStale?: boolean;
 		focusPoint?: { id: number; coordinates: Coordinates } | null;
+		searchSelection?: SearchSelection | null;
 		conditionRoute?: Coordinates[];
 		policyServiceFeatures?: FeatureCollection;
 		serviceEditor?: MapPolicyState['serviceEditor'];
 		serviceEditorContent?: MapPolicyState['serviceEditorContent'];
+		mapControlsContent?: MapPolicyState['mapControlsContent'];
 		onserviceplace?: (placement: { kind: 'bus' | 'ferry'; coordinates: Coordinates }) => void;
 		onservicelanding?: (landing: {
 			terminalId: string;
@@ -171,10 +216,17 @@
 	}
 
 	let {
+		airState = null,
+		airLayerEnabled = false,
+		airNetworkStatus = 'ready',
+		onAirRetry,
+		onAirLayerChange,
 		seaState = null,
 		seaView = false,
 		seaLayerEnabled = false,
 		seaInspectorOpen = false,
+		seaNetworkStatus = 'ready',
+		onSeaRetry,
 		onSeaLayerChange,
 		onSeaSelect,
 		features,
@@ -182,7 +234,6 @@
 		atollScope = null,
 		scopeBounds = null,
 		focusBounds = null,
-		connectionFeatures = { type: 'FeatureCollection', features: [] },
 		islandPicking = false,
 		accessibilityScores = null,
 		onselect,
@@ -199,6 +250,8 @@
 		route,
 		routeStart = null,
 		routeEnd = null,
+		directions = null,
+		directionPoints,
 		liveEvents,
 		liveStatus = {},
 		focusVersion = 0,
@@ -206,6 +259,7 @@
 		mode = 'explore',
 		active = true,
 		gapFeatures = { type: 'FeatureCollection', features: [] },
+		coverageFillFeatures = { type: 'FeatureCollection', features: [] },
 		impactFeatures = { type: 'FeatureCollection', features: [] },
 		policyComparisonView = 'proposal',
 		comparisonPreview = false,
@@ -228,15 +282,18 @@
 		policyCalculating = false,
 		policyStale = false,
 		focusPoint = null,
+		searchSelection = null,
 		conditionRoute = [],
 		policyServiceFeatures = { type: 'FeatureCollection', features: [] },
 		serviceEditor = null,
 		serviceEditorContent,
+		mapControlsContent,
 		onserviceplace,
 		onservicelanding,
 		onservicecandidate,
 		oncancelservice
 	}: Props = $props();
+	const inlineDirectionsActive = $derived(directions !== null || directionPoints !== undefined);
 	let container: HTMLDivElement;
 	let map = $state.raw<LibreMap | null>(null);
 	const policyMarkers = new SvelteMap<number, Marker>();
@@ -309,9 +366,14 @@
 					: (pendingProposal?.kind ?? placementKind ?? selectedProposal?.type) === 'add_school'
 						? 'education'
 						: 'bus'
-			: route
-				? 'journey'
-				: ''
+			: inlineDirectionsActive
+				? directionPoints?.some((point) => validCoordinates(point.coordinates)) ||
+					(directions?.points.length ?? 0) > 0
+					? 'journey'
+					: ''
+				: route
+					? 'journey'
+					: ''
 	);
 	const placementRoadHints = $derived.by((): FeatureCollection => ({
 		type: 'FeatureCollection',
@@ -351,12 +413,14 @@
 	let ready = $state(false);
 	let islandsDataReady = $state(false);
 	let islandsDataVersion = 0;
+	let cancelIslandReadiness: (() => void) | undefined;
 	let error = $state('');
 	let facilitiesVisible = $state(true);
 	let transportVisible = $state(true);
 	let liveVisible = $state(true);
 	let nationalScale = $state(true);
 	let hoverDescription = $state('');
+	let hoveredAirAirport = $state('');
 	let controlsPanel = $state<'layers' | 'view' | null>(null);
 	let overlayOpacity = $state(DEFAULT_OVERLAY_OPACITY);
 	let overlayPreferenceLoaded = $state(false);
@@ -371,8 +435,12 @@
 		}
 		return cells;
 	});
-	const gapOpacity = $derived(backgroundGaps.features.length ? overlayOpacity / 100 : 0);
-	const impactOpacity = $derived(impactFeatures.features.length ? overlayOpacity / 100 : 0);
+	const gapOpacity = $derived(
+		!seaInspectorOpen && backgroundGaps.features.length ? overlayOpacity / 100 : 0
+	);
+	const impactOpacity = $derived(
+		!seaInspectorOpen && impactFeatures.features.length ? overlayOpacity / 100 : 0
+	);
 	const currentAccessOpacity = $derived(
 		impactFeatures.features[0]?.properties?.view === 'comparison' &&
 			policyComparisonView === 'current'
@@ -424,7 +492,12 @@
 				]
 	);
 	const hasPolicyOverlay = $derived(
-		gapFeatures.features.length > 0 || impactFeatures.features.length > 0
+		gapFeatures.features.length > 0 ||
+			impactFeatures.features.length > 0 ||
+			coverageFillFeatures.features.length > 0
+	);
+	const coverageFillOpacity = $derived(
+		!seaInspectorOpen && coverageFillFeatures.features.length ? overlayOpacity / 100 : 0
 	);
 	const localAccessDiagnostics = $derived.by(() => {
 		const cells: Record<string, number> = {};
@@ -464,7 +537,6 @@
 	let contextLoading = $state(false);
 	let contextError = $state('');
 	let contextData = $state.raw<FeatureCollection>({ type: 'FeatureCollection', features: [] });
-	let contextReceipt = $state('');
 	let renderedRoads = $state(0);
 	let renderedBuildings = $state(0);
 	let renderedMovement = $state(0);
@@ -496,8 +568,16 @@
 	let viewButton = $state<HTMLElement | null>(null);
 	const islandLabels: Record<string, Marker> = {};
 	let selectedMarker: Marker | null = null;
+	let searchMarker: Marker | null = null;
+	let searchPopup: Popup | null = null;
+	let displayedSearchPlace = $state('');
 	const journeyMarkers: Partial<Record<'start' | 'end', Marker>> = {};
+	const directionMarkers: Record<string, Marker> = {};
 	let inspectionPopup: Popup | null = null;
+	let inspectedSeaRouteId = $state('');
+	let inspectedAirRouteId = $state('');
+	let inspectedAirNetwork: AirNetwork | null = null;
+	let inspectedSeaFeatures: FeatureCollection | null = null;
 	let inspectedSource: string | null = null;
 	let inspectedIslandId: string | null = null;
 	let makeMarker: typeof import('maplibre-gl').Marker | undefined;
@@ -518,14 +598,20 @@
 	let contextualIsland: string | null = null;
 	let userZoomGesture: { point: [number, number] | null; startZoom: number } | null = null;
 	let lastFittedRoute: LandRoute | null = null;
+	let lastFittedDirections: SearchDirectionsResult | null = null;
 	let lastJourneyFocusVersion = 0;
 	let liveAnimating = $state(false);
+	let routeVehiclesAnimating = $state(false);
 	let displayedLive = { type: 'FeatureCollection', features: [] } as FeatureCollection;
 	const nationalBounds: [Coordinates, Coordinates] = [
 		[72, -0.9],
 		[74.4, 7.3]
 	];
 	const interactiveLayers = [
+		'air-route-line',
+		'air-airport-points',
+		'air-airport-symbols',
+		'route-vehicle-symbols',
 		'sea-route-line',
 		'sea-route-unverified',
 		'sea-island-points',
@@ -551,6 +637,57 @@
 		type: 'FeatureCollection',
 		features: []
 	};
+	const airFeatures = $derived(airState ? airNetworkFeatures(airState) : emptyCollection);
+	const seaVehicleFeatures = $derived(seaState?.features);
+	const seaVehicleRoutes = $derived(seaState?.routes);
+	const seaVehicleDate = $derived(seaState?.serviceDate);
+	const vehiclePaths = $derived.by(() => {
+		const paths: RouteVehiclePath[] = [];
+		const seaRoutes = new Map((seaVehicleRoutes ?? []).map((route) => [route.id, route]));
+		for (const [mode, network] of [
+			['sea', seaVehicleFeatures],
+			['air', airFeatures]
+		] as const)
+			for (const feature of network?.features ?? []) {
+				if (feature.geometry.type !== 'LineString' || !feature.properties?.route_id) continue;
+				const schedule = mode === 'sea' ? seaRoutes.get(String(feature.properties.route_id)) : null;
+				paths.push({
+					id: String(feature.properties.leg_id ?? feature.properties.route_id),
+					routeId: String(feature.properties.route_id),
+					name: String(feature.properties.name ?? feature.properties.route_name ?? 'Route'),
+					mode,
+					bidirectional: feature.properties.bidirectional === true,
+					geometry: feature.geometry,
+					...(seaVehicleDate && schedule?.scheduled_sailings?.length
+						? {
+								schedule: {
+									serviceDate: seaVehicleDate,
+									sailings: schedule.scheduled_sailings
+								}
+							}
+						: {})
+				});
+			}
+		return paths;
+	});
+	const preparedVehicles = $derived(prepareRouteVehicles(vehiclePaths));
+	function routeLineWidth(
+		selected: import('maplibre-gl').ExpressionSpecification,
+		normal: number,
+		focused: number
+	): import('maplibre-gl').ExpressionSpecification {
+		return [
+			'interpolate',
+			['linear'],
+			['zoom'],
+			5,
+			['case', selected, focused * 0.85, normal * 0.8],
+			9,
+			['case', selected, focused, normal],
+			14,
+			['case', selected, focused, normal * 0.85]
+		];
+	}
 	const serviceHitLayers = [
 		'policy-service-line',
 		'policy-service-bus-line',
@@ -748,7 +885,8 @@
 			Number(facilitiesVisible) +
 			Number(transportVisible) +
 			Number(!!onSeaLayerChange && seaLayerEnabled) +
-			Number(mode !== 'places' && liveVisible && liveEvents.length > 0)
+			Number(!!onAirLayerChange && airLayerEnabled) +
+			Number(liveVisible && liveEvents.length > 0)
 	);
 	const mapBusy = $derived(
 		!error && (!ready || !features || (layers.islands.features.length > 0 && !islandsDataReady))
@@ -851,8 +989,56 @@
 		return { data: collection(items), unlocated };
 	});
 	const scenarioFeatures = $derived(scenarioPreview.data);
+	const directionWaypoints = $derived.by((): DirectionWaypoint[] => {
+		if (!inlineDirectionsActive) return [];
+		const points =
+			directionPoints ??
+			directions?.points.map((coordinates, index) => ({
+				id: `direction:${index}`,
+				name: index === 0 ? 'Journey start' : 'Journey stop',
+				coordinates
+			})) ??
+			[];
+		return points.flatMap((point, index): DirectionWaypoint[] =>
+			validCoordinates(point.coordinates)
+				? [
+						{
+							...point,
+							coordinates: point.coordinates,
+							index,
+							letter: String.fromCharCode(65 + index),
+							role: index === 0 ? 'start' : index === points.length - 1 ? 'end' : 'via'
+						}
+					]
+				: []
+		);
+	});
+	const directionDestinationLetter = $derived(
+		inlineDirectionsActive
+			? String.fromCharCode(
+					65 + Math.max(1, (directionPoints?.length ?? directions?.points.length ?? 2) - 1)
+				)
+			: 'B'
+	);
+	const matchedDirections = $derived.by(() => {
+		if (!directions) return null;
+		if (
+			directionPoints !== undefined &&
+			(directionPoints.length !== directions.points.length ||
+				directionPoints.some(
+					(point, index) =>
+						!validCoordinates(point.coordinates) ||
+						point.coordinates.some(
+							(value, axis) => Math.abs(value - directions!.points[index][axis]) > 0.000001
+						)
+				))
+		)
+			return null;
+		return directions;
+	});
 	const matchedJourney = $derived(
-		route?.journey?.status === 'reachable' &&
+		!inlineDirectionsActive &&
+			route?.journey?.status === 'reachable' &&
 			routeEndpointsMatch(
 				route.journey.legs[0]?.from.coordinates,
 				route.journey.legs.at(-1)?.to.coordinates,
@@ -864,6 +1050,28 @@
 			: null
 	);
 	const routeFeatures = $derived.by(() => {
+		if (inlineDirectionsActive)
+			return collection([
+				...searchDirectionsFeatures(matchedDirections).features,
+				...directionWaypoints.map((point) => ({
+					type: 'Feature' as const,
+					id: `direction:${point.index}:${point.id}`,
+					properties: {
+						kind: point.role,
+						inline_direction: true,
+						letter: point.letter,
+						name: point.name,
+						label: `${point.letter} · ${point.name || 'Journey point'}`,
+						status:
+							matchedDirections?.status === 'ok'
+								? 'Calculated route'
+								: matchedDirections?.status === 'partial'
+									? 'Partial route · some connections unavailable'
+									: 'Journey input · route unconfirmed'
+					},
+					geometry: { type: 'Point' as const, coordinates: point.coordinates }
+				}))
+			]);
 		const coordinates = route?.geometry;
 		const journey = route?.journey;
 		const firstPoint = journey?.legs[0]?.from.coordinates;
@@ -936,49 +1144,59 @@
 		]);
 	});
 	const journeyStopFeatures = $derived.by(() => {
-		const journey = matchedJourney;
-		if (!journey) return emptyCollection;
+		const journeys = inlineDirectionsActive
+			? (matchedDirections?.segments.flatMap((segment) =>
+					segment.status === 'ok' && segment.result?.journey?.status === 'reachable'
+						? [segment.result.journey]
+						: []
+				) ?? [])
+			: matchedJourney
+				? [matchedJourney]
+				: [];
+		if (!journeys.length) return emptyCollection;
 		return collection(
-			journey.stops
-				.filter((stop) => validCoordinates(stop.coordinates))
-				.map((stop) => {
-					const rides = journey.legs.filter(
-						(leg) =>
-							['bus', 'ferry'].includes(leg.mode) &&
-							(leg.from.id === stop.id || leg.to.id === stop.id)
-					);
-					const board = rides.find((leg) => leg.from.id === stop.id);
-					const alight = rides.find((leg) => leg.to.id === stop.id);
-					const action =
-						stop.roles.length > 1
-							? 'Transfer'
-							: stop.roles.includes('board')
-								? 'Board here'
-								: 'Get off here';
-					const routeNames = [
-						...new Set(rides.map((leg) => leg.route_name ?? leg.route_id).filter(Boolean))
-					].join(' → ');
-					return {
-						type: 'Feature',
-						id: stop.id,
-						geometry: { type: 'Point', coordinates: stop.coordinates },
-						properties: {
-							kind: 'journey-stop',
-							mode: rides.some((leg) => leg.mode === 'ferry') ? 'ferry' : 'bus',
-							name: stop.name,
-							role: action,
-							route_names: routeNames,
-							departure: board ? journeyClock(board.departure_minutes) : null,
-							arrival: alight ? journeyClock(alight.arrival_minutes) : null,
-							label: `${action} · ${stop.name}${routeNames ? ` · ${routeNames}` : ''}`
-						}
-					};
-				})
+			journeys.flatMap((journey, journeyIndex) =>
+				journey.stops
+					.filter((stop) => validCoordinates(stop.coordinates))
+					.map((stop) => {
+						const rides = journey.legs.filter(
+							(leg) =>
+								['bus', 'ferry'].includes(leg.mode) &&
+								(leg.from.id === stop.id || leg.to.id === stop.id)
+						);
+						const board = rides.find((leg) => leg.from.id === stop.id);
+						const alight = rides.find((leg) => leg.to.id === stop.id);
+						const action =
+							stop.roles.length > 1
+								? 'Transfer'
+								: stop.roles.includes('board')
+									? 'Board here'
+									: 'Get off here';
+						const routeNames = [
+							...new Set(rides.map((leg) => leg.route_name ?? leg.route_id).filter(Boolean))
+						].join(' → ');
+						return {
+							type: 'Feature',
+							id: inlineDirectionsActive ? `${journeyIndex}:${stop.id}` : stop.id,
+							geometry: { type: 'Point', coordinates: stop.coordinates },
+							properties: {
+								kind: 'journey-stop',
+								mode: rides.some((leg) => leg.mode === 'ferry') ? 'ferry' : 'bus',
+								name: stop.name,
+								role: action,
+								route_names: routeNames,
+								departure: board ? journeyClock(board.departure_minutes) : null,
+								arrival: alight ? journeyClock(alight.arrival_minutes) : null,
+								label: `${action} · ${stop.name}${routeNames ? ` · ${routeNames}` : ''}`
+							}
+						};
+					})
+			)
 		);
 	});
 	const liveFeatures = $derived(
 		collection(
-			(mode !== 'places' ? liveEvents : [])
+			liveEvents
 				.filter((event) => validCoordinates([event.position.longitude, event.position.latitude]))
 				.map((event) => ({
 					type: 'Feature',
@@ -991,6 +1209,14 @@
 						observed_at: event.observed_at,
 						retrieved_at: event.retrieved_at,
 						stale: event.stale,
+						live_badge_eligible:
+							['aircraft', 'vessel'].includes(event.kind) &&
+							!event.stale &&
+							event.position_time_quality === 'provider_observed' &&
+							['provider_live', 'verified_public_json'].includes(event.source_quality ?? ''),
+						live_observed_at: Number.isFinite(Date.parse(event.observed_at ?? ''))
+							? Date.parse(event.observed_at!)
+							: 0,
 						heading: eventBearing(event),
 						name: eventName(event),
 						label: `${eventName(event)} · ${event.provider}${event.stale ? ' · stale position' : event.observed_at ? ' · observed position' : ' · observation time unavailable'}`
@@ -1005,24 +1231,11 @@
 	const freshMovement = $derived(
 		liveFeatures.features.filter((feature) => !feature.properties?.stale)
 	);
-	const timedMovement = $derived(
-		freshMovement.filter((feature) => feature.properties?.observed_at)
-	);
 	const activityKinds = $derived.by(() => {
 		const counts = { aircraft: 0, vessel: 0, bus: 0 };
-		for (const event of mode !== 'places' ? liveEvents : []) counts[event.kind]++;
+		for (const event of liveEvents) counts[event.kind]++;
 		return counts;
 	});
-	const activityMessage = $derived(
-		liveStatus.loading && !liveFeatures.features.length
-			? 'Checking nearby movement…'
-			: liveFeatures.features.length
-				? `${timedMovement.length} dated · ${freshMovement.length - timedMovement.length} time unknown · ${liveFeatures.features.length - freshMovement.length} stale`
-				: liveStatus.message ||
-					(liveStatus.providers?.some((provider) => provider.enabled)
-						? 'No vehicle positions returned in this area'
-						: 'Movement feeds unavailable in this area')
-	);
 
 	function eventBearing(event: LiveEvent): number | null {
 		for (const key of event.kind === 'aircraft'
@@ -1071,6 +1284,8 @@
 					(tags.bus === 'yes' || tags.highway === 'bus_stop')
 						? 'bus_stop'
 						: properties.category;
+				const symbolCategory =
+					category === 'terminal' || tags.aeroway === 'terminal' ? 'air_terminal' : category;
 				const name = String(properties.name ?? tags['name:en'] ?? tags.name ?? '').trim();
 				const priority = [
 					'hospital',
@@ -1085,6 +1300,7 @@
 					properties: {
 						...properties,
 						category,
+						symbol_category: symbolCategory,
 						name,
 						record_source: source,
 						location_method: feature.geometry.type === 'Point' ? 'Location' : 'Area centre',
@@ -1308,10 +1524,32 @@
 			return [];
 		});
 		const bounds = boundsOf({ type: 'MultiPoint', coordinates: positions });
+		const padding = focusPadding();
+		if (inlineDirectionsActive) {
+			const frame = container.getBoundingClientRect();
+			const dock = container
+				.closest('.map-workspace')
+				?.querySelector('.map-search-dock.search-directions-open')
+				?.getBoundingClientRect();
+			if (dock) {
+				if (window.matchMedia('(max-width: 700px)').matches) {
+					padding.top = Math.max(
+						padding.top,
+						Math.min(dock.bottom - frame.top + 12, Math.max(0, frame.height - 180))
+					);
+					padding.bottom = Math.min(padding.bottom, 90);
+				} else {
+					padding.left = Math.max(
+						padding.left,
+						Math.min(dock.right - frame.left + 24, Math.max(0, frame.width - 180))
+					);
+				}
+			}
+		}
 		if (bounds)
 			map.fitBounds(bounds, {
 				absolutePadding: true,
-				padding: focusPadding(),
+				padding,
 				maxZoom: 16,
 				duration: reducedMotion() ? 0 : 280
 			});
@@ -1412,12 +1650,10 @@
 		// On narrow maps, keep both cities above the legend and bottom action docks.
 		const frame = container.getBoundingClientRect();
 		const information = container.parentElement
-			?.querySelector('.map-information-card')
+			?.querySelector('.map-controls')
 			?.getBoundingClientRect();
 		if (information?.height) {
-			// Reserve the full tablet key before coverage rows arrive, avoiding a cold-load overlap.
-			const legendHeight =
-				container.clientWidth > 620 ? Math.max(information.height, 240) : information.height;
+			const legendHeight = information.height;
 			padding.bottom = Math.max(
 				padding.bottom,
 				Math.min(frame.bottom - information.bottom + legendHeight + 24, frame.height * 0.48)
@@ -1622,7 +1858,6 @@
 			const data = await api<
 				FeatureCollection & {
 					summary: typeof contextSummary & { status?: string };
-					metadata?: { retrieved_at?: string };
 				}
 			>(`map/context?bbox=${key}`, undefined, contextRequest.signal);
 			if (generation !== contextGeneration || !map) return;
@@ -1630,7 +1865,6 @@
 			contextLoadedBounds = bbox;
 			contextData = data;
 			contextSummary = data.summary;
-			contextReceipt = String(data.metadata?.retrieved_at ?? '').slice(0, 10);
 			setData('street-context', data);
 			syncStreetLabels();
 			contextLoadedError = data.summary?.status === 'unavailable' ? 'Streets unavailable' : '';
@@ -1723,9 +1957,14 @@
 			controlsPanel = null;
 			return;
 		}
+		mobileLegendOpen = false;
 		controlsPanel = panel;
 		await tick();
-		controls?.querySelector<HTMLButtonElement>('.control-panel button')?.focus();
+		controls?.querySelector<HTMLButtonElement>('.control-panel:not([inert]) button')?.focus();
+	}
+	function toggleMapKey() {
+		closeControls();
+		mobileLegendOpen = !mobileLegendOpen;
 	}
 
 	function controlsKeydown(event: KeyboardEvent) {
@@ -1743,29 +1982,54 @@
 			policyMarkers.get(selectedProposalIndex)?.getElement().focus({ preventScroll: true });
 			selectedProposalIndex = null;
 		} else if (controlsPanel) closeControls(true);
+		else if (mobileLegendOpen) {
+			mobileLegendOpen = false;
+			controls?.querySelector<HTMLButtonElement>('[aria-label="Map key & live coverage"]')?.focus();
+		} else if (inspectedSource === 'sea-network' || inspectedSource === 'air-network') {
+			event.preventDefault();
+			closeInspection();
+			map?.getCanvas().focus({ preventScroll: true });
+		}
 	}
 
 	function setData(name: string, data: FeatureCollection) {
 		const instance = map;
 		const source = instance?.getSource(name) as GeoJSONSource | undefined;
-		if (!instance || !source || untrack(() => sourceData.get(name)) === data) return;
+		const previous = untrack(() => sourceData.get(name));
+		if (!instance || !source || previous === data) return;
 		untrack(() => sourceData.set(name, data));
+		// Sources start empty. Reposting an equivalent empty collection needlessly
+		// rebuilds worker indexes; clearing a previously populated source still runs.
+		if (!data.features.length && !previous?.features.length) return;
 		if (name === 'street-context') diagnosticsDirty.context = true;
 		else if (name === 'live' || name === 'live-vessels') diagnosticsDirty.movement = true;
 		else if (['pois', 'facilities', 'transport', 'bus-stops'].includes(name))
 			diagnosticsDirty.places = true;
 		if (name === 'policy-impact') untrack(() => impactSourceUpdates++);
 		const version = name === 'islands' ? ++islandsDataVersion : 0;
-		if (name === 'islands') islandsDataReady = false;
+		if (name === 'islands') {
+			cancelIslandReadiness?.();
+			islandsDataReady = false;
+		}
 		void source
 			.setData(data)
 			.then(() => {
 				if (name !== 'islands' || map !== instance || version !== islandsDataVersion) return;
 				const complete = () => {
-					if (map === instance && version === islandsDataVersion) islandsDataReady = true;
+					if (map !== instance || version !== islandsDataVersion) {
+						instance.off('render', complete);
+						return;
+					}
+					if (!instance.isSourceLoaded('islands')) return;
+					instance.off('render', complete);
+					cancelIslandReadiness = undefined;
+					islandsDataReady = true;
 				};
-				if (instance.loaded()) complete();
-				else instance.once('idle', complete);
+				// Wait for the geography's completed render, without holding the map's
+				// loading state open for independent live, route or street sources.
+				cancelIslandReadiness = () => instance.off('render', complete);
+				instance.on('render', complete);
+				instance.triggerRepaint();
 			})
 			.catch((cause: unknown) => {
 				if (map === instance)
@@ -1778,6 +2042,258 @@
 		inspectionPopup = null;
 		inspectedSource = null;
 		inspectedIslandId = null;
+		inspectedSeaRouteId = '';
+		inspectedSeaFeatures = null;
+		inspectedAirRouteId = '';
+		inspectedAirNetwork = null;
+	}
+	function inspectAirRoute(feature: Feature, event: { lngLat: { lng: number; lat: number } }) {
+		const network = airState;
+		const routeId = String(feature.properties?.route_id ?? '');
+		const route = network?.routes.find((item) => item.id === routeId);
+		if (!map || !makePopup || !network || !route) return;
+		closeInspection();
+		const popup = new makePopup({
+			className: 'map-record-popup map-source-record-popup map-air-route-popup',
+			maxWidth: '304px',
+			offset: 14,
+			closeOnClick: false,
+			focusAfterOpen: false
+		})
+			.setLngLat([event.lngLat.lng, event.lngLat.lat])
+			.setDOMContent(airRouteCard(network, route))
+			.addTo(map);
+		inspectionPopup = popup;
+		inspectedSource = 'air-network';
+		inspectedIslandId = selectedId;
+		inspectedAirRouteId = routeId;
+		inspectedAirNetwork = network;
+		popup.on('close', () => {
+			if (inspectionPopup !== popup) return;
+			inspectionPopup = null;
+			inspectedSource = null;
+			inspectedIslandId = null;
+			inspectedAirRouteId = '';
+			inspectedAirNetwork = null;
+		});
+	}
+	function inspectSeaRoute(
+		feature: Feature & { source: string },
+		event: { lngLat: { lng: number; lat: number } }
+	) {
+		if (!map || !makePopup) return;
+		closeInspection();
+		const props = feature.properties ?? {};
+		const routeId = String(props.route_id ?? '');
+		const route = seaState?.routes?.find((item) => item.id === routeId);
+		const pressure = route?.pressure;
+		const level = pressure?.level ?? String(props.pressure_level ?? 'unknown');
+		const pressureLabel =
+			level === 'low'
+				? 'Low'
+				: level === 'medium'
+					? 'Moderate'
+					: level === 'high'
+						? 'High'
+						: 'Unknown';
+		const pressureColor =
+			seaPressureColors[level as keyof typeof seaPressureColors] ?? seaPressureColors.unknown;
+		const panel = document.createElement('section');
+		panel.className = 'map-record-card map-network-route-card map-sea-route-card';
+		panel.setAttribute('aria-label', 'Sea route');
+		panel.dataset.seaRoute = routeId;
+		const eyebrow = document.createElement('small');
+		eyebrow.className = 'map-record-kind';
+		eyebrow.textContent = route?.route_code ? `Ferry route · ${route.route_code}` : 'Ferry route';
+		const title = document.createElement('h3');
+		title.textContent = route?.name || String(props.name ?? props.route_name ?? 'Sea connection');
+		const badge = document.createElement('span');
+		badge.className = 'sea-route-pressure';
+		badge.dataset.pressure = level;
+		const dot = document.createElement('i');
+		dot.style.backgroundColor = pressureColor;
+		dot.setAttribute('aria-hidden', 'true');
+		badge.append(
+			dot,
+			level === 'unknown' ? 'Pressure unknown' : `${pressureLabel} estimated pressure`
+		);
+		const summary = document.createElement('dl');
+		summary.className = 'sea-route-summary';
+		function row(list: HTMLDListElement, label: string, value: unknown) {
+			if (value === undefined || value === null || value === '') return;
+			const term = document.createElement('dt');
+			term.textContent = label;
+			const description = document.createElement('dd');
+			description.textContent = String(value);
+			list.append(term, description);
+		}
+		const number = (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 0 });
+		const weeklyDepartures = pressure?.departures_per_week ?? props.departures_per_week;
+		const estimatedFrequency = pressure?.frequency_basis === 'published_headway_estimate';
+		if (typeof weeklyDepartures === 'number' && Number.isFinite(weeklyDepartures))
+			row(
+				summary,
+				estimatedFrequency ? 'Estimated service' : 'Published service',
+				`${number(weeklyDepartures)} ${estimatedFrequency ? 'estimated ' : ''}sailings / week`
+			);
+		else if (route?.departure_count != null)
+			row(summary, 'Selected date', `${number(route.departure_count)} published departures`);
+		row(summary, 'Full-route crossing', seaDuration(route?.crossing_minutes));
+		panel.append(eyebrow, title, badge, summary);
+		const details = document.createElement('details');
+		details.className = 'sea-route-details';
+		const toggle = document.createElement('summary');
+		toggle.textContent = 'Route details';
+		details.append(toggle);
+		const evidence = document.createElement('dl');
+		row(evidence, 'Operator', route?.operator);
+		row(evidence, 'Week beginning', seaState?.serviceDate);
+		if (pressure?.population != null)
+			row(
+				evidence,
+				'Projected residents',
+				`${number(pressure.population)} · ${pressure.population_year}`
+			);
+		if (pressure?.residents_per_weekly_departure != null)
+			row(
+				evidence,
+				'Per weekly sailing',
+				`${number(pressure.residents_per_weekly_departure)} residents`
+			);
+		if (
+			pressure?.headway_min_minutes != null &&
+			pressure.headway_max_minutes != null &&
+			pressure.headway_min_minutes !== pressure.headway_max_minutes
+		)
+			row(
+				evidence,
+				'Published interval',
+				`${seaDuration(pressure.headway_min_minutes)}–${seaDuration(pressure.headway_max_minutes)}`
+			);
+		else if (pressure?.headway_minutes != null)
+			row(evidence, 'Published interval', seaDuration(pressure.headway_minutes));
+		if (pressure?.capacity != null) {
+			row(evidence, 'Published capacity', number(pressure.capacity));
+			row(evidence, 'Capacity basis', pressure.capacity_basis);
+		}
+		row(evidence, 'Route geometry', 'Illustrative water route');
+		row(
+			evidence,
+			'Vehicle position',
+			route?.scheduled_sailings?.length
+				? 'Approximate schedule position during a published sailing; representative position otherwise'
+				: 'Representative position along the route'
+		);
+		details.append(evidence);
+		const note = document.createElement('p');
+		note.textContent =
+			pressure?.explanation ||
+			String(
+				props.pressure_explanation ??
+					'Population or published service frequency is unavailable for this route.'
+			);
+		details.append(note);
+		const qualification = document.createElement('p');
+		qualification.className = 'sea-route-qualification';
+		qualification.textContent =
+			'Low, moderate and high compare population per weekly departure across this network. Service totals derived from published intervals are estimates. Pressure does not measure passenger demand or onboard crowding. The water route is modeled around mapped shorelines; navigation conditions are unverified. Route positions may be estimated from retained dated sailings; receiver observations are shown separately.';
+		details.append(qualification);
+		if (route) {
+			const status = document.createElement('p');
+			status.textContent = seaRouteEvidenceLabel(route);
+			details.append(status);
+			if (route.stops.length) {
+				const heading = document.createElement('strong');
+				heading.className = 'sea-route-detail-heading';
+				heading.textContent = `${route.stops.length} stops`;
+				const stops = document.createElement('ol');
+				stops.className = 'sea-route-stops';
+				for (const stop of route.stops) {
+					const item = document.createElement('li');
+					item.textContent =
+						stop.island_name && stop.island_name !== stop.name
+							? `${stop.island_name} · ${stop.name}`
+							: stop.name;
+					stops.append(item);
+				}
+				details.append(heading, stops);
+			}
+			const departures = route.origin_departures ?? route.published_departures ?? route.departures;
+			if (departures.length) {
+				const times = document.createElement('p');
+				times.textContent = `${route.origin_departures ? 'Selected-island departures' : 'Route-start departures'} · ${departures.map(seaClock).join(', ')}`;
+				details.append(times);
+			}
+			for (const window of route.frequency_windows ?? []) {
+				const interval = document.createElement('p');
+				interval.textContent = `Published service window · ${window.label}: ${seaClock(window.start_minutes)}–${seaClock(window.end_minutes)}${window.headway_minutes ? ` · every ${seaDuration(window.headway_minutes)}` : ''}`;
+				details.append(interval);
+			}
+			for (const text of new Set(route.qualifications)) {
+				const item = document.createElement('p');
+				item.className = 'sea-route-qualification';
+				item.textContent = text;
+				details.append(item);
+			}
+			const sources =
+				seaState?.sources?.filter((source) => route.source_ids.includes(source.id)) ?? [];
+			if (sources.length) {
+				const list = document.createElement('div');
+				list.className = 'sea-route-sources';
+				for (const source of sources) {
+					if (!source.url || !/^https?:\/\//i.test(source.url)) continue;
+					const link = document.createElement('a');
+					link.href = source.url;
+					link.target = '_blank';
+					link.rel = 'noopener noreferrer';
+					link.textContent = source.title;
+					list.append(link);
+				}
+				details.append(list);
+			}
+		}
+		panel.append(details);
+		if (onSeaSelect) {
+			const action = document.createElement('button');
+			action.type = 'button';
+			action.className = 'sea-route-open';
+			action.textContent = 'Open connections';
+			action.addEventListener('click', () => {
+				closeInspection();
+				onSeaSelect?.({ kind: 'route', id: routeId });
+			});
+			panel.append(action);
+		}
+		const popup = new makePopup({
+			className: 'map-record-popup map-source-record-popup map-sea-route-popup',
+			maxWidth: '304px',
+			offset: 14,
+			closeOnClick: false,
+			focusAfterOpen: false
+		})
+			.setLngLat([event.lngLat.lng, event.lngLat.lat])
+			.setDOMContent(panel)
+			.addTo(map);
+		inspectionPopup = popup;
+		inspectedSource = 'sea-network';
+		inspectedIslandId = selectedId;
+		inspectedSeaRouteId = routeId;
+		inspectedSeaFeatures = seaState?.features ?? null;
+		popup.on('close', () => {
+			if (inspectionPopup !== popup) return;
+			inspectionPopup = null;
+			inspectedSource = null;
+			inspectedIslandId = null;
+			inspectedSeaRouteId = '';
+			inspectedSeaFeatures = null;
+		});
+	}
+	function clearSearchPlace() {
+		searchMarker?.remove();
+		searchMarker = null;
+		searchPopup?.remove();
+		searchPopup = null;
+		displayedSearchPlace = '';
 	}
 
 	function stopImpactFeedback() {
@@ -1848,18 +2364,23 @@
 			: {};
 	}
 
-	function inspectFeature(feature: MapGeoJSONFeature, event: MapMouseEvent) {
+	function inspectFeature(
+		feature: Feature & { source: string },
+		event: { lngLat: { lng: number; lat: number } },
+		searchResult?: SearchSelection
+	) {
 		if (!map || !makePopup) return;
 		closeInspection();
-		const props = feature.properties;
+		const props = feature.properties ?? {};
 		const recordSource = String(props.record_source ?? feature.source);
 		const panel = document.createElement('section');
 		panel.className = 'map-record-card';
 		panel.setAttribute('aria-label', 'Map source record');
 		const eyebrow = document.createElement('small');
 		eyebrow.className = 'map-record-kind';
-		eyebrow.textContent =
-			recordSource === 'facilities'
+		eyebrow.textContent = searchResult
+			? String(searchResult.category ?? props.category ?? 'Search result').replaceAll('_', ' ')
+			: recordSource === 'facilities'
 				? String(props.category ?? 'Public facility').replaceAll('_', ' ')
 				: recordSource === 'transport'
 					? `${String(props.category ?? 'Transport place').replaceAll('_', ' ')} · stationary place`
@@ -1874,7 +2395,8 @@
 							: 'Proposed operation';
 		const title = document.createElement('h3');
 		title.textContent =
-			[
+			searchResult?.name ||
+			([
 				props.name,
 				props.route_name,
 				props.label,
@@ -1884,7 +2406,8 @@
 				'Source record'
 			]
 				.map((value) => String(value ?? '').trim())
-				.find(Boolean) ?? 'Source record';
+				.find(Boolean) ??
+				'Source record');
 		const details = document.createElement('dl');
 		function row(label: string, value: unknown, code = false) {
 			if (value === undefined || value === null || value === '') return;
@@ -1958,12 +2481,17 @@
 			row('Geometry preview', props.geometry_preview);
 		}
 		row('Island ID', props.island_id, true);
-		const coordinates: Coordinates =
-			feature.geometry.type === 'Point' && validCoordinates(feature.geometry.coordinates)
+		const coordinates: Coordinates = searchResult
+			? searchResult.coordinates
+			: feature.geometry.type === 'Point' && validCoordinates(feature.geometry.coordinates)
 				? [feature.geometry.coordinates[0], feature.geometry.coordinates[1]]
 				: [event.lngLat.lng, event.lngLat.lat];
 		row(
-			feature.geometry.type === 'Point' ? 'Position' : 'Clicked location',
+			searchResult
+				? 'Search location'
+				: feature.geometry.type === 'Point'
+					? 'Position'
+					: 'Clicked location',
 			coordinates.map((number) => number.toFixed(6)).join(', '),
 			true
 		);
@@ -1972,6 +2500,16 @@
 		evidenceTitle.textContent = 'Source details';
 		evidence.append(evidenceTitle, details);
 		panel.append(eyebrow, title);
+		if (searchResult) {
+			panel.dataset.searchPlace = searchResult.id;
+			const source = props.source ?? props.provider;
+			if (source) {
+				const provenance = document.createElement('p');
+				provenance.className = 'map-search-source';
+				provenance.textContent = `Source: ${String(source)}`;
+				panel.append(provenance);
+			}
+		}
 		if (props.kind === 'vessel' && feature.source === 'live-vessels') {
 			const assignment = document.createElement('p');
 			assignment.textContent =
@@ -1994,7 +2532,7 @@
 			routes.textContent = `Routes serving this stop: ${String(props.route_names)}`;
 			panel.append(routes);
 		}
-		if (['facilities', 'transport', 'pois', 'bus-stops'].includes(feature.source)) {
+		if (searchResult || ['facilities', 'transport', 'pois', 'bus-stops'].includes(feature.source)) {
 			panel.append(pointActions(coordinates, title.textContent));
 		}
 		panel.append(evidence);
@@ -2011,18 +2549,61 @@
 		inspectionPopup = popup;
 		inspectedSource = recordSource;
 		inspectedIslandId =
-			feature.source === 'bus-stops'
+			searchResult || feature.source === 'bus-stops'
 				? selectedId
 				: props.island_id
 					? String(props.island_id)
 					: null;
 		popup.on('close', () => {
+			if (searchPopup === popup) searchPopup = null;
 			if (inspectionPopup === popup) {
 				inspectionPopup = null;
 				inspectedSource = null;
 				inspectedIslandId = null;
 			}
 		});
+	}
+	function showSearchPlace(selection: SearchSelection) {
+		if (!map || !makeMarker || !makePopup) return;
+		clearSearchPlace();
+		const properties = selection.feature?.properties ?? {};
+		const sourceFeature: Feature = selection.feature ?? {
+			type: 'Feature',
+			properties: {},
+			geometry: { type: 'Point', coordinates: selection.coordinates }
+		};
+		const feature: Feature & { source: string } = {
+			...sourceFeature,
+			properties: {
+				...properties,
+				category: selection.category ?? properties.category,
+				name: selection.name
+			},
+			source: String(properties.record_source ?? 'search')
+		};
+		const open = () => {
+			inspectFeature(
+				feature,
+				{ lngLat: { lng: selection.coordinates[0], lat: selection.coordinates[1] } },
+				selection
+			);
+			searchPopup = inspectionPopup;
+		};
+		const pin = document.createElement('button');
+		pin.type = 'button';
+		pin.className = 'map-search-pin';
+		pin.setAttribute('aria-label', `Show ${selection.name}`);
+		pin.title = selection.name;
+		pin.dataset.searchMarker = selection.id;
+		pin.addEventListener('click', (event) => {
+			event.stopPropagation();
+			open();
+		});
+		searchMarker = new makeMarker({ element: pin, anchor: 'bottom', offset: [0, -3] })
+			.setLngLat(selection.coordinates)
+			.addTo(map);
+		displayedSearchPlace = selection.id;
+		open();
 	}
 
 	function pointActions(coordinates: Coordinates, name: string): HTMLElement {
@@ -2032,7 +2613,8 @@
 			for (const endpoint of ['start', 'end'] as const) {
 				const button = document.createElement('button');
 				button.type = 'button';
-				button.textContent = endpoint === 'start' ? 'A · Start here' : 'B · End here';
+				button.textContent =
+					endpoint === 'start' ? 'A · Start here' : `${directionDestinationLetter} · End here`;
 				button.addEventListener('click', () => {
 					closeInspection();
 					onroutepoint?.(coordinates, endpoint, name);
@@ -2125,7 +2707,7 @@
 		});
 	}
 	function inspectLocation(coordinates: Coordinates) {
-		if (!map || !makePopup || (!onplanpoint && !onroutepoint)) return;
+		if (!map || !makePopup || (!onplanpoint && !directionPoints?.length)) return;
 		closeInspection();
 		const panel = document.createElement('section');
 		panel.className = 'map-record-card';
@@ -2133,7 +2715,9 @@
 		const title = document.createElement('h3');
 		title.textContent = 'What would you like to do here?';
 		const hint = document.createElement('p');
-		hint.textContent = 'Use this location for a journey or a new proposal.';
+		hint.textContent = onplanpoint
+			? 'Use this location for a journey or a new proposal.'
+			: 'Use this location as a journey start or destination.';
 		panel.append(title, hint, pointActions(coordinates, 'Selected on map'));
 		const cancel = document.createElement('button');
 		cancel.type = 'button';
@@ -2153,15 +2737,24 @@
 			.addTo(map);
 		inspectedIslandId = selectedId;
 	}
-	function inspectJourneyEndpoint(endpoint: 'start' | 'end', coordinates: Coordinates) {
+	function inspectJourneyEndpoint(
+		endpoint: 'start' | 'end',
+		coordinates: Coordinates,
+		letter = endpoint === 'start' ? 'A' : 'B',
+		name?: string
+	) {
 		if (!map || !makePopup) return;
 		closeInspection();
 		const panel = document.createElement('section');
 		panel.className = 'map-record-card';
 		const title = document.createElement('h3');
-		title.textContent = endpoint === 'start' ? 'A · Journey start' : 'B · Journey destination';
+		title.textContent = `${letter} · ${name || (endpoint === 'start' ? 'Journey start' : 'Journey destination')}`;
 		const hint = document.createElement('p');
-		hint.textContent = 'Drag this pin to adjust it, or choose an action below.';
+		hint.textContent = onroutepoint
+			? 'Drag this pin to adjust it, or choose an action below.'
+			: endpoint === 'start'
+				? 'Journey start.'
+				: 'Journey destination.';
 		const actions = document.createElement('div');
 		actions.className = 'map-point-actions';
 		const move = document.createElement('button');
@@ -2196,8 +2789,117 @@
 		inspectedSource = 'route';
 		inspectedIslandId = selectedId;
 	}
+	function inspectDirectionWaypoint(point: DirectionWaypoint) {
+		if (point.role !== 'via') {
+			inspectJourneyEndpoint(point.role, point.coordinates, point.letter, point.name);
+			return;
+		}
+		if (!map || !makePopup) return;
+		closeInspection();
+		const panel = document.createElement('section');
+		panel.className = 'map-record-card';
+		const title = document.createElement('h3');
+		title.textContent = `${point.letter} · ${point.name || 'Journey stop'}`;
+		const hint = document.createElement('p');
+		hint.textContent = 'Via point · change or remove this stop in directions.';
+		panel.append(title, hint);
+		inspectionPopup = new makePopup({
+			className: 'map-record-popup',
+			maxWidth: '290px',
+			offset: 16,
+			closeOnClick: false,
+			focusAfterOpen: true
+		})
+			.setLngLat(point.coordinates)
+			.setDOMContent(panel)
+			.addTo(map);
+		inspectedSource = 'route';
+		inspectedIslandId = selectedId;
+	}
+	function clearDirectionMarkers() {
+		for (const [key, marker] of Object.entries(directionMarkers)) {
+			marker.remove();
+			delete directionMarkers[key];
+		}
+	}
+	function syncDirectionMarkers() {
+		if (!map || !makeMarker) return;
+		const retained = new SvelteSet<string>();
+		for (const point of directionWaypoints) {
+			const key = `${point.index}:${point.id}`;
+			retained.add(key);
+			let marker = directionMarkers[key];
+			if (!marker) {
+				const element = document.createElement('button');
+				element.type = 'button';
+				marker = new makeMarker({ element }).setLngLat(point.coordinates).addTo(map);
+				const current = marker;
+				let lastDragged = 0;
+				marker.on('dragend', () => {
+					lastDragged = performance.now();
+					const waypoint = directionWaypoints.find((item) => `${item.index}:${item.id}` === key);
+					if (!waypoint || waypoint.role === 'via') return;
+					const coordinates = current.getLngLat();
+					onroutepoint?.(
+						[coordinates.lng, coordinates.lat],
+						waypoint.role,
+						'Adjusted on map',
+						false
+					);
+				});
+				element.addEventListener('click', (event) => {
+					event.stopPropagation();
+					if (performance.now() - lastDragged < 200) return;
+					const waypoint = directionWaypoints.find((item) => `${item.index}:${item.id}` === key);
+					if (waypoint) inspectDirectionWaypoint(waypoint);
+				});
+				element.addEventListener('keydown', (event) => {
+					if (event.key === 'Enter' || event.key === ' ') {
+						event.preventDefault();
+						event.stopPropagation();
+						const waypoint = directionWaypoints.find((item) => `${item.index}:${item.id}` === key);
+						if (waypoint) inspectDirectionWaypoint(waypoint);
+					}
+				});
+				directionMarkers[key] = marker;
+			}
+			marker.setLngLat(point.coordinates);
+			const draggable = point.role !== 'via' && !!onroutepoint;
+			marker.setDraggable(draggable);
+			const element = marker.getElement();
+			element.classList.add('journey-drag-pin', 'journey-waypoint-pin');
+			for (const role of ['start', 'via', 'end'])
+				element.classList.toggle(role, role === point.role);
+			element.classList.toggle('static', !draggable);
+			element.textContent = point.letter;
+			element.dataset.directionPoint = point.id;
+			element.dataset.directionIndex = String(point.index);
+			element.dataset.directionLabel = point.letter;
+			element.title = point.name || 'Journey point';
+			element.setAttribute(
+				'aria-label',
+				`${point.letter} · ${point.name || 'Journey point'}. ${point.role === 'via' ? 'Via point' : point.role === 'start' ? 'Journey start' : 'Journey destination'}. ${draggable ? 'Drag to move, or select for actions.' : 'Select for details.'}`
+			);
+		}
+		for (const [key, marker] of Object.entries(directionMarkers)) {
+			if (!retained.has(key)) {
+				marker.remove();
+				delete directionMarkers[key];
+			}
+		}
+	}
 	function syncJourneyMarkers() {
-		if (!map || !makeMarker || !onroutepoint) return;
+		if (!map || !makeMarker) return;
+		if (inlineDirectionsActive || !onroutepoint) {
+			for (const endpoint of ['start', 'end'] as const) {
+				journeyMarkers[endpoint]?.remove();
+				delete journeyMarkers[endpoint];
+			}
+			if (inlineDirectionsActive) syncDirectionMarkers();
+			else clearDirectionMarkers();
+			return;
+		}
+		clearDirectionMarkers();
 		for (const endpoint of ['start', 'end'] as const) {
 			const coordinates = endpoint === 'start' ? routeStart : routeEnd;
 			if (!coordinates) {
@@ -2759,7 +3461,66 @@
 	}
 	function handleClick(event: MapMouseEvent) {
 		if (!map || !ready) return;
-		if (seaView && !picking && !islandPicking) {
+		if ((airState || seaState) && !picking && !islandPicking) {
+			const hits = map.queryRenderedFeatures(event.point, {
+				layers: [
+					'live-symbols',
+					'live-vessel-symbols',
+					'live-vessel-clusters',
+					'route-vehicle-symbols',
+					'sea-route-line',
+					'sea-route-unverified',
+					'air-route-line',
+					'air-airport-points',
+					'air-airport-symbols'
+				]
+			});
+			const observation = hits.find((hit) => ['live', 'live-vessels'].includes(hit.source));
+			if (observation) {
+				if (observation.properties.cluster) expandCluster(observation);
+				else inspectFeature(observation, event);
+				return;
+			}
+			const illustration = hits.find((hit) => hit.source === 'route-vehicles');
+			if (illustration) {
+				const mode = illustration.properties.mode;
+				const network = mode === 'air' ? airFeatures : seaState?.features;
+				const feature = network?.features.find(
+					(item) =>
+						item.geometry.type === 'LineString' &&
+						item.properties?.route_id === illustration.properties.route_id
+				);
+				if (feature) {
+					if (mode === 'air') inspectAirRoute(feature, event);
+					else inspectSeaRoute({ ...feature, source: 'sea-network' }, event);
+					return;
+				}
+			}
+			const airport = hits.find((hit) => hit.properties?.kind === 'air_airport');
+			if (airport) {
+				if (airport.properties.island_id) onselect(String(airport.properties.island_id));
+				else inspectFeature(airport, event);
+				return;
+			}
+			const airRoute =
+				hits.find((hit) => hit.source === 'air-network' && hit.properties?.route_id) ??
+				(airLayerEnabled && !hits.some((hit) => hit.source === 'sea-network')
+					? map
+							.queryRenderedFeatures(
+								[
+									[event.point.x - 6, event.point.y - 6],
+									[event.point.x + 6, event.point.y + 6]
+								],
+								{ layers: ['air-route-line'] }
+							)
+							.find((hit) => hit.properties?.route_id)
+					: undefined);
+			if (airRoute) {
+				inspectAirRoute(airRoute, event);
+				return;
+			}
+		}
+		if (seaState && !picking && !islandPicking) {
 			const hits = map.queryRenderedFeatures(event.point, {
 				layers: [
 					'live-vessel-symbols',
@@ -2777,6 +3538,40 @@
 				else inspectFeature(vessel, event);
 				return;
 			}
+			const islandPoint = hits.find(
+				(hit) =>
+					(hit.layer.id === 'sea-island-points' || hit.layer.id === 'sea-port-points') &&
+					hit.properties?.island_id
+			);
+			if (islandPoint) {
+				closeInspection();
+				const id = String(islandPoint.properties.island_id ?? islandPoint.properties.id);
+				if (seaInspectorOpen)
+					onSeaSelect?.({
+						kind: 'island',
+						id,
+						name: String(islandPoint.properties.name ?? '')
+					});
+				else onselect(id);
+				return;
+			}
+			const route =
+				hits.find((hit) => hit.properties?.route_id) ??
+				(seaView
+					? map
+							.queryRenderedFeatures(
+								[
+									[event.point.x - 7, event.point.y - 7],
+									[event.point.x + 7, event.point.y + 7]
+								],
+								{ layers: ['sea-route-line', 'sea-route-unverified'] }
+							)
+							.find((hit) => hit.properties?.route_id)
+					: undefined);
+			if (route) {
+				inspectSeaRoute(route, event);
+				return;
+			}
 			const island = hits.find(
 				(hit) =>
 					hit.properties?.island_id ||
@@ -2785,30 +3580,11 @@
 			);
 			if (island) {
 				closeInspection();
-				const id = String(island.properties.island_id ?? island.properties.id);
-				if (seaInspectorOpen)
-					onSeaSelect?.({
-						kind: 'island',
-						id,
-						name: String(island.properties.name ?? '')
-					});
-				else onselect(id);
-				return;
-			}
-			const route =
-				hits.find((hit) => hit.properties?.route_id) ??
-				map
-					.queryRenderedFeatures(
-						[
-							[event.point.x - 5, event.point.y - 5],
-							[event.point.x + 5, event.point.y + 5]
-						],
-						{ layers: ['sea-route-line', 'sea-route-unverified'] }
-					)
-					.find((hit) => hit.properties?.route_id);
-			if (route) {
-				closeInspection();
-				onSeaSelect?.({ kind: 'route', id: String(route.properties.route_id) });
+				onSeaSelect?.({
+					kind: 'island',
+					id: String(island.properties.island_id ?? island.properties.id),
+					name: String(island.properties.name ?? '')
+				});
 				return;
 			}
 		}
@@ -3075,14 +3851,6 @@
 					});
 				instance.dragRotate.disable();
 				instance.touchZoomRotate.disableRotation();
-				instance.addControl(
-					new libre.AttributionControl({
-						compact: true,
-						customAttribution:
-							'Boundaries: <a href="https://onemap.mv" target="_blank" rel="noopener noreferrer">OneMap</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a> / Geofabrik'
-					}),
-					'bottom-right'
-				);
 				instance.on('error', (event) => {
 					const message = event.error?.message ?? '';
 					if (message.includes('WebGL')) error = 'Your browser could not initialize the map.';
@@ -3136,13 +3904,15 @@
 						'route',
 						'live',
 						'policy-gaps',
+						'policy-coverage-fill',
 						'policy-impact',
 						'policy-feedback',
 						'placement-roads',
 						'policy-service',
-						'island-connections',
 						'sea-network',
 						'sea-islands',
+						'air-network',
+						'route-vehicles',
 						'conditions-route',
 						'street-context'
 					]) {
@@ -3178,6 +3948,17 @@
 						}
 					});
 					instance.addLayer({
+						id: 'policy-coverage-fill',
+						type: 'fill',
+						source: 'policy-coverage-fill',
+						paint: {
+							'fill-color': GAP_PALETTE.unknown,
+							'fill-opacity': 0,
+							'fill-opacity-transition': { duration: 0 },
+							'fill-antialias': false
+						}
+					});
+					instance.addLayer({
 						id: 'policy-gaps-fill',
 						type: 'fill',
 						source: 'policy-gaps',
@@ -3187,6 +3968,17 @@
 							'fill-opacity': 0,
 							'fill-opacity-transition': { duration: 0 },
 							'fill-antialias': false
+						}
+					});
+					instance.addLayer({
+						id: 'policy-coverage-fill-outline',
+						type: 'line',
+						source: 'policy-coverage-fill',
+						paint: {
+							'line-color': themeColors.colorf5faf7,
+							'line-width': ['interpolate', ['linear'], ['zoom'], 10, 0.15, 14, 0.45, 17, 0.7],
+							'line-opacity': 0,
+							'line-opacity-transition': { duration: 0 }
 						}
 					});
 					instance.addLayer({
@@ -3326,6 +4118,8 @@
 					});
 					// Analytical hexagons cover land/building footprints; streets and symbols stay above.
 					for (const layer of [
+						'policy-coverage-fill',
+						'policy-coverage-fill-outline',
 						'policy-gaps-fill',
 						'policy-gaps-outline',
 						'policy-gaps-points',
@@ -3456,12 +4250,14 @@
 							layout: {
 								'icon-image': [
 									'match',
-									['get', 'category'],
+									['get', 'symbol_category'],
 									['hospital', 'clinic', 'health_center'],
 									'atlas-health',
 									'school',
 									'atlas-school',
-									['airport', 'aerodrome', 'helipad', 'terminal'],
+									'air_terminal',
+									'atlas-air-terminal',
+									['airport', 'aerodrome', 'helipad'],
 									'atlas-airport',
 									['bus_stop', 'bus_station'],
 									'atlas-bus-stop',
@@ -3576,7 +4372,11 @@
 						id: 'route-endpoints',
 						type: 'circle',
 						source: 'route',
-						filter: ['==', ['geometry-type'], 'Point'],
+						filter: [
+							'all',
+							['==', ['geometry-type'], 'Point'],
+							['!=', ['get', 'inline_direction'], true]
+						],
 						paint: {
 							'circle-color': [
 								'match',
@@ -3594,7 +4394,11 @@
 						id: 'route-endpoint-symbols',
 						type: 'symbol',
 						source: 'route',
-						filter: ['==', ['geometry-type'], 'Point'],
+						filter: [
+							'all',
+							['==', ['geometry-type'], 'Point'],
+							['!=', ['get', 'inline_direction'], true]
+						],
 						layout: {
 							'icon-image': [
 								'match',
@@ -3749,6 +4553,19 @@
 						},
 						paint: { 'icon-opacity': ['case', ['get', 'stale'], 0.48, 1] }
 					});
+					for (const id of ['live-symbols', 'live-vessel-symbols']) {
+						instance.setLayoutProperty(id, 'text-field', '');
+						instance.setLayoutProperty(id, 'text-size', 8);
+						instance.setLayoutProperty(id, 'text-letter-spacing', 0.08);
+						instance.setLayoutProperty(id, 'text-anchor', 'left');
+						instance.setLayoutProperty(id, 'text-offset', [1.6, -0.8]);
+						instance.setLayoutProperty(id, 'text-allow-overlap', true);
+						instance.setLayoutProperty(id, 'text-ignore-placement', true);
+						instance.setLayoutProperty(id, 'text-rotation-alignment', 'viewport');
+						instance.setPaintProperty(id, 'text-color', themeColors.colorffffff);
+						instance.setPaintProperty(id, 'text-halo-color', themeColors.color1d645e);
+						instance.setPaintProperty(id, 'text-halo-width', 2);
+					}
 					for (const id of [
 						'live-symbols',
 						'journey-stop-halos',
@@ -3812,72 +4629,42 @@
 							'circle-stroke-width': 1.5
 						}
 					});
-					for (const source of ['island-connections', 'policy-service']) {
-						if (source === 'island-connections')
-							instance.addLayer({
-								id: 'island-connection-line',
-								type: 'line',
-								source,
-								filter: ['==', ['geometry-type'], 'LineString'],
-								paint: {
-									'line-color': themeColors.color397eb0,
-									'line-width': 4,
-									'line-dasharray': [2, 1.5],
-									'line-opacity': 0.9
-								}
-							});
-						instance.addLayer({
-							id: `${source}-terminal-halo`,
-							type: 'circle',
-							source,
-							filter: ['==', ['geometry-type'], 'Point'],
-							paint: {
-								'circle-radius': 14,
-								'circle-color': themeColors.colorffffff,
-								'circle-stroke-color':
-									source === 'island-connections'
-										? themeColors.color397eb0
-										: [
-												'match',
-												['get', 'mode'],
-												'bus',
-												themeColors.color247b75,
-												themeColors.color7765b2
-											],
-								'circle-stroke-width': 2
-							}
-						});
-						instance.addLayer({
-							id: `${source}-terminal-symbol`,
-							type: 'symbol',
-							source,
-							filter: ['==', ['geometry-type'], 'Point'],
-							layout: {
-								'icon-image':
-									source === 'island-connections'
-										? 'atlas-ferry'
-										: ['match', ['get', 'mode'], 'bus', 'atlas-bus-stop', 'atlas-ferry'],
-								'icon-size': 0.7,
-								'icon-allow-overlap': true
-							}
-						});
-					}
+					instance.addLayer({
+						id: 'policy-service-terminal-halo',
+						type: 'circle',
+						source: 'policy-service',
+						filter: ['==', ['geometry-type'], 'Point'],
+						paint: {
+							'circle-radius': 14,
+							'circle-color': themeColors.colorffffff,
+							'circle-stroke-color': [
+								'match',
+								['get', 'mode'],
+								'bus',
+								themeColors.color247b75,
+								themeColors.color7765b2
+							],
+							'circle-stroke-width': 2
+						}
+					});
+					instance.addLayer({
+						id: 'policy-service-terminal-symbol',
+						type: 'symbol',
+						source: 'policy-service',
+						filter: ['==', ['geometry-type'], 'Point'],
+						layout: {
+							'icon-image': ['match', ['get', 'mode'], 'bus', 'atlas-bus-stop', 'atlas-ferry'],
+							'icon-size': 0.7,
+							'icon-allow-overlap': true
+						}
+					});
 					instance.addLayer({
 						id: 'sea-island-fill',
 						type: 'fill',
 						source: 'sea-islands',
 						paint: {
 							'fill-color': ['get', 'color'],
-							'fill-opacity': [
-								'case',
-								['get', 'selected'],
-								0.65,
-								['get', 'within_budget'],
-								0.6,
-								['get', 'known'],
-								0.2,
-								0.08
-							]
+							'fill-opacity': 0
 						}
 					});
 					instance.addLayer({
@@ -3887,6 +4674,18 @@
 						paint: {
 							'line-color': ['get', 'color'],
 							'line-width': ['case', ['get', 'selected'], 1.75, 1]
+						}
+					});
+					instance.addLayer({
+						id: 'sea-route-casing',
+						type: 'line',
+						source: 'sea-network',
+						filter: ['==', ['geometry-type'], 'LineString'],
+						layout: { 'line-cap': 'round', 'line-join': 'round' },
+						paint: {
+							'line-color': themeColors.colorffffff,
+							'line-width': 3.6,
+							'line-opacity': 0.4
 						}
 					});
 					for (const verified of [true, false])
@@ -3904,8 +4703,8 @@
 							layout: { 'line-cap': 'round', 'line-join': 'round' },
 							paint: {
 								'line-color': ['coalesce', ['get', 'color'], themeColors.color087f8c],
-								'line-width': ['case', ['get', 'selected'], 2, 1.25],
-								'line-opacity': ['case', ['get', 'dimmed'], 0.12, 0.7],
+								'line-width': 1.7,
+								'line-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.72, 9, 0.8, 14, 0.58],
 								...(!verified ? { 'line-dasharray': [2, 2] } : {})
 							}
 						});
@@ -3913,12 +4712,13 @@
 						id: 'sea-route-arrows',
 						type: 'symbol',
 						source: 'sea-network',
+						minzoom: 9,
 						filter: ['==', ['geometry-type'], 'LineString'],
 						layout: {
 							'symbol-placement': 'line',
-							'symbol-spacing': 180,
+							'symbol-spacing': 240,
 							'text-field': '›',
-							'text-size': 14,
+							'text-size': 12,
 							'text-keep-upright': false,
 							'text-allow-overlap': true
 						},
@@ -3926,8 +4726,118 @@
 							'text-color': ['coalesce', ['get', 'color'], themeColors.color087f8c],
 							'text-halo-color': themeColors.colorffffff,
 							'text-halo-width': 1,
-							'text-opacity': ['case', ['get', 'dimmed'], 0.15, 1]
+							'text-opacity': 0.6
 						}
+					});
+					instance.addLayer({
+						id: 'air-route-casing',
+						type: 'line',
+						source: 'air-network',
+						filter: ['==', ['geometry-type'], 'LineString'],
+						layout: { 'line-cap': 'round', 'line-join': 'round' },
+						paint: { 'line-color': themeColors.colorffffff, 'line-width': 3, 'line-opacity': 0.35 }
+					});
+					instance.addLayer({
+						id: 'air-route-line',
+						type: 'line',
+						source: 'air-network',
+						filter: ['==', ['geometry-type'], 'LineString'],
+						layout: { 'line-cap': 'round', 'line-join': 'round' },
+						paint: {
+							'line-color': ['get', 'color'],
+							'line-width': 1.4,
+							'line-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.65, 9, 0.76, 14, 0.52]
+						}
+					});
+					instance.addLayer({
+						id: 'air-airport-halo',
+						type: 'circle',
+						source: 'air-network',
+						filter: [
+							'all',
+							['==', ['geometry-type'], 'Point'],
+							['>=', ['get', 'regional_connections'], 2]
+						],
+						paint: {
+							'circle-radius': 10,
+							'circle-color': themeColors.color607d8a,
+							'circle-opacity': 0.12
+						}
+					});
+					instance.addLayer({
+						id: 'air-airport-points',
+						type: 'circle',
+						source: 'air-network',
+						filter: ['==', ['geometry-type'], 'Point'],
+						paint: {
+							'circle-radius': [
+								'interpolate',
+								['linear'],
+								['get', 'connection_count'],
+								1,
+								3,
+								4,
+								4.5,
+								18,
+								6
+							],
+							'circle-color': themeColors.colorfffefa,
+							'circle-stroke-color': themeColors.color607d8a,
+							'circle-stroke-width': 1.4
+						}
+					});
+					instance.addLayer({
+						id: 'air-airport-symbols',
+						type: 'symbol',
+						source: 'air-network',
+						filter: ['==', ['geometry-type'], 'Point'],
+						layout: {
+							'text-field': ['get', 'iata'],
+							'text-size': ['case', ['>=', ['get', 'regional_connections'], 2], 11, 10],
+							'symbol-sort-key': ['-', 0, ['get', 'connection_count']],
+							'text-anchor': 'left',
+							'text-offset': [0.7, 0],
+							'text-padding': 3
+						},
+						paint: {
+							'text-color': themeColors.color36585f,
+							'text-halo-color': themeColors.colorfffefa,
+							'text-halo-width': 1.5
+						}
+					});
+					instance.addLayer({
+						id: 'route-vehicle-symbols',
+						type: 'symbol',
+						source: 'route-vehicles',
+						layout: {
+							'icon-image': [
+								'match',
+								['get', 'mode'],
+								'air',
+								'atlas-route-aircraft',
+								'atlas-route-vessel'
+							],
+							'icon-size': [
+								'interpolate',
+								['linear'],
+								['zoom'],
+								3,
+								0.27,
+								5,
+								0.34,
+								7,
+								0.42,
+								10,
+								0.58,
+								14,
+								0.68
+							],
+							'icon-rotate': ['get', 'bearing'],
+							'icon-rotation-alignment': 'map',
+							'icon-allow-overlap': true,
+							'icon-ignore-placement': true
+						},
+						paint: { 'icon-opacity': ['coalesce', ['get', 'opacity'], 1] }
 					});
 					instance.addLayer({
 						id: 'sea-budget-halo',
@@ -4027,6 +4937,9 @@
 							'line-opacity': 0.5
 						}
 					});
+					// Airport junctions stay legible above the denser sea-island markers.
+					for (const id of ['air-airport-halo', 'air-airport-points', 'air-airport-symbols'])
+						instance.moveLayer(id, 'conditions-route-line');
 					ready = true;
 					scheduleStreetContext();
 					centerCoordinates = [instance.getCenter().lng, instance.getCenter().lat];
@@ -4077,6 +4990,7 @@
 						schedulePlacementPreview();
 						instance.getCanvas().style.cursor = 'crosshair';
 						hoverDescription = '';
+						hoveredAirAirport = '';
 						return;
 					}
 					const hits = instance.queryRenderedFeatures(event.point, {
@@ -4092,30 +5006,39 @@
 						]
 					});
 					instance.getCanvas().style.cursor = picking ? 'crosshair' : hits.length ? 'pointer' : '';
+					hoveredAirAirport =
+						picking || islandPicking
+							? ''
+							: String(
+									hits.find((hit) => hit.properties?.kind === 'air_airport')?.properties.iata ?? ''
+								);
 					const props = hits[0]?.properties;
 					hoverDescription =
 						serviceEditor?.mode === 'ferry' && props?.kind === 'ferry_landing'
 							? `Existing ferry landing · ${props.name ?? 'Select to use this landing place'}`
-							: props?.cluster
-								? hits[0]?.source === 'live-vessels'
-									? `${props.point_count} observed vessel positions · select to zoom in`
-									: `${props.point_count} places · select to zoom in`
-								: props
-									? String(
-											props.label ??
-												(props.impact
-													? 'Select to compare resident access here'
-													: props.origin_id
-														? 'Select to inspect local service access'
-														: null) ??
-												[props.name, String(props.category ?? '').replaceAll('_', ' ')]
-													.filter(Boolean)
-													.join(' · ')
-										)
-									: '';
+							: props?.kind === 'route_vehicle'
+								? `${props.mode === 'air' ? 'Flight route' : 'Sea route'} · ${props.name ?? 'Select for route details'}`
+								: props?.cluster
+									? hits[0]?.source === 'live-vessels'
+										? `${props.point_count} observed vessel positions · select to zoom in`
+										: `${props.point_count} places · select to zoom in`
+									: props
+										? String(
+												props.label ??
+													(props.impact
+														? 'Select to compare resident access here'
+														: props.origin_id
+															? 'Select to inspect local service access'
+															: null) ??
+													[props.name, String(props.category ?? '').replaceAll('_', ' ')]
+														.filter(Boolean)
+														.join(' · ')
+											)
+										: '';
 				});
 				instance.on('mouseout', () => {
 					hoverDescription = '';
+					hoveredAirAirport = '';
 					previewPointer = null;
 					schedulePlacementPreview();
 				});
@@ -4150,6 +5073,7 @@
 		void initialize();
 		return () => {
 			disposed = true;
+			cancelIslandReadiness?.();
 			zoomInputController.abort();
 			userZoomGesture = null;
 			document.removeEventListener('mouseup', finishOutsidePan, true);
@@ -4168,8 +5092,10 @@
 			for (const marker of Object.values(vesselClusterButtons)) marker.remove();
 			resizeObserver?.disconnect();
 			selectedMarker?.remove();
+			clearSearchPlace();
 			serviceMarker?.remove();
 			for (const marker of Object.values(journeyMarkers)) marker?.remove();
+			clearDirectionMarkers();
 			for (const marker of policyMarkers.values()) marker.remove();
 			policyMarkers.clear();
 			for (const [id, marker] of Object.entries(islandLabels)) {
@@ -4285,6 +5211,10 @@
 	});
 	$effect(() => {
 		if (!ready || !active || !map) return;
+		setData('policy-coverage-fill', coverageFillFeatures);
+	});
+	$effect(() => {
+		if (!ready || !active || !map) return;
 		setData('policy-impact', impactFeatures);
 	});
 	$effect(() => {
@@ -4395,12 +5325,14 @@
 			!focused ? 1 : ['bus', 'journey'].includes(focusContext) ? 0.85 : 0.4
 		);
 		map.setPaintProperty('poi-clusters', 'icon-opacity', focused ? 0.45 : 1);
-		for (const id of ['live-symbols', 'live-vessel-symbols'])
+		for (const id of ['live-symbols', 'live-vessel-symbols']) {
 			map.setPaintProperty(id, 'icon-opacity', [
 				'*',
 				focused ? 0.32 : 1,
 				['case', ['get', 'stale'], 0.48, 1]
 			]);
+			map.setPaintProperty(id, 'text-opacity', focused ? 0.32 : 1);
+		}
 		map.setPaintProperty('live-vessel-clusters', 'icon-opacity', [
 			'*',
 			focused ? 0.32 : 1,
@@ -4411,12 +5343,151 @@
 		if (!ready || !active || !map) return;
 		setData('policy-service', policyServiceFeatures);
 		if (inspectedSource === 'policy-service') closeInspection();
-		setData('island-connections', connectionFeatures);
 	});
 	$effect(() => {
 		if (!ready || !active || !map) return;
-		setData('sea-network', seaView ? (seaState?.features ?? emptyCollection) : emptyCollection);
-		setData('sea-islands', seaIslandFeatures(layers.islands, seaView ? seaState : null));
+		setData('sea-network', seaState?.features ?? emptyCollection);
+		setData('sea-islands', seaIslandFeatures(layers.islands, seaState));
+		untrack(() => {
+			if (inspectedSource === 'sea-network' && inspectedSeaFeatures !== seaState?.features)
+				closeInspection();
+		});
+	});
+	$effect(() => {
+		if (!ready || !active || !map) return;
+		setData('air-network', airFeatures);
+		untrack(() => {
+			if (inspectedSource === 'air-network' && inspectedAirNetwork !== airState) closeInspection();
+		});
+	});
+	$effect(() => {
+		if (!ready || !active || !map) return;
+		// Path switches affect paint layers only; vehicles and terminal sources stay intact.
+		for (const id of [
+			'sea-route-casing',
+			'sea-route-line',
+			'sea-route-unverified',
+			'sea-route-arrows'
+		])
+			map.setLayoutProperty(id, 'visibility', seaView ? 'visible' : 'none');
+		for (const id of ['air-route-casing', 'air-route-line'])
+			map.setLayoutProperty(id, 'visibility', airLayerEnabled ? 'visible' : 'none');
+	});
+	$effect(() => {
+		if (!ready || !active || !map) return;
+		const paths = preparedVehicles;
+		const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+		let timer: ReturnType<typeof setInterval> | undefined;
+		function update() {
+			// Only vehicle points change. The much larger route geometries stay in their sources.
+			const now = Date.now();
+			setData('route-vehicles', routeVehicleFeatures(paths, now / 1000, motion.matches, now));
+		}
+		function sync() {
+			clearInterval(timer);
+			timer = undefined;
+			const shouldAnimate = paths.length > 0 && !motion.matches && !document.hidden;
+			routeVehiclesAnimating = shouldAnimate;
+			update();
+			if (shouldAnimate) timer = setInterval(update, 125);
+		}
+		sync();
+		motion.addEventListener('change', sync);
+		document.addEventListener('visibilitychange', sync);
+		return () => {
+			clearInterval(timer);
+			routeVehiclesAnimating = false;
+			motion.removeEventListener('change', sync);
+			document.removeEventListener('visibilitychange', sync);
+		};
+	});
+	$effect(() => {
+		if (!ready || !active || !map) return;
+		const focusAirport =
+			hoveredAirAirport ||
+			airState?.airports.find((airport) => airport.island_id && airport.island_id === selectedId)
+				?.iata ||
+			'';
+		const selected: import('maplibre-gl').ExpressionSpecification = [
+			'==',
+			['get', 'route_id'],
+			inspectedAirRouteId || '__none__'
+		];
+		const connected: import('maplibre-gl').ExpressionSpecification = [
+			'any',
+			selected,
+			['==', ['get', 'from_iata'], focusAirport || '__none__'],
+			['==', ['get', 'to_iata'], focusAirport || '__none__']
+		];
+		const regional: import('maplibre-gl').ExpressionSpecification = [
+			'==',
+			['get', 'connection_role'],
+			'regional'
+		];
+		const focused = !!focusAirport || !!inspectedAirRouteId;
+		const normal: import('maplibre-gl').ExpressionSpecification = [
+			'case',
+			connected,
+			2.4,
+			regional,
+			1.8,
+			1
+		];
+		map.setPaintProperty('air-route-line', 'line-width', [
+			'interpolate',
+			['linear'],
+			['zoom'],
+			5,
+			['*', normal, 0.85],
+			9,
+			normal,
+			14,
+			['*', normal, 0.9]
+		]);
+		map.setPaintProperty('air-route-casing', 'line-width', ['+', normal, 1.6]);
+		map.setPaintProperty('air-route-casing', 'line-opacity', [
+			'case',
+			connected,
+			0.65,
+			focused ? 0.1 : 0.25
+		]);
+		map.setPaintProperty('air-route-line', 'line-opacity-transition', {
+			duration: reducedMotion() ? 0 : 160
+		});
+		map.setPaintProperty('air-route-line', 'line-opacity', [
+			'interpolate',
+			['linear'],
+			['zoom'],
+			5,
+			['case', connected, 1, focused ? 0.12 : ['case', regional, 0.9, 0.32]],
+			10,
+			['case', connected, 1, focused ? 0.16 : ['case', regional, 0.9, 0.55]],
+			15,
+			['case', connected, 1, focused ? 0.16 : 0.6]
+		]);
+		const stops =
+			airState?.routes.find((route) => route.id === inspectedAirRouteId)?.itinerary_iata ?? [];
+		map.setPaintProperty('air-airport-points', 'circle-stroke-width', [
+			'case',
+			[
+				'any',
+				['==', ['get', 'iata'], focusAirport || '__none__'],
+				['in', ['get', 'iata'], ['literal', stops]]
+			],
+			2.5,
+			1.4
+		]);
+	});
+	$effect(() => {
+		if (!ready || !active || !map) return;
+		const selected: import('maplibre-gl').ExpressionSpecification = [
+			'any',
+			['==', ['get', 'selected'], true],
+			['==', ['get', 'route_id'], inspectedSeaRouteId || '__none__']
+		];
+		map.setPaintProperty('sea-route-casing', 'line-width', routeLineWidth(selected, 3.6, 5.4));
+		for (const id of ['sea-route-line', 'sea-route-unverified'])
+			map.setPaintProperty(id, 'line-width', routeLineWidth(selected, 1.7, 3.2));
 	});
 	$effect(() => {
 		if (!ready || !active || !map) return;
@@ -4438,6 +5509,7 @@
 			]
 		];
 		map.setPaintProperty('policy-gaps-fill', 'fill-color', color);
+		map.setPaintProperty('policy-coverage-fill', 'fill-color', color);
 		map.setPaintProperty('policy-gaps-points', 'circle-color', color);
 	});
 	$effect(() => {
@@ -4500,6 +5572,8 @@
 	$effect(() => {
 		if (!ready || !active || !map) return;
 		// Opacity changes paint only: no source rebuilding, evidence fetching or recalculation.
+		map.setPaintProperty('policy-coverage-fill', 'fill-opacity', coverageFillOpacity);
+		map.setPaintProperty('policy-coverage-fill-outline', 'line-opacity', coverageFillOpacity * 0.7);
 		map.setPaintProperty('policy-gaps-fill', 'fill-opacity', gapOpacity);
 		map.setPaintProperty('policy-gaps-points', 'circle-opacity', gapOpacity);
 		map.setPaintProperty('policy-gaps-points', 'circle-stroke-opacity', gapOpacity);
@@ -4511,7 +5585,11 @@
 			currentAccessOpacity ? 0 : impactOpacity
 		);
 		map.setPaintProperty('policy-impact-outline', 'line-opacity', impactOpacity * 0.7);
-		map.setPaintProperty('selected-island', 'fill-opacity', hasPolicyOverlay ? 0 : 0.09);
+		map.setPaintProperty(
+			'selected-island',
+			'fill-opacity',
+			seaState || hasPolicyOverlay ? 0 : 0.09
+		);
 	});
 	$effect(() => {
 		if (!overlayPreferenceLoaded) return;
@@ -4629,7 +5707,15 @@
 		if (inspectedSource === 'route' || inspectedSource === 'journey-stops') closeInspection();
 	});
 	$effect(() => {
-		if (!ready || !active || !route || route === lastFittedRoute) return;
+		if (!ready || !active) return;
+		if (inlineDirectionsActive) {
+			if (!matchedDirections || matchedDirections === lastFittedDirections) return;
+			if (!routeFeatures.features.some((feature) => feature.geometry.type === 'LineString')) return;
+			lastFittedDirections = matchedDirections;
+			untrack(focusJourney);
+			return;
+		}
+		if (!route || route === lastFittedRoute) return;
 		if (!routeFeatures.features.some((feature) => feature.geometry.type === 'LineString')) return;
 		lastFittedRoute = route;
 		untrack(focusJourney);
@@ -4671,6 +5757,41 @@
 		if (!ready || !active) return;
 		smoothLiveData(liveFeatures);
 		if (inspectedSource === 'live' || inspectedSource === 'live-vessels') closeInspection();
+	});
+	$effect(() => {
+		if (!ready || !map || !active) return;
+		const instance = map;
+		function updateBadges() {
+			const now = Date.now();
+			const label: import('maplibre-gl').ExpressionSpecification = [
+				'case',
+				[
+					'all',
+					['==', ['get', 'live_badge_eligible'], true],
+					['>=', ['coalesce', ['get', 'live_observed_at'], 0], now - 300_000],
+					['<=', ['coalesce', ['get', 'live_observed_at'], 0], now + 60_000]
+				],
+				'LIVE',
+				''
+			];
+			for (const id of ['live-symbols', 'live-vessel-symbols'])
+				instance.setLayoutProperty(id, 'text-field', label);
+		}
+		let timer: ReturnType<typeof setInterval> | undefined;
+		function syncBadgeTimer() {
+			clearInterval(timer);
+			timer = undefined;
+			if (document.hidden) return;
+			updateBadges();
+			// Expire badges even when a provider request fails; avoid rewriting position sources.
+			timer = setInterval(updateBadges, 15_000);
+		}
+		syncBadgeTimer();
+		document.addEventListener('visibilitychange', syncBadgeTimer);
+		return () => {
+			clearInterval(timer);
+			document.removeEventListener('visibilitychange', syncBadgeTimer);
+		};
 	});
 	$effect(() => {
 		if (!ready || !map || !active) return;
@@ -4737,7 +5858,8 @@
 		const requestedId = selectedId;
 		// A fast cached connection can resolve before the deferred island focus.
 		// Keep its corridor framing authoritative until a new island is selected.
-		if (focusBounds) return;
+		if (focusBounds || searchSelection || (inlineDirectionsActive && directionWaypoints.length))
+			return;
 		const requestedIsland = selectedIsland;
 		const requestedAtoll = atollScope;
 		const requestedAtollBounds = atollBounds;
@@ -4762,6 +5884,8 @@
 				!active ||
 				map !== instance ||
 				focusBounds ||
+				searchSelection ||
+				(inlineDirectionsActive && directionWaypoints.length) ||
 				selectedId !== requestedId ||
 				selectedIsland !== requestedIsland ||
 				atollScope !== requestedAtoll ||
@@ -4852,21 +5976,69 @@
 		});
 		return () => cancelAnimationFrame(journeyFocusFrame);
 	});
+	$effect(() => {
+		const selection = searchSelection;
+		const instance = map;
+		if (!ready || !active || !instance || !selection || !validCoordinates(selection.coordinates)) {
+			untrack(clearSearchPlace);
+			return;
+		}
+		// Run after the retained map has resized and any island framing has settled.
+		// Popup focus stays in search so keyboard selection does not jump into map actions.
+		const frame = requestAnimationFrame(() => {
+			if (!active || map !== instance || searchSelection !== selection) return;
+			instance.resize();
+			userZoomGesture = null;
+			showSearchPlace(selection);
+			instance.easeTo({
+				center: selection.coordinates,
+				zoom: 15.3,
+				duration: reducedMotion() ? 0 : 280,
+				padding: focusPadding()
+			});
+		});
+		return () => {
+			cancelAnimationFrame(frame);
+			untrack(clearSearchPlace);
+		};
+	});
 </script>
 
 <svelte:document onpointerdown={dismissControls} onkeydown={controlsKeydown} />
 
 <div
 	class="national-map"
+	data-air-routes={airLayerEnabled ? (airState?.map_features.features.length ?? 0) : 0}
+	data-air-network-routes={airState?.map_features.features.length ?? 0}
+	data-air-airports={airState?.airports.length ?? 0}
+	data-air-selected-route={inspectedAirRouteId || undefined}
+	data-air-hover-airport={hoveredAirAirport || undefined}
+	data-route-vehicles={preparedVehicles.reduce(
+		(total, route) => total + (route.bidirectional ? 2 : 1),
+		0
+	)}
+	data-route-vehicle-animation={routeVehiclesAnimating}
 	data-sea-view={seaView}
+	data-sea-selected-route={inspectedSeaRouteId || undefined}
 	data-sea-routes={seaView
 		? (seaState?.features.features.filter((feature) => feature.geometry.type === 'LineString')
 				.length ?? 0)
 		: 0}
+	data-sea-network-routes={seaState?.features.features.filter(
+		(feature) => feature.geometry.type === 'LineString'
+	).length ?? 0}
+	data-sea-terminals={seaState?.features.features.filter(
+		(feature) => feature.properties?.kind === 'sea_terminal'
+	).length ?? 0}
 	data-sea-mode={seaState?.mode ?? ''}
 	class:is-picking={picking}
 	data-active={active}
 	data-atoll-scope={atollScope ?? ''}
+	data-search-place={displayedSearchPlace}
+	data-directions-active={inlineDirectionsActive}
+	data-directions-status={matchedDirections?.status ?? ''}
+	data-directions-waypoints={directionWaypoints.length}
+	data-directions-labels={directionWaypoints.map((point) => point.letter).join(',')}
 	data-accessibility-overview={accessibilityOverview}
 	data-accessibility-points={accessibilityCentroids.features.length}
 	aria-busy={mapBusy}
@@ -4906,11 +6078,12 @@
 	).length}
 	data-policy-pending-points={pendingProposal ? 1 : 0}
 	data-policy-placement-kind={placementKind ?? ''}
-	data-island-connection-features={connectionFeatures.features.length}
 	data-policy-service-features={policyServiceFeatures.features.length}
 	data-policy-service-editor={serviceEditor?.mode ?? ''}
 	data-island-picking={islandPicking}
 	data-policy-gap-cells={gapFeatures.features.length}
+	data-policy-coverage-fill-cells={coverageFillFeatures.features.length}
+	data-policy-coverage-fill-opacity={coverageFillOpacity}
 	data-policy-local-islands={JSON.stringify(Object.keys(localAccessDiagnostics.cells))}
 	data-policy-local-cells={JSON.stringify(localAccessDiagnostics.cells)}
 	data-policy-background-cells={JSON.stringify(backgroundCells)}
@@ -4936,6 +6109,7 @@
 	data-context-buildings={contextSummary.buildings}
 	data-context-bounds={contextLoadedKey}
 	data-context-loading={contextLoading}
+	data-context-error={contextError}
 	data-zoom={zoomLevel}
 	style:--map-height={`${mapHeight}px`}
 >
@@ -5185,11 +6359,28 @@
 			<small>{error}</small>
 		</div>
 	{:else}
-		<div class="map-controls" bind:this={controls}>
+		<div
+			class="map-controls"
+			class:sea-inspector-open={seaInspectorOpen}
+			bind:this={controls}
+			role="group"
+			aria-label="Map controls"
+			data-testid="map-controls-dock"
+		>
 			{#if controlsPanel}
 				<section
 					class="control-panel"
 					aria-label={controlsPanel === 'layers' ? 'Map layers' : 'Map view'}
+					aria-hidden={!controlsPanel}
+					inert={!controlsPanel}
+					in:surfaceMotion={{ axis: 'y', distance: -6, scale: 0.98, origin: 'bottom left' }}
+					out:surfaceMotion={{
+						direction: 'out',
+						axis: 'y',
+						distance: -6,
+						scale: 0.98,
+						origin: 'bottom left'
+					}}
 				>
 					<header class="control-panel-header">
 						<div>
@@ -5209,7 +6400,7 @@
 						>
 					</header>
 					{#if controlsPanel === 'layers'}
-						{#if gapFeatures.features.length || impactFeatures.features.length}
+						{#if hasPolicyOverlay}
 							<div class="overlay-opacity-control">
 								<div>
 									<label for={overlayControlId}>Overlay opacity</label>
@@ -5228,6 +6419,37 @@
 							</div>
 						{/if}
 						<div class="layer-list">
+							{#if onSeaLayerChange}
+								<Button
+									variant="ghost"
+									class="map-layer-row"
+									aria-pressed={seaLayerEnabled}
+									onclick={() => onSeaLayerChange?.(!seaLayerEnabled)}
+								>
+									<span class="layer-icon transport"><Ship size={17} /></span>
+									<span class="layer-label"
+										><strong>Sea route lines</strong><small>Boats and terminals stay visible</small
+										></span
+									>
+									<span class="layer-switch" data-checked={seaLayerEnabled}><span></span></span>
+								</Button>
+							{/if}
+							{#if onAirLayerChange}
+								<Button
+									variant="ghost"
+									class="map-layer-row"
+									aria-pressed={airLayerEnabled}
+									onclick={() => onAirLayerChange?.(!airLayerEnabled)}
+								>
+									<span class="layer-icon transport"><Plane size={17} /></span>
+									<span class="layer-label"
+										><strong>Flight route lines</strong><small
+											>Aircraft and airports stay visible</small
+										></span
+									>
+									<span class="layer-switch" data-checked={airLayerEnabled}><span></span></span>
+								</Button>
+							{/if}
 							<Button
 								variant="ghost"
 								class="map-layer-row"
@@ -5289,40 +6511,24 @@
 								><span class="layer-switch" data-checked={transportVisible}><span></span></span
 								></Button
 							>
-							{#if onSeaLayerChange}
-								<Button
-									variant="ghost"
-									class="map-layer-row"
-									aria-pressed={seaLayerEnabled}
-									onclick={() => onSeaLayerChange?.(!seaLayerEnabled)}
-								>
-									<span class="layer-icon transport"><Ship size={17} /></span>
-									<span class="layer-label"
-										><strong>Sea connections</strong><small>Ferry routes between island ports</small
-										></span
-									>
-									<span class="layer-switch" data-checked={seaLayerEnabled}><span></span></span>
-								</Button>
-							{/if}
-							{#if mode !== 'places'}<Button
-									variant="ghost"
-									class="map-layer-row"
-									aria-pressed={liveVisible && liveFeatures.features.length > 0}
-									disabled={liveFeatures.features.length === 0}
-									onclick={() => (liveVisible = !liveVisible)}
-									><span class="layer-icon activity"><Radio size={17} /></span><span
-										class="layer-label"
-										><strong>Observed movement</strong><small
-											>{liveFeatures.features.length
-												? `${liveFeatures.features.length.toLocaleString()} vehicle positions`
-												: 'No vehicle positions in this area'}</small
-										></span
-									><span
-										class="layer-switch"
-										data-checked={liveVisible && liveFeatures.features.length > 0}
-										><span></span></span
-									></Button
-								>{/if}
+							<Button
+								variant="ghost"
+								class="map-layer-row"
+								aria-pressed={liveVisible && liveFeatures.features.length > 0}
+								disabled={liveFeatures.features.length === 0}
+								onclick={() => (liveVisible = !liveVisible)}
+								><span class="layer-icon activity"><Radio size={17} /></span><span
+									class="layer-label"
+									><strong>Observed movement</strong><small
+										>{liveFeatures.features.length
+											? `${liveFeatures.features.length.toLocaleString()} vehicle positions`
+											: 'No vehicle positions in this area'}</small
+									></span
+								><span
+									class="layer-switch"
+									data-checked={liveVisible && liveFeatures.features.length > 0}><span></span></span
+								></Button
+							>
 						</div>
 						<div class="source-note">
 							<Info size={13} /><span
@@ -5338,13 +6544,12 @@
 									onclick={focusJourney}
 									><MapPin size={16} /><span>Show entire journey</span></Button
 								>{/if}
-							{#if mode !== 'places'}<Button
-									variant="outline"
-									class="map-view-action"
-									disabled={!freshMovement.length || !ready}
-									onclick={focusMovement}
-									><Radio size={16} /><span>Show nearby movement</span></Button
-								>{/if}
+							<Button
+								variant="outline"
+								class="map-view-action"
+								disabled={!freshMovement.length || !ready}
+								onclick={focusMovement}><Radio size={16} /><span>Show nearby movement</span></Button
+							>
 							<Button
 								variant="outline"
 								class="map-view-action"
@@ -5383,7 +6588,7 @@
 								></Button
 							>
 						</div>
-						{#if mode !== 'places' && liveStatus.providers?.length}
+						{#if liveStatus.providers?.length}
 							<div class="movement-providers" aria-label="Movement feed coverage">
 								<strong>Movement feed coverage</strong>
 								{#each liveStatus.providers as provider (provider.provider)}
@@ -5405,6 +6610,259 @@
 					{/if}
 				</section>
 			{/if}
+			{#if mapControlsContent}<div class="map-coverage-controls">
+					{@render mapControlsContent()}
+				</div>{/if}
+			<div class="map-footer" class:has-legend={legendVisible}>
+				<div class="map-information-card" class:mobile-expanded={mobileLegendOpen}>
+					{#if seaView || airLayerEnabled}
+						<div
+							class="sea-pressure-key"
+							aria-label="Estimated service pressure"
+							data-testid="sea-pressure-legend"
+						>
+							<div class="sea-pressure-heading">
+								<div>
+									<strong>Estimated service pressure</strong><small
+										>{seaView
+											? 'Population per weekly departure'
+											: 'Flight frequency unconfirmed'}</small
+									>
+								</div>
+								{#if seaView && !seaInspectorOpen && onSeaLayerChange}<button
+										type="button"
+										class="sea-local-services"
+										onclick={() => onSeaLayerChange?.(false)}>Hide sea route lines</button
+									>{/if}
+							</div>
+							<div class="sea-pressure-swatches">
+								{#each [{ label: 'Low', color: seaPressureColors.low }, { label: 'Moderate', color: seaPressureColors.medium }, { label: 'High', color: seaPressureColors.high }, { label: 'Unknown', color: seaPressureColors.unknown }] as item (item.label)}
+									<span><i style:background={item.color} aria-hidden="true"></i>{item.label}</span>
+								{/each}
+							</div>
+							<div class="network-route-key">
+								{#if seaView}<span><i aria-hidden="true"></i><Ship size={11} />Sea</span>{/if}
+								{#if airLayerEnabled}<span class="air"
+										><i aria-hidden="true"></i><Plane size={11} />Air · frequency unconfirmed</span
+									>{/if}
+							</div>
+							{#if seaView && seaNetworkStatus === 'loading'}<p
+									class="sea-network-status"
+									role="status"
+								>
+									Loading sea connections…
+								</p>
+							{:else if seaView && seaNetworkStatus === 'error'}<p
+									class="sea-network-status"
+									role="status"
+								>
+									Sea connections unavailable.{#if onSeaRetry}<button
+											type="button"
+											onclick={onSeaRetry}>Try again</button
+										>{/if}
+								</p>{/if}
+							{#if airLayerEnabled && airNetworkStatus === 'loading'}<p
+									class="sea-network-status"
+									role="status"
+								>
+									Loading domestic flights…
+								</p>
+							{:else if airLayerEnabled && airNetworkStatus === 'error'}<p
+									class="sea-network-status"
+									role="status"
+								>
+									Domestic flights unavailable.{#if onAirRetry}<button
+											type="button"
+											onclick={onAirRetry}>Try again</button
+										>{/if}
+								</p>{/if}
+						</div>
+					{/if}
+					{#if !seaInspectorOpen}
+						{#if accessibilityOverview}
+							<div class="accessibility-key" aria-label="Island accessibility score colours">
+								<strong>Accessibility /100</strong>
+								<span><span>Low</span><i aria-hidden="true"></i><span>High</span></span>
+								<small>Residential islands · Grey: limited evidence</small>
+							</div>
+						{:else}
+							{#if (gapFeatures.features.length || coverageFillFeatures.features.length) && !impactFeatures.features.length}<div
+									class="policy-colour-key"
+									aria-label="Service gap colours"
+								>
+									<strong
+										>{coverageFillFeatures.features.length ||
+										gapFeatures.features.some((feature) => feature.properties?.origin_id)
+											? gapLens === 'transport'
+												? 'Walk to a bus stop or terminal'
+												: 'Local journey time'
+											: 'Service availability'}</strong
+									>
+									<span
+										><i class="policy-gap-gradient" style:background={GAP_GRADIENT}
+										></i>{coverageFillFeatures.features.length ||
+										gapFeatures.features.some((feature) => feature.properties?.origin_id)
+											? 'Shorter → at / beyond target'
+											: 'More services → fewer services'}</span
+									>
+									<small
+										>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
+											? 'Grey: no estimate'
+											: 'Services across the island'}</small
+									>
+									{#if coverageFillFeatures.features.length}
+										<span class="policy-coverage-fill-key">Gaps: nearby estimates</span>
+									{/if}
+								</div>{:else if impactFeatures.features.length}<div
+									class="policy-colour-key"
+									aria-label="Proposal impact colours"
+								>
+									<strong
+										>{policyOverlayView === 'before'
+											? 'Without proposal'
+											: policyOverlayView === 'after'
+												? 'With proposal'
+												: 'Proposed access change'}</strong
+									>
+									{#if policyOverlayView === 'before' || policyOverlayView === 'after'}
+										<span
+											><i class="policy-gap-gradient" style:background={GAP_GRADIENT}></i>Shorter →
+											at / beyond target</span
+										>
+										<small>Same journey-time scale in both views</small>
+									{/if}
+									<div class="policy-overlay-swatches">
+										{#each policyOverlayLegend as item (item.label)}<span
+												><i style:background={item.color}></i>{item.label}</span
+											>{/each}
+									</div>
+									{#if policyStale || policyCalculating}
+										<small class="policy-overlay-status" data-testid="policy-overlay-status"
+											>Updating proposal · {policyOverlayView === 'before'
+												? 'current access shown'
+												: 'showing previous result'}</small
+										>
+									{:else if comparisonPreview && policyOverlayView === 'after'}
+										<small class="policy-overlay-status" data-testid="policy-overlay-status"
+											>Placement preview · not added</small
+										>
+									{/if}
+									{#if coverageFillFeatures.features.length}
+										<span class="policy-coverage-fill-key">Gaps: nearby estimates</span>
+									{/if}
+								</div>{/if}
+							{#if scenarioPreview.unlocated}<div class="street-context-status" role="status">
+									<X size={12} />{scenarioPreview.unlocated}
+									{scenarioPreview.unlocated === 1 ? 'edit lacks' : 'edits lack'} a location · select
+									a location on the map
+								</div>{/if}
+							{#if picking}<div class="map-hint picking">
+									<Crosshair size={15} /><span>Click to place · Enter at map center</span>
+								</div>{/if}
+							{#if mobileLegendOpen}
+								<div
+									class="map-key-details"
+									id={mapKeyId}
+									aria-hidden={!mobileLegendOpen}
+									inert={!mobileLegendOpen}
+									in:slide={{ duration: shouldAnimateMotion() ? 220 : 0 }}
+									out:slide={{ duration: shouldAnimateMotion() ? 140 : 0 }}
+								>
+									<section class="map-movement-status" aria-label="Live coverage">
+										<div class="movement-counts">
+											<span title="Aircraft observations"
+												><Plane size={14} />{activityKinds.aircraft}</span
+											>
+											<span title="Vessel observations"
+												><Ship size={14} />{activityKinds.vessel}</span
+											>
+											<span title="Bus observations"><BusFront size={14} />{activityKinds.bus}</span
+											>
+											<strong title="Visible observations / all positions received for this area"
+												>{renderedMovementObservations} visible / {liveFeatures.features.length} received</strong
+											>
+										</div>
+										{#if freshMovement.length && renderedMovementObservations < freshMovement.length}<Button
+												variant="ghost"
+												size="sm"
+												class="movement-fit-button"
+												onclick={focusMovement}><LocateFixed size={13} />View nearby</Button
+											>{/if}
+									</section>
+
+									{#if !picking && hoverDescription}<div class="map-hint">
+											<MousePointer2 size={15} />
+											<span
+												>{hoverDescription ||
+													(nationalScale
+														? 'Select an island to explore'
+														: 'Click a place to inspect, plan a journey or propose a change')}</span
+											>
+										</div>{/if}
+									{#if legendVisible}<div class="map-legend" aria-label="Map key">
+											{#if facilitiesVisible}<span
+													><Hospital size={12} class="health-key" />Health</span
+												><span><GraduationCap size={13} class="school-key" />Schools</span>{/if}
+											{#if transportVisible}<span
+													><BusFront size={12} class="transport-key" />Bus stops</span
+												>
+												<span><Ship size={12} class="marine-key" />Ferry terminals</span>
+												<span><Anchor size={12} class="marine-key" />Piers</span>
+												<span><Plane size={12} class="transport-key" />Airports</span>{/if}
+											{#if facilitiesVisible || transportVisible}<span
+													><MapPin size={12} />Other places</span
+												>
+												<span><i class="legend-cluster">#</i>Grouped places</span>{/if}
+											{#if renderedVesselGroups}<span
+													><Ship size={12} class="marine-key" />Grouped vessels</span
+												>{/if}
+											{#if scenarioFeatures.features.length}<span
+													><i class="legend-proposed"></i>Proposed</span
+												>{/if}
+											{#if scenarioFeatures.features.some( (feature) => ['remove_bus_stop', 'disable_ferry_terminal', 'road_closure'].includes(feature.properties?.type) )}<span
+													><X size={12} />Removal / closure</span
+												>{/if}
+											{#if routeFeatures.features.some((feature) => feature.geometry.type === 'LineString' && !['walk', 'ferry'].includes(feature.properties?.mode))}<span
+													><i class="legend-route"></i>{routeFeatures.features.some(
+														(feature) => feature.properties?.mode === 'bus'
+													)
+														? 'Bus journey'
+														: 'Journey route'}</span
+												>{/if}
+											{#if routeFeatures.features.some((feature) => feature.geometry.type === 'LineString' && feature.properties?.mode === 'walk')}<span
+													><i class="legend-walk"></i>{inlineDirectionsActive
+														? 'Walking route'
+														: 'Walk to / from stop'}</span
+												>{/if}
+											{#if routeFeatures.features.some((feature) => feature.geometry.type === 'LineString' && feature.properties?.mode === 'ferry')}<span
+													><i class="legend-ferry-route"></i>Ferry journey</span
+												>{/if}
+											{#if journeyStopFeatures.features.length}<span
+													><i class="legend-journey-stop"></i>Board / get off here</span
+												>{/if}
+											{#if inlineDirectionsActive}
+												{#each directionWaypoints as point (`${point.index}:${point.id}`)}
+													<span
+														><b
+															class:legend-origin={point.role !== 'end'}
+															class:legend-destination={point.role === 'end'}>{point.letter}</b
+														>{point.role === 'start'
+															? 'Start'
+															: point.role === 'end'
+																? 'Destination'
+																: 'Via point'}</span
+													>
+												{/each}
+											{:else if routeStart || routeEnd}<span
+													><b class="legend-origin">A</b>Start</span
+												><span><b class="legend-destination">B</b>Destination</span>{/if}
+										</div>{/if}
+								</div>
+							{/if}
+						{/if}
+					{/if}
+				</div>
+			</div>
 			<div class="map-toolbar" role="group" aria-label="Atlas controls">
 				<span class="atlas-mark" title="Maldives map"><MapIcon size={18} strokeWidth={1.6} /></span>
 				<span class="toolbar-divider"></span>
@@ -5435,6 +6893,22 @@
 					title="Show all Maldives islands"
 					onclick={nationalView}><Globe2 size={18} /></Button
 				>
+
+				{#if !accessibilityOverview}
+					<div class="mobile-key-toggle">
+						<Button
+							variant="ghost"
+							size="sm"
+							aria-expanded={mobileLegendOpen}
+							aria-controls={mapKeyId}
+							aria-label="Map key & live coverage"
+							onclick={toggleMapKey}
+							><Info size={12} /><span class="map-key-label">Key</span><ChevronDown
+								size={12}
+							/></Button
+						>
+					</div>
+				{/if}
 			</div>
 		</div>
 		{#if mapBusy}
@@ -5451,215 +6925,6 @@
 		{#if picking && !placementKind}<div class="placement-target" aria-hidden="true">
 				<span></span>
 			</div>{/if}
-		<div class="map-footer" class:has-legend={legendVisible}>
-			<div class="map-information-card" class:mobile-expanded={mobileLegendOpen} id={mapKeyId}>
-				{#if accessibilityOverview}
-					<div class="accessibility-key" aria-label="Island accessibility score colours">
-						<strong>Accessibility /100</strong>
-						<span><span>Low</span><i aria-hidden="true"></i><span>High</span></span>
-						<small>Residential islands · Grey: limited evidence</small>
-					</div>
-				{:else}
-					{#if gapFeatures.features.length && !impactFeatures.features.length}<div
-							class="policy-colour-key"
-							aria-label="Service gap colours"
-						>
-							<strong
-								>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
-									? gapLens === 'transport'
-										? 'Walk to a bus stop or terminal'
-										: 'Local journey time'
-									: 'Service availability'}</strong
-							>
-							<span
-								><i class="policy-gap-gradient" style:background={GAP_GRADIENT}
-								></i>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
-									? 'Shorter → at / beyond target'
-									: 'More services → fewer services'}</span
-							>
-							<small
-								>{gapFeatures.features.some((feature) => feature.properties?.origin_id)
-									? 'Estimated journeys · Grey: no estimate'
-									: 'Services across the island'}</small
-							>
-							{#if gapFeatures.features.some((feature) => feature.properties?.origin_id)}<small
-									>Unshaded: no local estimate · select an island to inspect</small
-								>{/if}
-						</div>{:else if impactFeatures.features.length}<div
-							class="policy-colour-key"
-							aria-label="Proposal impact colours"
-						>
-							<strong
-								>{policyOverlayView === 'before'
-									? 'Without proposal'
-									: policyOverlayView === 'after'
-										? 'With proposal'
-										: 'Proposed access change'}</strong
-							>
-							{#if policyOverlayView === 'before' || policyOverlayView === 'after'}
-								<span
-									><i class="policy-gap-gradient" style:background={GAP_GRADIENT}></i>Shorter → at /
-									beyond target</span
-								>
-								<small>Same journey-time scale in both views</small>
-							{/if}
-							<div class="policy-overlay-swatches">
-								{#each policyOverlayLegend as item (item.label)}<span
-										><i style:background={item.color}></i>{item.label}</span
-									>{/each}
-							</div>
-							{#if policyStale || policyCalculating}
-								<small class="policy-overlay-status" data-testid="policy-overlay-status"
-									>Updating proposal · {policyOverlayView === 'before'
-										? 'current access shown'
-										: 'showing previous result'}</small
-								>
-							{:else if comparisonPreview && policyOverlayView === 'after'}
-								<small class="policy-overlay-status" data-testid="policy-overlay-status"
-									>Placement preview · not added</small
-								>
-							{/if}
-							<small>Unshaded land: no resident estimate · select a cell to compare</small>
-						</div>{/if}
-					{#if scenarioPreview.unlocated}<div class="street-context-status" role="status">
-							<X size={12} />{scenarioPreview.unlocated}
-							{scenarioPreview.unlocated === 1 ? 'edit lacks' : 'edits lack'} a location · select a location
-							on the map
-						</div>{/if}
-					{#if mode !== 'places'}
-						<details class="map-movement-status">
-							<summary class="movement-counts" aria-label="Provider positions by vehicle type">
-								<span title="Aircraft observations"
-									><Plane size={14} />{activityKinds.aircraft}</span
-								>
-								<span title="Vessel observations"><Ship size={14} />{activityKinds.vessel}</span>
-								<span title="Bus observations"><BusFront size={14} />{activityKinds.bus}</span>
-								<strong title="Visible observations / all positions received for this area"
-									>{renderedMovementObservations} visible / {liveFeatures.features.length} received</strong
-								>
-							</summary>
-							<small>Provider observations · expand for freshness and coverage</small>
-							<small>{activityMessage}</small>
-							{#if liveStatus.message && liveFeatures.features.length}<small
-									>{liveStatus.message}</small
-								>{/if}
-							{#if liveStatus.retrieved_at}<small
-									>Received {new Date(liveStatus.retrieved_at).toLocaleString('en', {
-										month: 'short',
-										day: 'numeric',
-										hour: '2-digit',
-										minute: '2-digit',
-										hour12: false
-									})} · provider observation times vary</small
-								>{/if}
-							{#if renderedVesselGroups}<small
-									>Ship badges group nearby vessel observations. Select one to zoom in.</small
-								>{/if}
-							{#if liveFeatures.features.length && !renderedMovementObservations}<small
-									>Positions are beyond this street view · View → Show nearby movement</small
-								>{/if}
-							{#if freshMovement.length && renderedMovementObservations < freshMovement.length}<Button
-									variant="ghost"
-									size="sm"
-									class="movement-fit-button"
-									onclick={focusMovement}><LocateFixed size={13} />View nearby</Button
-								>{/if}
-						</details>
-					{/if}
-					<div class="street-context-status" role="status">
-						<span class:loading={contextLoading}></span>
-						{#if contextLoading}Loading streets & buildings
-						{:else if contextError}{contextError}
-						{:else if zoomLevel < 10}Nationwide atlas · zoom in for streets
-						{:else if contextSummary.roads || contextSummary.buildings}Streets · OpenStreetMap
-						{:else}No streets in this view{/if}
-						{#if contextSummary.truncated}
-							· Zoom in for all features{/if}
-					</div>
-					{#if picking || hoverDescription}<div class="map-hint" class:picking>
-							{#if picking}<Crosshair size={15} />{:else}<MousePointer2 size={15} />{/if}
-							<span
-								>{picking
-									? 'Click to place · Enter at map center'
-									: hoverDescription ||
-										(nationalScale
-											? 'Select an island to explore'
-											: 'Click a place to inspect, plan a journey or propose a change')}</span
-							>
-						</div>{/if}
-					{#if legendVisible && zoomLevel >= 12}
-						<div class="compact-map-key" aria-label="Place symbols">
-							{#if transportVisible}<span><BusFront size={13} class="transport-key" />Bus stop</span
-								><span><Ship size={13} class="marine-key" />Ferry terminal</span>{/if}
-							{#if facilitiesVisible}<span><Hospital size={13} class="health-key" />Healthcare</span
-								><span><GraduationCap size={13} class="school-key" />School</span>{/if}
-						</div>
-					{/if}
-					<div class="mobile-key-toggle">
-						<Button
-							variant="outline"
-							size="sm"
-							aria-expanded={mobileLegendOpen}
-							aria-controls={mapKeyId}
-							onclick={() => (mobileLegendOpen = !mobileLegendOpen)}
-							><Info size={13} />Map key & live coverage<ChevronDown size={12} /></Button
-						>
-					</div>
-					{#if legendVisible}<div
-							class="map-legend"
-							class:mobile-expanded={mobileLegendOpen}
-							aria-label="Map key"
-						>
-							<span><i class="legend-land"></i>Islands</span>
-							{#if streetsVisible}<span><i class="legend-street"></i>Streets</span>{/if}
-							{#if buildingsVisible}<span><i class="legend-building"></i>Buildings</span>{/if}
-							{#if facilitiesVisible}<span><Hospital size={12} class="health-key" />Health</span
-								><span><GraduationCap size={13} class="school-key" />Schools</span>{/if}
-							{#if transportVisible}<span
-									><BusFront size={12} class="transport-key" />Bus stops</span
-								>
-								<span><Ship size={12} class="marine-key" />Ferry terminals</span>
-								<span><Anchor size={12} class="marine-key" />Piers</span>
-								<span><Plane size={12} class="transport-key" />Airports</span>{/if}
-							{#if facilitiesVisible || transportVisible}<span
-									><MapPin size={12} />Other places</span
-								>
-								<span><i class="legend-cluster">#</i>Grouped places · zoom in</span>{/if}
-							{#if mode !== 'places' && liveEvents.length}<span
-									><Radio size={12} />Vehicle icons = observations</span
-								>{/if}
-							{#if renderedVesselGroups}<span
-									><Ship size={12} class="marine-key" />Ship + count = grouped vessels · select to
-									zoom</span
-								>{/if}
-							{#if contextReceipt}<span>Street data · {contextReceipt}</span>{/if}
-							{#if scenarioFeatures.features.length}<span
-									><i class="legend-proposed"></i>Proposed</span
-								>{/if}
-							{#if scenarioFeatures.features.some( (feature) => ['remove_bus_stop', 'disable_ferry_terminal', 'road_closure'].includes(feature.properties?.type) )}<span
-									><X size={12} />Removal / closure</span
-								>{/if}
-							{#if (!route?.journey && routeFeatures.features.some((feature) => feature.geometry.type === 'LineString')) || route?.journey?.legs.some((leg) => leg.mode === 'bus' && leg.geometry.length > 1)}<span
-									><i class="legend-route"></i>{route?.journey
-										? 'Bus journey'
-										: 'Journey route'}</span
-								>{/if}
-							{#if route?.journey?.legs.some((leg) => leg.mode === 'walk')}<span
-									><i class="legend-walk"></i>Walk to / from stop</span
-								>{/if}
-							{#if route?.journey?.legs.some((leg) => leg.mode === 'ferry')}<span
-									><i class="legend-ferry-route"></i>Ferry journey</span
-								>{/if}
-							{#if journeyStopFeatures.features.length}<span
-									><i class="legend-journey-stop"></i>Board / get off here</span
-								>{/if}
-							{#if routeStart || routeEnd}<span><b class="legend-origin">A</b>Start</span><span
-									><b class="legend-destination">B</b>Destination</span
-								>{/if}
-						</div>{/if}
-				{/if}
-			</div>
-		</div>
 	{/if}
 </div>
 
@@ -6212,23 +7477,38 @@
 	.map-controls {
 		position: absolute;
 		z-index: 5;
-		left: 24px;
+		left: 20px;
 		bottom: var(--map-controls-bottom, 68px);
-		max-width: calc(100% - 48px);
+		display: flex;
+		flex-direction: column;
+		width: 430px;
+		max-width: calc(100% - 40px);
+		padding: 5px;
+		border: 1px solid var(--theme-color-d7e2df);
+		border-radius: 17px;
+		background: var(--theme-color-fffffff5);
+		box-shadow: 0 4px 22px var(--theme-color-1a433f12);
+		backdrop-filter: blur(10px);
+	}
+	@container atlas (min-width: 900px) {
+		.map-controls.sea-inspector-open {
+			--map-controls-bottom: 20px;
+			left: 420px;
+			max-width: calc(100% - 440px);
+		}
+	}
+	.map-coverage-controls {
+		padding-bottom: 4px;
+		border-bottom: 1px solid var(--theme-color-e0e9e5);
 	}
 	.map-toolbar {
 		display: flex;
 		align-items: center;
+		justify-content: space-between;
 		gap: 3px;
-		padding: 6px;
-		border: 1px solid var(--theme-color-d7e2df);
-		border-radius: 14px;
-		background: var(--theme-color-fffffff5);
-		box-shadow:
-			0 3px 5px -2px var(--theme-color-294c4912),
-			0 12px 28px -12px var(--theme-color-294c4930);
-		backdrop-filter: blur(10px);
+		padding: 3px 0 0;
 	}
+
 	.atlas-mark {
 		display: grid;
 		place-items: center;
@@ -6285,14 +7565,11 @@
 		left: 0;
 		width: 302px;
 		max-width: calc(100vw - 48px);
-		max-height: min(
-			calc(100dvh - 235px),
-			max(
-				140px,
-				calc(
-					var(--map-height, 520px) - var(--map-controls-bottom, 68px) -
-						var(--map-panel-clearance, 208px)
-				)
+		max-height: max(
+			140px,
+			min(
+				440px,
+				calc(100dvh - var(--map-controls-bottom, 68px) - var(--map-toolbar-bottom, 80px) - 190px)
 			)
 		);
 		overflow-y: auto;
@@ -6530,35 +7807,138 @@
 		}
 	}
 	.map-footer {
-		position: absolute;
-		bottom: calc(var(--map-controls-bottom, 68px) + 60px);
-		left: 26px;
-		right: max(calc(var(--map-controls-right, 18px) + 20px), 48px);
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 7px;
-		pointer-events: none;
+		min-width: 0;
 	}
 	.map-information-card {
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
-		max-width: min(100%, 360px);
-		max-height: min(330px, 44svh);
+		max-height: min(330px, 38svh);
 		overflow: auto;
-		padding: 10px 12px;
-		border: 1px solid var(--theme-color-d6e4de);
-		border-radius: 12px;
-		background: var(--theme-color-fffefaed);
-		box-shadow: 0 3px 12px var(--theme-color-294c490a);
+		padding: 8px 8px 5px;
 		pointer-events: auto;
+		scrollbar-width: thin;
+	}
+	.map-information-card:empty {
+		display: none;
+	}
+	.sea-pressure-key {
+		display: grid;
+		gap: 7px;
+		color: var(--theme-color-34585d);
+	}
+	.sea-pressure-key + .policy-colour-key,
+	.sea-pressure-key + .accessibility-key {
+		margin-top: 9px;
+		padding-top: 9px;
+		border-top: 1px solid var(--theme-color-dce7df);
+	}
+	.sea-pressure-heading {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		gap: 10px;
+	}
+	.sea-pressure-heading > div {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 3px 10px;
+	}
+	.sea-local-services {
+		min-height: 32px;
+		padding: 5px 8px;
+		border: 1px solid var(--theme-color-d7e2df);
+		border-radius: 7px;
+		background: var(--theme-color-fffefa);
+		color: var(--theme-color-1d645e);
+		font-size: 10px;
+		font-weight: 650;
+		white-space: nowrap;
+		cursor: pointer;
+	}
+	.sea-pressure-heading strong {
+		font-size: 11px;
+		font-weight: 650;
+	}
+	.sea-pressure-heading small {
+		font-size: 9px;
+		color: var(--theme-color-627a70);
+	}
+	.sea-pressure-swatches {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 5px 12px;
+		font-size: 10px;
+	}
+	.sea-pressure-swatches > span {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+	}
+	.sea-pressure-swatches i {
+		width: 15px;
+		height: 3px;
+		border-radius: 2px;
+	}
+	.network-route-key {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px 14px;
+		font-size: 10px;
+	}
+	.network-route-key > span {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+	}
+	.network-route-key i {
+		width: 17px;
+		border-top: 2px solid var(--theme-color-607d8a);
+	}
+	.network-route-key .air i {
+		height: 6px;
+		border-radius: 50% 50% 0 0;
+		transform: translateY(2px);
+	}
+	.sea-network-status {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin: 0;
+		font-size: 11px;
+	}
+	.sea-network-status button {
+		min-height: 32px;
+		padding: 4px 7px;
+		border-radius: 6px;
+		color: var(--theme-color-1d645e);
+		font-weight: 650;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	.map-key-details {
+		display: grid;
+		gap: 10px;
+		padding-top: 10px;
+		border-top: 1px solid var(--theme-color-dce7df);
 	}
 	.policy-colour-key {
 		display: grid;
-		gap: 6px;
-		padding-bottom: 8px;
-		border-bottom: 1px solid var(--theme-color-dce7df);
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		gap: 5px 10px;
+	}
+	.policy-colour-key > small,
+	.policy-colour-key > .policy-overlay-swatches {
+		grid-column: 1 / -1;
+	}
+	.map-information-card:not(.mobile-expanded)
+		.policy-colour-key
+		> small:not(.policy-overlay-status) {
+		display: none;
 	}
 	.accessibility-key {
 		display: grid;
@@ -6623,6 +8003,11 @@
 		border-radius: 3px;
 		flex-shrink: 0;
 	}
+	.policy-colour-key .policy-coverage-fill-key {
+		grid-column: 1 / -1;
+		font-size: 9px;
+		color: var(--theme-color-7d8a7c);
+	}
 	.overlay-opacity-control {
 		margin: 4px 0 8px;
 		padding: 12px;
@@ -6676,7 +8061,6 @@
 	.map-information-card .map-movement-status,
 	.map-information-card .street-context-status,
 	.map-information-card .map-hint,
-	.map-information-card .compact-map-key,
 	.map-information-card .map-legend {
 		padding: 0;
 		border: 0;
@@ -6738,30 +8122,36 @@
 		color: var(--theme-color-58756d);
 		font-size: 10px;
 	}
-	.compact-map-key {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px 12px;
-		padding: 8px 10px;
-		max-width: 350px;
-		border: 1px solid var(--theme-color-d6e4de);
-		border-radius: 9px;
-		background: var(--theme-color-fffef7ed);
-		font-size: 10px;
-		color: var(--theme-color-496f6d);
-	}
-	.compact-map-key > span {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-	}
-	.map-legend:not(.mobile-expanded) {
-		display: none;
-	}
 	.mobile-key-toggle {
 		display: block;
 		pointer-events: auto;
 	}
+	:global(.national-map .mobile-key-toggle button) {
+		height: 36px;
+		min-height: 36px;
+		padding: 0 9px;
+		gap: 5px;
+		border-radius: 9px;
+		font-size: 11px;
+		font-weight: 550;
+		color: var(--theme-color-58756d);
+		background: transparent;
+	}
+	:global(.national-map .mobile-key-toggle button[aria-expanded='true']) {
+		background: var(--theme-color-e9f3ef);
+		color: var(--theme-color-087f7c);
+	}
+	:global(.national-map .mobile-key-toggle button[aria-expanded='true'] svg:last-child) {
+		transform: rotate(180deg);
+	}
+	:global(.national-map .mobile-key-toggle button:active) {
+		transform: scale(0.98);
+	}
+	:global(.national-map .mobile-key-toggle button:focus-visible) {
+		outline: 2px solid var(--theme-color-087f78);
+		outline-offset: 3px;
+	}
+
 	:global(.national-map .map-point-actions) {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
@@ -6858,6 +8248,14 @@
 	:global(.national-map .journey-drag-pin:active) {
 		cursor: grabbing;
 	}
+	:global(.national-map .journey-waypoint-pin.static),
+	:global(.national-map .journey-waypoint-pin.static:active) {
+		cursor: pointer;
+	}
+	:global(.national-map .journey-waypoint-pin:focus-visible) {
+		outline: 2px solid var(--foreground);
+		outline-offset: 3px;
+	}
 	.map-legend > span {
 		display: flex;
 		align-items: center;
@@ -6867,13 +8265,6 @@
 	.map-legend i {
 		display: inline-block;
 		flex-shrink: 0;
-	}
-	.legend-land {
-		width: 10px;
-		height: 8px;
-		border: 1px solid var(--theme-color-9cb9af);
-		border-radius: 2px;
-		background: var(--theme-color-f5f2e7);
 	}
 	.map-movement-status {
 		display: flex;
@@ -6903,11 +8294,6 @@
 	.movement-counts strong {
 		font-size: 10px;
 		font-weight: 600;
-	}
-	.map-movement-status small {
-		font-size: 9px;
-		line-height: 1.4;
-		overflow-wrap: anywhere;
 	}
 	:global(.national-map .movement-fit-button) {
 		align-self: flex-start;
@@ -7092,6 +8478,128 @@
 		font-family: ui-monospace, 'Cascadia Code', monospace;
 		font-size: 9px;
 	}
+	:global(.map-network-route-card .sea-route-pressure) {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin-bottom: 13px;
+		font-size: 11px;
+		font-weight: 650;
+		color: var(--theme-color-36585f);
+	}
+	:global(.map-network-route-card .sea-route-pressure i) {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+	}
+	:global(.map-network-route-card dl) {
+		grid-template-columns: 104px minmax(0, 1fr);
+		gap: 7px 10px;
+		font-size: 11px;
+	}
+	:global(.map-network-route-card dt) {
+		color: var(--theme-color-627a70);
+	}
+	:global(.map-network-route-card .sea-route-details) {
+		margin-top: 12px;
+		border-top: 1px solid var(--theme-color-dce7df);
+	}
+	:global(.national-map .map-network-route-card summary) {
+		padding-block: 11px;
+		font-weight: 650;
+		color: var(--theme-color-1d645e);
+	}
+	:global(.national-map .map-network-route-card p) {
+		margin: 10px 0;
+		font-size: 11px;
+	}
+	:global(.map-network-route-card .sea-route-qualification) {
+		color: var(--theme-color-627a70);
+	}
+	:global(.map-network-route-card .sea-route-detail-heading) {
+		font-size: 11px;
+		font-weight: 650;
+		color: var(--theme-color-36585f);
+	}
+	:global(.map-network-route-card .sea-route-stops) {
+		display: grid;
+		gap: 5px;
+		margin: 8px 0 12px;
+		padding-left: 18px;
+		font-size: 11px;
+		line-height: 1.5;
+		color: var(--theme-color-627a70);
+	}
+	:global(.map-network-route-card .sea-route-sources) {
+		display: grid;
+		gap: 8px;
+		margin: 12px 0;
+		font-size: 11px;
+		line-height: 1.5;
+	}
+	:global(.map-network-route-card .sea-route-sources a) {
+		color: var(--theme-color-1d645e);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	:global(.map-network-route-card .sea-route-open) {
+		width: 100%;
+		min-height: 36px;
+		margin-top: 3px;
+		padding: 7px 10px;
+		border: 1px solid var(--theme-color-d7e2df);
+		border-radius: 8px;
+		font-size: 11px;
+		font-weight: 650;
+		color: var(--theme-color-1d645e);
+		background: var(--theme-color-edf5f1);
+		cursor: pointer;
+	}
+	:global(.map-network-route-card :is(summary, button, a):focus-visible) {
+		outline: 2px solid var(--theme-color-1d645e);
+		outline-offset: 2px;
+	}
+	:global(.map-search-pin) {
+		width: 32px;
+		height: 32px;
+		padding: 0;
+		border: 3px solid var(--theme-color-fffefa);
+		border-radius: 50%;
+		background: var(--theme-color-1d645e);
+		box-shadow:
+			0 0 0 2px var(--theme-color-1d645e),
+			0 4px 14px var(--theme-color-294c4945);
+		cursor: pointer;
+		z-index: 3;
+	}
+	:global(.map-search-pin::before) {
+		content: '';
+		position: absolute;
+		inset: 8px;
+		border-radius: 50%;
+		background: var(--theme-color-fffefa);
+	}
+	:global(.map-search-pin::after) {
+		content: '';
+		position: absolute;
+		left: 8px;
+		bottom: -8px;
+		width: 10px;
+		height: 10px;
+		border-right: 2px solid var(--theme-color-fffefa);
+		border-bottom: 2px solid var(--theme-color-fffefa);
+		background: var(--theme-color-1d645e);
+		transform: rotate(45deg);
+		z-index: -1;
+	}
+	:global(.map-search-pin:focus-visible) {
+		outline: 3px solid var(--theme-color-1d645e);
+		outline-offset: 5px;
+	}
+	:global(.map-record-card .map-search-source) {
+		margin-top: -5px;
+		font-size: 10px;
+	}
 	:global(.island-map-label) {
 		pointer-events: none;
 		font-family: inherit;
@@ -7149,28 +8657,6 @@
 		font-size: 9px;
 		line-height: 1.3;
 	}
-	.street-context-status > span {
-		width: 5px;
-		height: 5px;
-		border-radius: 50%;
-		background: var(--theme-color-66a88b);
-		flex-shrink: 0;
-	}
-	.street-context-status > span.loading {
-		background: var(--theme-color-cda64e);
-	}
-	.legend-street {
-		background: var(--theme-color-fff4cf);
-		border: 1px solid var(--theme-color-b5b8a6);
-		width: 13px;
-		height: 4px;
-	}
-	.legend-building {
-		background: var(--theme-color-d9d2c1);
-		border: 1px solid var(--theme-color-c7beac);
-		width: 9px;
-		height: 8px;
-	}
 	:global(.national-map .maplibregl-ctrl-top-right) {
 		top: auto;
 		bottom: var(--map-zoom-bottom, 24px);
@@ -7204,15 +8690,6 @@
 		border-radius: 3px;
 		background: var(--theme-color-ffffff80);
 	}
-	:global(.national-map .maplibregl-ctrl-attrib) {
-		font-family: inherit;
-		font-size: 9px;
-		color: var(--theme-color-739088);
-		background-color: var(--theme-color-ffffffe0);
-	}
-	:global(.national-map .maplibregl-ctrl-attrib a) {
-		color: var(--theme-color-517b73);
-	}
 	:global(.national-map .maplibregl-canvas-container.maplibregl-interactive) {
 		cursor: grab;
 	}
@@ -7236,9 +8713,6 @@
 			bottom: calc(42dvh + 24px);
 		}
 		:global(.national-map[data-accessibility-overview='false'] .maplibregl-ctrl-top-right) {
-			bottom: calc(var(--map-controls-bottom, 68px) + 119px);
-		}
-		.map-footer {
 			bottom: calc(var(--map-controls-bottom, 68px) + 119px);
 		}
 	}
@@ -7268,25 +8742,10 @@
 		.mobile-key-toggle {
 			display: block;
 		}
-		.map-information-card:not(.mobile-expanded)
-			> :not(.mobile-key-toggle):not(.picking):not(.accessibility-key) {
-			display: none;
-		}
 		.map-information-card {
 			max-height: min(45cqh, 300px);
 			overflow: auto;
 		}
-		:global(.national-map .mobile-key-toggle button) {
-			height: 27px;
-			padding: 4px 8px;
-			gap: 5px;
-			border-radius: 8px;
-			font-size: 10px;
-			color: var(--theme-color-58756d);
-			background: var(--theme-color-fffef7ed);
-			border-color: var(--theme-color-d6e4de);
-		}
-		.map-legend:not(.mobile-expanded),
 		.map-hint:not(.picking) {
 			display: none;
 		}
@@ -7300,26 +8759,28 @@
 		:global(.national-map .maplibregl-ctrl-bottom-right) {
 			max-width: calc(100% - 32px);
 		}
-		:global(.national-map .maplibregl-ctrl-attrib) {
-			font-size: 8px;
-			line-height: 12px;
-			min-height: 14px;
-			margin: 0 8px 1px 0;
-			padding: 1px 18px 1px 4px;
-		}
-		:global(.national-map .maplibregl-ctrl-attrib-button) {
-			width: 16px;
-			height: 16px;
-			background-size: 12px 12px;
-		}
 		.map-controls {
-			left: 16px;
-			max-width: calc(100% - 76px);
+			left: 12px;
+			width: calc(100% - 24px);
+			max-width: none;
 		}
 		.map-toolbar {
-			padding: 5px;
-			border-radius: 12px;
 			gap: 1px;
+		}
+		:global(.national-map .map-tool-button),
+		:global(.national-map .map-national-button),
+		:global(.national-map .mobile-key-toggle button) {
+			height: 44px;
+			min-height: 44px;
+		}
+		.policy-colour-key {
+			gap: 5px;
+		}
+		.policy-colour-key strong {
+			font-size: 10px;
+		}
+		.policy-colour-key span {
+			font-size: 9px;
 		}
 		:global(.national-map .map-tool-button) {
 			padding: 0 7px;
@@ -7331,22 +8792,27 @@
 			display: none;
 		}
 		.toolbar-divider {
-			margin: 0 2px;
+			display: none;
+		}
+		:global(.national-map .mobile-key-toggle button) {
+			padding-inline: 6px;
 		}
 		.control-panel {
 			--map-panel-clearance: 280px;
 			max-width: calc(100vw - 32px);
 		}
-		.map-footer {
-			left: 18px;
-			right: 20px;
-		}
+
 		.map-legend {
 			max-width: 300px;
 			gap: 5px 9px;
 		}
 		.map-hint {
 			max-width: 300px;
+		}
+	}
+	@container atlas (max-width: 360px) {
+		:global(.national-map .mobile-key-toggle button svg:last-child) {
+			display: none;
 		}
 	}
 	@media (pointer: coarse) {

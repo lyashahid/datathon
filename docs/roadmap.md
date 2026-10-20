@@ -1,14 +1,14 @@
 # Roadmap and evidence gates
 
-This is the consolidated future-work record after the 11 October 2026 release. The [release](prediction-release.md) documents delivered behavior and completed checks; the [source receipt](prediction-source-receipt.md) retains audit evidence. These next steps are conditional research and operational requirements, not committed agency actions or claims of competition success.
+This is the consolidated research and operational evidence backlog. The [forecast issue workflow](forecast-issue-workflow.md) documents the current statistical policy, [browser verification](browser-verification.md) documents maintained checks, and the [source receipt](prediction-source-receipt.md) retains the dated acquisition audit. These next steps are conditional research and operational requirements, not committed agency actions or claims of competition success.
 
 Keep the central decision clear: **what should a planner investigate or prepare, given the evidence and its limits?** Monthly passenger outlooks support a review of service budgets and staffing. Healthcare scenarios show which residents' modeled journeys improve or worsen under explicit assumptions. Aggregate monthly counts cannot establish neighborhood demand, road congestion or an exact fleet requirement.
 
 ## 1. Establish prospective monthly forecast evidence
 
-- Use the delivered immutable issue workflow to freeze each new forecast before the next official count is released. The first November issue is frozen and awaits actuals. Retain original publication vintages and revisions; score comparable horizons against last-month and seasonal baselines.
+- Use the delivered immutable issue workflow to freeze each new forecast before the next official count is released. Historical frozen issues remain inspectable with their original source and model version. Retain original publication vintages and revisions; score comparable horizons against last-month and seasonal baselines.
 - Resolve repeated June bus values, ferry endpoint/direction definitions and overlapping fare categories with MBS/operators. Keep quarantine and exclusions visible until resolved. Do not combine counts whose definitions may overlap.
-- Improve empirical ranges using sufficient earlier observations, then measure coverage and width on later outcomes. The current ferry ranges cover only two of six later totals; current bus covers three of six. Retrospective revised-vintage checks are not a substitute for prospective evaluation.
+- Improve empirical ranges using sufficient earlier observations, then measure coverage and width on later outcomes. Inspect coverage separately by category and horizon under the current statistical policy. Historical results from an earlier model version do not describe the active policy. Revised-vintage checks are not a substitute for prospective evaluation.
 - Investigate changes in service, fares and exceptional periods before adding predictors. Replace a weak model only through a new dated selection/evaluation protocol; do not choose from the held-out results and reuse them as independent evidence.
 
 Acceptance: reproducible issued forecasts, honest uncertainty, clear comparison with simple alternatives, and an operator-defined resource decision. Forecast passenger movements are not a direct instruction to buy buses or increase a specific route's frequency.
@@ -39,7 +39,7 @@ Acceptance: every recommended action has a responsible reviewer, supported opera
 
 Extend the [existing attributed-candidate workflow](operations-data.md), rather than bypassing review. Use permitted public sources, preserve exact source passages, publication/retrieval times and links, and resolve English/Dhivehi place names, effective dates, corrections, cancellations and duplicates.
 
-A reviewer must map the event to the correct road/service extent, direction, affected modes and expiry. Persist review decisions and history before connecting a notice to a scenario. Evaluate extraction on reviewed examples including ambiguous locations, negative statements, cancellations and duplicated bilingual reports. Do not infer a road closure, severity or extra minutes from a vague report; automatic ingestion must not automatically close roads.
+A reviewer must map the event to the correct road/service extent, direction, affected modes and expiry. Retain persisted review decisions, source passages and validity when explicitly applying an approved notice to a scenario. Evaluate extraction on reviewed examples including ambiguous locations, negative statements, cancellations and duplicated bilingual reports. Do not infer a road closure, severity or extra minutes from a vague report; automatic ingestion must not automatically close roads.
 
 Acceptance: the map and scenario can explain who reviewed each event, what the source established, which assumptions were added, and when the event expires. Reported events remain separate from measured delay and from a model's forecast.
 
@@ -47,7 +47,7 @@ Acceptance: the map and scenario can explain who reviewed each event, what the s
 
 The five-person first-time policymaker study remains pending. Adapt the [detailed-editor protocol](policy-investment-release.md#verification-and-human-study) to the current map-first workspace and linked analytical pages. Use a neutral task: “Locate an area to investigate, explain what the passenger outlook suggests preparing, then compare a healthcare service option and identify one reason it might not work.” Record role, device, source/model versions, completion time, errors and help; avoid coaching.
 
-A useful first-minute gate is at least four of five participants independently distinguishing actual counts from estimates, reading the source date and forecast reliability, identifying an actionable follow-up, and recognizing a loss or unknown in the policy comparison. Separately check capital versus annual costs, assumptions, undo and source inspection in the detailed editor. Developer/browser QA is complete for the recorded release; it does not certify this human study.
+A useful first-minute gate is at least four of five participants independently distinguishing actual counts from estimates, reading the source date and forecast reliability, identifying an actionable follow-up, and recognizing a loss or unknown in the policy comparison. Separately check capital versus annual costs, assumptions, undo and source inspection in the detailed editor. Developer/browser QA does not certify this human study.
 
 Test the actual presentation device/projector and a lower-end mobile device. The historical model-only timing target is not a browser responsiveness guarantee. Select a deployment adapter, verify public-only responses and credential boundaries, and confirm provider/source reuse terms before public deployment. No agency endorsement, production monitoring or redistribution authorization is implied.
 

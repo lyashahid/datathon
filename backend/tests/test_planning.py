@@ -735,6 +735,15 @@ def test_reverse_destination_search_preserves_directed_walking_paths(service):
     route = router.route(dict(first, id="origin:a"))
     assert route["minutes"] == 12.5
     assert route["geometry"] == [[73.5, 4.17], [73.501, 4.17]]
+    prepared = JourneyRouter(world, PlanningAssumptions(), [])
+    directed = prepared.for_destination(dict(second, id="end"), 920)
+    assert directed.route(dict(first, id="origin:a"))["geometry"] == route["geometry"]
+    assert (
+        prepared.for_destination(dict(first, id="end"), 920).route(dict(second, id="origin:b"))[
+            "status"
+        ]
+        == "unavailable"
+    )
     world["facilities"][0].update(first, id="hospital:a")
     reverse = JourneyRouter(world, PlanningAssumptions()).route(dict(second, id="origin:b"))
     assert reverse["status"] == "unavailable"

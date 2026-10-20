@@ -35,11 +35,10 @@ services:
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
     env_file: [./backend.env]
-    # These cannot be overridden by an inherited development environment file.
+    # Optional shared cache credentials/opt-in come only from the protected env_file.
+    # Source imports remain disabled by the production environment.
     environment:
       MOBILITY_ENVIRONMENT: production
-      MOBILITY_DATABASE_URL: ''
-      MOBILITY_COMPUTED_CACHE_POSTGRES_ENABLED: 'false'
       MOBILITY_COMPUTED_CACHE_PREWARM: 'true'
       MOBILITY_DATA_DIR: /app/backend/data
       MOBILITY_PUBLIC_DATA_DIR: /app/data/public

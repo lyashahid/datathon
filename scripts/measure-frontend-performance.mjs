@@ -17,7 +17,7 @@ const report = {
 	label,
 	measuredAt: new Date().toISOString(),
 	method:
-		'1440x1000 Chromium, reduced motion, software WebGL, warm real backend. Cold browser contexts followed by one reload in each context. No throttling or mocks. Screenshot work excluded from ready time.',
+		'1440x1000 Chromium, reduced motion, software WebGL, warm real backend. Cold browser contexts followed by one reload in each context after background requests settle. No throttling or mocks. Screenshots and pre-reload settling excluded from ready time.',
 	routes: []
 };
 try {
@@ -37,6 +37,10 @@ try {
 			/** @type {string[]} */
 			let errors = [];
 			page.on('pageerror', (error) => errors.push(error.message));
+			page.on('console', (message) => {
+				if (message.type() === 'error' && message.text().includes('https://svelte.dev/e/'))
+					errors.push(message.text());
+			});
 			page.on('response', (response) => {
 				if (!response.url().includes('/api/backend/')) return;
 				const url = new URL(response.url());
@@ -57,6 +61,9 @@ try {
 				}).observe({ type: 'longtask', buffered: true });
 			});
 			for (const phase of ['cold', 'warm']) {
+				// Do not reload over deferred street/live requests from the initial visit.
+				// This settling belongs to the previous visit, outside the reload timer.
+				if (phase === 'warm') await page.waitForLoadState('networkidle', { timeout: 15000 });
 				requests = [];
 				errors = [];
 				const started = performance.now();
@@ -67,28 +74,49 @@ try {
 				let canvasMs = null;
 				let geographyMs = null;
 				let scoreMs = null;
+				let networksMs = null;
 				if (name !== 'analytics') {
-					await page.locator('.maplibregl-canvas').waitFor({ timeout: 90000 });
-					canvasMs = Math.round(performance.now() - started);
-					await page.waitForFunction(
-						() => document.querySelector('.national-map')?.getAttribute('aria-busy') === 'false',
-						undefined,
-						{ timeout: 90000 }
-					);
-					geographyMs = Math.round(performance.now() - started);
-					await page.waitForFunction(
-						(scope) =>
-							scope === 'country'
-								? document
-										.querySelector('.country-accessibility-explorer')
-										?.getAttribute('aria-busy') === 'false'
-								: Number(
-										document.querySelector('.national-map')?.getAttribute('data-policy-gap-cells')
-									) > 0,
-						name,
-						{ timeout: 90000 }
-					);
-					scoreMs = Math.round(performance.now() - started);
+					const elapsed = () => Math.round(performance.now() - started);
+					[canvasMs, geographyMs, scoreMs, networksMs] = await Promise.all([
+						page.locator('.maplibregl-canvas').waitFor({ timeout: 90000 }).then(elapsed),
+						page
+							.waitForFunction(
+								() =>
+									document.querySelector('.national-map')?.getAttribute('aria-busy') === 'false',
+								undefined,
+								{ timeout: 90000 }
+							)
+							.then(elapsed),
+						page
+							.waitForFunction(
+								(scope) =>
+									scope === 'country'
+										? document
+												.querySelector('.country-accessibility-explorer')
+												?.getAttribute('aria-busy') === 'false'
+										: Number(
+												document
+													.querySelector('.national-map')
+													?.getAttribute('data-policy-gap-cells')
+											) > 0,
+								name,
+								{ timeout: 90000 }
+							)
+							.then(elapsed),
+						page
+							.waitForFunction(
+								() => {
+									const map = document.querySelector('.national-map');
+									return (
+										Number(map?.getAttribute('data-sea-network-routes')) > 0 &&
+										Number(map?.getAttribute('data-air-network-routes')) > 0
+									);
+								},
+								undefined,
+								{ timeout: 90000 }
+							)
+							.then(elapsed)
+					]);
 				} else {
 					await page.waitForFunction(
 						() =>
@@ -127,6 +155,7 @@ try {
 					canvasMs,
 					geographyMs,
 					scoreMs,
+					networksMs,
 					readyMs,
 					longTaskMs,
 					requests,
@@ -141,6 +170,7 @@ try {
 						canvasMs,
 						geographyMs,
 						scoreMs,
+						networksMs,
 						readyMs,
 						requests: requests.length,
 						longTaskMs,

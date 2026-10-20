@@ -17,7 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from shapely.geometry import Point, shape
 
 from app.accessibility.service import AccessibilityService
-from app.planning.display_grid import build_display_grid
+from app.planning.display_grid import build_coverage_fill, build_display_grid
 from app.planning.economics import economics
 from app.planning.models import PlanningAssumptions, PlanningRequest
 from app.planning.repository import IDENTITY_BRIDGE
@@ -65,6 +65,7 @@ class OpportunityService:
         self.driving = WalkingNetwork(self.world["network"], drive=True)
         self._routes: OrderedDict[str, dict[str, Any]] = OrderedDict()
         self._hex_grids: dict[str, dict[str, Any]] = {}
+        self._coverage_fill: dict[str, dict[str, Any]] = {}
 
     def _island(self, island_id: str) -> dict[str, Any] | None:
         scope = self.repository.planning_id(island_id)
@@ -437,10 +438,27 @@ class OpportunityService:
                     "properties": properties,
                 }
             )
+        gap_cells = {"type": "FeatureCollection", "features": cells}
+        if scope not in self._coverage_fill:
+            # Match the map's normalized coastline. The legacy capital planning
+            # polygon also includes harbor water and is only a fallback when
+            # that canonical map feature is unavailable.
+            mapped_island = (
+                self.accessibility.islands.get(canonical) if self.accessibility else None
+            )
+            boundary = (
+                mapped_island.get("geometry")
+                if mapped_island is not None
+                else (self._island(island_id) or {}).get("geometry")
+            )
+            self._coverage_fill[scope] = build_coverage_fill(
+                boundary, self._hex_grids[scope], gap_cells, island_id=canonical
+            )
         return {
             **entry,
-            "gap_cells": {"type": "FeatureCollection", "features": cells},
+            "gap_cells": gap_cells,
             "hex_grid": deepcopy(self._hex_grids[scope]),
+            "coverage_fill": deepcopy(self._coverage_fill[scope]),
             "assumptions": assumptions.model_dump(mode="json"),
             "journey_population_basis": self._population_basis(island_id) if cells else None,
             "coverage": self.repository.evidence_coverage(island_id),
@@ -449,7 +467,9 @@ class OpportunityService:
                 "Transport uses walking-network minutes to the nearest mapped stop or "
                 "passenger ferry terminal, "
                 "not verified departure frequency. Grid weights are spatial allocations, "
-                "not block census counts."
+                "not block census counts. coverage_fill is visual-only inverse-distance "
+                "interpolation of the six nearest same-island known gap values, "
+                "not population or journey evidence."
             ),
             "warnings": overview["warnings"] + self.repository.summary(island_id)["warnings"],
         }

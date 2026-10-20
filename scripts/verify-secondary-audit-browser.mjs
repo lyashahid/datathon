@@ -158,26 +158,16 @@ try {
 		}
 	);
 	await check(
-		'Weather defers notice/network/advisory reads until those controls are opened',
+		'Operations defers notice and advisory reads until their controls are opened',
 		async () => {
 			await page.setViewportSize({ width: 1440, height: 1000 });
 			/** @type {string[]} */ const requests = [];
 			/** @param {import('@playwright/test').Request} request */ const capture = (request) =>
 				requests.push(new URL(request.url()).pathname);
 			page.on('request', capture);
-			await page.goto(`${baseURL}/?view=map&tool=explore&explorer=route&island=island%3A1442`, {
+			await page.goto(`${baseURL}/?view=map&explorer=notices&island=island%3A1442`, {
 				waitUntil: 'domcontentloaded'
 			});
-			await page.locator('.journey-conditions > summary').click();
-			const conditions = page.getByRole('region', { name: 'Weather and traffic for this journey' });
-			await expect(conditions.getByRole('button', { name: 'Refresh weather' })).toBeEnabled();
-			assert.equal(
-				requests.filter((value) => value === '/api/backend/operations/notices').length,
-				0
-			);
-			await conditions
-				.getByRole('button', { name: 'View notices & disruptions', exact: true })
-				.click();
 			await expect(page).toHaveURL(/explorer=notices/);
 			const operations = page.locator('.operations-workspace');
 			await expect(
@@ -209,30 +199,6 @@ try {
 			await expect(page).toHaveURL(/explorer=notices/);
 			page.off('request', capture);
 			return { deferredOperations: ['notices', 'advisories'], noticeToolsSurviveReload: true };
-		}
-	);
-	await check(
-		'Place inspector closes with Escape and returns keyboard focus on mobile',
-		async () => {
-			await page.setViewportSize({ width: 390, height: 844 });
-			await page.goto(`${baseURL}/?view=map&tool=places&island=island%3A1442`, {
-				waitUntil: 'domcontentloaded'
-			});
-			const places = page.locator('.places-workspace');
-			await expect(places.getByText('Vela connected', { exact: true })).toBeVisible();
-			await places.getByRole('button', { name: 'Search results & details', exact: true }).click();
-			await expect(
-				places.getByRole('region', { name: 'Place research inspector', exact: true })
-			).toBeVisible();
-			await page.keyboard.press('Escape');
-			await expect(
-				places.getByRole('region', { name: 'Place research inspector', exact: true })
-			).not.toBeVisible();
-			await expect(
-				places.getByRole('button', { name: 'Search results & details', exact: true })
-			).toBeFocused();
-			await page.screenshot({ path: path.join(output, 'places-mobile.png'), fullPage: true });
-			return noOverflow();
 		}
 	);
 	assert.deepEqual(report.errors, []);

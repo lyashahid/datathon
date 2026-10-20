@@ -7,13 +7,45 @@ It never converts road permission for a bus into a claimed passenger service.
 from __future__ import annotations
 
 from datetime import date
+from functools import lru_cache
+from threading import RLock
 from typing import Any
 
 from app.planning.models import PlanningAssumptions
 from app.planning.repository import PlanningRepository
-from app.planning.routing import JourneyRouter
-from app.planning.world import baseline_world
+from app.planning.routing import JourneyRouter, WalkingNetwork
 from app.routing.engine import _distance_m
+
+_PREPARATION_LOCK = RLock()
+
+
+@lru_cache(maxsize=2)
+def _prepared_day(
+    repository: PlanningRepository, fingerprint: str, selected_date: date
+) -> JourneyRouter:
+    # Internal read-only source view. Scenario operations still copy their world;
+    # a map query never edits stops, calendars, facilities or network geometry.
+    baseline = repository.baseline
+    world = {
+        "network": baseline.get("network", {"nodes": [], "edges": []}),
+        "facilities": [],
+        "stops": baseline.get("transit", {}).get("stops", []),
+        "patterns": baseline.get("transit", {}).get("patterns", []),
+    }
+    assumptions = PlanningAssumptions(date=selected_date)
+    network = WalkingNetwork(world["network"], cache_tree_nodes=150_000)
+    return JourneyRouter(world, assumptions, [], network=network)
+
+
+def prepare_journeys(
+    repository: PlanningRepository, selected_date: date | None = None
+) -> JourneyRouter:
+    """Prepare immutable routing infrastructure once per source revision/day."""
+    reference_date = repository.baseline.get("referenceDate")
+    day = selected_date or (date.fromisoformat(reference_date) if reference_date else date.today())
+    # lru_cache alone permits duplicate calculations on simultaneous cold misses.
+    with _PREPARATION_LOCK:
+        return _prepared_day(repository, repository.baseline_fingerprint(), day)
 
 
 def _point(item: dict[str, Any], fallback: str = "Bus stop") -> dict[str, Any]:
@@ -50,8 +82,9 @@ def route_journey(
     assumptions = PlanningAssumptions(date=selected_date, departure_minutes=departure_minutes)
     origin = {"id": "journey:start", "name": "Start", "lon": start[0], "lat": start[1]}
     destination = {"id": "journey:end", "name": "Destination", "lon": end[0], "lat": end[1]}
-    world = baseline_world(repository)
-    router = JourneyRouter(world, assumptions, [destination])
+    prepared = prepare_journeys(repository, selected_date)
+    world = prepared.world
+    router = prepared.for_destination(destination, departure_minutes)
     result = router.route(origin)
     if result["status"] != "reachable":
         result["reason"] = (

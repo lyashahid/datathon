@@ -1,36 +1,10 @@
-# Map badges and generated card artwork
+# Generated illustration provenance
 
-The atlas uses two complementary graphic families: compact cartographic badges on the map, and larger generated illustrations in intervention cards and supporting panels. Map badges are code-native SVGs in `src/lib/components/planning/graphics/mapSymbols.ts`; they no longer load the isometric miniatures. The illustrations were created with the built-in image_gen tool on 2026-10-10. They represent generic asset categories, do not depict actual Maldives buildings, and do not establish a need for a new hospital.
+Eight generic asset illustrations were generated with the built-in image_gen tool on 10 October 2026. They do not depict actual Maldives buildings or vessels and do not establish a need for construction. This receipt preserves their source prompts; it does not describe the current map symbol implementation.
 
-## Map symbol system
+The retained transparent, 256 px lossless WebPs are under `static/graphics/generated/`: `bus-stop.webp`, `bus-stop-proposed.webp`, `hospital.webp`, `hospital-proposed.webp`, `school.webp`, `clinic.webp`, `bus.webp` and `ferry.webp`. Together they contain 426,438 bytes. Original PNGs are kept locally under ignored `artifacts/graphics/generated/` and the generation tool's original output location; they are absent from a fresh clone.
 
-Each map badge has an off-white circular background, a fine border, a restrained grounding shadow, and a category glyph. Category colors identify existing assets:
-
-| Category                    | Color            | Glyph                            |
-| --------------------------- | ---------------- | -------------------------------- |
-| Bus and bus stop            | Teal `#1c7c86`   | Bus front                        |
-| Hospital and clinic         | Rose `#a45067`   | Medical cross / stethoscope      |
-| School                      | Violet `#7862a0` | Graduation cap                   |
-| Ferry, terminal and vessels | Blue `#426f9e`   | Ferry, anchor or boat silhouette |
-| Airport                     | Slate `#596d87`  | Airplane                         |
-
-State takes precedence over category color. Proposed investments and placement previews use amber `#a86313`, a pale amber background, a dashed outline and a plus badge. A proposed relocation uses violet `#7960ab` with an arrow badge. Paused assets use gray `#7c8d91`, a pause badge and a dimmed glyph. These cues retain the difference between built infrastructure and scenario changes without relying on color alone. The planning model can propose bus service and stops, but cannot propose hospital construction; the proposed-hospital symbol is available without inserting fictional hospitals into the baseline.
-
-`mapSprites.ts` rasterizes each SVG onto an 80 px canvas and registers it with MapLibre at a pixel ratio of 2. Sprite IDs retain the category name and the existing `-proposed`, `-draft`, `-moved` and `-paused` suffixes so map picking and stop editing keep their identities.
-
-The visual hierarchy is controlled by zoom and collisions. Baseline stops remain small dots in the overview; bus badges appear from zoom 14 and grow from about 23 to 27 px in visible diameter. Facilities grow from about 21 to 30 px. Existing badges respect symbol collisions; the underlying stop dots remain available when a badge is suppressed. Proposed and moved stop badges remain visible, grow from about 24 to 32 px, and may overlap so scenario changes can be found. Placement previews, selection handles and drag overlays have priority above ordinary markers. Sea and air context badges stay upright and compact, rather than rotating their whole background by vessel heading.
-
-Visual QA on 2026-10-10 covered desktop overview, neighborhood stops, hospital and clinic details, proposed-stop selection, and the 390 px phone overview. The saved scenario was not edited. Svelte check, lint and production build passed, along with the 13 existing map-editing tests. Temporary screenshots are not retained; the original illustrations below remain available for regeneration.
-
-## Generated illustrations
-
-Runtime assets are stored in `static/graphics/generated/`: `bus-stop.webp`, `bus-stop-proposed.webp`, `hospital.webp`, `hospital-proposed.webp`, `school.webp`, `clinic.webp`, `bus.webp`, and `ferry.webp`. The eight transparent, 256 px lossless WebPs total 426,438 bytes (about 426 KB), 96% smaller than the generated originals. Original PNGs are preserved locally in the ignored `artifacts/graphics/generated/` archive and at the tool's original Codex generated-images location.
-
-Existing stop and hospital illustrations use teal art; proposed and placement-preview variants use amber art. Supporting panels identify investment status with text; `TransportGraphic` supplies accessible state labels and dims paused artwork with grayscale. The amber hospital illustration remains available to the graphics system without implying a current construction proposal.
-
-`getTransportAssetUrl(kind, size, state)` selects card and panel art, honors SvelteKit asset paths, and keeps SVG fallbacks. `TransportGraphic` retains meaningful accessible labels and SVG fallback on load failure. These illustration assets are independent of the compact map badges.
-
-Repackage from archived sources with `node scripts/prepare-map-graphics.mjs`. The script uses an installed Sharp package (project or bundled workspace runtime); `MAP_GRAPHICS_NODE_MODULES` can point at an existing dependency directory. It preserves alpha, verifies dimensions, and copies source PNGs to the archive before removing their served high-resolution copies.
+Existing stop and hospital illustrations use teal accents. Their proposed variants use amber accents and were created by editing the matching original image. If repackaging these source images, preserve transparency and inspect small-size readability; the former repackaging utility is no longer maintained in the repository.
 
 ## Final prompt set
 

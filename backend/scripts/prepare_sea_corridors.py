@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT / "backend"))
 from app.data.national_transport import merge_national_boarding_points  # noqa: E402
 from app.planning.transport import terminal_catalogue  # noqa: E402
 from app.planning.water_corridor import (  # noqa: E402
+    CORRIDOR_MODEL_VERSION,
     CORRIDOR_QUALIFICATION,
     CORRIDOR_SOURCE,
     WaterCorridorPlanner,
@@ -84,14 +85,20 @@ def prepare(root: Path = ROOT, *, force: bool = False) -> tuple[dict[str, Any], 
             pairs[key] = (a, b) if endpoint(a) == key[0] else (b, a)
     prior = read(public / OUTPUT.name, {})
     cached = {}
-    if not force and prior.get("schema_version") == 1 and (
-        prior.get("shoreline_fingerprint") == fingerprint
-        and prior.get("geometry_source") == CORRIDOR_SOURCE
-        and prior.get("corridor_model_version") == 1
+    if (
+        not force
+        and prior.get("schema_version") == 1
+        and (
+            prior.get("shoreline_fingerprint") == fingerprint
+            and prior.get("geometry_source") == CORRIDOR_SOURCE
+            and prior.get("corridor_model_version") in {1, CORRIDOR_MODEL_VERSION}
+        )
     ):
         cached = {
             pair_key(item["first"], item["second"]): item["corridor"]
             for item in prior.get("segments", [])
+            if item["corridor"] is not None
+            or prior["corridor_model_version"] == CORRIDOR_MODEL_VERSION
         }
     planner = WaterCorridorPlanner(islands)
     segments, reused = [], 0
@@ -116,7 +123,7 @@ def prepare(root: Path = ROOT, *, force: bool = False) -> tuple[dict[str, Any], 
     }
     artifact = {
         "schema_version": 1,
-        "corridor_model_version": 1,
+        "corridor_model_version": CORRIDOR_MODEL_VERSION,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "geometry_source": CORRIDOR_SOURCE,
         "qualification": CORRIDOR_QUALIFICATION,

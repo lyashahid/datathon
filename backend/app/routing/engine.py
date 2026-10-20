@@ -4,8 +4,12 @@ from __future__ import annotations
 
 import heapq
 import math
+from functools import lru_cache
 from pathlib import Path
+from threading import RLock
 from typing import Any
+
+from shapely import Point, STRtree, box
 
 from app.data.cache import FileCache
 
@@ -18,6 +22,12 @@ class RoutingRepository:
         self.air: dict[str, Any] = {"nodes": [], "edges": []}
         self._land_adjacency: dict[str, dict[str, list[dict[str, Any]]]] = {}
         self._marine_adjacency: dict[str, list[dict[str, Any]]] = {}
+        self._index_lock = RLock()
+        self._indexed_land: dict[str, Any] | None = None
+        self._land_indexes: dict[str, _NodeIndex] = {}
+        self._land_modes: dict[tuple[str, str], set[str]] = {}
+        self._country_index = _NodeIndex([])
+        self.revision = 0
 
     def reload(self) -> None:
         self.land = self._read_json("graphs/land.json", {"islands": {}})
@@ -28,6 +38,27 @@ class RoutingRepository:
             for island_id, graph in self.land.get("islands", {}).items()
         }
         self._marine_adjacency = _adjacency(self.marine.get("edges", []))
+        self._prepare_land_indexes()
+        self.revision += 1
+
+    def _prepare_land_indexes(self) -> None:
+        with self._index_lock:
+            if self._indexed_land is self.land:
+                return
+            self._land_indexes, self._land_modes = {}, {}
+            country_nodes = []
+            for island_id, graph in self.land.get("islands", {}).items():
+                nodes = {node["id"]: node for node in graph.get("nodes", [])}
+                self._land_indexes[island_id] = _NodeIndex(list(nodes.values()))
+                country_nodes.extend({**node, "island_id": island_id} for node in nodes.values())
+                for edge in graph.get("edges", []):
+                    for mode, allowed in edge.get("permissions", {}).items():
+                        if allowed:
+                            self._land_modes.setdefault((island_id, mode), set()).update(
+                                (edge["from_id"], edge["to_id"])
+                            )
+            self._country_index = _NodeIndex(country_nodes)
+            self._indexed_land = self.land
 
     def route_land(
         self,
@@ -35,7 +66,10 @@ class RoutingRepository:
         end: list[float],
         mode: str,
         island_id: str | None = None,
+        *,
+        max_snap_m: float | None = None,
     ) -> dict[str, Any]:
+        self._prepare_land_indexes()
         if island_id:
             selected_island = island_id
         else:
@@ -49,11 +83,21 @@ class RoutingRepository:
         graph = self.land.get("islands", {}).get(selected_island)
         if not graph:
             return _unreachable("no_land_graph")
-        nodes = {node["id"]: node for node in graph.get("nodes", [])}
-        start_id, start_distance = _nearest_node(nodes, start)
-        end_id, end_distance = _nearest_node(nodes, end)
+        index = self._land_indexes[selected_island]
+        start_index, start_distance = index.nearest(tuple(start))
+        end_index, end_distance = index.nearest(tuple(end))
+        start_id = index.nodes[start_index]["id"] if start_index is not None else None
+        end_id = index.nodes[end_index]["id"] if end_index is not None else None
         if not start_id or not end_id:
             return _unreachable("no_nearby_land_node")
+        if max_snap_m is not None and max(start_distance, end_distance) > max_snap_m:
+            return _unreachable("no_nearby_land_node", selected_island)
+        mode_node_ids = self._land_modes.get((selected_island, mode), set())
+        # A zero-edge path must not bypass permissions when both points snap to
+        # the same walking-only node. Keep the nearest mapped endpoints rather
+        # than replacing them with farther roads and claiming the snap is drivable.
+        if start_id not in mode_node_ids or end_id not in mode_node_ids:
+            return _unreachable("no_connected_path", selected_island)
         result = _shortest_path(
             self._land_adjacency.get(selected_island, {}), start_id, end_id, mode
         )
@@ -101,12 +145,10 @@ class RoutingRepository:
             "land": {
                 "island_count": len(self.land.get("islands", {})),
                 "node_count": sum(
-                    len(graph.get("nodes", []))
-                    for graph in self.land.get("islands", {}).values()
+                    len(graph.get("nodes", [])) for graph in self.land.get("islands", {}).values()
                 ),
                 "edge_count": sum(
-                    len(graph.get("edges", []))
-                    for graph in self.land.get("islands", {}).values()
+                    len(graph.get("edges", [])) for graph in self.land.get("islands", {}).values()
                 ),
             },
             "marine": {
@@ -120,19 +162,63 @@ class RoutingRepository:
         }
 
     def _nearest_land_island(self, point: list[float]) -> str | None:
-        best: tuple[float, str] | None = None
-        for island_id, graph in self.land.get("islands", {}).items():
-            nodes = {node["id"]: node for node in graph.get("nodes", [])}
-            node_id, distance = _nearest_node(nodes, point)
-            if node_id and (best is None or distance < best[0]):
-                best = (distance, island_id)
-        return best[1] if best else None
+        index, _ = self._country_index.nearest(tuple(point))
+        return self._country_index.nodes[index]["island_id"] if index is not None else None
 
     def _read_json(self, relative_path: str, default: Any) -> Any:
         try:
             return self.cache.read_json(relative_path)
         except FileNotFoundError:
             return default
+
+
+class _NodeIndex:
+    """Spatial candidates with exact spherical distance and stable source tie order."""
+
+    def __init__(self, nodes: list[dict[str, Any]]) -> None:
+        self.nodes = nodes
+        self.tree = STRtree([Point(node["coordinates"]) for node in nodes])
+        # Per-instance bounded cache is released with a replaced graph snapshot.
+        self.nearest = lru_cache(maxsize=2048)(self._nearest)
+
+    def _nearest(self, point: tuple[float, ...]) -> tuple[int | None, float]:
+        seed = self.tree.nearest(Point(point))
+        if seed is None:
+            return None, math.inf
+        radius = _distance_m(point, self.nodes[int(seed)]["coordinates"])
+        angular = radius / 6_371_000
+        latitude_radius = math.degrees(angular) + 1e-9
+        longitude_radius = (
+            180.0
+            if abs(point[1]) + latitude_radius >= 90
+            else math.degrees(
+                math.asin(min(1.0, math.sin(angular) / math.cos(math.radians(point[1]))))
+            )
+            + 1e-9
+        )
+        if (
+            longitude_radius >= 180
+            or point[0] - longitude_radius < -180
+            or point[0] + longitude_radius > 180
+        ):
+            candidates = range(len(self.nodes))
+        else:
+            candidates = sorted(
+                self.tree.query(
+                    box(
+                        point[0] - longitude_radius,
+                        point[1] - latitude_radius,
+                        point[0] + longitude_radius,
+                        point[1] + latitude_radius,
+                    )
+                )
+            )
+        best, distance = None, math.inf
+        for index in candidates:
+            candidate = _distance_m(point, self.nodes[index]["coordinates"])
+            if candidate < distance:
+                best, distance = int(index), candidate
+        return best, distance
 
 
 def _adjacency(edges: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
@@ -218,9 +304,10 @@ def _distance_m(first: list[float], second: list[float]) -> float:
     lat_2 = math.radians(second[1])
     delta_lat = math.radians(second[1] - first[1])
     delta_lon = math.radians(second[0] - first[0])
-    value = math.sin(delta_lat / 2) ** 2 + math.cos(lat_1) * math.cos(lat_2) * math.sin(
-        delta_lon / 2
-    ) ** 2
+    value = (
+        math.sin(delta_lat / 2) ** 2
+        + math.cos(lat_1) * math.cos(lat_2) * math.sin(delta_lon / 2) ** 2
+    )
     return 2 * radius * math.atan2(math.sqrt(value), math.sqrt(1 - value))
 
 

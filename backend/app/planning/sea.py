@@ -18,11 +18,13 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.data.computed_cache import SourceVersion
 from app.planning.models import PlanningAssumptions, PlanningOperation, PlanningRequest
 from app.planning.repository import IDENTITY_BRIDGE
 from app.planning.routing import pattern_trips, service_day_trips
 from app.planning.sea_data import complete_calls, date_eligible, normalized_calls
 from app.planning.water_corridor import (
+    CORRIDOR_MODEL_VERSION,
     CORRIDOR_QUALIFICATION,
     CORRIDOR_SOURCE,
     WaterCorridorPlanner,
@@ -60,14 +62,16 @@ def _source(source: dict[str, Any]) -> dict[str, Any]:
 
 
 class SeaConnectionsService:
-    def __init__(self, transport: Any) -> None:
+    def __init__(self, transport: Any, *, source_version: SourceVersion | None = None) -> None:
         self.transport = transport
         self.planning = transport.planning
+        self.source_version = source_version
         self.path = self.planning.repository.public_dir / "sea-services.json"
         self._snapshot_key: tuple[int, int] | None = None
         self._bundle: dict[str, Any] = {}
         self._lock = RLock()
         self._cache: OrderedDict[str, dict[str, Any]] = OrderedDict()
+        self._network_cache: OrderedDict[str, dict[str, Any]] = OrderedDict()
         self._map_segments: OrderedDict[tuple, dict[str, Any] | None] = OrderedDict()
         self._shoreline_features = transport.repository.islands_by_id
         self._prepared_corridors_key: tuple[int, int] | None = None
@@ -81,10 +85,21 @@ class SeaConnectionsService:
                 self._bundle = json.loads(self.path.read_text("utf8")) if stat else {}
                 self._snapshot_key = key
                 self._cache.clear()
+                self._network_cache.clear()
             return self._bundle
 
     def _island(self, identity: str) -> dict[str, Any]:
         return self.transport.island(identity)
+
+    def network(self, day: ServiceDate) -> dict[str, Any]:
+        from app.planning.sea_network import network
+
+        return network(self, day)
+
+    def network_inputs(self, day: ServiceDate) -> dict[str, Any]:
+        from app.planning.sea_network import network_inputs
+
+        return network_inputs(self, day)
 
     def _stop(self, raw: dict[str, Any], route_id: str, index: int) -> dict[str, Any]:
         if raw.get("island_id") is None:
@@ -613,11 +628,16 @@ class SeaConnectionsService:
         prepared = json.loads(path.read_text("utf8"))
         if (
             prepared.get("schema_version") != 1
-            or prepared.get("corridor_model_version") != 1
+            or prepared.get("corridor_model_version") not in {1, CORRIDOR_MODEL_VERSION}
             or prepared.get("shoreline_fingerprint") != self._shoreline_fingerprint
         ):
             return
         for item in prepared.get("segments", []):
+            # Version 2 increases the bounded graph budget only. Successful
+            # version-1 paths have identical safety checks and remain valid;
+            # prior failures must be retried with the larger graph.
+            if prepared["corridor_model_version"] == 1 and item["corridor"] is None:
+                continue
             ends = tuple(
                 (item[side]["island_id"], tuple(item[side]["coordinates"]))
                 for side in ("first", "second")

@@ -1,14 +1,33 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { existsSync, readdirSync } from 'node:fs';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { selectBrowserSuites } from './browser-suites.mjs';
+import { browserSuites, selectBrowserSuites } from './browser-suites.mjs';
 import { browserBaseURL } from './browser-config.mjs';
 
-test('Selecting several focused suites runs each once and preserves requested order', () => {
+test('The catalogue covers maintained harnesses and selects each focused suite once in order', () => {
+	assert.equal(new Set(browserSuites.map((suite) => suite.id)).size, browserSuites.length);
+	assert.equal(new Set(browserSuites.map((suite) => suite.file)).size, browserSuites.length);
+	for (const suite of browserSuites) assert.ok(existsSync(new URL(suite.file, import.meta.url)));
+	const directChecks = new Set([
+		'verify-browser.mjs',
+		'verify-policy-api.mjs',
+		'verify-subpath.mjs'
+	]);
+	const harnesses = readdirSync(new URL('.', import.meta.url)).filter(
+		(file) => /^verify-.*\.mjs$/.test(file) && !directChecks.has(file)
+	);
 	assert.deepEqual(
-		selectBrowserSuites(['connections', 'overlays', 'connections']).map((suite) => suite.id),
-		['connections', 'overlays']
+		browserSuites
+			.filter((suite) => !suite.api)
+			.map((suite) => suite.file)
+			.sort(),
+		harnesses.sort()
+	);
+	assert.deepEqual(
+		selectBrowserSuites(['sea-network', 'overlays', 'sea-network']).map((suite) => suite.id),
+		['sea-network', 'overlays']
 	);
 	assert.throws(() => selectBrowserSuites(['overaly']), /Unknown browser suite/);
 	assert.throws(() => selectBrowserSuites(['--all', 'overlays']), /on its own/);

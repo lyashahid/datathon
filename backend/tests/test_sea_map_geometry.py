@@ -9,7 +9,11 @@ import pytest
 from shapely.geometry import LineString, box, mapping, shape
 
 from app.planning.sea import SeaConnectionsRequest, SeaConnectionsService
-from app.planning.water_corridor import CORRIDOR_SOURCE, WaterCorridorPlanner
+from app.planning.water_corridor import (
+    CORRIDOR_MODEL_VERSION,
+    CORRIDOR_SOURCE,
+    WaterCorridorPlanner,
+)
 
 
 def feature(identity, polygon):
@@ -49,9 +53,7 @@ def terminal(number, coordinates):
 
 def timed_route(sea, identity, terminals):
     stops = [
-        sea._stop(
-            {"island_id": item["island_id"], "terminal_id": item["id"]}, identity, index
-        )
+        sea._stop({"island_id": item["island_id"], "terminal_id": item["id"]}, identity, index)
         for index, item in enumerate(terminals)
     ]
     return sea._finish_route(
@@ -234,8 +236,7 @@ def test_unavailable_geometry_retains_timed_connectivity_without_a_route_feature
     assert result["routes"][0]["published_departures"] == [490]
     assert result["routes"][0]["geometry"] is None
     assert all(
-        item["properties"]["kind"] != "sea_route"
-        for item in result["map_features"]["features"]
+        item["properties"]["kind"] != "sea_route" for item in result["map_features"]["features"]
     )
 
 
@@ -287,13 +288,16 @@ def prepared_artifact(sea, ports, corridor):
     }
 
 
-def test_matching_prepared_corridor_is_reused_in_both_port_directions(crossing, monkeypatch):
+@pytest.mark.parametrize("model_version", [1, CORRIDOR_MODEL_VERSION])
+def test_matching_prepared_corridor_is_reused_in_both_port_directions(
+    crossing, monkeypatch, model_version
+):
     sea, ports = crossing
     corridor = sea.transport.water_corridors.corridor(*ports[:2])
     assert corridor is not None
-    sea.path.with_name("sea-corridors.json").write_text(
-        json.dumps(prepared_artifact(sea, ports, corridor)), "utf8"
-    )
+    prepared = prepared_artifact(sea, ports, corridor)
+    prepared["corridor_model_version"] = model_version
+    sea.path.with_name("sea-corridors.json").write_text(json.dumps(prepared), "utf8")
 
     def must_not_recompute(*args):
         pytest.fail("Identical prepared port pair should not rebuild its visibility graph")
@@ -307,6 +311,29 @@ def test_matching_prepared_corridor_is_reused_in_both_port_directions(crossing, 
 
     assert outward["geometry"]["coordinates"] == corridor["geometry"]
     assert inward["geometry"]["coordinates"] == list(reversed(corridor["geometry"]))
+
+
+def test_prior_graph_budget_failure_is_retried_with_current_planner(crossing, monkeypatch):
+    sea, ports = crossing
+    sea.path.with_name("sea-corridors.json").write_text(
+        json.dumps(prepared_artifact(sea, ports, None)), "utf8"
+    )
+    calls = []
+    original = sea.transport.water_corridors.corridor
+
+    def record(first, second):
+        calls.append((first["island_id"], second["island_id"]))
+        return original(first, second)
+
+    monkeypatch.setattr(sea.transport.water_corridors, "corridor", record)
+    route = timed_route(sea, "retry-prior-budget", ports[:2])
+    sea._map_geometry(route)
+
+    assert len(calls) == 1
+    assert route["geometry"] is not None
+    assert not LineString(route["geometry"]["coordinates"]).intersects(
+        shape(sea.transport.repository.islands_by_id["island:3"]["geometry"])
+    )
 
 
 @pytest.mark.parametrize(

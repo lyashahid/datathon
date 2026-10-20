@@ -78,15 +78,6 @@ export type FerryServiceSettings = {
 	speed: number | string;
 };
 
-export function ferryConnectionLabel(status: FerryConnectivity['status']) {
-	return {
-		dated_service: 'A published service connects these islands',
-		mapped_route: 'Ferry connection · timetable unavailable',
-		no_verified_service: 'Connecting timetable unconfirmed',
-		terminal_evidence_needed: 'Port locations needed'
-	}[status];
-}
-
 function clockMinutes(value: string): number | null {
 	if (!/^\d{2}:\d{2}$/.test(value)) return null;
 	const [hours, minutes] = value.split(':').map(Number);

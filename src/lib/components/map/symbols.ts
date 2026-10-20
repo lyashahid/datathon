@@ -1,6 +1,9 @@
 import { themeColors } from '#lib/theme.js';
-/** North-facing miniature vehicles; only received GPS positions and headings move them. */
-function vehicleSymbol(kind: 'bus' | 'vessel'): ImageData | null {
+/** North-facing miniature vehicles; route illustrations use a separate neutral symbol. */
+function vehicleSymbol(
+	kind: 'bus' | 'vessel' | 'aircraft',
+	illustrative = false
+): ImageData | null {
 	const canvas = document.createElement('canvas');
 	canvas.width = 96;
 	canvas.height = 112;
@@ -81,9 +84,52 @@ function vehicleSymbol(kind: 'bus' | 'vessel'): ImageData | null {
 		context.moveTo(32, 12);
 		context.lineTo(35, 12);
 		context.stroke();
+	} else if (kind === 'aircraft') {
+		// A small regional aircraft, with the same painted miniature treatment as the boat.
+		// Neutral details do not imply a particular airline or assigned aircraft model.
+		const livery = illustrative ? themeColors.color607d8a : themeColors.color378aa6;
+		const silhouette = new Path2D(
+			'M24 4C21.5 5 21 8 21 13V20L4 28V32L21 28L21.5 41L14 46V49L23 46L24 51L25 46L34 49V46L26.5 41L27 28L44 32V28L27 20V13C27 8 26.5 5 24 4Z'
+		);
+		context.fillStyle = themeColors.colorf3efe0;
+		context.strokeStyle = themeColors.colorfffefa;
+		context.lineWidth = 1.4;
+		context.fill(silhouette);
+		context.stroke(silhouette);
+		context.shadowColor = 'transparent';
+		context.fillStyle = livery;
+		context.fill(new Path2D('M4 29L21 23V26L4 32ZM27 23L44 29V32L27 26Z'));
+		context.fill(new Path2D('M14 46L22 42V45L14 49ZM26 42L34 46V49L26 45Z'));
+		// Engine nacelles and propellers remain legible at normal map zoom.
+		for (const x of [12, 31]) {
+			context.fillStyle = livery;
+			context.beginPath();
+			context.roundRect(x, 19, 5, 13, [2.5, 2.5, 1, 1]);
+			context.fill();
+			context.strokeStyle = themeColors.color28444f;
+			context.lineWidth = 1.1;
+			context.beginPath();
+			context.moveTo(x - 1.5, 19);
+			context.lineTo(x + 6.5, 19);
+			context.stroke();
+			context.fillStyle = themeColors.colora9ccd2;
+			context.fillRect(x + 1, 23, 3, 5);
+		}
+		context.fillStyle = themeColors.colorfffefa;
+		context.fill(new Path2D('M24 5C22 7 22 10 22 14L22.5 40L24 47L25.5 40L26 14C26 10 26 7 24 5Z'));
+		context.fillStyle = themeColors.color28444f;
+		context.fill(new Path2D('M22 11Q24 8.5 26 11L25.5 14H22.5Z'));
+		context.fillStyle = themeColors.colora9ccd2;
+		context.fillRect(23, 11, 2, 1);
+		context.fillStyle = livery;
+		for (const y of [18, 23, 28, 33]) {
+			context.fillRect(21.7, y, 0.9, 1.8);
+			context.fillRect(25.4, y, 0.9, 1.8);
+		}
+		context.fill(new Path2D('M24 37L25.5 43L24 50L22.5 43Z'));
 	} else {
 		const hull = new Path2D('M24 4C16 10 12 20 13 33L17 50H31L35 33C36 20 32 10 24 4Z');
-		context.fillStyle = themeColors.color378aa6;
+		context.fillStyle = illustrative ? themeColors.color607d8a : themeColors.color378aa6;
 		context.strokeStyle = themeColors.colorfffefa;
 		context.lineWidth = 1.2;
 		context.fill(hull);
@@ -91,7 +137,7 @@ function vehicleSymbol(kind: 'bus' | 'vessel'): ImageData | null {
 		context.shadowColor = 'transparent';
 		context.fillStyle = themeColors.colorf3efe0;
 		context.fill(new Path2D('M24 11C19 17 16 24 17 33L20 45H28L31 33C32 24 29 17 24 11Z'));
-		context.fillStyle = themeColors.color2d5364;
+		context.fillStyle = illustrative ? themeColors.color36585f : themeColors.color2d5364;
 		context.beginPath();
 		context.roundRect(19, 23, 10, 14, 2);
 		context.fill();
@@ -117,6 +163,7 @@ export function atlasSymbols(): Record<string, ImageData> {
 		health: themeColors.color087f7c,
 		school: themeColors.colorad7b3a,
 		airport: themeColors.color507a9b,
+		'air-terminal': themeColors.color507a9b,
 		bus: themeColors.color557a91,
 		'bus-stop': themeColors.color557a91,
 		marine: themeColors.color3c8c9a,
@@ -124,8 +171,10 @@ export function atlasSymbols(): Record<string, ImageData> {
 		port: themeColors.color3c8c9a,
 		civic: themeColors.color87789c,
 		transport: themeColors.color607d8a,
-		aircraft: themeColors.color8772a4,
+		aircraft: themeColors.color378aa6,
+		'route-aircraft': themeColors.color607d8a,
 		vessel: themeColors.color378aa6,
+		'route-vessel': themeColors.color607d8a,
 		'live-bus': themeColors.colorb98942,
 		origin: themeColors.color337f7a,
 		destination: themeColors.colord56954,
@@ -137,7 +186,8 @@ export function atlasSymbols(): Record<string, ImageData> {
 			'M4 21V7h4V3h8v4h4v14M2 21h20M9 7v6M15 7v6M9 10h6M10 21v-5h4v5M5 10h.1M5 14h.1M19 10h.1M19 14h.1',
 		school: 'M2 8l10-5 10 5-10 5-10-5ZM6 10v7c4 3 8 3 12 0v-7M22 8v8',
 		airport: 'M12 3v18M3 13l9-5 9 5M8 21l4-3 4 3',
-		aircraft: 'M12 3v18M3 13l9-5 9 5M8 21l4-3 4 3',
+		'air-terminal':
+			'M3 21V9h18v12M1 21h22M2 9l2-5h16l2 5H2ZM7 9v8M12 9v8M17 9v8M3 14h18M9 21v-4h6v4',
 		bus: 'M5 5h14v14H5V5ZM5 12h14M8 8h8M8 16h.1M16 16h.1M7 19v2M17 19v2',
 		'bus-stop': 'M5 3h14v15H5V3ZM5 12h14M8 6h8M8 15h.1M16 15h.1M8 18v3M16 18v3',
 		marine: 'M12 7v14M7 12H3c0 5 4 9 9 9s9-4 9-9h-4M8 11h8',
@@ -152,8 +202,11 @@ export function atlasSymbols(): Record<string, ImageData> {
 	};
 	return Object.fromEntries(
 		Object.entries(colors).flatMap(([name, color]) => {
-			if (name === 'live-bus' || name === 'vessel') {
-				const vehicle = vehicleSymbol(name === 'live-bus' ? 'bus' : 'vessel');
+			if (['live-bus', 'vessel', 'route-vessel', 'aircraft', 'route-aircraft'].includes(name)) {
+				const vehicle = vehicleSymbol(
+					name === 'live-bus' ? 'bus' : name.includes('aircraft') ? 'aircraft' : 'vessel',
+					name.startsWith('route-')
+				);
 				return vehicle ? [[`atlas-${name}`, vehicle]] : [];
 			}
 			const canvas = document.createElement('canvas');
@@ -166,26 +219,16 @@ export function atlasSymbols(): Record<string, ImageData> {
 			context.shadowBlur = 5;
 			context.shadowOffsetY = 2;
 			context.fillStyle = themeColors.colorfffefa;
-			const moving = name === 'aircraft';
-			if (!moving) {
-				context.beginPath();
-				context.arc(20, 19, 16, 0, Math.PI * 2);
-				context.fill();
-			}
+			context.beginPath();
+			context.arc(20, 19, 16, 0, Math.PI * 2);
+			context.fill();
 			context.shadowColor = 'transparent';
 			context.strokeStyle = `${color}45`;
 			context.lineWidth = 0.8;
-			if (!moving) context.stroke();
+			context.stroke();
 			context.translate(8, 7);
-			if (moving) {
-				context.strokeStyle = themeColors.colorfffefa;
-				context.lineWidth = 4.5;
-				context.lineJoin = 'round';
-				context.lineCap = 'round';
-				context.stroke(new Path2D(paths[name]));
-			}
 			context.strokeStyle = color;
-			context.lineWidth = moving ? 2.3 : 1.7;
+			context.lineWidth = 1.7;
 			context.lineJoin = 'round';
 			context.lineCap = 'round';
 			context.stroke(new Path2D(paths[name]));

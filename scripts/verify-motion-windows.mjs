@@ -22,16 +22,6 @@ page.on('request', (request) => {
 const nav = page.getByRole('navigation', { name: 'Workspace', exact: true });
 const atlas = page.locator('.national-map');
 const proposal = page.getByRole('region', { name: 'Island needs and proposal', exact: true });
-const weather = page.getByRole('region', {
-	name: 'Weather and traffic for this journey',
-	exact: true
-});
-
-async function openJourneyConditions() {
-	await page.getByRole('button', { name: 'Directions', exact: true }).click();
-	await page.locator('.journey-conditions > summary').click();
-	await expect(weather).toBeVisible();
-}
 
 /** @param {string} name @param {()=>Promise<unknown>} action */
 async function check(name, action) {
@@ -381,30 +371,11 @@ try {
 		return size;
 	});
 	await check(
-		'Directions contains weather without adding a second resizable map panel',
+		'Saved desktop window sizes yield to mobile layouts with no handles or overflow',
 		async () => {
-			await expect(page.getByRole('button', { name: 'Zoom in', exact: true })).toHaveCount(0);
 			await proposal
 				.getByRole('button', { name: 'Close island planning panel', exact: true })
 				.click();
-			await openJourneyConditions();
-			await expect(weather).toHaveClass(/embedded/);
-			await expect(weather.locator('.window-resize-handle')).toHaveCount(0);
-			await page.locator('.journey-conditions > summary').click();
-			await expect(weather).toHaveCount(0);
-			await page.locator('.journey-conditions > summary').click();
-			await expect(weather).toBeVisible();
-			const proposalSize = await page.evaluate(() =>
-				localStorage.getItem('vela:panel-size:v1:map-proposal')
-			);
-			assert.ok(proposalSize, 'Opening journey conditions retains the proposal window size.');
-			await noOverflow();
-		}
-	);
-	await check(
-		'Saved desktop window sizes yield to mobile layouts with no handles or overflow',
-		async () => {
-			await page.getByRole('button', { name: 'Close directions', exact: true }).click();
 			await page.setViewportSize({ width: 375, height: 812 });
 			await openProposal();
 			await expect(proposal.locator('.window-resize-handle')).toHaveCount(0);
@@ -414,8 +385,6 @@ try {
 			await proposal
 				.getByRole('button', { name: 'Close island planning panel', exact: true })
 				.click();
-			await openJourneyConditions();
-			await expect(weather.locator('.window-resize-handle')).toHaveCount(0);
 			await noOverflow();
 		}
 	);

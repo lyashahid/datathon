@@ -159,10 +159,13 @@ export type MapPolicyState = {
 	seaAssumptions?: Record<string, unknown>;
 	serviceEditor?: MapServiceEditor | null;
 	serviceEditorContent?: Snippet;
+	/** Coverage and comparison controls rendered in the shared map dock. */
+	mapControlsContent?: Snippet;
 	operations: PlanningOperation[];
 	pending: { coordinates: Coordinates; kind: PlacementKind } | null;
 	pendingDecision: PendingPlacementDecision | null;
 	gapFeatures: FeatureCollection;
+	coverageFillFeatures: FeatureCollection;
 	impactFeatures: FeatureCollection;
 	policyComparisonView?: 'current' | 'proposal';
 	comparisonPreview?: boolean;
@@ -172,6 +175,7 @@ export type MapPolicyState = {
 	calculating: boolean;
 	stale: boolean;
 	panelOpen: boolean;
+	proposalEditing?: boolean;
 	placementRoads?: { geometry?: number[][] }[];
 };
 export type MapEvaluation = PlanningEvaluation & { origins: PlanningComparison[] };

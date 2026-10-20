@@ -1,4 +1,4 @@
-"""Deployment cannot use the shared DB, and schema setup is explicit/local."""
+"""Shared cache access is configurable; schema/source maintenance stays local."""
 
 from unittest.mock import MagicMock
 
@@ -66,8 +66,8 @@ def test_local_setup_creates_only_cache_table_in_existing_schema(monkeypatch):
     )
 
 
-async def test_production_computation_and_mirror_never_touch_shared_database(tmp_path, monkeypatch):
-    connect = MagicMock(side_effect=AssertionError("Production must not connect to shared DB"))
+async def test_disabled_production_cache_never_touches_shared_database(tmp_path, monkeypatch):
+    connect = MagicMock(side_effect=AssertionError("Disabled cache must not connect to shared DB"))
     monkeypatch.setattr("psycopg.connect", connect)
     app = create_app(
         Settings(
@@ -76,7 +76,7 @@ async def test_production_computation_and_mirror_never_touch_shared_database(tmp
             data_dir=tmp_path / "data",
             public_data_dir=tmp_path / "public",
             database_url="postgresql://example.invalid/shared",
-            computed_cache_postgres_enabled=True,
+            computed_cache_postgres_enabled=False,
             vela_browser_enabled=False,
         )
     )

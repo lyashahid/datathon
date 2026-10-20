@@ -4,6 +4,7 @@ import asyncio
 import json
 from collections import Counter
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -12,6 +13,13 @@ import pytest
 from fastapi import FastAPI, Request
 
 from app.cli import precompute
+
+
+@pytest.fixture(autouse=True)
+def directions_preparation(monkeypatch):
+    prepare = AsyncMock()
+    monkeypatch.setattr(precompute, "_prepare_directions", prepare)
+    return prepare
 
 
 def _recording_app(failures=None):
@@ -37,18 +45,21 @@ def _recording_app(failures=None):
 
 @pytest.mark.parametrize(
     ("include_analysis", "include_planning", "expected_count"),
-    [(False, False, 4), (True, False, 7), (False, True, 30), (True, True, 33)],
+    [(False, False, 6), (True, False, 9), (False, True, 33), (True, True, 36)],
 )
 async def test_warmup_covers_selected_work_and_all_nine_planning_baselines(
-    include_analysis, include_planning, expected_count
+    include_analysis, include_planning, expected_count, directions_preparation, monkeypatch
 ):
+    monkeypatch.setattr(precompute, "_sea_date", lambda: "2026-10-20")
     app, calls = _recording_app()
 
     rows = await precompute.warm_application(
         app, include_analysis=include_analysis, include_planning=include_planning
     )
 
-    assert len(rows) == len(calls) == expected_count
+    assert len(rows) == expected_count
+    assert len(calls) == expected_count - int(include_planning)
+    assert directions_preparation.await_count == int(include_planning)
     assert len({row["name"] for row in rows}) == expected_count
     assert all(row["status"] == "ready" and row["attempts"] == 1 for row in rows)
     gets = {(key[1], key[2]) for key, _ in calls if key[0] == "GET"}
@@ -56,6 +67,16 @@ async def test_warmup_covers_selected_work_and_all_nine_planning_baselines(
     assert ("/api/v1/accessibility/summary", "compact=true") in gets
     assert ("/api/v1/national/summary", "") in gets
     assert ("/api/v1/forecasts", "history_only=true") in gets
+    assert ("/api/v1/planning/sea-network", "date=2026-10-20") in gets
+    assert ("/api/v1/planning/air-network", "date=2026-10-20") in gets
+    assert [row["name"] for row in rows[:6]] == [
+        "country_map",
+        "country_scores",
+        "country_summary",
+        "published_history",
+        "sea_network",
+        "air_network",
+    ]
     assert (("/api/v1/forecasts/analysis", "") in gets) == include_analysis
     assert (("/api/v1/forecasts", "") in gets) == include_analysis
     assert (("/api/v1/datasets", "") in gets) == include_analysis
@@ -89,6 +110,11 @@ async def test_warmup_covers_selected_work_and_all_nine_planning_baselines(
         assert posts == []
 
 
+def test_sea_preparation_matches_maldives_date_across_utc_midnight_boundary():
+    assert precompute._sea_date(datetime(2026, 10, 19, 18, 59, tzinfo=UTC)) == "2026-10-19"
+    assert precompute._sea_date(datetime(2026, 10, 19, 19, tzinfo=UTC)) == "2026-10-20"
+
+
 async def test_manual_warmup_remains_fail_fast_by_default():
     from starlette.responses import JSONResponse
 
@@ -98,6 +124,22 @@ async def test_manual_warmup_remains_fail_fast_by_default():
         await precompute.warm_application(app)
 
     assert len(calls) == 1
+
+
+async def test_internal_directions_preparation_retries_without_repeating_http_jobs(
+    directions_preparation,
+):
+    directions_preparation.side_effect = [RuntimeError("unavailable"), None]
+    app, calls = _recording_app()
+    rows = await precompute.warm_application(
+        app, include_planning=True, continue_on_error=True, retry_delay=0
+    )
+    assert directions_preparation.await_count == 2
+    assert len(calls) == 32
+    prepared = next(row for row in rows if row["name"] == "directions_index")
+    assert prepared["status"] == "ready"
+    assert prepared["attempts"] == 2
+    assert prepared["bytes"] == 0
 
 
 async def test_background_sweep_isolates_failures_then_retries_each_once(caplog):
@@ -121,15 +163,15 @@ async def test_background_sweep_isolates_failures_then_retries_each_once(caplog)
         retry_delay=0,
     )
 
-    assert len(rows) == 33
-    assert len(calls) == 35
-    assert {key[1] for key, _ in calls[33:]} == {"/api/v1/forecasts/analysis", "/api/v1/datasets"}
+    assert len(rows) == 36
+    assert len(calls) == 37
+    assert {key[1] for key, _ in calls[35:]} == {"/api/v1/forecasts/analysis", "/api/v1/datasets"}
     by_name = {row["name"]: row for row in rows}
     assert by_name["data_analysis"]["status"] == "ready"
     assert by_name["data_analysis"]["attempts"] == 2
     assert by_name["datasets"]["status"] == "failed"
     assert by_name["datasets"]["attempts"] == 2
-    assert sum(row["status"] == "ready" for row in rows) == 32
+    assert sum(row["status"] == "ready" for row in rows) == 35
     assert private_detail not in json.dumps(rows)
     assert private_detail not in caplog.text
 
@@ -165,7 +207,13 @@ async def test_cancellation_interrupts_request_without_retrying_or_continuing_sw
 
 def _startup_app():
     return SimpleNamespace(
-        state=SimpleNamespace(computed_cache=SimpleNamespace(mirror_public_results=AsyncMock()))
+        state=SimpleNamespace(
+            source_version=SimpleNamespace(version=lambda: "source-v1"),
+            computed_cache=SimpleNamespace(
+                restore_public_results=AsyncMock(return_value=0),
+                mirror_public_results=AsyncMock(),
+            ),
+        )
     )
 
 
@@ -173,7 +221,7 @@ def _startup_app():
 async def test_automatic_precompute_enables_full_sweep_and_records_result(monkeypatch, failed_jobs):
     rows = [
         {"name": f"ready_{index}", "status": "ready", "attempts": 1}
-        for index in range(33 - len(failed_jobs))
+        for index in range(36 - len(failed_jobs))
     ]
     rows.extend({"name": name, "status": "failed", "attempts": 2} for name in failed_jobs)
     warm = AsyncMock(return_value=rows)
@@ -188,11 +236,12 @@ async def test_automatic_precompute_enables_full_sweep_and_records_result(monkey
     assert arguments["include_planning"] is True
     assert arguments["continue_on_error"] is True
     assert arguments["cooperative_delay"] > 0
-    app.state.computed_cache.mirror_public_results.assert_awaited_once()
+    app.state.computed_cache.restore_public_results.assert_awaited_once_with("source-v1")
+    app.state.computed_cache.mirror_public_results.assert_awaited_once_with("source-v1")
     assert app.state.precompute == {
         "status": "partial" if failed_jobs else "ready",
-        "completed": 33 - len(failed_jobs),
-        "total": 33,
+        "completed": 36 - len(failed_jobs),
+        "total": 36,
         "failed_jobs": failed_jobs,
     }
 
@@ -222,7 +271,7 @@ async def test_background_progress_tracks_unique_ready_views_and_retry_recovery(
     app = _startup_app()
 
     async def warm(_app, **options):
-        assert app.state.precompute["total"] == 33
+        assert app.state.precompute["total"] == 36
         progress = options["on_progress"]
         progress({"name": "country_map", "status": "ready"})
         assert app.state.precompute["completed"] == 1

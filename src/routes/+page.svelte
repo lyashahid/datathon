@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount, tick, untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
-	import { Popover } from 'bits-ui';
 	import { goto } from '$app/navigation';
 	import { PUBLIC_BASE_PATH } from '$app/env/public';
 	import { animatedSelection, workspaceReveal } from '#lib/motion.js';
+	import { searchExpansion, surfaceMotion } from '#lib/surface-motion.js';
 	import { resizable, resetResizable } from '#lib/resizable.js';
 	import { mapPanelLayout } from '#lib/map-panel-layout.js';
 	import { capitalIslandIds, isCapitalIsland } from '#lib/capital-region.js';
@@ -13,10 +13,10 @@
 		FlaskConical,
 		Sparkles,
 		BookOpen,
-		Search,
 		ArrowUpRight,
 		ArrowRight,
 		Plus,
+		SquarePen,
 		Undo2,
 		Redo2,
 		Download,
@@ -45,13 +45,27 @@
 		Minimize2
 	} from '@lucide/svelte';
 	import CountryAccessibilityExplorer from '#lib/components/CountryAccessibilityExplorer.svelte';
-	import IslandMapScore from '#lib/components/IslandMapScore.svelte';
+	import MapSearch from '#lib/components/MapSearch.svelte';
+	import SearchDirections from '#lib/components/SearchDirections.svelte';
+	import {
+		searchDirectionsRequest,
+		type SearchDirectionPoint,
+		type SearchDirectionsResult,
+		type SearchTravelMode
+	} from '#lib/search-directions.js';
 	import type { NationalAccessibility } from '#lib/analytics.js';
 	import { emptyFeatures, type MapPolicyState, type PlacementKind } from '#lib/map-policy.js';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
-	import type { FeatureCollection } from 'geojson';
+	import type { Feature } from 'geojson';
 	import type { PlanningOperation } from '#lib/planning-map.js';
-	import type { SeaMapState, SeaMapSelection } from '#lib/sea-connectivity.js';
+	import {
+		seaNetworkMapState,
+		seaServiceDate,
+		type SeaNetwork,
+		type SeaMapState,
+		type SeaMapSelection
+	} from '#lib/sea-connectivity.js';
+	import type { AirNetwork } from '#lib/air-connectivity.js';
 	import { api, subscribeApiInvalidation } from '#lib/api.js';
 	import { downloadJson } from '#lib/download.js';
 	import { MovementSession, movementScope } from '#lib/movement.js';
@@ -88,13 +102,10 @@
 		forecast: () => import('#lib/components/ForecastWorkspace.svelte'),
 		studio: () => import('#lib/components/DataStudio.svelte'),
 		policy: () => import('#lib/components/PolicyWorkbench.svelte'),
-		places: () => import('#lib/components/PlaceWorkspace.svelte'),
 		conditions: () => import('#lib/components/OperationsWorkspace.svelte'),
 		schedules: () => import('#lib/components/SourceUpdatesWorkspace.svelte'),
 		atlas: () => import('#lib/components/NationalMap.svelte'),
 		mapPolicy: () => import('#lib/components/MapPolicyWorkspace.svelte'),
-		journey: () => import('#lib/components/ExploreJourneyPanel.svelte'),
-		seaLayer: () => import('#lib/components/SeaConnectionsLayer.svelte'),
 		sea: () => import('#lib/components/SeaConnectionsPanel.svelte'),
 		evidence: () => import('#lib/components/EvidenceWorkspace.svelte')
 	};
@@ -107,13 +118,10 @@
 		forecast: 'passenger outlook',
 		studio: 'data studio',
 		policy: 'advanced service and fleet workspace',
-		places: 'places and directions',
 		conditions: 'weather, traffic and notices',
 		schedules: 'timetables',
 		atlas: 'island map',
 		mapPolicy: 'map proposal tools',
-		journey: 'journey planner',
-		seaLayer: 'sea connections layer',
 		sea: 'sea connections',
 		evidence: 'evidence workspace'
 	};
@@ -170,6 +178,7 @@
 		pending: null,
 		pendingDecision: null,
 		gapFeatures: emptyFeatures(),
+		coverageFillFeatures: emptyFeatures(),
 		impactFeatures: emptyFeatures(),
 		serviceFeatures: emptyFeatures(),
 		calculating: false,
@@ -177,14 +186,24 @@
 		panelOpen: false
 	});
 	let conditionRoute = $state<Coordinates[]>([]);
-	let connectionFeatures = $state.raw<FeatureCollection>(emptyFeatures());
 	let seaMap = $state.raw<SeaMapState | null>(null);
-	let seaLayerMap = $state.raw<SeaMapState | null>(null);
-	let seaLayerEnabled = $state(false);
+	let seaNetwork = $state.raw<SeaNetwork | null>(null);
+	let seaNetworkLoading = $state(false);
+	let seaNetworkError = $state('');
+	let seaNetworkRetry = $state(0);
+	let airNetwork = $state.raw<AirNetwork | null>(null);
+	let airNetworkLoading = $state(false);
+	let airNetworkError = $state('');
+	let airNetworkRetry = $state(0);
+	let airLayerEnabled = $state(true);
+	function setAirLayer(enabled: boolean) {
+		airLayerEnabled = enabled;
+		writeLocation(true);
+	}
+	const initialSeaDate = seaServiceDate();
+	let seaLayerEnabled = $state(true);
 	function setSeaLayer(enabled: boolean) {
 		seaLayerEnabled = enabled;
-		if (enabled && !selectedId) selectIsland(defaultMapIslandId, false);
-		if (!enabled) closeSeaConnections();
 		writeLocation(true);
 	}
 	let seaSelection = $state<SeaMapSelection | null>(null);
@@ -193,7 +212,6 @@
 	let seaInitialMode = $state<'baseline' | 'scenario'>('baseline');
 	function openSeaConnections(withDraft = false) {
 		seaInitialMode = withDraft ? 'scenario' : 'baseline';
-		seaLayerEnabled = true;
 		if (!selectedId) selectIsland(defaultMapIslandId, false);
 		const matchingOrigin = policyState.seaOriginIslandId === selectedId;
 		seaOperations = matchingOrigin
@@ -222,21 +240,14 @@
 		focusVersion += 1;
 		writeLocation(true);
 	}
-	let connectionOriginId = $state('island:1442');
-	let connectionDestinationId = $state('');
-	let journeyKind = $state<'local' | 'islands'>('local');
-	let islandPick = $state<'origin' | 'destination' | 'ferry' | 'ferry-origin' | null>(null);
+	let islandPick = $state<'ferry' | 'ferry-origin' | null>(null);
 	let ferryOriginContext = $state<{ destination: string; date: string } | null>(null);
 	let ferryDestinationId = $state<string | null>(null);
 	let focusBounds = $state<{ id: number; bounds: [Coordinates, Coordinates] } | null>(null);
 	function focusConnection(bounds: [Coordinates, Coordinates]) {
+		searchSelection = null;
 		focusPoint = null;
 		focusBounds = { id: ++policySequence, bounds };
-	}
-	function chooseConnectionIsland(endpoint: 'origin' | 'destination') {
-		islandPick = endpoint;
-		panelOpen = false;
-		pickMode = null;
 	}
 	function openIslandConnections(islandId?: string) {
 		if (islandId) selectIsland(islandId, false);
@@ -248,7 +259,6 @@
 		seaMap = null;
 		panelOpen = false;
 		islandPick = null;
-		connectionFeatures = emptyFeatures();
 		incomingOperation = {
 			type: 'compose_ferry_service',
 			origin_island_id: origin,
@@ -264,6 +274,7 @@
 		policyCommand = { id: ++policySequence, kind };
 	}
 	function focusPolicyPoint(coordinates: Coordinates) {
+		searchSelection = null;
 		focusBounds = null;
 		focusPoint = { id: ++policySequence, coordinates };
 	}
@@ -274,6 +285,7 @@
 	let accessLoading = $state(true);
 	let accessError = $state('');
 	let accessController: AbortController | undefined;
+	let accessRequestedRevision = -1;
 	const emptyPolicyMap = emptyFeatures();
 	const isMapWorkspace = $derived(!['overview', 'evidence'].includes(tab));
 	let proposalView = $state('advanced');
@@ -281,6 +293,9 @@
 	let overviewView = $state('national');
 	let exploreView = $state('map');
 	const seaActive = $derived(tab === 'explore' && exploreView === 'sea');
+	const seaNetworkDate = $derived(
+		seaActive ? (seaMap?.serviceDate ?? initialSeaDate) : initialSeaDate
+	);
 	const mapTool = $derived(
 		tab === 'scenarios' || tab === 'recommendations' ? 'proposals' : 'explore'
 	);
@@ -297,11 +312,9 @@
 				? 'evidence'
 				: (tab === 'scenarios' || tab === 'recommendations') && proposalView === 'advanced'
 					? 'policy'
-					: tab === 'explore' && exploreView === 'places'
-						? 'places'
-						: tab === 'explore' && exploreView === 'notices'
-							? 'conditions'
-							: 'atlas'
+					: tab === 'explore' && exploreView === 'notices'
+						? 'conditions'
+						: 'atlas'
 	);
 	let incomingOperation = $state<Record<string, unknown> | null>(null);
 	let incomingPlacement = $state<{
@@ -315,6 +328,23 @@
 	let panelExpanded = $state(false);
 	let detailsElement = $state<HTMLElement>();
 	let selectedId = $state<string | null>(null);
+	// Island focus changes only metadata, not the national route geometry sent to the map worker.
+	const preparedSeaNetwork = $derived(
+		seaNetwork
+			? seaNetworkMapState(
+					seaNetwork,
+					seaActive && seaMap?.serviceDate === seaNetwork.service_date ? seaMap : null
+				)
+			: seaMap
+	);
+	const displayedSeaNetwork = $derived(
+		preparedSeaNetwork
+			? {
+					...preparedSeaNetwork,
+					originIslandId: preparedSeaNetwork.originIslandId || selectedId || ''
+				}
+			: null
+	);
 	let overviewFeatures = $state.raw<MapFeatures | null>(null);
 	let detailedFeatures = $state.raw<Record<string, MapFeatures>>({});
 	let detailErrors = $state.raw<Record<string, string>>({});
@@ -385,6 +415,7 @@
 				name: properties.name,
 				coordinates: coordinates as Coordinates,
 				category: properties.category,
+				islandId: properties.island_id,
 				stopRole:
 					properties.category === 'bus_stop'
 						? 'platform'
@@ -397,10 +428,10 @@
 			});
 		}
 		for (const stop of transitStops) {
-			if ((stop.national_island_id ?? stop.island_id) !== selectedId) continue;
 			if (!seen.has(stop.id))
 				places.push({
 					...stop,
+					islandId: stop.national_island_id ?? stop.island_id,
 					category: stop.mode === 'ferry' ? 'Ferry terminal' : 'Bus stop',
 					stopRole: stop.mode === 'ferry' ? undefined : 'platform',
 					stopCode: stop.operator_code,
@@ -419,37 +450,21 @@
 	let fatalError = $state('');
 	let error = $state('');
 	let notice = $state('');
-	let search = $state('');
-	let atoll = $state('');
 	let islandSearchOpen = $state(false);
-	let islandSearchAnchor = $state<HTMLElement | null>(null);
-	let islandSearchInput = $state<HTMLInputElement | null>(null);
-	let islandSearchContent = $state<HTMLDivElement | null>(null);
-	async function openIslandSearch(event?: MouseEvent) {
-		const trigger = event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+	let mapSearch = $state<{ focusGlobal: (atoll?: string | null) => void | Promise<void> } | null>(
+		null
+	);
+	let searchSelection = $state.raw<{
+		id: string;
+		name: string;
+		coordinates: Coordinates;
+		category?: string;
+		feature?: Feature;
+	} | null>(null);
+	async function openIslandSearch(_event?: MouseEvent, selectedAtoll?: string) {
+		islandSearchOpen = true;
 		await tick();
-		islandSearchAnchor =
-			trigger ??
-			document.querySelector<HTMLElement>('[data-island-search-trigger]') ??
-			document.querySelector<HTMLElement>('.accessibility-map-overlay');
-		islandSearchOpen = !islandSearchOpen;
-	}
-	function searchKeydown(event: KeyboardEvent) {
-		const results = Array.from(
-			islandSearchContent?.querySelectorAll<HTMLButtonElement>('[data-island-id]') ?? []
-		);
-		const index = results.indexOf(event.target as HTMLButtonElement);
-		if (event.key === 'ArrowDown' && (event.target === islandSearchInput || index >= 0)) {
-			event.preventDefault();
-			results[Math.min(index + 1, results.length - 1)]?.focus();
-		} else if (event.key === 'ArrowUp' && index >= 0) {
-			event.preventDefault();
-			if (index === 0) islandSearchInput?.focus();
-			else results[index - 1]?.focus();
-		} else if (event.key === 'Enter' && event.target === islandSearchInput && search.trim()) {
-			event.preventDefault();
-			results[0]?.click();
-		}
+		void mapSearch?.focusGlobal(selectedAtoll ?? (selectedId ? null : countryAtoll));
 	}
 	let busy = $state('');
 	let scenario = $state.raw<Scenario>(newScenario());
@@ -476,9 +491,13 @@
 		void routeEnd;
 		untrack(() => (conditionRoute = []));
 	});
-	let routeStartLabel = $state('Choose a start on the map');
-	let routeEndLabel = $state('Choose a destination on the map');
-	let routeMode = $state('walk');
+	let routeMode = $state<SearchTravelMode>('walk');
+	let directionPoints = $state<SearchDirectionPoint[]>([
+		{ id: 'origin', name: '', coordinates: null },
+		{ id: 'destination', name: '', coordinates: null }
+	]);
+	let directions = $state.raw<SearchDirectionsResult | null>(null);
+	let directionPickIndex = $state<number | null>(null);
 	let journeyFocusVersion = $state(0);
 	let routeDate = $state('2026-10-10');
 	let routeTime = $state('15:20');
@@ -508,28 +527,33 @@
 	let actionController: AbortController | undefined;
 	let detailController: AbortController | undefined;
 	let initialized = $state(false);
+	let mapVisited = $state(false);
+	const showSearchDirections = $derived(
+		isMapWorkspace && tab === 'explore' && exploreView === 'map' && profileView === 'route'
+	);
 	const showAccessExplorer = $derived(
 		isMapWorkspace &&
 			!selectedId &&
 			tab === 'explore' &&
 			exploreView === 'map' &&
+			profileView !== 'route' &&
 			accessExplorerOpen &&
 			!panelOpen &&
 			!pickMode &&
 			!policyState.panelOpen
 	);
-	const preparingIsland = $derived(
-		loading && ['policy', 'places', 'conditions'].includes(activeWorkspace)
-	);
-	const showIslandScore = $derived(
-		isMapWorkspace &&
-			!!selectedId &&
-			tab === 'explore' &&
+	const preparingIsland = $derived(loading && ['policy', 'conditions'].includes(activeWorkspace));
+	const showMapContextActions = $derived(
+		tab === 'explore' &&
 			exploreView === 'map' &&
+			!showSearchDirections &&
+			!!selectedId &&
+			!seaActive &&
+			!showAccessExplorer &&
 			!panelOpen &&
 			!pickMode &&
 			!islandPick &&
-			!policyState.panelOpen &&
+			!policyPickKind &&
 			!policyState.serviceEditor &&
 			!policyState.pending
 	);
@@ -554,7 +578,19 @@
 		if (initialized) untrack(() => void loadWorkspace(key));
 	});
 	$effect(() => {
-		if (initialized && isMapWorkspace) untrack(() => void loadWorkspace('atlas'));
+		if (initialized && isMapWorkspace) {
+			mapVisited = true;
+			untrack(() => void loadWorkspace('atlas'));
+		}
+	});
+	$effect(() => {
+		if (!initialized || !isMapWorkspace) return;
+		const revision = sourceRevision;
+		untrack(() => {
+			if (accessRequestedRevision === revision) return;
+			accessRequestedRevision = revision;
+			void loadAccessScores();
+		});
 	});
 	$effect(() => {
 		if (!initialized || !isMapWorkspace) return;
@@ -565,16 +601,57 @@
 			incomingOperation
 		)
 			untrack(() => void loadWorkspace('mapPolicy'));
-		if (profileView === 'route') untrack(() => void loadWorkspace('journey'));
-		if (seaLayerEnabled) untrack(() => void loadWorkspace('seaLayer'));
 		if (seaActive) untrack(() => void loadWorkspace('sea'));
+	});
+	// Load on the first map visit, then retain it independently of islands and layer toggles.
+	$effect(() => {
+		if (!initialized || !mapVisited) return;
+		void sourceRevision;
+		void seaNetworkRetry;
+		const active = new AbortController();
+		seaNetworkLoading = true;
+		seaNetworkError = '';
+		void api<SeaNetwork>(`planning/sea-network?date=${seaNetworkDate}`, undefined, active.signal)
+			.then((value) => {
+				if (!active.signal.aborted) seaNetwork = value;
+			})
+			.catch((cause) => {
+				if (!active.signal.aborted)
+					seaNetworkError =
+						cause instanceof Error ? cause.message : 'Sea connections could not load.';
+			})
+			.finally(() => {
+				if (!active.signal.aborted) seaNetworkLoading = false;
+			});
+		return () => active.abort();
+	});
+	$effect(() => {
+		if (!initialized || !mapVisited) return;
+		void sourceRevision;
+		void airNetworkRetry;
+		const active = new AbortController();
+		airNetworkLoading = true;
+		airNetworkError = '';
+		void api<AirNetwork>(`planning/air-network?date=${seaNetworkDate}`, undefined, active.signal)
+			.then((value) => {
+				if (!active.signal.aborted) airNetwork = value;
+			})
+			.catch((cause) => {
+				if (!active.signal.aborted)
+					airNetworkError =
+						cause instanceof Error ? cause.message : 'Domestic flights could not load.';
+			})
+			.finally(() => {
+				if (!active.signal.aborted) airNetworkLoading = false;
+			});
+		return () => active.abort();
 	});
 	let lastDetailVersion = 0;
 	$effect(() => {
 		const region = detailRegionKey;
 		const version = detailVersion;
 		void sourceRevision;
-		if (!initialized || !overviewFeatures || !isMapWorkspace || !region) return;
+		if (!initialized || !isMapWorkspace || !region) return;
 		const regionIds = region === 'capital' ? capitalIslandIds : [region];
 		const retry = version !== lastDetailVersion;
 		lastDetailVersion = version;
@@ -621,32 +698,6 @@
 				typeof feature.properties?.id === 'string' && feature.properties.id.startsWith('island:')
 		) ?? []) as IslandFeature[]
 	);
-	const atolls = $derived(
-		[
-			...new Set(
-				islands
-					.map((island) => island.properties.atoll)
-					.filter((name): name is string => Boolean(name))
-			)
-		].sort()
-	);
-	const searchTerm = $derived(search.trim().toLocaleLowerCase());
-	const filtered = $derived(
-		islands
-			.filter(
-				(island) =>
-					(!atoll || island.properties.atoll === atoll) &&
-					(!searchTerm ||
-						`${island.properties.name ?? ''} ${island.properties.atoll ?? ''}`
-							.toLocaleLowerCase()
-							.includes(searchTerm))
-			)
-			.sort((a, b) => {
-				const aName = a.properties.name?.trim() ?? '';
-				const bName = b.properties.name?.trim() ?? '';
-				return Number(!aName) - Number(!bName) || aName.localeCompare(bName);
-			})
-	);
 	const selected = $derived(islands.find((island) => island.properties.id === selectedId));
 	const selectedCoordinates = $derived(
 		selected?.properties.centroid ??
@@ -654,10 +705,24 @@
 				? (selected.geometry.coordinates as Coordinates)
 				: undefined)
 	);
+	const searchIsland = $derived(
+		selected
+			? {
+					id: selected.properties.id,
+					name: islandName(selected.properties.name, selected.properties.id),
+					coordinates: selectedCoordinates,
+					boundary:
+						selectedBoundaryFeatures?.features.find(
+							(feature) => feature.properties?.id === selectedId
+						)?.geometry ?? selected.geometry
+				}
+			: null
+	);
 	const actionContext = $derived({
 		scenario,
 		reference,
 		selectedId,
+		directionPoints,
 		routeStart,
 		routeEnd,
 		routeMode,
@@ -729,11 +794,6 @@
 			? accessScores.scores.map((score) => (score.island_id === selectedId ? fullScore : score))
 			: (accessScores?.scores ?? null);
 	});
-	const selectedAccessibility = $derived(
-		(profile?.island.id === selectedId ? profile.accessibility : null) ??
-			accessScores?.scores.find((score) => score.island_id === selectedId) ??
-			null
-	);
 	const displayedLiveStatus = $derived({
 		loading: liveBusy,
 		retrieved_at: liveSnapshot?.retrieved_at,
@@ -780,8 +840,9 @@
 	const fmt = (value: number | undefined | null) =>
 		value == null ? 'Unavailable' : new Intl.NumberFormat('en').format(value);
 	const label = (value: string) => value.replaceAll('_', ' ');
-	const islandName = (name: string | null | undefined, id: string | undefined) =>
-		name?.trim() || `Unnamed island${id ? ` (${id})` : ''}`;
+	function islandName(name: string | null | undefined, id: string | undefined) {
+		return name?.trim() || `Unnamed island${id ? ` (${id})` : ''}`;
+	}
 	const signed = (value: number) => `${value > 0 ? '+' : ''}${fmt(value)}`;
 	const message = (cause: unknown) =>
 		cause instanceof Error ? cause.message : 'The request failed. Please retry.';
@@ -793,7 +854,6 @@
 		if (!preserveContext) loading = true;
 		fatalError = '';
 		connection = 'Connecting';
-		void loadAccessScores();
 		// Metadata and provider availability must not delay drawing the supplied geography.
 		void api<NationalSummary>('national/summary', undefined, active.signal)
 			.then((national) => {
@@ -838,13 +898,13 @@
 		}
 	}
 	function refreshSources() {
+		directions = null;
 		cancelAction();
 		simulation = null;
 		comparison = null;
 		recommendations = null;
 		route = null;
 		conditionRoute = [];
-		connectionFeatures = emptyFeatures();
 		summary = null;
 		accessScores = null;
 		detailController?.abort();
@@ -877,8 +937,8 @@
 	}
 	function resetIslandSelection() {
 		focusBounds = null;
+		searchSelection = null;
 		islandPick = null;
-		connectionFeatures = emptyFeatures();
 		capitalRegion = false;
 		profileController?.abort();
 		profile = null;
@@ -898,8 +958,6 @@
 		resetIslandSelection();
 		policyLens = 'overall';
 		countryAtoll = null;
-		atoll = '';
-		search = '';
 		go('map', false);
 		focusVersion += 1;
 		writeLocation(true);
@@ -907,8 +965,6 @@
 	function showDefaultMap() {
 		resetIslandSelection();
 		policyLens = 'overall';
-		atoll = '';
-		search = '';
 		selectIsland(defaultMapIslandId, false);
 		go('map', false);
 		focusVersion += 1;
@@ -916,6 +972,7 @@
 	}
 	function focusSelectedIsland() {
 		focusBounds = null;
+		searchSelection = null;
 		capitalRegion = false;
 		focusVersion += 1;
 		writeLocation(true);
@@ -924,14 +981,13 @@
 		resetIslandSelection();
 		policyLens = 'overall';
 		countryAtoll = name;
-		atoll = name;
-		search = '';
 		go('map', false);
 		focusVersion += 1;
 		writeLocation(true);
 	}
 	function selectIsland(id: string, push = true) {
 		focusBounds = null;
+		searchSelection = null;
 		capitalRegion = false;
 		countryAtoll = islands.find((island) => island.properties.id === id)?.properties.atoll ?? null;
 		accessExplorerOpen = false;
@@ -942,6 +998,7 @@
 			return;
 		}
 		selectedId = id;
+		if (!showSearchDirections) resetJourney();
 		seaMap = null;
 		seaSelection = null;
 		islandSearchOpen = false;
@@ -953,8 +1010,6 @@
 		route = null;
 		routeStart = null;
 		routeEnd = null;
-		routeStartLabel = 'Choose a start on the map';
-		routeEndLabel = 'Choose a destination on the map';
 		longitude = '';
 		latitude = '';
 		focusVersion += 1;
@@ -989,23 +1044,25 @@
 			placeProposal(coordinates);
 			return;
 		}
+		if (directionPickIndex !== null && showSearchDirections) {
+			const index = directionPickIndex;
+			directionPoints = directionPoints.map((point, pointIndex) =>
+				pointIndex === index
+					? {
+							...point,
+							coordinates,
+							name: `${coordinates[1].toFixed(5)}, ${coordinates[0].toFixed(5)}`,
+							islandId: null
+						}
+					: point
+			);
+			directionsChanged();
+			journeyFocusVersion += 1;
+			return;
+		}
 		if (pickMode === 'operation') {
 			longitude = coordinates[0].toFixed(6);
 			latitude = coordinates[1].toFixed(6);
-		}
-		if (pickMode === 'start') {
-			routeStart = coordinates;
-			routeStartLabel = 'Start selected on map';
-			route = null;
-			pickMode = routeEnd ? null : 'end';
-			panelOpen = true;
-			return;
-		}
-		if (pickMode === 'end') {
-			routeEnd = coordinates;
-			routeEndLabel = 'Destination selected on map';
-			route = null;
-			panelOpen = true;
 		}
 		pickMode = null;
 	}
@@ -1013,6 +1070,8 @@
 		coordinates: Coordinates,
 		kind?: 'add_hospital' | 'add_school' | 'add_stop'
 	) {
+		seaLayerEnabled = false;
+		searchSelection = null;
 		accessExplorerOpen = false;
 		incomingPlacement = {
 			id: ++placementSequence,
@@ -1037,21 +1096,36 @@
 			go('explore', false);
 			exploreView = 'map';
 		}
-		if (endpoint === 'start') {
-			routeStart = coordinates;
-			routeStartLabel = name;
-		} else {
-			routeEnd = coordinates;
-			routeEndLabel = name;
-		}
-		route = null;
+		const index = endpoint === 'start' ? 0 : directionPoints.length - 1;
+		directionPoints = directionPoints.map((point, pointIndex) =>
+			pointIndex === index ? { ...point, coordinates, name, islandId: null } : point
+		);
+		directionsChanged();
+		searchSelection = null;
 		profileView = 'route';
-		panelOpen = true;
+		panelOpen = false;
+		accessExplorerOpen = false;
+		policyAction('close');
 		pickMode = null;
 		if (focus) journeyFocusVersion += 1;
 		writeLocation(true);
 	}
 	function inspectIsland(id: string) {
+		if (showSearchDirections && directionPickIndex !== null) {
+			const island = islands.find((candidate) => candidate.properties.id === id);
+			const coordinates = island?.properties.centroid;
+			if (coordinates) {
+				const index = directionPickIndex;
+				directionPoints = directionPoints.map((point, pointIndex) =>
+					pointIndex === index
+						? { ...point, coordinates, name: islandName(island.properties.name, id), islandId: id }
+						: point
+				);
+				directionsChanged();
+				journeyFocusVersion += 1;
+			}
+			return;
+		}
 		if (islandPick) {
 			if (islandPick === 'ferry-origin') {
 				const context = ferryOriginContext;
@@ -1060,12 +1134,7 @@
 					proposeFerry(id, context.destination === id ? '' : context.destination, context.date);
 				return;
 			}
-			if (islandPick === 'ferry') ferryDestinationId = id;
-			else {
-				if (islandPick === 'origin') connectionOriginId = id;
-				else connectionDestinationId = id;
-				panelOpen = true;
-			}
+			ferryDestinationId = id;
 			islandPick = null;
 			return;
 		}
@@ -1076,36 +1145,53 @@
 		policyAction('close');
 		writeLocation(true);
 	}
+	function selectSearchPlace(place: NonNullable<typeof searchSelection>) {
+		searchSelection = place;
+		islandSearchOpen = false;
+		focusBounds = null;
+		capitalRegion = false;
+		pickMode = null;
+		panelOpen = false;
+		inspectedCell = null;
+		policyAction('close');
+	}
 	function chooseJourneyPoint(endpoint: 'start' | 'end') {
-		setProfileView('route');
-		pickMode = endpoint;
-		panelOpen = true;
+		if (!showSearchDirections) setProfileView('route');
+		pickDirectionPoint(endpoint === 'start' ? 0 : directionPoints.length - 1);
+	}
+	function directionsChanged() {
+		cancelAction();
+		directions = null;
+		route = null;
+		error = '';
+		directionPickIndex = null;
+		pickMode = null;
+		routeStart = directionPoints[0]?.coordinates ?? null;
+		routeEnd = directionPoints.at(-1)?.coordinates ?? null;
+	}
+	function pickDirectionPoint(index: number) {
+		if (directionPickIndex === index) {
+			cancelPick();
+			return;
+		}
+		directionPickIndex = index;
+		pickMode = index === 0 ? 'start' : 'end';
+		panelOpen = false;
+		searchSelection = null;
 	}
 	function clearJourneyPoint(endpoint: 'start' | 'end') {
-		cancelAction();
-		if (endpoint === 'start') {
-			routeStart = null;
-			routeStartLabel = 'Choose a start on the map';
-		} else {
-			routeEnd = null;
-			routeEndLabel = 'Choose a destination on the map';
-		}
-		route = null;
-		pickMode = null;
+		const index = endpoint === 'start' ? 0 : directionPoints.length - 1;
+		directionPoints = directionPoints.map((point, pointIndex) =>
+			pointIndex === index ? { ...point, coordinates: null, name: '' } : point
+		);
+		directionsChanged();
 	}
 	function resetJourney() {
-		connectionDestinationId = '';
-		connectionOriginId = selectedId ?? defaultMapIslandId;
-		connectionFeatures = emptyFeatures();
-		clearJourneyPoint('start');
-		clearJourneyPoint('end');
-		error = '';
-	}
-	function swapJourney() {
-		cancelAction();
-		[routeStart, routeEnd] = [routeEnd, routeStart];
-		[routeStartLabel, routeEndLabel] = [routeEndLabel, routeStartLabel];
-		route = null;
+		directionPoints = [
+			{ id: 'origin', name: '', coordinates: null },
+			{ id: 'destination', name: '', coordinates: null }
+		];
+		directionsChanged();
 	}
 	function cancelPick() {
 		if (islandPick) {
@@ -1116,33 +1202,24 @@
 		}
 		if (pickMode === 'proposal' || policyPickKind || policyState.pending)
 			policyAction('cancel-placement');
-		const wasJourney = pickMode === 'start' || pickMode === 'end';
+		directionPickIndex = null;
 		pickMode = null;
 		policyPickKind = null;
 		ferryDestinationId = null;
-		if (wasJourney) panelOpen = true;
 	}
 	function closeJourney() {
+		cancelAction();
+		directionPickIndex = null;
 		islandPick = null;
-		connectionFeatures = emptyFeatures();
 		pickMode = null;
 		panelOpen = false;
 		profileView = 'baseline';
 		writeLocation(true);
 	}
-	function changeJourneyKind() {
-		cancelPick();
-		cancelAction();
-		route = null;
-		conditionRoute = [];
-		connectionFeatures = emptyFeatures();
-		focusBounds = null;
-		journeyFocusVersion += 1;
-	}
 	function returnToExplore() {
 		exploreView = 'map';
 		go('explore');
-		panelOpen = profileView === 'route' && !!(routeStart || routeEnd);
+		panelOpen = false;
 	}
 	function edit(next: Scenario) {
 		history = [...history.slice(-49), structuredClone(scenario)];
@@ -1238,28 +1315,25 @@
 		}
 	}
 	async function requestRoute() {
-		if (!routeStart || !routeEnd || !selectedId) return;
-		const start = routeStart,
-			end = routeEnd,
-			mode = routeMode,
-			scope = selectedId;
 		const [hours, minutes] = routeTime.split(':').map(Number);
 		const departure_minutes = hours * 60 + minutes;
+		const request = searchDirectionsRequest(
+			directionPoints,
+			routeMode,
+			routeDate,
+			departure_minutes
+		);
+		if (!request) return;
+		directions = null;
+		pickMode = null;
+		directionPickIndex = null;
 		await runAction(
 			'route',
-			(signal) =>
-				api<LandRoute>(
-					'routing/land',
-					{
-						start,
-						end,
-						mode,
-						island_id: scope,
-						...(mode === 'transit' ? { service_date: routeDate, departure_minutes } : {})
-					},
-					signal
-				),
-			(result) => (route = result)
+			(signal) => api<SearchDirectionsResult>('routing/journey', request, signal),
+			(result) => {
+				directions = result;
+				journeyFocusVersion += 1;
+			}
 		);
 	}
 	async function requestRecommendations() {
@@ -1337,27 +1411,25 @@
 			policyLens = ['transport', 'health', 'education'].includes(requestedLens ?? '')
 				? (requestedLens as PolicyLens)
 				: 'overall';
-			panelOpen ||= profileView === 'route';
+			if (profileView === 'route') panelOpen = false;
 			overviewView = ['passengers', 'data', 'timetables'].includes(params.get('analytics') ?? '')
 				? params.get('analytics')!
 				: 'national';
 			exploreView =
 				params.get('explorer') === 'sea'
 					? 'sea'
-					: tool === 'places' || params.get('explorer') === 'places'
-						? 'places'
-						: params.get('explorer') === 'notices'
-							? 'notices'
-							: params.get('explorer') === 'conditions' ||
-								  ((tool === 'live' || requested === 'live') &&
-										params.get('context') !== 'positions')
-								? 'conditions'
-								: 'map';
-			seaLayerEnabled = params.get('sea') === '1' || exploreView === 'sea';
+					: params.get('explorer') === 'notices'
+						? 'notices'
+						: params.get('explorer') === 'conditions' ||
+							  ((tool === 'live' || requested === 'live') && params.get('context') !== 'positions')
+							? 'conditions'
+							: 'map';
+			seaLayerEnabled = params.get('sea') !== '0';
+			airLayerEnabled = params.get('air') !== '0';
 			if (exploreView === 'conditions') {
 				exploreView = 'map';
 				profileView = 'route';
-				panelOpen = true;
+				panelOpen = false;
 			}
 			if (params.get('explorer') === 'schedules') {
 				tab = 'overview';
@@ -1366,6 +1438,9 @@
 		};
 		restoreView();
 		initialized = true;
+		// URL/default selection is already known: original island evidence can load
+		// alongside the country outline rather than waiting for that larger response.
+		if (isMapWorkspace && selectedId) void loadProfile(selectedId);
 		void load();
 		const unsubscribeSources = subscribeApiInvalidation(refreshSources);
 		window.addEventListener('popstate', restoreView);
@@ -1417,6 +1492,7 @@
 		pickMode = null;
 		islandPick = null;
 		islandSearchOpen = false;
+		directionPickIndex = null;
 		error = '';
 		panelOpen = next !== 'explore';
 		panelExpanded = false;
@@ -1443,8 +1519,10 @@
 		if (tab === 'overview' && overviewView !== 'national')
 			url.searchParams.set('analytics', overviewView);
 		else url.searchParams.delete('analytics');
-		if (isMapWorkspace && seaLayerEnabled) url.searchParams.set('sea', '1');
+		if (isMapWorkspace) url.searchParams.set('sea', seaLayerEnabled ? '1' : '0');
 		else url.searchParams.delete('sea');
+		if (isMapWorkspace) url.searchParams.set('air', airLayerEnabled ? '1' : '0');
+		else url.searchParams.delete('air');
 		if (tab === 'explore' && exploreView !== 'map') url.searchParams.set('explorer', exploreView);
 		else url.searchParams.delete('explorer');
 		if (isMapWorkspace && policyLens !== 'overall') url.searchParams.set('lens', policyLens);
@@ -1468,6 +1546,8 @@
 	}
 	function startIslandProposal() {
 		if (!selectedId) return;
+		setSeaLayer(false);
+		if (profileView === 'route') closeJourney();
 		accessExplorerOpen = false;
 		panelOpen = false;
 		policyAction('compose');
@@ -1476,24 +1556,51 @@
 		overviewView = value;
 		writeLocation(true);
 	}
-	function setExploreView(value: string) {
-		exploreView = value;
-		pickMode = null;
-		panelOpen = false;
-		policyAction('close');
-		writeLocation(true);
-	}
 	function useReviewedNotice(operation: Record<string, unknown>) {
 		incomingOperation = operation;
 		setProposalView('policy');
 	}
 	function setProfileView(value: string) {
-		if (value === 'route' && !connectionDestinationId)
-			connectionOriginId = selectedId ?? defaultMapIslandId;
+		if (value === 'route') {
+			if (searchSelection) {
+				directionPoints = [
+					{ id: 'origin', name: '', coordinates: null },
+					{
+						id: 'destination',
+						name: searchSelection.name,
+						coordinates: searchSelection.coordinates,
+						islandId: selectedId
+					}
+				];
+				directionsChanged();
+			}
+			const destination =
+				searchSelection ??
+				(selectedCoordinates && selected
+					? {
+							id: selected.properties.id,
+							name: islandName(selected.properties.name, selected.properties.id),
+							coordinates: selectedCoordinates
+						}
+					: null);
+			if (destination && (searchSelection || !directionPoints.at(-1)?.coordinates)) {
+				const index = directionPoints.length - 1;
+				directionPoints = directionPoints.map((point, pointIndex) =>
+					pointIndex === index
+						? { ...point, name: destination.name, coordinates: destination.coordinates }
+						: point
+				);
+				directionsChanged();
+			}
+			searchSelection = null;
+			accessExplorerOpen = false;
+			islandSearchOpen = false;
+		}
 		policyAction('close');
 		profileView = value;
-		panelOpen = true;
+		panelOpen = value !== 'route';
 		pickMode = null;
+		directionPickIndex = null;
 		writeLocation(true);
 	}
 	function exploreFromOverview(id?: string, selectedAtoll?: string, lens?: PolicyLens) {
@@ -1506,12 +1613,6 @@
 		else {
 			resetIslandSelection();
 			countryAtoll = selectedAtoll ?? null;
-			atoll = selectedAtoll ?? '';
-			search = '';
-		}
-		if (selectedAtoll !== undefined) {
-			atoll = selectedAtoll;
-			search = '';
 		}
 		go('explore', false);
 		exploreView = 'map';
@@ -1685,26 +1786,6 @@
 					onExplore={returnToExplore}
 				/>
 			</div>{/if}
-		{#if workspaces.places && !loading}<div
-				class="map-tool-sheet places-sheet"
-				hidden={activeWorkspace !== 'places'}
-			>
-				<Button class="map-tool-close" variant="outline" onclick={returnToExplore}
-					><X size={16} />Back to map</Button
-				>
-				<workspaces.places
-					active={tab === 'explore' && exploreView === 'places'}
-					selectedIsland={selected
-						? {
-								id: selected.properties.id,
-								name: selected.properties.name ?? 'Selected island',
-								coordinates: selectedCoordinates
-							}
-						: undefined}
-					onJourneyPoint={(place, endpoint) =>
-						useJourneyPoint([place.longitude, place.latitude], endpoint, place.name)}
-				/>
-			</div>{/if}
 		{#if workspaces.schedules}<div class="analytics-page" hidden={activeWorkspace !== 'schedules'}>
 				<workspaces.schedules
 					mode="schedules"
@@ -1736,8 +1817,8 @@
 			class:placing-proposal={!!policyPickKind || !!policyState.pending}
 			class:access-exploring={showAccessExplorer}
 			class:country-overview={!selectedId}
-			class:showing-island-score={showIslandScore}
 			class:sea-connections-open={tab === 'explore' && seaActive}
+			class:directions-open={showSearchDirections}
 			hidden={!isMapWorkspace || activeWorkspace === 'policy'}
 		>
 			<div class="map-region" aria-label="National planning map">
@@ -1749,13 +1830,29 @@
 						atollScope={countryAtoll}
 						scopeBounds={capitalRegion ? capitalBounds : null}
 						{focusBounds}
-						connectionFeatures={seaActive ? emptyPolicyMap : connectionFeatures}
-						seaState={seaActive ? seaMap : seaLayerEnabled ? seaLayerMap : null}
-						seaView={seaLayerEnabled || seaActive}
+						seaState={displayedSeaNetwork}
+						seaView={seaLayerEnabled}
+						seaNetworkStatus={seaNetworkError ? 'error' : seaNetworkLoading ? 'loading' : 'ready'}
+						onSeaRetry={() => (seaNetworkRetry += 1)}
 						{seaLayerEnabled}
 						seaInspectorOpen={seaActive}
 						onSeaLayerChange={setSeaLayer}
+						airState={airNetwork}
+						{airLayerEnabled}
+						airNetworkStatus={airNetworkError ? 'error' : airNetworkLoading ? 'loading' : 'ready'}
+						onAirRetry={() => (airNetworkRetry += 1)}
+						onAirLayerChange={setAirLayer}
 						onSeaSelect={(selection) => {
+							if (!seaActive && selection.kind === 'route') {
+								const connection = displayedSeaNetwork?.routes?.find(
+									(item) => item.id === selection.id
+								);
+								if (
+									connection?.from_island_id &&
+									!connection.stop_island_ids.includes(selectedId ?? '')
+								)
+									selectIsland(connection.from_island_id, false);
+							}
 							if (!seaActive) openSeaConnections();
 							seaSelection = { ...selection, key: ++policySequence };
 						}}
@@ -1765,18 +1862,25 @@
 						onfocusisland={focusSelectedIsland}
 						{focusVersion}
 						{focusPoint}
+						{searchSelection}
 						conditionRoute={seaActive ? [] : conditionRoute}
 						policyServiceFeatures={accessExplorerOpen || seaActive
 							? emptyPolicyMap
 							: policyState.serviceFeatures}
 						serviceEditor={accessExplorerOpen || seaActive ? null : policyState.serviceEditor}
 						serviceEditorContent={islandPick ? undefined : policyState.serviceEditorContent}
+						mapControlsContent={islandPick || seaActive
+							? undefined
+							: policyState.mapControlsContent}
 						onserviceplace={(placement) =>
 							(servicePlacement = { ...placement, id: ++policySequence })}
 						onservicelanding={(landing) => (serviceLanding = { ...landing, id: ++policySequence })}
 						onservicecandidate={(stopId) => (serviceCandidate = { stopId, id: ++policySequence })}
 						oncancelservice={() => policyAction('cancel-service')}
 						gapFeatures={accessExplorerOpen || seaActive ? emptyPolicyMap : policyState.gapFeatures}
+						coverageFillFeatures={accessExplorerOpen || seaActive
+							? emptyPolicyMap
+							: policyState.coverageFillFeatures}
 						impactFeatures={accessExplorerOpen || seaActive
 							? emptyPolicyMap
 							: policyState.impactFeatures}
@@ -1815,7 +1919,9 @@
 						mode={mapTool === 'proposals' ? 'proposal' : 'explore'}
 						onselect={inspectIsland}
 						onpick={picked}
-						onplanpoint={(point) => placeProposal(point)}
+						onplanpoint={policyState.proposalEditing || mapTool === 'proposals'
+							? placeProposal
+							: undefined}
 						onroutepoint={useJourneyPoint}
 						onmovejourneypoint={chooseJourneyPoint}
 						onclearjourneypoint={clearJourneyPoint}
@@ -1823,9 +1929,11 @@
 						picking={pickMode !== null}
 						draft={seaActive ? [] : scenario.operations}
 						route={seaActive ? null : route}
-						routeStart={seaActive ? null : routeStart}
+						directions={showSearchDirections ? directions : null}
+						directionPoints={showSearchDirections ? directionPoints : undefined}
+						routeStart={showSearchDirections ? routeStart : null}
 						{journeyFocusVersion}
-						routeEnd={seaActive ? null : routeEnd}
+						routeEnd={showSearchDirections ? routeEnd : null}
 						liveEvents={liveSnapshot?.events ?? emptyLiveEvents}
 						liveStatus={displayedLiveStatus}
 					/>
@@ -1865,6 +1973,10 @@
 			{#if workspaces.mapPolicy}<workspaces.mapPolicy
 					islandId={selectedId}
 					islandName={selected?.properties.name ?? 'Selected island'}
+					profile={profile?.island.id === selectedId ? profile : null}
+					{profileLoading}
+					{profileError}
+					onRetryProfile={() => selectedId && loadProfile(selectedId)}
 					mapFeatures={features}
 					boundaryFeatures={selectedBoundaryFeatures}
 					boundaryError={detailError}
@@ -1872,6 +1984,7 @@
 					active={isMapWorkspace &&
 						tab === 'explore' &&
 						exploreView === 'map' &&
+						!showSearchDirections &&
 						!panelOpen &&
 						!!selectedId &&
 						!accessExplorerOpen}
@@ -1944,53 +2057,108 @@
 					{:else}<div class="workspace-state" role="status">Loading sea connections…</div>{/if}
 				</div>
 			{/if}
-			{#if !showAccessExplorer}<div class="map-search-dock">
-					<Button
-						variant="outline"
-						class="island-search-trigger"
-						onclick={openIslandSearch}
-						data-island-search-trigger
-						aria-haspopup="dialog"
-						aria-expanded={islandSearchOpen}
-						aria-controls={islandSearchOpen ? 'island-search-results' : undefined}
-						><Search size={18} /><span>Find an island or atoll</span></Button
-					><Button
-						variant="outline"
-						size="icon"
-						title="Focus selected island"
-						aria-label="Focus selected island"
-						onclick={focusSelectedIsland}><LocateFixed size={17} /></Button
+			<div
+				class="map-header-tools"
+				class:search-directions-open={showSearchDirections}
+				class:has-context-actions={showMapContextActions}
+			>
+				<div
+					class="map-search-dock"
+					class:search-directions-open={showSearchDirections}
+					class:has-context-actions={showMapContextActions}
+					role="group"
+					aria-label="Map search"
+				>
+					{#if showSearchDirections}
+						<div class="map-directions-surface" transition:searchExpansion>
+							<SearchDirections
+								{islands}
+								island={searchIsland}
+								{features}
+								places={journeyPlaces}
+								{loading}
+								bind:points={directionPoints}
+								bind:mode={routeMode}
+								bind:serviceDate={routeDate}
+								bind:departureTime={routeTime}
+								result={directions}
+								busy={busy === 'route'}
+								error={error || null}
+								pickingIndex={directionPickIndex}
+								onPick={pickDirectionPoint}
+								onChange={directionsChanged}
+								onFind={requestRoute}
+								onClose={closeJourney}
+							/>
+						</div>
+					{:else}
+						<div
+							class="map-search-group"
+							in:surfaceMotion={{ axis: 'y', distance: -3, duration: 140, delay: 60 }}
+							out:surfaceMotion={{ direction: 'out', axis: 'y', distance: -3, duration: 100 }}
+						>
+							<MapSearch
+								bind:this={mapSearch}
+								{islands}
+								island={searchIsland}
+								{features}
+								loading={loading || (!!selectedId && !detailedFeatures[selectedId] && !detailError)}
+								bind:open={islandSearchOpen}
+								globalAtoll={selectedId ? null : countryAtoll}
+								onIsland={inspectIsland}
+								onAtoll={showAtoll}
+								onPlace={selectSearchPlace}
+							/>
+							<Button
+								variant="outline"
+								size="icon"
+								title="Focus selected island"
+								aria-label="Focus selected island"
+								onclick={focusSelectedIsland}><LocateFixed size={17} /></Button
+							>
+						</div>
+					{/if}
+				</div>
+				{#if showMapContextActions}
+					<div
+						class="map-header-actions"
+						role="group"
+						aria-label="Explore selected island"
+						in:surfaceMotion={{ axis: 'y', distance: -4, duration: 180 }}
+						out:surfaceMotion={{ direction: 'out', axis: 'y', distance: -4, duration: 100 }}
 					>
-				</div>{/if}
-			{#if seaLayerEnabled && !seaActive && selectedId && workspaces.seaLayer}
-				<div class="island-score-overlay" class:layer-card-hidden={!showIslandScore}>
-					<workspaces.seaLayer
-						islandId={selectedId}
-						islandName={selected?.properties.name ?? 'Selected island'}
-						onMapChange={(state) => (seaLayerMap = state)}
-						onExplore={() => openSeaConnections()}
-					/>
-				</div>
-			{:else if showIslandScore && !seaLayerEnabled}
-				<div class="island-score-overlay">
-					{#key selectedId}<IslandMapScore
-							islandName={selected?.properties.name ?? 'Selected island'}
-							accessibility={selectedAccessibility}
-							loading={profileLoading || loading}
-							error={profileError}
-							onRetry={() => selectedId && loadProfile(selectedId)}
-						/>{/key}
-				</div>
-			{/if}
+						<Button
+							variant="ghost"
+							disabled={loading || !selected}
+							aria-label="Directions"
+							onclick={() => setProfileView('route')}><Route size={16} />Directions</Button
+						>
+						<Button
+							class="map-header-proposal"
+							disabled={loading || !selected}
+							aria-label={policyState.operations.length ? 'Edit proposal' : 'Create proposal'}
+							onclick={startIslandProposal}
+						>
+							{#if policyState.operations.length}<SquarePen size={15} />{:else}<Plus
+									size={15}
+								/>{/if}
+							{policyState.operations.length ? 'Edit proposal' : 'Create proposal'}
+						</Button>
+					</div>
+				{/if}
+			</div>
 			{#if islandPick}<div class="pick-banner" role="status">
 					<MapPin size={18} /><span
-						>Choose {islandPick === 'origin' || islandPick === 'ferry-origin'
+						>Choose {islandPick === 'ferry-origin'
 							? 'your starting island'
 							: 'a destination island'}<small>Click an island on the map · Escape to cancel</small
 						></span
 					><Button variant="ghost" size="sm" onclick={cancelPick}>Cancel</Button>
 				</div>{/if}
-			{#if pickMode && pickMode !== 'proposal'}<div class="pick-banner" role="status">
+			{#if pickMode && pickMode !== 'proposal' && !showSearchDirections}<div
+					class="pick-banner"
+					role="status"
+				>
 					<LocateFixed size={18} /><span
 						>{pickMode === 'operation'
 							? 'Choose a location for your proposal'
@@ -2000,118 +2168,79 @@
 						></span
 					><Button variant="ghost" size="sm" onclick={cancelPick}>Cancel</Button>
 				</div>{/if}
-			<aside
-				class="detail-panel"
-				class:collapsed={!panelOpen}
-				aria-label="Planning details"
-				bind:this={detailsElement}
-				use:resizable={{
-					key: 'map-details',
-					minWidth: 360,
-					minHeight: 360,
-					maxWidth: 680,
-					breakpoint: 900,
-					edges: ['left', 'bottom', 'bottom-left'],
-					anchor: 'top-right',
-					enabled: panelOpen
-				}}
-				use:mapPanelLayout={panelOpen}
-			>
-				<div class="detail-scroll">
-					<Card.Root class="context-card">
-						<div class="context-location">
-							<span
-								><MapPin size={14} />{profileView === 'route'
-									? 'Directions'
-									: selected
-										? islandName(selected.properties.name, selected.properties.id)
-										: 'Select an island'}<small
-									>{profileView === 'route'
-										? (selected?.properties.name ?? 'Selected island')
-										: (selected?.properties.atoll ?? 'Maldives')}</small
-								></span
-							>
-							<div class="context-window-actions">
-								<Button
-									variant="ghost"
-									size="icon-sm"
-									aria-label={panelExpanded ? 'Restore compact details' : 'Expand planning details'}
-									onclick={() => {
-										if (detailsElement) resetResizable(detailsElement);
-										panelExpanded = !panelExpanded;
-									}}
-									>{#if panelExpanded}<Minimize2 size={16} />{:else}<Maximize2
-											size={16}
-										/>{/if}</Button
-								><Button
-									variant="ghost"
-									size="icon-sm"
-									onclick={() => (profileView === 'route' ? closeJourney() : (panelOpen = false))}
-									aria-label={profileView === 'route'
-										? 'Close directions'
-										: 'Collapse island details'}><PanelRightClose size={17} /></Button
+			{#if !showSearchDirections}<aside
+					class="detail-panel"
+					class:collapsed={!panelOpen}
+					aria-label="Planning details"
+					bind:this={detailsElement}
+					use:resizable={{
+						key: 'map-details',
+						minWidth: 360,
+						minHeight: 360,
+						maxWidth: 680,
+						breakpoint: 900,
+						edges: ['left', 'bottom', 'bottom-left'],
+						anchor: 'top-right',
+						enabled: panelOpen
+					}}
+					use:mapPanelLayout={panelOpen}
+				>
+					<div class="detail-scroll">
+						<Card.Root class="context-card">
+							<div class="context-location">
+								<span
+									><MapPin size={14} />{profileView === 'route'
+										? 'Directions'
+										: selected
+											? islandName(selected.properties.name, selected.properties.id)
+											: 'Select an island'}<small
+										>{profileView === 'route'
+											? (selected?.properties.name ?? 'Selected island')
+											: (selected?.properties.atoll ?? 'Maldives')}</small
+									></span
 								>
+								<div class="context-window-actions">
+									<Button
+										variant="ghost"
+										size="icon-sm"
+										aria-label={panelExpanded
+											? 'Restore compact details'
+											: 'Expand planning details'}
+										onclick={() => {
+											if (detailsElement) resetResizable(detailsElement);
+											panelExpanded = !panelExpanded;
+										}}
+										>{#if panelExpanded}<Minimize2 size={16} />{:else}<Maximize2
+												size={16}
+											/>{/if}</Button
+									><Button
+										variant="ghost"
+										size="icon-sm"
+										onclick={() => (profileView === 'route' ? closeJourney() : (panelOpen = false))}
+										aria-label={profileView === 'route'
+											? 'Close directions'
+											: 'Collapse island details'}><PanelRightClose size={17} /></Button
+									>
+								</div>
 							</div>
-						</div>
-						{#if error}<div class="error-banner" role="alert">
-								{error}<Button
-									variant="ghost"
-									size="icon-xs"
-									aria-label="Dismiss error"
-									onclick={() => (error = '')}><X size={14} /></Button
-								>
-							</div>{/if}
-						{#if notice}<div class="notice-banner" role="status">
-								{notice}<Button
-									variant="ghost"
-									size="icon-xs"
-									aria-label="Dismiss notice"
-									onclick={() => (notice = '')}><X size={14} /></Button
-								>
-							</div>{/if}
-						{#if tab === 'explore'}
-							{#if profileView === 'route'}<section
-									class="context-tab-content"
-									aria-label="Directions"
-								>
-									{#if workspaces.journey}<workspaces.journey
-											start={routeStart}
-											places={journeyPlaces}
-											picking={pickMode === 'start' || pickMode === 'end' ? pickMode : null}
-											onSelectPlace={(endpoint, place) =>
-												useJourneyPoint(place.coordinates, endpoint, place.name)}
-											conditionsCoordinates={selectedCoordinates}
-											islandName={selected?.properties.name ?? 'Selected island'}
-											onConditionRoute={(coordinates) => (conditionRoute = coordinates)}
-											onNotices={() => setExploreView('notices')}
-											islands={overviewFeatures}
-											bind:journeyKind
-											onKindChange={changeJourneyKind}
-											bind:originIslandId={connectionOriginId}
-											bind:destinationIslandId={connectionDestinationId}
-											onPickIsland={chooseConnectionIsland}
-											onConnectionPreview={(value) => (connectionFeatures = value)}
-											onConnectionFocus={focusConnection}
-											onProposeFerry={proposeFerry}
-											end={routeEnd}
-											startLabel={routeStartLabel}
-											endLabel={routeEndLabel}
-											bind:mode={routeMode}
-											bind:serviceDate={routeDate}
-											bind:departureTime={routeTime}
-											result={route}
-											busy={busy === 'route'}
-											onPick={chooseJourneyPoint}
-											onClear={clearJourneyPoint}
-											onReset={resetJourney}
-											onSwap={swapJourney}
-											onFind={requestRoute}
-											onChange={() => {
-												cancelAction();
-												route = null;
-											}}
-										/>{:else}<p class="empty-state" role="status">Opening journey planner…</p>{/if}
-								</section>{:else}<Tabs.Root bind:value={profileView} onValueChange={setProfileView}>
+							{#if error}<div class="error-banner" role="alert">
+									{error}<Button
+										variant="ghost"
+										size="icon-xs"
+										aria-label="Dismiss error"
+										onclick={() => (error = '')}><X size={14} /></Button
+									>
+								</div>{/if}
+							{#if notice}<div class="notice-banner" role="status">
+									{notice}<Button
+										variant="ghost"
+										size="icon-xs"
+										aria-label="Dismiss notice"
+										onclick={() => (notice = '')}><X size={14} /></Button
+									>
+								</div>{/if}
+							{#if tab === 'explore'}
+								<Tabs.Root bind:value={profileView} onValueChange={setProfileView}>
 									<Tabs.List class="context-tabs">
 										<Tabs.Trigger value="baseline">Island details</Tabs.Trigger>
 										<Tabs.Trigger value="route">Directions</Tabs.Trigger>
@@ -2250,452 +2379,451 @@
 												Select an island to explore its services.
 											</p>{/if}
 									</Tabs.Content>
-								</Tabs.Root>{/if}
-						{:else if tab === 'scenarios' || tab === 'recommendations'}
-							<div class="proposal-header">
-								<span class="eyebrow">YOUR POLICY WORKSPACE</span>
-								<h2>Build a better connection.</h2>
-								<p>Make a change. Test the network. Review what the evidence supports.</p>
-							</div>
-							<div class="journey-steps">
-								<Button variant="ghost" onclick={() => go('explore')}><span>1</span>Island</Button
-								><ChevronRight size={12} /><span
-									class:current={proposalView !== 'review'}
-									aria-current={proposalView !== 'review' ? 'step' : undefined}
-									><b>2</b>Proposal</span
-								><ChevronRight size={12} /><span
-									class:complete={!!simulation}
-									class:current={proposalView === 'review'}
-									aria-current={proposalView === 'review' ? 'step' : undefined}><b>3</b>Review</span
-								>
-							</div>
-							<Tabs.Root bind:value={proposalView} onValueChange={setProposalView}
-								><Tabs.List class="context-tabs"
-									><Tabs.Trigger value="edit">Build option</Tabs.Trigger><Tabs.Trigger
-										value="candidates">Find candidates</Tabs.Trigger
-									><Tabs.Trigger value="review">Review results</Tabs.Trigger></Tabs.List
-								>
-								<p class="draft-scope">
-									{scenario.operations.length} proposed changes · Draft saved in this browser
-								</p>
-								<Tabs.Content value="edit" class="context-tab-content">
-									<div class="scenario-toolbar">
-										<Button
-											variant="ghost"
-											size="icon"
-											disabled={!history.length || !!busy}
-											onclick={undo}
-											aria-label="Undo operation"><Undo2 size={17} /></Button
-										><Button
-											variant="ghost"
-											size="icon"
-											disabled={!redoHistory.length || !!busy}
-											onclick={redo}
-											aria-label="Redo operation"><Redo2 size={17} /></Button
-										><span></span><Button
-											variant="ghost"
-											size="icon"
-											onclick={exportScenario}
-											aria-label="Export scenario"><Download size={17} /></Button
-										><Button
-											variant="ghost"
-											size="icon"
-											onclick={() => importInput?.click()}
-											aria-label="Import scenario"><Upload size={17} /></Button
-										><Input
-											class="hidden"
-											type="file"
-											accept="application/json,.json"
-											bind:ref={importInput}
-											onchange={importScenario}
+								</Tabs.Root>
+							{:else if tab === 'scenarios' || tab === 'recommendations'}
+								<div class="proposal-header">
+									<span class="eyebrow">YOUR POLICY WORKSPACE</span>
+									<h2>Build a better connection.</h2>
+									<p>Make a change. Test the network. Review what the evidence supports.</p>
+								</div>
+								<div class="journey-steps">
+									<Button variant="ghost" onclick={() => go('explore')}><span>1</span>Island</Button
+									><ChevronRight size={12} /><span
+										class:current={proposalView !== 'review'}
+										aria-current={proposalView !== 'review' ? 'step' : undefined}
+										><b>2</b>Proposal</span
+									><ChevronRight size={12} /><span
+										class:complete={!!simulation}
+										class:current={proposalView === 'review'}
+										aria-current={proposalView === 'review' ? 'step' : undefined}
+										><b>3</b>Review</span
+									>
+								</div>
+								<Tabs.Root bind:value={proposalView} onValueChange={setProposalView}
+									><Tabs.List class="context-tabs"
+										><Tabs.Trigger value="edit">Build option</Tabs.Trigger><Tabs.Trigger
+											value="candidates">Find candidates</Tabs.Trigger
+										><Tabs.Trigger value="review">Review results</Tabs.Trigger></Tabs.List
+									>
+									<p class="draft-scope">
+										{scenario.operations.length} proposed changes · Draft saved in this browser
+									</p>
+									<Tabs.Content value="edit" class="context-tab-content">
+										<div class="scenario-toolbar">
+											<Button
+												variant="ghost"
+												size="icon"
+												disabled={!history.length || !!busy}
+												onclick={undo}
+												aria-label="Undo operation"><Undo2 size={17} /></Button
+											><Button
+												variant="ghost"
+												size="icon"
+												disabled={!redoHistory.length || !!busy}
+												onclick={redo}
+												aria-label="Redo operation"><Redo2 size={17} /></Button
+											><span></span><Button
+												variant="ghost"
+												size="icon"
+												onclick={exportScenario}
+												aria-label="Export scenario"><Download size={17} /></Button
+											><Button
+												variant="ghost"
+												size="icon"
+												onclick={() => importInput?.click()}
+												aria-label="Import scenario"><Upload size={17} /></Button
+											><Input
+												class="hidden"
+												type="file"
+												accept="application/json,.json"
+												bind:ref={importInput}
+												onchange={importScenario}
+											/>
+										</div>
+										<Label class="field-label" for="scenario-name">Option name</Label><Input
+											id="scenario-name"
+											value={scenario.name}
+											maxlength={200}
+											oninput={(event) => {
+												scenario = { ...scenario, name: event.currentTarget.value };
+												simulation = null;
+												comparison = null;
+											}}
 										/>
-									</div>
-									<Label class="field-label" for="scenario-name">Option name</Label><Input
-										id="scenario-name"
-										value={scenario.name}
-										maxlength={200}
-										oninput={(event) => {
-											scenario = { ...scenario, name: event.currentTarget.value };
-											simulation = null;
-											comparison = null;
-										}}
-									/>
-									<section class="panel-section" style="margin-top:24px">
-										<Label class="field-label" for="operation-type">Your intervention</Label
-										><NativeSelect.Root
-											id="operation-type"
-											bind:value={operationType}
-											onchange={() => (pickMode = null)}
-											>{#each Object.entries(operationLabels) as [value, text] (value)}<NativeSelect.Option
-													{value}>{text}</NativeSelect.Option
-												>{/each}</NativeSelect.Root
-										>
-										{#if needsCoordinates(operationType)}<Button
-												variant="outline"
-												class="wide"
-												onclick={() => (pickMode = 'operation')}
-												><MapPin size={16} />{longitude !== '' && latitude !== ''
-													? 'Change location on map'
-													: 'Place on map'}</Button
-											>
-											{#if longitude !== '' && latitude !== ''}<p class="coordinate-readout">
-													Location: {Number(longitude).toFixed(5)}, {Number(latitude).toFixed(5)}
-												</p>{/if}
-											<details>
-												<summary>Enter coordinates or use island centroid</summary>
-												<div class="field-pair">
-													<Label
-														>Longitude<Input
-															aria-label="Proposal longitude"
-															type="number"
-															step="any"
-															bind:value={longitude}
-														/></Label
-													><Label
-														>Latitude<Input
-															aria-label="Proposal latitude"
-															type="number"
-															step="any"
-															bind:value={latitude}
-														/></Label
-													>
-												</div>
-												<Button
-													variant="ghost"
-													class="text-button"
-													disabled={!selected?.properties.centroid}
-													onclick={() => {
-														const center = selected?.properties.centroid;
-														if (center) {
-															longitude = center[0];
-															latitude = center[1];
-														}
-													}}>Use island centroid</Button
-												>
-											</details>
-										{/if}
-										{#if needsTarget(operationType)}<Label class="field-label" for="target-id"
-												>Target record or graph edge ID</Label
-											><Input id="target-id" bind:value={targetId} placeholder="Exact source ID" />
-											<p class="fine-print">
-												Select a source record or enter a graph edge/OSM way ID. Unknown targets are
-												reported as unapplied.
-											</p>
-											<details>
-												<summary>Browse island records</summary>
-												<div class="record-list">
-													{#each profile?.transport.items ?? [] as record (record.id)}<Button
-															variant="outline"
-															size="sm"
-															onclick={() => (targetId = record.id)}
-															>{record.name || label(record.category)}<small>{record.id}</small
-															></Button
-														>{/each}
-												</div>
-											</details>{/if}
-										{#if needsNodes(operationType)}<Label class="field-label" for="from-node"
-												>From graph node ID</Label
-											><Input id="from-node" bind:value={fromNode} /><Label
-												class="field-label"
-												for="to-node">To graph node ID</Label
-											><Input id="to-node" bind:value={toNode} />
-											{#if route?.path_node_ids?.length}<Button
-													variant="ghost"
-													class="text-button"
-													onclick={() => {
-														fromNode = route?.path_node_ids?.[0] ?? '';
-														toNode = route?.path_node_ids?.at(-1) ?? '';
-													}}>Use the planned route’s endpoints</Button
-												>{/if}
-											<details>
-												<summary>Connection distance and graph guidance</summary><Label
-													class="field-label"
-													for="edge-distance">Connection distance in metres (optional)</Label
-												><Input
-													id="edge-distance"
-													type="number"
-													min={0.01}
-													step="any"
-													bind:value={distance}
-												/>
-												<p class="fine-print">
-													Use existing graph nodes. Land node IDs appear in a route result. Marine
-													and airport nodes require the backend graph artifacts.
-												</p>
-											</details>
-										{/if}
-										{#if operationType === 'weather_disruption'}<Label
-												class="field-label"
-												for="disabled-mode">Mode to restrict</Label
-											><NativeSelect.Root id="disabled-mode" bind:value={disabledMode}
-												>{#each [['car', 'Car'], ['bus', 'Bus'], ['taxi', 'Taxi'], ['bicycle', 'Bicycle'], ['walk', 'Walk'], ['marine', 'Passenger ferry']] as [value, text] (value)}<NativeSelect.Option
+										<section class="panel-section" style="margin-top:24px">
+											<Label class="field-label" for="operation-type">Your intervention</Label
+											><NativeSelect.Root
+												id="operation-type"
+												bind:value={operationType}
+												onchange={() => (pickMode = null)}
+												>{#each Object.entries(operationLabels) as [value, text] (value)}<NativeSelect.Option
 														{value}>{text}</NativeSelect.Option
 													>{/each}</NativeSelect.Root
-											>{/if}
-										<Button
-											variant="outline"
-											class="wide"
-											disabled={!selectedId || !!busy}
-											onclick={addOperation}><Plus size={16} />Add to option</Button
-										>
-									</section>
-									<section class="panel-section">
-										<div class="section-title">
-											<h3>Proposed changes</h3>
-											<span class="count-tag">{scenario.operations.length}</span>
-										</div>
-										{#each scenario.operations as operation, index (index)}<div
-												class="operation-row"
 											>
-												<span>{String(index + 1).padStart(2, '0')}</span>
-												<div>
-													<strong>{operationLabels[operation.type]}</strong><small
-														>{islands.find((island) => island.properties.id === operation.island_id)
-															?.properties.name ??
-															operation.island_id ??
-															'National'} · {operation.coordinates
-															?.map((n) => n.toFixed(5))
-															.join(', ') ??
-															operation.target_id ??
-															label(operation.type)}</small
-													>
-												</div>
-												<Button
-													variant="ghost"
-													size="icon-sm"
-													disabled={!!busy}
-													aria-label={'Remove operation ' + (index + 1)}
-													onclick={() =>
-														edit({
-															...scenario,
-															operations: scenario.operations.filter((_, i) => i !== index)
-														})}><Trash2 size={15} /></Button
-												>
-											</div>{/each}
-										{#if !scenario.operations.length}<p class="empty-state">
-												Start with one change. Place it on the map, then add it to your option.
-											</p>{/if}<Button
-											class="wide"
-											disabled={!!busy ||
-												!selectedId ||
-												!scenario.name.trim() ||
-												!scenario.operations.length}
-											onclick={runScenario}
-											>{busy === 'simulation' ? 'Testing option…' : 'Run simulation'}<FlaskConical
-												size={16}
-											/></Button
-										>
-										<p class="fine-print">
-											Results are scoped to {selected
-												? islandName(selected.properties.name, selected.properties.id)
-												: 'the selected island'}. Changes on other islands stay in the draft.
-										</p>
-									</section>
-									<Button variant="ghost" class="wide" onclick={() => setProposalView('candidates')}
-										>Need a starting point? Find candidates<Sparkles size={15} /></Button
-									>
-								</Tabs.Content>
-								<Tabs.Content value="candidates" class="context-tab-content">
-									<Label class="field-label" for="recommendation-type"
-										>What would you like to improve?</Label
-									><NativeSelect.Root
-										id="recommendation-type"
-										bind:value={recommendationType}
-										onchange={() => (recommendations = null)}
-										>{#each ['bus_stop', 'ferry_terminal', 'ferry_route', 'parking', 'mobility_hub', 'pedestrian', 'airport_access', 'underserved_island'] as type (type)}<NativeSelect.Option
-												value={type}>{label(type)}</NativeSelect.Option
-											>{/each}</NativeSelect.Root
-									><Button
-										class="wide"
-										disabled={!!busy || !selectedId}
-										onclick={requestRecommendations}
-										>{busy === 'recommendations'
-											? 'Screening candidates…'
-											: 'Find candidates'}<Sparkles size={16} /></Button
-									>
-									<p class="fine-print">
-										Ranks up to 20 candidates using 70% heuristic benefit and 30% confidence. Scores
-										are screening indicators.
-									</p>
-									{#if recommendations}<div class="section-title">
-											<h3>Planning candidates</h3>
-											<span>{recommendations.summary.candidate_count} considered</span>
-										</div>
-										{#each recommendations.recommendations as candidate, index (candidate.id)}<Card.Root
-												class="candidate-card"
-												><div class="section-title">
-													<span class="candidate-number">{String(index + 1).padStart(2, '0')}</span
-													><span class="soft-tag">SCORE {candidate.score.toFixed(1)}</span>
-												</div>
-												<h3>{label(candidate.type)} · {candidate.island_name}</h3>
-												<p>{candidate.reason}</p>
-												<div class="candidate-stats">
-													<span
-														>Heuristic benefit<b>{candidate.expected_benefit.toFixed(1)}/100</b
-														></span
-													><span>Confidence<b>{Math.round(candidate.confidence * 100)}%</b></span>
-												</div>
-												<details>
-													<summary>Assumptions and trade-offs</summary>
-													<ul class="plain-list">
-														{#each [...candidate.assumptions, ...candidate.trade_offs] as item, index (index)}<li
-															>
-																{item}
-															</li>{/each}
-													</ul>
-													<p class="fine-print">{candidate.planning_screening_disclaimer}</p>
-													{#each candidate.simulation.warnings as warning, index (index)}<p
-															class="fine-print"
-														>
-															{warning}
-														</p>{/each}
-												</details>
-												<Button
+											{#if needsCoordinates(operationType)}<Button
 													variant="outline"
 													class="wide"
-													onclick={() => {
-														edit(structuredClone(candidate.scenario));
-														setProposalView('edit');
-													}}>Open this candidate as an option<ArrowUpRight size={14} /></Button
-												></Card.Root
-											>{/each}{#if !recommendations.recommendations.length}<div class="empty-card">
-												<Sparkles size={25} />
-												<h3>No candidates in this cache</h3>
-												<p>
-													Try another intervention or island. Missing source coverage can limit
-													candidate generation.
-												</p>
-											</div>{/if}{:else}<div class="empty-card">
-											<Sparkles size={26} />
-											<h3>Explore what’s possible</h3>
-											<p>
-												Choose an intervention to generate candidates for {selected?.properties
-													.name ?? 'the selected island'}.
-											</p>
-										</div>{/if}
-									<div class="callout">
-										<strong>Planning screening</strong>
-										<p>
-											Candidate benefits are heuristics, not measured improvements or forecasts.
-											Review geometry, land availability, feasibility, and evidence before using an
-											option.
-										</p>
-									</div>
-								</Tabs.Content>
-								<Tabs.Content value="review" class="context-tab-content">
-									<div class="review-heading">
-										<span class="eyebrow">DECISION REVIEW</span>
-										<h2>What changes with your option?</h2>
-										<p>Compare how each proposal changes access, travel times and costs.</p>
-									</div>
-									{#if simulation}<section class="panel-section simulation-result">
-											<div class="section-title">
-												<h3>Changes from baseline</h3>
-												<Check size={17} />
-											</div>
-											<p>
-												{simulation.operations_applied.length} of {scenario.operations.length} operations
-												applied.
-											</p>
-											{#each Object.entries(simulation.delta) as [key, value] (key)}<div
-													class="metric-row"
+													onclick={() => (pickMode = 'operation')}
+													><MapPin size={16} />{longitude !== '' && latitude !== ''
+														? 'Change location on map'
+														: 'Place on map'}</Button
 												>
-													<span>{label(key)}</span><strong>{signed(value)}</strong>
-												</div>{/each}{#each simulation.warnings as warning, index (index)}<div
-													class="callout"
-												>
-													{warning}
-												</div>{/each}
-											<details>
-												<summary>Baseline and effective counts</summary>
-												<table>
-													<thead><tr><th>Metric</th><th>Before</th><th>After</th></tr></thead><tbody
-														>{#each Object.entries(simulation.baseline) as [key, value] (key)}<tr
-																><td>{label(key)}</td><td>{fmt(value)}</td><td
-																	>{fmt(simulation.effective_world[key])}</td
-																></tr
-															>{/each}</tbody
+												{#if longitude !== '' && latitude !== ''}<p class="coordinate-readout">
+														Location: {Number(longitude).toFixed(5)}, {Number(latitude).toFixed(5)}
+													</p>{/if}
+												<details>
+													<summary>Enter coordinates or use island centroid</summary>
+													<div class="field-pair">
+														<Label
+															>Longitude<Input
+																aria-label="Proposal longitude"
+																type="number"
+																step="any"
+																bind:value={longitude}
+															/></Label
+														><Label
+															>Latitude<Input
+																aria-label="Proposal latitude"
+																type="number"
+																step="any"
+																bind:value={latitude}
+															/></Label
+														>
+													</div>
+													<Button
+														variant="ghost"
+														class="text-button"
+														disabled={!selected?.properties.centroid}
+														onclick={() => {
+															const center = selected?.properties.centroid;
+															if (center) {
+																longitude = center[0];
+																latitude = center[1];
+															}
+														}}>Use island centroid</Button
 													>
-												</table>
-											</details>
-										</section>
-									{:else}<div class="empty-card">
-											<FlaskConical size={28} />
-											<h3>Your results will appear here</h3>
-											<p>
-												Add a change and run the simulation to review its effect on the selected
-												island.
-											</p>
-											<Button onclick={() => setProposalView('edit')}
-												>Continue building<ArrowRight size={16} /></Button
+												</details>
+											{/if}
+											{#if needsTarget(operationType)}<Label class="field-label" for="target-id"
+													>Target record or graph edge ID</Label
+												><Input
+													id="target-id"
+													bind:value={targetId}
+													placeholder="Exact source ID"
+												/>
+												<p class="fine-print">
+													Select a source record or enter a graph edge/OSM way ID. Unknown targets
+													are reported as unapplied.
+												</p>
+												<details>
+													<summary>Browse island records</summary>
+													<div class="record-list">
+														{#each profile?.transport.items ?? [] as record (record.id)}<Button
+																variant="outline"
+																size="sm"
+																onclick={() => (targetId = record.id)}
+																>{record.name || label(record.category)}<small>{record.id}</small
+																></Button
+															>{/each}
+													</div>
+												</details>{/if}
+											{#if needsNodes(operationType)}<Label class="field-label" for="from-node"
+													>From graph node ID</Label
+												><Input id="from-node" bind:value={fromNode} /><Label
+													class="field-label"
+													for="to-node">To graph node ID</Label
+												><Input id="to-node" bind:value={toNode} />
+												{#if route?.path_node_ids?.length}<Button
+														variant="ghost"
+														class="text-button"
+														onclick={() => {
+															fromNode = route?.path_node_ids?.[0] ?? '';
+															toNode = route?.path_node_ids?.at(-1) ?? '';
+														}}>Use the planned route’s endpoints</Button
+													>{/if}
+												<details>
+													<summary>Connection distance and graph guidance</summary><Label
+														class="field-label"
+														for="edge-distance">Connection distance in metres (optional)</Label
+													><Input
+														id="edge-distance"
+														type="number"
+														min={0.01}
+														step="any"
+														bind:value={distance}
+													/>
+													<p class="fine-print">
+														Use existing graph nodes. Land node IDs appear in a route result. Marine
+														and airport nodes require the backend graph artifacts.
+													</p>
+												</details>
+											{/if}
+											{#if operationType === 'weather_disruption'}<Label
+													class="field-label"
+													for="disabled-mode">Mode to restrict</Label
+												><NativeSelect.Root id="disabled-mode" bind:value={disabledMode}
+													>{#each [['car', 'Car'], ['bus', 'Bus'], ['taxi', 'Taxi'], ['bicycle', 'Bicycle'], ['walk', 'Walk'], ['marine', 'Passenger ferry']] as [value, text] (value)}<NativeSelect.Option
+															{value}>{text}</NativeSelect.Option
+														>{/each}</NativeSelect.Root
+												>{/if}
+											<Button
+												variant="outline"
+												class="wide"
+												disabled={!selectedId || !!busy}
+												onclick={addOperation}><Plus size={16} />Add to option</Button
 											>
-										</div>{/if}
-									<div class="comparison-actions">
-										<Button
-											variant="outline"
-											class="wide"
-											disabled={!!busy}
-											onclick={() => {
-												reference = structuredClone(scenario);
-												comparison = null;
-												notice = 'Reference saved: ' + scenario.name;
-											}}>Save as comparison reference</Button
-										>{#if reference}<p class="fine-print">
-												Reference: {reference.name} · {reference.operations.length} changes
+										</section>
+										<section class="panel-section">
+											<div class="section-title">
+												<h3>Proposed changes</h3>
+												<span class="count-tag">{scenario.operations.length}</span>
+											</div>
+											{#each scenario.operations as operation, index (index)}<div
+													class="operation-row"
+												>
+													<span>{String(index + 1).padStart(2, '0')}</span>
+													<div>
+														<strong>{operationLabels[operation.type]}</strong><small
+															>{islands.find(
+																(island) => island.properties.id === operation.island_id
+															)?.properties.name ??
+																operation.island_id ??
+																'National'} · {operation.coordinates
+																?.map((n) => n.toFixed(5))
+																.join(', ') ??
+																operation.target_id ??
+																label(operation.type)}</small
+														>
+													</div>
+													<Button
+														variant="ghost"
+														size="icon-sm"
+														disabled={!!busy}
+														aria-label={'Remove operation ' + (index + 1)}
+														onclick={() =>
+															edit({
+																...scenario,
+																operations: scenario.operations.filter((_, i) => i !== index)
+															})}><Trash2 size={15} /></Button
+													>
+												</div>{/each}
+											{#if !scenario.operations.length}<p class="empty-state">
+													Start with one change. Place it on the map, then add it to your option.
+												</p>{/if}<Button
+												class="wide"
+												disabled={!!busy ||
+													!selectedId ||
+													!scenario.name.trim() ||
+													!scenario.operations.length}
+												onclick={runScenario}
+												>{busy === 'simulation' ? 'Testing option…' : 'Run simulation'}<FlaskConical
+													size={16}
+												/></Button
+											>
+											<p class="fine-print">
+												Results are scoped to {selected
+													? islandName(selected.properties.name, selected.properties.id)
+													: 'the selected island'}. Changes on other islands stay in the draft.
 											</p>
+										</section>
+										<Button
+											variant="ghost"
+											class="wide"
+											onclick={() => setProposalView('candidates')}
+											>Need a starting point? Find candidates<Sparkles size={15} /></Button
+										>
+									</Tabs.Content>
+									<Tabs.Content value="candidates" class="context-tab-content">
+										<Label class="field-label" for="recommendation-type"
+											>What would you like to improve?</Label
+										><NativeSelect.Root
+											id="recommendation-type"
+											bind:value={recommendationType}
+											onchange={() => (recommendations = null)}
+											>{#each ['bus_stop', 'ferry_terminal', 'ferry_route', 'parking', 'mobility_hub', 'pedestrian', 'airport_access', 'underserved_island'] as type (type)}<NativeSelect.Option
+													value={type}>{label(type)}</NativeSelect.Option
+												>{/each}</NativeSelect.Root
+										><Button
+											class="wide"
+											disabled={!!busy || !selectedId}
+											onclick={requestRecommendations}
+											>{busy === 'recommendations'
+												? 'Screening candidates…'
+												: 'Find candidates'}<Sparkles size={16} /></Button
+										>
+										<p class="fine-print">
+											Ranks up to 20 candidates using 70% heuristic benefit and 30% confidence.
+											Scores are screening indicators.
+										</p>
+										{#if recommendations}<div class="section-title">
+												<h3>Planning candidates</h3>
+												<span>{recommendations.summary.candidate_count} considered</span>
+											</div>
+											{#each recommendations.recommendations as candidate, index (candidate.id)}<Card.Root
+													class="candidate-card"
+													><div class="section-title">
+														<span class="candidate-number"
+															>{String(index + 1).padStart(2, '0')}</span
+														><span class="soft-tag">SCORE {candidate.score.toFixed(1)}</span>
+													</div>
+													<h3>{label(candidate.type)} · {candidate.island_name}</h3>
+													<p>{candidate.reason}</p>
+													<div class="candidate-stats">
+														<span
+															>Heuristic benefit<b>{candidate.expected_benefit.toFixed(1)}/100</b
+															></span
+														><span>Confidence<b>{Math.round(candidate.confidence * 100)}%</b></span>
+													</div>
+													<details>
+														<summary>Assumptions and trade-offs</summary>
+														<ul class="plain-list">
+															{#each [...candidate.assumptions, ...candidate.trade_offs] as item, index (index)}<li
+																>
+																	{item}
+																</li>{/each}
+														</ul>
+														<p class="fine-print">{candidate.planning_screening_disclaimer}</p>
+														{#each candidate.simulation.warnings as warning, index (index)}<p
+																class="fine-print"
+															>
+																{warning}
+															</p>{/each}
+													</details>
+													<Button
+														variant="outline"
+														class="wide"
+														onclick={() => {
+															edit(structuredClone(candidate.scenario));
+															setProposalView('edit');
+														}}>Open this candidate as an option<ArrowUpRight size={14} /></Button
+													></Card.Root
+												>{/each}{#if !recommendations.recommendations.length}<div
+													class="empty-card"
+												>
+													<Sparkles size={25} />
+													<h3>No candidates in this cache</h3>
+													<p>
+														Try another intervention or island. Missing source coverage can limit
+														candidate generation.
+													</p>
+												</div>{/if}{:else}<div class="empty-card">
+												<Sparkles size={26} />
+												<h3>Explore what’s possible</h3>
+												<p>
+													Choose an intervention to generate candidates for {selected?.properties
+														.name ?? 'the selected island'}.
+												</p>
+											</div>{/if}
+										<div class="callout">
+											<strong>Planning screening</strong>
+											<p>
+												Candidate benefits are heuristics, not measured improvements or forecasts.
+												Review geometry, land availability, feasibility, and evidence before using
+												an option.
+											</p>
+										</div>
+									</Tabs.Content>
+									<Tabs.Content value="review" class="context-tab-content">
+										<div class="review-heading">
+											<span class="eyebrow">DECISION REVIEW</span>
+											<h2>What changes with your option?</h2>
+											<p>Compare how each proposal changes access, travel times and costs.</p>
+										</div>
+										{#if simulation}<section class="panel-section simulation-result">
+												<div class="section-title">
+													<h3>Changes from baseline</h3>
+													<Check size={17} />
+												</div>
+												<p>
+													{simulation.operations_applied.length} of {scenario.operations.length} operations
+													applied.
+												</p>
+												{#each Object.entries(simulation.delta) as [key, value] (key)}<div
+														class="metric-row"
+													>
+														<span>{label(key)}</span><strong>{signed(value)}</strong>
+													</div>{/each}{#each simulation.warnings as warning, index (index)}<div
+														class="callout"
+													>
+														{warning}
+													</div>{/each}
+												<details>
+													<summary>Baseline and effective counts</summary>
+													<table>
+														<thead><tr><th>Metric</th><th>Before</th><th>After</th></tr></thead
+														><tbody
+															>{#each Object.entries(simulation.baseline) as [key, value] (key)}<tr
+																	><td>{label(key)}</td><td>{fmt(value)}</td><td
+																		>{fmt(simulation.effective_world[key])}</td
+																	></tr
+																>{/each}</tbody
+														>
+													</table>
+												</details>
+											</section>
+										{:else}<div class="empty-card">
+												<FlaskConical size={28} />
+												<h3>Your results will appear here</h3>
+												<p>
+													Add a change and run the simulation to review its effect on the selected
+													island.
+												</p>
+												<Button onclick={() => setProposalView('edit')}
+													>Continue building<ArrowRight size={16} /></Button
+												>
+											</div>{/if}
+										<div class="comparison-actions">
 											<Button
 												variant="outline"
 												class="wide"
 												disabled={!!busy}
-												onclick={compareScenario}
-												>{busy === 'compare'
-													? 'Comparing…'
-													: 'Compare current option with reference'}</Button
-											>{/if}{#if comparison}<div class="callout">
-												<strong>Current minus reference</strong
-												>{#each Object.entries(comparison.delta) as [key, value] (key)}<div
-														class="metric-row"
-													>
-														<span>{label(key.replace('first_vs_second_', ''))}</span><b
-															>{signed(value)}</b
+												onclick={() => {
+													reference = structuredClone(scenario);
+													comparison = null;
+													notice = 'Reference saved: ' + scenario.name;
+												}}>Save as comparison reference</Button
+											>{#if reference}<p class="fine-print">
+													Reference: {reference.name} · {reference.operations.length} changes
+												</p>
+												<Button
+													variant="outline"
+													class="wide"
+													disabled={!!busy}
+													onclick={compareScenario}
+													>{busy === 'compare'
+														? 'Comparing…'
+														: 'Compare current option with reference'}</Button
+												>{/if}{#if comparison}<div class="callout">
+													<strong>Current minus reference</strong
+													>{#each Object.entries(comparison.delta) as [key, value] (key)}<div
+															class="metric-row"
 														>
-													</div>{/each}
-											</div>{/if}
-									</div>
-									<div class="callout">
-										<strong>What this simulation measures</strong>
-										<p>
-											Network edges and transport feature counts. A new stop does not establish a
-											bus service. This backend does not estimate journey-time savings, ridership,
-											costs, or changes to accessibility scores.
-										</p>
-									</div>
-									{#if simulation}<Button class="wide" onclick={exportBrief}
-											><Download size={16} />Export decision brief</Button
-										><Button variant="ghost" class="wide" onclick={() => go('evidence')}
-											>Review sources and limitations<ArrowRight size={15} /></Button
-										>{/if}
-								</Tabs.Content>
-							</Tabs.Root>
-						{/if}
-					</Card.Root>
-				</div>
-			</aside>
-			{#if tab === 'explore' && !seaActive && selectedId && !showAccessExplorer && !pickMode && !panelOpen}<div
-					class="map-action-dock"
-				>
-					<span class="dock-label">EXPLORE THIS PLACE</span><Button
-						variant="ghost"
-						disabled={loading || !selected}
-						onclick={() => setProfileView('route')}><Route size={17} />Directions</Button
-					><span class="dock-divider"></span><Button
-						variant="ghost"
-						disabled={loading || !selected}
-						onclick={() => setExploreView('places')}><Search size={17} />Find a place</Button
-					><Button disabled={loading || !selected} onclick={startIslandProposal}
-						>Create proposal<Plus size={16} /></Button
-					>
-				</div>{:else if tab === 'scenarios' || tab === 'recommendations'}<div
+															<span>{label(key.replace('first_vs_second_', ''))}</span><b
+																>{signed(value)}</b
+															>
+														</div>{/each}
+												</div>{/if}
+										</div>
+										<div class="callout">
+											<strong>What this simulation measures</strong>
+											<p>
+												Network edges and transport feature counts. A new stop does not establish a
+												bus service. This backend does not estimate journey-time savings, ridership,
+												costs, or changes to accessibility scores.
+											</p>
+										</div>
+										{#if simulation}<Button class="wide" onclick={exportBrief}
+												><Download size={16} />Export decision brief</Button
+											><Button variant="ghost" class="wide" onclick={() => go('evidence')}
+												>Review sources and limitations<ArrowRight size={15} /></Button
+											>{/if}
+									</Tabs.Content>
+								</Tabs.Root>
+							{/if}
+						</Card.Root>
+					</div>
+				</aside>{/if}
+			{#if tab === 'scenarios' || tab === 'recommendations'}<div
 					class="map-action-dock proposal-dock"
 				>
 					<span class="dock-label">{scenario.operations.length} CHANGES</span><Button
@@ -2729,93 +2857,3 @@
 			</div>{/if}
 	</main>
 </div>
-<Popover.Root bind:open={islandSearchOpen}>
-	<Popover.Portal>
-		<Popover.Content
-			id="island-search-results"
-			bind:ref={islandSearchContent}
-			class="island-search-popover"
-			role="dialog"
-			aria-label="Find an island or atoll"
-			customAnchor={islandSearchAnchor}
-			side="bottom"
-			align="start"
-			sideOffset={8}
-			collisionPadding={12}
-			trapFocus={false}
-			onOpenAutoFocus={(event) => {
-				event.preventDefault();
-				islandSearchInput?.focus();
-			}}
-			onCloseAutoFocus={(event) => {
-				event.preventDefault();
-				if (islandSearchAnchor?.isConnected) islandSearchAnchor.focus();
-			}}
-			onEscapeKeydown={(event) => {
-				event.preventDefault();
-				event.stopPropagation();
-				islandSearchOpen = false;
-			}}
-			onkeydown={searchKeydown}
-		>
-			<div class="island-search-heading">
-				<strong>Find an island or atoll</strong>
-				<Button
-					variant="ghost"
-					size="icon"
-					aria-label="Close island search"
-					onclick={() => (islandSearchOpen = false)}><X size={15} /></Button
-				>
-			</div>
-			<div class="search-field">
-				<Search size={16} /><Input
-					bind:ref={islandSearchInput}
-					aria-label="Search islands"
-					placeholder="Search islands or atolls"
-					autocomplete="off"
-					bind:value={search}
-				/>
-			</div>
-			<NativeSelect.Root aria-label="Filter by atoll" bind:value={atoll}>
-				<NativeSelect.Option value="">All atolls</NativeSelect.Option>
-				{#each atolls as name (name)}<NativeSelect.Option value={name}>{name}</NativeSelect.Option
-					>{/each}
-			</NativeSelect.Root>
-			<div class="list-heading" aria-live="polite">
-				<span>{loading ? 'Loading islands…' : `${fmt(filtered.length)} islands`}</span>
-				{#if atoll || search}<Button
-						variant="ghost"
-						class="text-button"
-						onclick={() => {
-							search = '';
-							atoll = '';
-							islandSearchInput?.focus();
-						}}>Clear</Button
-					>{/if}
-			</div>
-			<div class="island-list">
-				{#each filtered.slice(0, 100) as island (island.properties.id)}
-					<Button
-						data-island-id={island.properties.id}
-						variant="ghost"
-						class={selectedId === island.properties.id ? 'selected' : ''}
-						onclick={() => inspectIsland(island.properties.id)}
-					>
-						<MapPin size={15} class="island-result-pin" />
-						<span class="island-info"
-							><strong>{islandName(island.properties.name, island.properties.id)}</strong><small
-								>{island.properties.atoll || 'Atoll not recorded'}</small
-							></span
-						>
-						<ArrowUpRight size={15} />
-					</Button>
-				{/each}
-				{#if !loading && !filtered.length}<p class="empty-state">
-						No islands match this search.
-					</p>{:else if filtered.length > 100}<p class="list-note">
-						Search or choose an atoll to narrow the list.
-					</p>{/if}
-			</div>
-		</Popover.Content>
-	</Popover.Portal>
-</Popover.Root>
