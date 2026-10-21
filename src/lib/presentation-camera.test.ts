@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	presentationCameraProfile,
 	presentationDamping,
 	presentationDampedBearing,
 	presentationFollowPoint,
@@ -43,6 +44,33 @@ describe('continuous presentation tracking', () => {
 });
 
 describe('presentation travel camera envelope', () => {
+	it('keeps distinct ferry and flight framing continuous from departure through arrival', () => {
+		const ferry = presentationCameraProfile('ferry');
+		const air = presentationCameraProfile('air');
+		expect(ferry.cruiseZoom).toBeGreaterThan(air.cruiseZoom);
+		expect(ferry.lookAheadMs).toBeGreaterThan(air.lookAheadMs);
+		expect(air.departureEnd).toBeLessThan(ferry.departureEnd);
+		for (const mode of ['ferry', 'air'] as const) {
+			const profile = presentationCameraProfile(mode);
+			expect(presentationTravelEnvelope(0, mode)).toBe(0);
+			expect(presentationTravelEnvelope(1, mode)).toBe(0);
+			expect(presentationTravelEnvelope(profile.departureEnd, mode)).toBe(1);
+			expect(presentationTravelEnvelope(profile.arrivalStart, mode)).toBe(1);
+			expect(presentationFollowPoint([10, 20], [8, 18], [8, 18], 0, mode)).toEqual([10, 20]);
+			expect(
+				presentationFollowPoint([10, 20], [8, 18], [9, 19], profile.departureBlendEnd, mode)
+			).toEqual([9, 19]);
+			const delta = 0.00001;
+			for (const join of [0, profile.departureEnd, profile.arrivalStart, 1]) {
+				const velocity =
+					(presentationTravelEnvelope(join + delta, mode) -
+						presentationTravelEnvelope(join - delta, mode)) /
+					(2 * delta);
+				expect(Math.abs(velocity)).toBeLessThan(0.001);
+			}
+		}
+	});
+
 	it('holds a steady cruise between smooth departure and arrival', () => {
 		expect(presentationTravelEnvelope(0)).toBe(0);
 		expect(presentationTravelEnvelope(0.11)).toBeCloseTo(0.5);

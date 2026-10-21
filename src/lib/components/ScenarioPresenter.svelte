@@ -32,10 +32,8 @@
 	} = $props();
 	type SceneKind =
 		| 'island'
-		| 'ferry-inspect'
 		| 'ferry-travel'
 		| 'airport'
-		| 'flight-inspect'
 		| 'flight-travel'
 		| 'access'
 		| 'population'
@@ -51,13 +49,6 @@
 	const scenes: Scene[] = [
 		{ title: 'Baarah, Haa Alifu', kind: 'island', location: 'baarah', chapter: 0 },
 		{
-			title: 'Baarah → Vashafaru',
-			kind: 'ferry-inspect',
-			location: 'baarah',
-			chapter: 1,
-			ferryIndex: 0
-		},
-		{
 			title: 'Ferry to Vashafaru',
 			kind: 'ferry-travel',
 			location: 'baarah',
@@ -65,13 +56,6 @@
 			ferryIndex: 0
 		},
 		{ title: 'Vashafaru, Haa Alifu', kind: 'island', location: 'vashafaru', chapter: 1 },
-		{
-			title: 'Vashafaru → Dhidhdhoo',
-			kind: 'ferry-inspect',
-			location: 'vashafaru',
-			chapter: 1,
-			ferryIndex: 1
-		},
 		{
 			title: 'Ferry to Dhidhdhoo',
 			kind: 'ferry-travel',
@@ -81,13 +65,6 @@
 		},
 		{ title: 'Dhidhdhoo, Haa Alifu', kind: 'island', location: 'dhidhdhoo', chapter: 1 },
 		{
-			title: 'Dhidhdhoo → Hanimaadhoo',
-			kind: 'ferry-inspect',
-			location: 'dhidhdhoo',
-			chapter: 1,
-			ferryIndex: 2
-		},
-		{
 			title: 'Ferry to Hanimaadhoo',
 			kind: 'ferry-travel',
 			location: 'dhidhdhoo',
@@ -95,7 +72,6 @@
 			ferryIndex: 2
 		},
 		{ title: 'Hanimaadhoo Airport', kind: 'airport', location: 'hanimaadhoo', chapter: 2 },
-		{ title: 'Hanimaadhoo → Velana', kind: 'flight-inspect', location: 'hanimaadhoo', chapter: 2 },
 		{ title: 'Landing at Velana', kind: 'flight-travel', location: 'hanimaadhoo', chapter: 2 },
 		{ title: 'The last few kilometres', kind: 'access', location: 'hulhumale', chapter: 3 },
 		{ title: 'People behind the map', kind: 'population', location: 'hulhumale', chapter: 3 },
@@ -117,6 +93,11 @@
 		collapsed = $state(false);
 	let story = $state.raw<PresentationStory | null>(null);
 	let panelBody = $state<HTMLDivElement>();
+	let controlsQuiet = $state(false);
+	let previousIslandHeading = $state('');
+	let lastIslandHeading = '';
+	let controlsTimer: ReturnType<typeof setTimeout> | undefined;
+	let headingTimer: ReturnType<typeof setTimeout> | undefined;
 	let controller: AbortController | undefined;
 	const blank = emptyFeatures();
 	const scene = $derived(scenes[step]);
@@ -146,9 +127,6 @@
 	const pickupPlayback = $derived(
 		presentationPlaybackLegs(pickupLegs, { weights: { wait: 3, bus: 6, walk: 1 } })
 	);
-	const connectionWaitWeight = $derived(
-		scene.ferryIndex === 0 ? 2.5 : scene.ferryIndex === 1 ? 0.8 : 1.8
-	);
 	const arrivalPlayback = $derived(
 		islandTravel
 			? presentationPlaybackLegs(
@@ -163,7 +141,8 @@
 							geometry: ferryScene ? ferry?.geometry : story?.flightGeometry
 						}
 					],
-					{ weights: { wait: ferryScene ? connectionWaitWeight : 2.5, ferry: 4.5, air: 4.75 } }
+					// Account for the wait immediately, then spend screen time on the crossing.
+					{ weights: { wait: 0, ferry: 4.5, air: 4.75 } }
 				)
 			: []
 	);
@@ -200,6 +179,19 @@
 	const cameraEntering = $derived(
 		progress?.key !== `${step}:${replay}` || ['idle', 'entering'].includes(progress.phase)
 	);
+	const arrived = $derived(
+		islandTravel && progress?.key === `${step}:${replay}` && progress.phase === 'complete'
+	);
+	const waitIncluded = $derived(
+		ferryScene
+			? ferry?.waitMinutes
+			: scene.kind === 'flight-travel'
+				? story?.timing.connection.minutes
+				: null
+	);
+	const showWaitCue = $derived(
+		arrivalRunning && playbackProgress < 0.48 && waitIncluded != null && waitIncluded > 0
+	);
 	const arrivalClock = $derived(
 		presentationTimeline(
 			step,
@@ -226,9 +218,9 @@
 			step,
 			scene.kind === 'bus' ? (pickupState?.clockProgress ?? playbackProgress) : playbackProgress,
 			[
-				{ step: 14, minutes: firstWalk?.minutes },
+				{ step: scenes.findIndex((item) => item.kind === 'walk'), minutes: firstWalk?.minutes },
 				{
-					step: 15,
+					step: scenes.findIndex((item) => item.kind === 'bus'),
 					minutes: legs.length
 						? legs.filter((leg) => leg !== firstWalk).reduce((sum, leg) => sum + leg.minutes, 0)
 						: null
@@ -272,13 +264,24 @@
 	}
 	onMount(() => {
 		void load();
+		showControls();
+		window.addEventListener('pointermove', showControls, { passive: true });
 		window.addEventListener('keydown', keydown, { capture: true });
 		return () => {
 			controller?.abort();
+			clearTimeout(controlsTimer);
+			clearTimeout(headingTimer);
+			window.removeEventListener('pointermove', showControls);
 			window.removeEventListener('keydown', keydown, { capture: true });
 		};
 	});
+	function showControls() {
+		controlsQuiet = false;
+		clearTimeout(controlsTimer);
+		controlsTimer = setTimeout(() => (controlsQuiet = true), 2800);
+	}
 	function move(delta: number) {
+		showControls();
 		step = Math.max(0, Math.min(steps.length - 1, step + delta));
 		collapsed = false;
 	}
@@ -298,6 +301,7 @@
 				target.closest('input,textarea,select,[contenteditable="true"]'))
 		)
 			return;
+		showControls();
 		if (event.key === 'Escape') {
 			event.preventDefault();
 			event.stopImmediatePropagation();
@@ -382,12 +386,7 @@
 		camera.durationMs = scene.kind === 'flight-travel' || scene.kind === 'access' ? 1500 : 1100;
 		camera.bearing = flightScene ? 0 : -8;
 		camera.pitch = flightScene ? 12 : 20;
-		const panel =
-			islandPanel && !collapsed
-				? ('island' as const)
-				: scene.kind === 'flight-inspect' || scene.kind === 'ferry-inspect'
-					? ('route' as const)
-					: undefined;
+		const panel = islandPanel && !collapsed ? ('island' as const) : undefined;
 		const duration =
 			scene.kind === 'ferry-travel'
 				? crossing?.elapsedMinutes
@@ -465,52 +464,18 @@
 						: {}),
 				camera,
 				panel,
-				emphasis: { quietContext: step > 0 },
-				...(scene.kind === 'ferry-inspect' && crossing
-					? {
-							inspect: {
-								mode: 'ferry' as const,
-								routeId: crossing.route.id,
-								coordinates: crossing.geometry[0],
-								summary: {
-									title: `${shortIslandName(crossing.from, crossing.fromIslandId)} → ${shortIslandName(crossing.to, crossing.toIslandId)}`,
-									minutes: crossing.minutes,
-									weeklySailings: crossing.sourceWeeklySailings,
-									qualification: crossing.qualification,
-									timingLabel: 'Route crossing',
-									frequencyLabel: 'Source weekly sailings'
-								}
-							}
-						}
-					: {}),
-				...(scene.kind === 'flight-inspect' && data?.flight
-					? {
-							inspect: {
-								mode: 'air' as const,
-								routeId: data.flight.id,
-								coordinates: haq,
-								summary: {
-									title: 'Hanimaadhoo → Velana',
-									minutes: data.timing.flight.minutes,
-									weeklySailings: null,
-									qualification: `${data.timing.flight.qualification} ${data.timing.connection.qualification}`,
-									timingLabel: 'Estimated flight'
-								}
-							}
-						}
-					: {}),
+				emphasis: { quietContext: step > 0, revealAccess: scene.kind === 'access' },
 				...(animated && paths.length && playbackReady
 					? {
 							playback: {
 								durationMs:
 									scene.kind === 'flight-travel'
-										? 7250
+										? 4750
 										: scene.kind === 'ferry-travel'
-											? 4500 + connectionWaitWeight * 1000
+											? 4500
 											: scene.kind === 'bus'
 												? 10000
 												: 8000,
-								establishMs: scene.kind === 'flight-travel' ? 850 : 700,
 								...(islandTravel || scene.kind === 'bus' ? { continueFrom: `${step - 1}:` } : {}),
 								...(scene.kind === 'bus' ? { timeline: pickupPlayback } : {}),
 								...(islandTravel && arrivalPlayback.length ? { timeline: arrivalPlayback } : {}),
@@ -550,6 +515,18 @@
 			if (statsIslandId === currentIsland) panelBody?.scrollTo({ top: 0, behavior: 'auto' });
 		});
 	});
+	$effect(() => {
+		const name = statsData?.profile?.island.name;
+		if (!name) return;
+		untrack(() => {
+			if (lastIslandHeading && lastIslandHeading !== name) {
+				previousIslandHeading = lastIslandHeading;
+				clearTimeout(headingTimer);
+				headingTimer = setTimeout(() => (previousIslandHeading = ''), 260);
+			}
+			lastIslandHeading = name;
+		});
+	});
 
 	const context = $derived(
 		step === 0 && story
@@ -577,10 +554,12 @@
 
 <section
 	class="scenario-presenter"
+	class:controls-quiet={controlsQuiet}
 	aria-label="Scenario presentation"
 	data-step={step}
 	data-scene={scene.kind}
 	data-chapter={chapter + 1}
+	data-controls-quiet={controlsQuiet}
 	aria-busy={loading}
 >
 	<div class="journey-overlay">
@@ -665,6 +644,15 @@
 		{#if context}{#key step}<div class="scenario-context" aria-live="polite">
 					{context}
 				</div>{/key}{/if}
+		{#if showWaitCue}
+			<div class="wait-included" role="status" data-testid="presentation-wait-included">
+				<span class="wait-included-mark" aria-hidden="true"></span>
+				<span
+					><strong>{duration(waitIncluded)}</strong>
+					{ferryScene ? 'waiting included' : 'connection allowance included'}</span
+				>
+			</div>
+		{/if}
 		{#if pickupScene}
 			<div
 				class="journey-stages"
@@ -696,6 +684,8 @@
 	{#if islandPanel && !collapsed}
 		<aside
 			class="scenario-island-panel"
+			class:in-transit={arrivalRunning}
+			class:arrived
 			class:awaiting-camera={cameraEntering && !islandTravel}
 			inert={cameraEntering && !islandTravel}
 			aria-label="Scenario island details"
@@ -703,7 +693,12 @@
 			<header>
 				<div>
 					<span class="panel-eyebrow">{airportStats ? 'AIRPORT ISLAND' : 'ISLAND ACCESS'}</span>
-					<h2>{statsData?.profile?.island.name ?? steps[step]}</h2>
+					<div class="island-heading">
+						{#key statsIslandId}<h2>{statsData?.profile?.island.name ?? steps[step]}</h2>{/key}
+						{#if previousIslandHeading}<span class="previous-island-heading" aria-hidden="true"
+								>{previousIslandHeading}</span
+							>{/if}
+					</div>
 				</div>
 				<button
 					aria-label="Collapse island details"
@@ -783,6 +778,7 @@
 						</dl>
 						<details class="connection-source">
 							<summary>Connection assumptions</summary>
+							<p>{story?.timing.flight.qualification}</p>
 							<p>{story?.timing.connection.qualification}</p>
 							{#if story?.timing.connection.sourceUrl}<a
 									href={story.timing.connection.sourceUrl}
@@ -792,32 +788,39 @@
 						</details>
 					</section>
 				{/if}
-				<IslandOverview
-					presentation={scene.kind === 'population' ? 'population' : 'access'}
-					presentationFact={scene.kind === 'access'
-						? {
-								label: 'Walk to the nearest bus stop',
-								value: minutes(firstWalk?.minutes),
-								detail: 'From Phase 3 · Modeled walking route'
-							}
-						: airportStats
-							? {
-									label: 'Airport connection',
-									value: 'HAQ',
-									detail: 'Hanimaadhoo Airport · Air connection to Velana'
-								}
-							: undefined}
-					presentationAirport={story?.airNetwork?.airports.find(
-						(airport) => airport.island_id === statsIslandId
-					) ?? null}
-					profile={statsData?.profile ?? null}
-					loading={statsData?.loading ?? true}
-					error={statsData?.error ?? ''}
-					connectivity={statsData?.connectivity ?? null}
-					connectivityLoading={statsData?.loading ?? true}
-					connectivityDate={story?.serviceDate ?? ''}
-					onRetry={() => load(true)}
-				/>
+				{#key statsIslandId}
+					<div
+						class="island-statistics"
+						class:access-revealed={scene.kind === 'access' && !cameraEntering}
+					>
+						<IslandOverview
+							presentation={scene.kind === 'population' ? 'population' : 'access'}
+							presentationFact={scene.kind === 'access'
+								? {
+										label: 'Walk to the nearest bus stop',
+										value: minutes(firstWalk?.minutes),
+										detail: 'From Phase 3 · Modeled walking route'
+									}
+								: airportStats
+									? {
+											label: 'Airport connection',
+											value: 'HAQ',
+											detail: 'Hanimaadhoo Airport · Air connection to Velana'
+										}
+									: undefined}
+							presentationAirport={story?.airNetwork?.airports.find(
+								(airport) => airport.island_id === statsIslandId
+							) ?? null}
+							profile={statsData?.profile ?? null}
+							loading={statsData?.loading ?? true}
+							error={statsData?.error ?? ''}
+							connectivity={statsData?.connectivity ?? null}
+							connectivityLoading={statsData?.loading ?? true}
+							connectivityDate={story?.serviceDate ?? ''}
+							onRetry={() => load(true)}
+						/>
+					</div>
+				{/key}
 			</div>
 		</aside>
 	{:else if islandPanel}<button class="reopen-island" onclick={() => (collapsed = false)}
@@ -918,13 +921,16 @@
 	}
 	.journey-clocks {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: 1.15fr 0.85fr;
 		width: 100%;
 		border: 1px solid #d6e1dbb3;
 		border-radius: 18px;
 		background: #f0f5f2f5;
 		box-shadow: 0 8px 32px #173c2610;
 		overflow: hidden;
+	}
+	.journey-clocks.pickup-current {
+		grid-template-columns: 0.85fr 1.15fr;
 	}
 	.journey-clock {
 		position: relative;
@@ -980,7 +986,7 @@
 		white-space: nowrap;
 	}
 	.clock-value strong {
-		font-size: 23px;
+		font-size: 21px;
 		line-height: 1.15;
 		font-weight: 600;
 		letter-spacing: -0.04em;
@@ -1018,6 +1024,36 @@
 		line-height: 1.3;
 		color: var(--theme-color-6f8177);
 	}
+	.journey-clock:not(.current) .clock-note {
+		display: none;
+	}
+	.wait-included {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		max-width: 100%;
+		padding: 10px 13px;
+		border: 1px solid #d6e1dbb3;
+		border-radius: 12px;
+		background: #fffffff5;
+		box-shadow: 0 4px 20px #173c2608;
+		font-size: 12px;
+		line-height: 1.4;
+		color: #50635b;
+		animation: scene-enter 220ms ease-out both;
+	}
+	.wait-included strong {
+		font-weight: 650;
+		font-variant-numeric: tabular-nums;
+		color: #273732;
+	}
+	.wait-included-mark {
+		width: 3px;
+		height: 24px;
+		flex-shrink: 0;
+		border-radius: 3px;
+		background: #c89d70;
+	}
 	.scenario-island-panel {
 		position: absolute;
 		right: 24px;
@@ -1035,7 +1071,14 @@
 		box-shadow: 0 12px 40px #173c2614;
 		transition:
 			opacity 260ms cubic-bezier(0.23, 1, 0.32, 1),
-			transform 260ms cubic-bezier(0.23, 1, 0.32, 1);
+			transform 260ms cubic-bezier(0.23, 1, 0.32, 1),
+			box-shadow 260ms ease-out;
+	}
+	.scenario-island-panel.in-transit {
+		box-shadow: 0 6px 24px #173c260b;
+	}
+	.scenario-island-panel.arrived {
+		animation: panel-arrive 600ms ease-out both;
 	}
 	.scenario-island-panel.awaiting-camera {
 		opacity: 0;
@@ -1058,11 +1101,24 @@
 		letter-spacing: 0.12em;
 		color: var(--theme-color-6f8177);
 	}
-	h2 {
+	.island-heading {
+		position: relative;
+	}
+	h2,
+	.previous-island-heading {
 		margin: 0;
 		font-size: 28px;
 		font-weight: 600;
 		letter-spacing: -0.04em;
+	}
+	h2 {
+		animation: heading-enter 260ms ease-out both;
+	}
+	.previous-island-heading {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		animation: heading-leave 260ms ease-out both;
 	}
 	.scenario-island-panel header button {
 		width: 36px;
@@ -1076,6 +1132,19 @@
 		overscroll-behavior: contain;
 		padding: 16px;
 		scrollbar-width: thin;
+	}
+	.island-statistics {
+		animation: statistics-arrive 260ms ease-out both;
+	}
+	.in-transit :global(.presentation-details > summary) {
+		color: #6f8177;
+	}
+	.in-transit :global(.presentation-access) {
+		background: #ffffff;
+		border-color: #e4ebe7;
+	}
+	.access-revealed :global(.presentation-story-fact) {
+		animation: access-fact-reveal 1100ms 220ms ease-out both;
 	}
 	.scenario-ferry-summary {
 		margin-bottom: 16px;
@@ -1146,6 +1215,10 @@
 		display: block;
 		color: #16866e;
 		text-decoration: underline;
+	}
+	.in-transit .connection-departure,
+	.in-transit .connection-source {
+		color: #6f8177;
 	}
 	.scenario-navigation {
 		position: absolute;
@@ -1222,6 +1295,24 @@
 		display: flex;
 		gap: 5px;
 		pointer-events: auto;
+	}
+	.scenario-navigation,
+	.scenario-utilities {
+		transition: opacity 180ms ease-out;
+	}
+	.controls-quiet .scenario-navigation,
+	.controls-quiet .scenario-utilities {
+		opacity: 0.22;
+	}
+	.controls-quiet .scenario-navigation:hover,
+	.controls-quiet .scenario-navigation:focus-within,
+	.controls-quiet .scenario-utilities:hover,
+	.controls-quiet .scenario-utilities:focus-within {
+		opacity: 1;
+	}
+	.scenario-navigation:focus-within,
+	.scenario-utilities:focus-within {
+		transition: none;
 	}
 	.scenario-utilities button {
 		width: 36px;
@@ -1359,6 +1450,58 @@
 			transform: translateY(0);
 		}
 	}
+	@keyframes heading-enter {
+		from {
+			opacity: 0.35;
+			transform: translateY(3px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	@keyframes heading-leave {
+		from {
+			opacity: 1;
+			transform: translateY(0);
+		}
+		to {
+			opacity: 0;
+			transform: translateY(-3px);
+		}
+	}
+	@keyframes statistics-arrive {
+		from {
+			opacity: 0.65;
+			transform: translateY(4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	@keyframes panel-arrive {
+		from {
+			border-color: #88b3a3;
+		}
+		to {
+			border-color: #d6e1dbb3;
+		}
+	}
+	@keyframes access-fact-reveal {
+		0% {
+			border-color: #d7e2df;
+			box-shadow: 0 0 0 0 #c9826320;
+		}
+		35% {
+			border-color: #c98263;
+			box-shadow: 0 0 0 4px #c9826320;
+		}
+		100% {
+			border-color: #d7e2df;
+			box-shadow: 0 0 0 0 #c9826300;
+		}
+	}
 	@media (min-width: 701px) and (max-width: 1307px) {
 		.journey-overlay {
 			width: min(440px, calc(100% - 480px));
@@ -1416,7 +1559,8 @@
 		.scenario-island-panel header {
 			padding: 12px 16px;
 		}
-		h2 {
+		h2,
+		.previous-island-heading {
 			font-size: 18px;
 		}
 		.island-panel-body {
@@ -1424,7 +1568,7 @@
 			display: flex;
 			flex-direction: column;
 		}
-		.island-panel-body > :global(.island-overview) {
+		.island-panel-body > .island-statistics {
 			order: -1;
 			flex-shrink: 0;
 		}
@@ -1507,6 +1651,12 @@
 		*::after {
 			animation: none !important;
 			transition: none !important;
+		}
+		.access-revealed :global(.presentation-story-fact) {
+			animation: none;
+		}
+		.previous-island-heading {
+			display: none;
 		}
 	}
 </style>

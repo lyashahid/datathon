@@ -9,7 +9,7 @@ export type PresentationPlaybackLeg = {
 	minutes: number;
 	/** Index of the matching complete, moving scene path. Waits borrow an adjacent path. */
 	pathIndex: number;
-	/** Relative screen time; omitted weights use the leg's source minutes. */
+	/** Relative screen time; zero accounts for the leg instantly, omitted weights use source minutes. */
 	weight?: number;
 	/** A wait holds the next path's start, or the previous path's end after the last movement. */
 	holdAt?: 'start' | 'end';
@@ -72,7 +72,7 @@ export function presentationPlaybackLegs(
 				minutes: leg.minutes!,
 				pathIndex: pathIndex!,
 				...(holdAt ? { holdAt } : {}),
-				...(requestedWeight != null && Number.isFinite(requestedWeight) && requestedWeight > 0
+				...(requestedWeight != null && Number.isFinite(requestedWeight) && requestedWeight >= 0
 					? { weight: (requestedWeight * leg.minutes!) / modeMinutes.get(leg.mode)! }
 					: {})
 			}
@@ -94,7 +94,7 @@ export function presentationPlaybackState(progress: number, timeline: Presentati
 	)
 		return null;
 	const weights = timeline.map((leg) =>
-		leg.weight != null && Number.isFinite(leg.weight) && leg.weight > 0 ? leg.weight : leg.minutes
+		leg.weight != null && Number.isFinite(leg.weight) && leg.weight >= 0 ? leg.weight : leg.minutes
 	);
 	const totalWeight = weights.reduce((sum, value) => sum + value, 0);
 	const totalMinutes = timeline.reduce((sum, leg) => sum + leg.minutes, 0);
@@ -108,7 +108,7 @@ export function presentationPlaybackState(progress: number, timeline: Presentati
 			previousMinutes += leg.minutes;
 			continue;
 		}
-		const fraction = progressFraction((target - previousWeight) / weight);
+		const fraction = weight === 0 ? 1 : progressFraction((target - previousWeight) / weight);
 		const elapsedMinutes = previousMinutes + leg.minutes * fraction;
 		const stationary = leg.mode === 'wait';
 		return {

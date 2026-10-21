@@ -23,11 +23,9 @@ export type PresentationMapScene = {
 		follow?: boolean;
 		label?: string;
 		clockMinutes?: number;
-		/** Reuse this immediately preceding inspector's camera rather than establishing it twice. */
+		/** Start from this preceding departure scene's current camera without an entry delay. */
 		continueFrom?: string;
 		timeline?: PresentationPlaybackLeg[];
-		/** Hold the full route before approaching the vehicle; journey time stays paused. */
-		establishMs?: number;
 	};
 	handoff?: {
 		from: Coordinates;
@@ -40,7 +38,7 @@ export type PresentationMapScene = {
 	/** Source-backed island names and optional published times beside the active route. */
 	stops?: Array<{ coordinates: Coordinates; label: string; detail?: string }>;
 	panel?: 'island' | 'route';
-	emphasis?: { quietContext?: boolean; proposalPoint?: Coordinates };
+	emphasis?: { quietContext?: boolean; revealAccess?: boolean; proposalPoint?: Coordinates };
 	inspect?: {
 		mode: 'ferry' | 'air';
 		routeId: string;

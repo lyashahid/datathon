@@ -107,6 +107,7 @@
 		type PresentationProgress
 	} from '#lib/presentation-map.js';
 	import {
+		presentationCameraProfile,
 		presentationDamping,
 		presentationDampedBearing,
 		presentationFollowPoint,
@@ -615,6 +616,12 @@
 	let presentationAnimating = $state(false);
 	let presentationFollowing = $state(false);
 	let presentationPhase = $state<PresentationProgress['phase']>('idle');
+	let presentationAccessReveal = $state(1);
+	const presentationRevealKey = $derived(
+		presentation
+			? `${presentation.key}:${!!presentation.emphasis?.revealAccess}:${presentationPhase === 'complete'}`
+			: ''
+	);
 	let presentationPlaybackMode = $state('');
 	let presentationHandoff = $state('');
 	let presentationReusedCamera = $state(false);
@@ -6017,24 +6024,113 @@
 		};
 	});
 	$effect(() => {
+		void presentationRevealKey;
+		const scene = untrack(() => presentation);
+		const complete = untrack(() => presentationPhase === 'complete');
+		if (!active || !scene || reducedMotion()) {
+			presentationAccessReveal = 1;
+			return;
+		}
+		const arriving =
+			complete &&
+			scene.playback &&
+			scene.paths.some((path) => path.mode === 'ferry' || path.mode === 'air');
+		if (!scene.emphasis?.revealAccess && !arriving) {
+			presentationAccessReveal = 1;
+			return;
+		}
+		presentationAccessReveal = 0.16;
+		if (!complete) return;
+		let frame = 0;
+		let started = 0;
+		function reveal(now: number) {
+			if (!started) started = now;
+			const progress = Math.min(1, (now - started) / 600);
+			presentationAccessReveal = 0.16 + 0.84 * progress * progress * (3 - 2 * progress);
+			if (progress < 1) frame = requestAnimationFrame(reveal);
+		}
+		function finish() {
+			cancelAnimationFrame(frame);
+			presentationAccessReveal = 1;
+		}
+		if (document.hidden) finish();
+		else frame = requestAnimationFrame(reveal);
+		document.addEventListener('visibilitychange', finish);
+		return () => {
+			cancelAnimationFrame(frame);
+			document.removeEventListener('visibilitychange', finish);
+		};
+	});
+	$effect(() => {
+		void presentationRevealKey;
+		const instance = map;
+		if (!ready || !active || !instance || !makeMarker) return;
+		const scene = untrack(() => presentation);
+		if (
+			!scene ||
+			untrack(() => presentationPhase !== 'complete') ||
+			reducedMotion() ||
+			document.hidden
+		)
+			return;
+		const traveling =
+			scene.playback && scene.paths.some((path) => path.mode === 'ferry' || path.mode === 'air');
+		const point = traveling
+			? presentationPosition(preparePresentationPaths(scene.paths), 1)?.point
+			: scene.emphasis?.revealAccess
+				? scene.handoff?.to
+				: undefined;
+		if (!point) return;
+		const element = document.createElement('div');
+		element.className = 'presentation-arrival-focus';
+		element.dataset.testid = 'presentation-arrival-focus';
+		element.setAttribute('aria-hidden', 'true');
+		const marker = new makeMarker({ element, anchor: 'center', subpixelPositioning: true })
+			.setLngLat(point)
+			.addTo(instance);
+		const hide = () => {
+			if (document.hidden) marker.remove();
+		};
+		document.addEventListener('visibilitychange', hide);
+		return () => {
+			marker.remove();
+			document.removeEventListener('visibilitychange', hide);
+		};
+	});
+	$effect(() => {
 		if (!ready || !active || !map) return;
-		// Opacity changes paint only: no source rebuilding, evidence fetching or recalculation.
-		const transition = { duration: reducedMotion() ? 0 : presentation ? 420 : 180 };
-		for (const id of ['policy-current-fill', 'policy-impact-fill'])
-			map.setPaintProperty(id, 'fill-opacity-transition', transition);
-		map.setPaintProperty('policy-coverage-fill', 'fill-opacity', coverageFillOpacity);
-		map.setPaintProperty('policy-coverage-fill-outline', 'line-opacity', coverageFillOpacity * 0.7);
-		map.setPaintProperty('policy-gaps-fill', 'fill-opacity', gapOpacity);
-		map.setPaintProperty('policy-gaps-points', 'circle-opacity', gapOpacity);
-		map.setPaintProperty('policy-gaps-points', 'circle-stroke-opacity', gapOpacity);
-		map.setPaintProperty('policy-gaps-outline', 'line-opacity', gapOpacity * 0.7);
-		map.setPaintProperty('policy-current-fill', 'fill-opacity', currentAccessOpacity);
+		// Reveal existing evidence with paint only; departure data stays visible in transit.
+		const reveal = presentation ? presentationAccessReveal : 1;
+		const transition = { duration: reducedMotion() || presentation ? 0 : 180 };
+		for (const [id, property] of [
+			['policy-current-fill', 'fill-opacity'],
+			['policy-impact-fill', 'fill-opacity'],
+			['policy-coverage-fill', 'fill-opacity'],
+			['policy-coverage-fill-outline', 'line-opacity'],
+			['policy-gaps-fill', 'fill-opacity'],
+			['policy-gaps-points', 'circle-opacity'],
+			['policy-gaps-points', 'circle-stroke-opacity'],
+			['policy-gaps-outline', 'line-opacity'],
+			['policy-impact-outline', 'line-opacity']
+		] as const)
+			map.setPaintProperty(id, `${property}-transition`, transition);
+		map.setPaintProperty('policy-coverage-fill', 'fill-opacity', coverageFillOpacity * reveal);
+		map.setPaintProperty(
+			'policy-coverage-fill-outline',
+			'line-opacity',
+			coverageFillOpacity * reveal * 0.7
+		);
+		map.setPaintProperty('policy-gaps-fill', 'fill-opacity', gapOpacity * reveal);
+		map.setPaintProperty('policy-gaps-points', 'circle-opacity', gapOpacity * reveal);
+		map.setPaintProperty('policy-gaps-points', 'circle-stroke-opacity', gapOpacity * reveal);
+		map.setPaintProperty('policy-gaps-outline', 'line-opacity', gapOpacity * reveal * 0.7);
+		map.setPaintProperty('policy-current-fill', 'fill-opacity', currentAccessOpacity * reveal);
 		map.setPaintProperty(
 			'policy-impact-fill',
 			'fill-opacity',
-			currentAccessOpacity ? 0 : impactOpacity
+			currentAccessOpacity ? 0 : impactOpacity * reveal
 		);
-		map.setPaintProperty('policy-impact-outline', 'line-opacity', impactOpacity * 0.7);
+		map.setPaintProperty('policy-impact-outline', 'line-opacity', impactOpacity * reveal * 0.7);
 		map.setPaintProperty(
 			'selected-island',
 			'fill-opacity',
@@ -6228,11 +6324,8 @@
 		const instance = map;
 		if (!ready || !instance) return;
 		const priorScene = previousPresentationScene;
-		const reuseInspector = !!(
-			scene?.playback?.continueFrom &&
-			priorScene?.key.startsWith(scene.playback.continueFrom) &&
-			priorScene.phase === 'complete' &&
-			scene.continuityKey === priorScene.continuityKey
+		const reuseDepartureCamera = !!(
+			scene?.playback?.continueFrom && priorScene?.key.startsWith(scene.playback.continueFrom)
 		);
 		const retainStaticCamera = !!(
 			scene?.continuityKey &&
@@ -6243,12 +6336,14 @@
 			priorScene.phase === 'complete'
 		);
 		let reportedProgress = 0;
+		let vehicleElement: HTMLDivElement | null = null;
 		function reportProgress(progress: number, phase: PresentationProgress['phase']) {
 			reportedProgress = progress;
 			untrack(() => onPresentationProgress?.({ key: scene?.key ?? '', progress, phase }));
 		}
 		function setPresentationPhase(phase: PresentationProgress['phase']) {
 			presentationPhase = phase;
+			if (vehicleElement && phase !== 'playing') vehicleElement.dataset.moving = 'false';
 			previousPresentationScene = scene
 				? { key: scene.key, continuityKey: scene.continuityKey, phase, playback: !!scene.playback }
 				: null;
@@ -6259,7 +6354,7 @@
 		presentationProgress = 0;
 		presentationPlaybackMode = '';
 		presentationHandoff = '';
-		presentationReusedCamera = reuseInspector || retainStaticCamera;
+		presentationReusedCamera = reuseDepartureCamera || retainStaticCamera;
 		presentationVehiclePoint = null;
 		presentationVehicleMode = '';
 		presentationStationary = false;
@@ -6278,7 +6373,6 @@
 		let lastTrailPaint = 0;
 		let lastVehicleFrame = 0;
 		let vehicleMarker: Marker | null = null;
-		let vehicleElement: HTMLDivElement | null = null;
 		let displayedVehicleMode = '';
 		let followInterrupted = false;
 		let entryTimer: ReturnType<typeof setTimeout> | undefined;
@@ -6292,17 +6386,9 @@
 			scene.panel
 		);
 		const firstPosition = presentationPosition(paths, 0);
+		const cameraProfile = presentationCameraProfile(firstPosition?.mode);
 		let vehicleBearing = firstPosition?.bearing ?? 0;
-		const followZoom =
-			'zoom' in scene.camera
-				? scene.camera.zoom
-				: firstPosition?.mode === 'air'
-					? 8.3
-					: firstPosition?.mode === 'ferry'
-						? 12.2
-						: firstPosition?.mode === 'walk'
-							? 15.4
-							: 14.9;
+		const followZoom = 'zoom' in scene.camera ? scene.camera.zoom : cameraProfile.cruiseZoom;
 		const easing = (value: number) => value * value * (3 - 2 * value);
 		const smoothPart = (value: number) => easing(Math.max(0, Math.min(1, value)));
 		let departureZoom = instance.getZoom();
@@ -6320,7 +6406,7 @@
 		let travelBearing = scene.camera.bearing ?? instance.getBearing();
 		const arrivalZoom =
 			firstPosition?.mode === 'air' || firstPosition?.mode === 'ferry'
-				? followZoom + 0.8
+				? cameraProfile.arrivalZoom
 				: followZoom;
 		function journeyPosition(progress: number) {
 			const leg = scene?.playback?.timeline
@@ -6342,7 +6428,11 @@
 			inspectPresentationRoute(inspection);
 		}
 
-		function moveVehicle(position: ReturnType<typeof presentationPosition>, stationary: boolean) {
+		function moveVehicle(
+			position: ReturnType<typeof presentationPosition>,
+			stationary: boolean,
+			moving: boolean
+		) {
 			if (!position || !makeMarker) return;
 			const mode = stationary ? 'walk' : position.mode;
 			if (!vehicleMarker) {
@@ -6363,6 +6453,11 @@
 				displayedVehicleMode = mode;
 				vehicleElement.dataset.mode = mode;
 				vehicleElement.replaceChildren();
+				if (mode === 'air' || mode === 'ferry') {
+					const tail = document.createElement('span');
+					tail.className = 'presentation-motion-tail';
+					vehicleElement.append(tail);
+				}
 				const icon = document.createElement('canvas');
 				const symbol =
 					atlasSymbols()[
@@ -6387,7 +6482,10 @@
 					vehicleElement.append(image);
 				} else vehicleElement.append(icon);
 			}
-			if (vehicleElement) vehicleElement.style.visibility = '';
+			if (vehicleElement) {
+				vehicleElement.style.visibility = '';
+				vehicleElement.dataset.moving = String(moving && (mode === 'air' || mode === 'ferry'));
+			}
 			vehicleMarker.setLngLat(position.point).setRotation(mode === 'walk' ? 0 : vehicleBearing);
 		}
 
@@ -6416,7 +6514,11 @@
 				vehicleBearing = instant
 					? tangent
 					: presentationDampedBearing(vehicleBearing, tangent, now - lastVehicleFrame);
-				moveVehicle(position, stationary);
+				moveVehicle(
+					position,
+					stationary,
+					!stationary && presentationPhase === 'playing' && progress < 1 && !reducedMotion()
+				);
 			}
 			lastVehicleFrame = now;
 			if (position && (now - lastTrailPaint >= 48 || progress === 0 || progress === 1)) {
@@ -6434,19 +6536,23 @@
 				lastPaint = now;
 			}
 			if (follow && scene?.playback?.follow && position && !followInterrupted && !stationary) {
-				const arrival = smoothPart((progress - 0.76) / 0.24);
+				const arrival = smoothPart(
+					(progress - cameraProfile.arrivalStart) / (1 - cameraProfile.arrivalStart)
+				);
 				let zoom =
 					departureZoom +
-					(followZoom - departureZoom) * presentationTravelEnvelope(progress) +
+					(followZoom - departureZoom) * presentationTravelEnvelope(progress, firstPosition?.mode) +
 					(arrivalZoom - departureZoom) * arrival;
 				const current = instance!.getCenter();
-				const lookAhead = (80 / duration) * smoothPart(progress / 0.16) * (1 - arrival);
+				const lookAhead =
+					(cameraProfile.lookAheadMs / duration) * smoothPart(progress / 0.16) * (1 - arrival);
 				const target = journeyPosition(Math.min(1, progress + lookAhead)).position ?? position;
 				const recentered = presentationFollowPoint(
 					departureCenter,
 					firstPosition!.point,
 					target.point,
-					progress
+					progress,
+					firstPosition?.mode
 				);
 				const destination = presentationPosition(paths, 1)!.point;
 				const arrivalFrame =
@@ -6479,9 +6585,11 @@
 					recentered[1] + (arrivalCenter[1] - recentered[1]) * arrival
 				] as Coordinates;
 				const blend =
-					instant || progress === 1 ? 1 : presentationDamping(now - lastCameraFrame, 140);
+					instant || progress === 1
+						? 1
+						: presentationDamping(now - lastCameraFrame, cameraProfile.responseMs);
 				lastCameraFrame = now;
-				const paddingBlend = smoothPart(progress / 0.18);
+				const paddingBlend = smoothPart(progress / cameraProfile.departureBlendEnd);
 				const camera = {
 					center: [
 						current.lng + (center[0] - current.lng) * blend,
@@ -6527,7 +6635,7 @@
 			departureZoom = instance!.getZoom();
 			departureCenter = [instance!.getCenter().lng, instance!.getCenter().lat];
 			departurePadding = currentPadding();
-			travelBearing = reuseInspector
+			travelBearing = reuseDepartureCamera
 				? instance!.getBearing()
 				: (scene.camera.bearing ?? instance!.getBearing());
 			if (reducedMotion()) {
@@ -6646,7 +6754,7 @@
 				startPlayback();
 				return;
 			}
-			if (reuseInspector) {
+			if (reuseDepartureCamera) {
 				startPlayback();
 				return;
 			}
@@ -6688,7 +6796,10 @@
 				instance!.stop();
 				presentationAnimating = false;
 				setData('presentation-vehicle', emptyCollection);
-				if (vehicleElement) vehicleElement.style.visibility = 'hidden';
+				if (vehicleElement) {
+					vehicleElement.style.visibility = 'hidden';
+					vehicleElement.dataset.moving = 'false';
+				}
 				reportProgress(reportedProgress, 'idle');
 			} else if (pausedAt !== null) {
 				startedAt += performance.now() - pausedAt;
@@ -7164,6 +7275,7 @@
 	data-presentation-animating={presentationAnimating}
 	data-presentation-following={presentationFollowing}
 	data-presentation-phase={presentationPhase}
+	data-presentation-access-reveal={presentationAccessReveal.toFixed(3)}
 	data-presentation-playback-mode={presentationPlaybackMode}
 	data-presentation-handoff={presentationHandoff}
 	data-presentation-reused-camera={presentationReusedCamera}
@@ -8144,10 +8256,77 @@
 		display: none;
 	}
 	:global(.presentation-vehicle-marker img) {
+		position: relative;
 		width: 58px;
 		height: 58px;
 		object-fit: contain;
 		filter: drop-shadow(0 2px 2px #234e5a24);
+	}
+	:global(.presentation-motion-tail) {
+		position: absolute;
+		top: 56%;
+		left: 50%;
+		width: 28px;
+		height: 42px;
+		transform: translateX(-50%);
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity 160ms ease-out;
+	}
+	:global(.presentation-vehicle-marker[data-moving='true'] .presentation-motion-tail) {
+		opacity: 1;
+	}
+	:global(.presentation-vehicle-marker[data-mode='ferry'] .presentation-motion-tail) {
+		background: linear-gradient(180deg, #fffefaac, #fffefa00);
+		clip-path: polygon(40% 0, 60% 0, 100% 100%, 70% 100%, 50% 22%, 30% 100%, 0 100%);
+	}
+	:global(.presentation-vehicle-marker[data-mode='air'] .presentation-motion-tail) {
+		top: 58%;
+		width: 15px;
+		height: 68px;
+		background: linear-gradient(180deg, #fffefac9, #fffefa00);
+		mask-image: linear-gradient(
+			90deg,
+			#0000 0% 15%,
+			#000 25% 35%,
+			#0000 45% 55%,
+			#000 65% 75%,
+			#0000 85%
+		);
+	}
+	:global(.presentation-arrival-focus) {
+		width: 18px;
+		height: 18px;
+		pointer-events: none;
+	}
+	:global(.presentation-arrival-focus::after) {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border: 2px solid #087f8c99;
+		border-radius: 50%;
+		background: #fffefa26;
+		animation: presentation-arrival-ring 850ms cubic-bezier(0.16, 1, 0.3, 1) both;
+	}
+	@keyframes presentation-arrival-ring {
+		from {
+			transform: scale(0.8);
+			opacity: 0.85;
+		}
+		to {
+			transform: scale(4.2);
+			opacity: 0;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		:global(.presentation-motion-tail) {
+			display: none;
+			transition: none;
+		}
+		:global(.presentation-arrival-focus::after) {
+			animation: none;
+			opacity: 0;
+		}
 	}
 	:global(.presentation-route-stop) {
 		display: flex;

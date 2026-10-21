@@ -1,3 +1,5 @@
+import type { PresentationMode } from './presentation-map.js';
+
 export type PresentationPadding = {
 	top: number;
 	right: number;
@@ -11,6 +13,54 @@ export type PresentationSafeFrame = {
 	top: number;
 	bottom: number;
 };
+
+type PresentationCameraProfile = Readonly<{
+	cruiseZoom: number;
+	arrivalZoom: number;
+	departureEnd: number;
+	arrivalStart: number;
+	departureBlendEnd: number;
+	lookAheadMs: number;
+	responseMs: number;
+}>;
+
+const defaultCameraProfile: PresentationCameraProfile = {
+	cruiseZoom: 14.9,
+	arrivalZoom: 14.9,
+	departureEnd: 0.22,
+	arrivalStart: 0.76,
+	departureBlendEnd: 0.28,
+	lookAheadMs: 80,
+	responseMs: 140
+};
+const cameraProfiles: Partial<Record<PresentationMode, PresentationCameraProfile>> = {
+	ferry: {
+		...defaultCameraProfile,
+		cruiseZoom: 12.5,
+		arrivalZoom: 13.3,
+		departureEnd: 0.18,
+		arrivalStart: 0.72,
+		departureBlendEnd: 0.18,
+		lookAheadMs: 210,
+		responseMs: 120
+	},
+	air: {
+		...defaultCameraProfile,
+		cruiseZoom: 7.9,
+		arrivalZoom: 10.5,
+		departureEnd: 0.13,
+		arrivalStart: 0.66,
+		departureBlendEnd: 0.1,
+		lookAheadMs: 50,
+		responseMs: 100
+	},
+	walk: { ...defaultCameraProfile, cruiseZoom: 15.4, arrivalZoom: 15.4 }
+};
+
+/** Compose each mode without changing the vehicle's route, clock, or playback duration. */
+export function presentationCameraProfile(mode?: PresentationMode): PresentationCameraProfile {
+	return (mode && cameraProfiles[mode]) || defaultCameraProfile;
+}
 
 /** A time-based response stays the same on 30, 60 and 120 Hz displays. */
 export function presentationDamping(elapsedMs: number, responseMs = 140): number {
@@ -37,9 +87,13 @@ export function presentationFollowPoint(
 	departureCenter: readonly [number, number],
 	departurePoint: readonly [number, number],
 	target: readonly [number, number],
-	progress: number
+	progress: number,
+	mode?: PresentationMode
 ): [number, number] {
-	const fraction = Number.isFinite(progress) ? Math.max(0, Math.min(1, progress / 0.28)) : 0;
+	const { departureBlendEnd } = presentationCameraProfile(mode);
+	const fraction = Number.isFinite(progress)
+		? Math.max(0, Math.min(1, progress / departureBlendEnd))
+		: 0;
 	const remainingOffset = 1 - fraction * fraction * (3 - 2 * fraction);
 	return [
 		target[0] + (departureCenter[0] - departurePoint[0]) * remainingOffset,
@@ -48,11 +102,12 @@ export function presentationFollowPoint(
 }
 
 /** Ease away from departure framing and return to arrival framing without abrupt zoom changes. */
-export function presentationTravelEnvelope(fraction: number): number {
+export function presentationTravelEnvelope(fraction: number, mode?: PresentationMode): number {
 	const progress = Number.isFinite(fraction) ? Math.max(0, Math.min(1, fraction)) : 0;
+	const { departureEnd, arrivalStart } = presentationCameraProfile(mode);
 	const smooth = (value: number) => value * value * (3 - 2 * value);
-	if (progress < 0.22) return smooth(progress / 0.22);
-	if (progress > 0.76) return smooth((1 - progress) / 0.24);
+	if (progress < departureEnd) return smooth(progress / departureEnd);
+	if (progress > arrivalStart) return smooth((1 - progress) / (1 - arrivalStart));
 	return 1;
 }
 

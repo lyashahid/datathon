@@ -41,6 +41,37 @@ describe('timed presentation movement and waiting', () => {
 	const airportLegs = legs.slice(1);
 	const weights = { wait: 3, bus: 6, walk: 1 };
 
+	it('starts movement immediately with zero-weight waits while retaining their real elapsed time', () => {
+		const timeline = presentationPlaybackLegs(
+			[
+				{ mode: 'wait', minutes: 1420 },
+				{ ...legs[2], mode: 'ferry', minutes: 35 },
+				{ mode: 'wait', minutes: 10 }
+			],
+			{ weights: { wait: 0, ferry: 4.5 } }
+		);
+		expect(timeline.map((leg) => leg.weight)).toEqual([0, 4.5, 0]);
+		expect(presentationPlaybackState(0, timeline)).toMatchObject({
+			mode: 'ferry',
+			pathProgress: 0,
+			stationary: false,
+			elapsedMinutes: 1420,
+			totalMinutes: 1465
+		});
+		expect(presentationPlaybackState(0.5, timeline)?.elapsedMinutes).toBe(1437.5);
+		expect(presentationPlaybackState(1, timeline)).toMatchObject({
+			pathProgress: 1,
+			elapsedMinutes: 1465,
+			clockProgress: 1
+		});
+		expect(
+			presentationPlaybackState(
+				0,
+				timeline.map((leg) => ({ ...leg, weight: 0 }))
+			)
+		).toMatchObject({ elapsedMinutes: 1465, clockProgress: 1 });
+	});
+
 	it('holds at the boarding stop as the captured wait advances, then moves each timed path', () => {
 		const timeline = presentationPlaybackLegs(airportLegs, { weights });
 		expect(timeline.map(({ mode, pathIndex, weight }) => ({ mode, pathIndex, weight }))).toEqual([
