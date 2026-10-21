@@ -49,6 +49,60 @@ export function defaultDatasetChart(datasetId: string, columns: Column[]): Chart
 		string,
 		Pick<ChartDefinition, 'group_by' | 'measure' | 'aggregation' | 'filters'>
 	> = {
+		'datathon-vessel-daily': {
+			group_by: 'date',
+			measure: 'tracked_devices',
+			aggregation: 'max',
+			filters: []
+		},
+		'datathon-vessel-islands': {
+			group_by: 'island_id',
+			measure: 'tracked_devices',
+			aggregation: 'max',
+			filters: []
+		},
+		'datathon-taxi-hourly': {
+			group_by: 'hour',
+			measure: 'ride_count',
+			aggregation: 'sum',
+			filters: []
+		},
+		'datathon-taxi-daily': {
+			group_by: 'date',
+			measure: 'ride_count',
+			aggregation: 'sum',
+			filters: []
+		},
+		'datathon-taxi-corridors': {
+			group_by: 'dropoff_zone',
+			measure: 'ride_count',
+			aggregation: 'sum',
+			filters: [{ column: 'pickup_zone', op: 'eq', value: 'hulhumale' }]
+		},
+		'datathon-taxi-corridor-hours': {
+			group_by: 'hour',
+			measure: 'ride_count',
+			aggregation: 'sum',
+			filters: [
+				{ column: 'pickup_zone', op: 'eq', value: 'hulhumale' },
+				{ column: 'dropoff_zone', op: 'eq', value: 'hulhule' }
+			]
+		},
+		'datathon-airport-hourly': {
+			group_by: 'hour',
+			measure: 'passengers',
+			aggregation: 'sum',
+			filters: [
+				{ column: 'year', op: 'eq', value: 2025 },
+				{ column: 'event', op: 'eq', value: 'arrival' }
+			]
+		},
+		'datathon-airport-monthly': {
+			group_by: 'period',
+			measure: 'passengers',
+			aggregation: 'sum',
+			filters: [{ column: 'event', op: 'eq', value: 'arrival' }]
+		},
 		'island-census-demographics': {
 			group_by: 'island_id',
 			measure: 'residents_total',

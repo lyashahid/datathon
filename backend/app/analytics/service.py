@@ -34,6 +34,96 @@ class DatasetSpec:
 
 SPECS = (
     DatasetSpec(
+        "datathon-taxi-hourly",
+        "Avas Ride historical journeys by starting hour, Aug–Sep 2026",
+        "datathon/taxis.json",
+        "hourly",
+        "Historical mobility",
+        "Completed-status source records, not unique people or all taxis. Source timezone and "
+        "trip-time definition are undocumented. Medians/percentiles must not be summed. "
+        "Recorded trip speed is not measured road congestion.",
+    ),
+    DatasetSpec(
+        "datathon-taxi-daily",
+        "Avas Ride historical journeys by date, Aug–Sep 2026",
+        "datathon/taxis.json",
+        "daily",
+        "Historical mobility",
+        "Historical completed-status records, not unique people. Expired records are excluded "
+        "from travel metrics. Daily medians and percentiles must not be summed.",
+    ),
+    DatasetSpec(
+        "datathon-taxi-corridors",
+        "Avas Ride recorded island-to-island taxi corridors",
+        "datathon/taxis.json",
+        "corridors",
+        "Historical mobility",
+        "Strict mapped-island endpoint matches only; unmatched endpoints are excluded. "
+        "Hulhulé is the broad airport island, not a terminal destination. Counts are historical "
+        "records, not proven bus demand. Medians/percentiles must not be summed.",
+    ),
+    DatasetSpec(
+        "datathon-taxi-corridor-hours",
+        "Avas Ride taxi corridors by starting hour",
+        "datathon/taxis.json",
+        "corridorHourly",
+        "Historical mobility",
+        "One directional island corridor/hour profile with at least 30 completed-status records. "
+        "Absent groups are withheld, not zero demand. Medians/percentiles must not be pooled "
+        "or summed. Trip time is not taxi waiting time or road congestion.",
+    ),
+    DatasetSpec(
+        "datathon-taxi-fares",
+        "Avas Ride supplied car fare matrix (assumed MVR)",
+        "datathon/taxis.json",
+        "fares",
+        "Historical mobility",
+        "36 supplied zone pairs, interpreted as MVR; the CSV does not state currency. "
+        "Fare effective dates and zone boundaries are not documented; "
+        "these are source context, not current quotations or the planning cost model.",
+    ),
+    DatasetSpec(
+        "datathon-airport-hourly",
+        "MACL airport passenger movements by year and hour",
+        "datathon/airport.json",
+        "hourly",
+        "Historical mobility",
+        "Independent arrival/departure events in the supplied clock; timezone and named route "
+        "lookup are unavailable. Invalid dates/times are excluded and audited. 2026 is Jan–Jul. "
+        "Passenger movements are not unique travellers or ground-transport demand. "
+        "Do not add this overlapping MACL series to CAA totals.",
+    ),
+    DatasetSpec(
+        "datathon-airport-monthly",
+        "MACL historical monthly airport passenger movements",
+        "datathon/airport.json",
+        "monthly",
+        "Historical mobility",
+        "One event/month/region; monthly rows overlap hourly and adult/child/infant totals. "
+        "2026 covers Jan–Jul only. Invalid event dates are excluded and audited. "
+        "Coverage differs from existing CAA/MBS statistics; no total reconciliation is assumed.",
+    ),
+    DatasetSpec(
+        "datathon-vessel-daily",
+        "FollowMe historical GPS coverage by day, Aug 2025",
+        "datathon/vessels.json",
+        "daily",
+        "Historical mobility",
+        "Recorded device activity, not ferry passenger counts or published services. Device "
+        "collection clock timezone and speed units are undocumented. Devices may recur "
+        "across days, so daily device counts must not be added as a unique fleet total.",
+    ),
+    DatasetSpec(
+        "datathon-vessel-islands",
+        "FollowMe recorded near-island vessel presence, Aug 2025",
+        "datathon/vessels.json",
+        "@vessel-islands",
+        "Historical mobility",
+        "Tracked devices inside or approximately 500m from exactly one mapped island. "
+        "Ambiguous matches are excluded. Presence is not a ferry call, service frequency, "
+        "passenger demand or a complete vessel census. Island device totals overlap.",
+    ),
+    DatasetSpec(
         "transport-monthly-context",
         "Official monthly ferry zones and bus/ferry categories, 2020–2026",
         "transport-context.json",
@@ -576,6 +666,190 @@ class DatasetService:
             self._files[path] = (stat.st_mtime_ns, stat.st_size, data, receipt)
             return data, receipt
 
+    def mobility_patterns(self) -> dict[str, Any]:
+        """Small historical profiles; source outages never become zero activity."""
+        fields = {
+            "airport": ("hourly", "monthly"),
+            "taxis": ("hourly", "daily", "zones", "zoneHourly", "corridors", "corridorHourly"),
+            "vessels": ("daily",),
+        }
+        result: dict[str, Any] = {}
+        for name, collections in fields.items():
+            path = self.public_dir / "datathon" / f"{name}.json"
+            if not path.is_file():
+                result[name] = {"status": "unavailable"}
+                continue
+            data, receipt = self._read(path)
+            keys = (*collections, "coverage", "quality", "summary", "sources", "limitations")
+            result[name] = {
+                "status": "available",
+                "receipt": receipt,
+                **{key: data[key] for key in keys if key in data},
+            }
+        return result
+
+    def island_mobility(self, island_id: str) -> dict[str, Any]:
+        """Historical evidence scoped by canonical island identity, never model inputs."""
+        catalogue, island_receipt = self._read(
+            self.runtime_dir / "cache" / "normalized" / "islands.geojson", normalized=True
+        )
+        feature = next(
+            (
+                item
+                for item in catalogue.get("features", [])
+                if str(item.get("id") or item.get("properties", {}).get("id")) == island_id
+            ),
+            None,
+        )
+        if feature is None:
+            raise KeyError(f"Island not found: {island_id}")
+        properties = feature.get("properties", {})
+        result: dict[str, Any] = {
+            "island": {
+                "id": island_id,
+                "name": properties.get("name"),
+                "atoll": properties.get("atoll"),
+            },
+            "catalogue_receipt": island_receipt,
+        }
+
+        def source(name: str) -> tuple[dict[str, Any], dict[str, Any]] | None:
+            path = self.public_dir / "datathon" / f"{name}.json"
+            if not path.is_file():
+                return None
+            data, receipt = self._read(path)
+            return data, {
+                "receipt": receipt,
+                "sources": data.get("sources", []),
+                "limitations": data.get("limitations", []),
+            }
+
+        def selected(row: dict[str, Any], keys: tuple[str, ...]) -> dict[str, Any]:
+            return {key: row[key] for key in keys if key in row}
+
+        vessel_source = source("vessels")
+        if vessel_source is None:
+            result["vessels"] = {"status": "unavailable", "reason": "Source snapshot unavailable"}
+        else:
+            data, metadata = vessel_source
+            island = next(
+                (row for row in data.get("islands", []) if row.get("island_id") == island_id),
+                None,
+            )
+            method, coverage = data.get("method", {}), data.get("coverage", {})
+            result["vessels"] = {
+                **metadata,
+                "status": "available" if island is not None else "no_matched_records",
+                "period": data.get("period"),
+                "summary": (
+                    selected(island, ("tracked_devices", "gps_records", "days_observed"))
+                    if island is not None
+                    else None
+                ),
+                "daily": [
+                    selected(row, ("date", "tracked_devices", "gps_records"))
+                    for row in (island or {}).get("daily", [])
+                ],
+                "coverage": {
+                    "source_days": coverage.get("days"),
+                    "source_tracked_devices": coverage.get("tracked_devices"),
+                    "spatial_match": method.get("spatial_match"),
+                    "time_field": method.get("time_field"),
+                    "timezone": method.get("timezone"),
+                    "missing_daily_values": "Unknown presence, not zero boats or zero service",
+                },
+            }
+
+        # These national OneMap IDs have centroids inside the corresponding existing
+        # derived Greater Malé polygons used to prepare Avas Ride profiles. No name join.
+        capital_zones = {
+            "island:1443": "male",
+            "island:1442": "hulhumale",
+            "island:1483": "hulhule",
+        }
+        zone = capital_zones.get(island_id)
+        if zone is None:
+            result["taxis"] = {
+                "status": "not_applicable",
+                "reason": "Taxi profiles cover only the three matched Greater Malé island zones",
+            }
+        elif (taxi_source := source("taxis")) is None:
+            result["taxis"] = {"status": "unavailable", "reason": "Source snapshot unavailable"}
+        else:
+            data, metadata = taxi_source
+            coverage = data.get("coverage", {})
+            profile_keys = (
+                "pickup_zone",
+                "dropoff_zone",
+                "hour",
+                "ride_count",
+                "median_minutes",
+                "p90_minutes",
+                "median_km",
+                "recorded_speed_kph",
+                "source_id",
+            )
+
+            def profiles(collection: str, key: str) -> list[dict[str, Any]]:
+                return [
+                    selected(row, profile_keys)
+                    for row in data.get(collection, [])
+                    if row.get(key) == zone
+                ]
+
+            pickup = profiles("zones", "pickup_zone")
+            result["taxis"] = {
+                **metadata,
+                "status": "available" if pickup else "no_matched_records",
+                "zone": {"id": zone, "island_id": island_id, "name": properties.get("name")},
+                "period": {"from": coverage.get("date_from"), "through": coverage.get("date_to")},
+                "pickup_summary": pickup[0] if pickup else None,
+                "pickup_hourly": profiles("zoneHourly", "pickup_zone"),
+                "outbound_corridors": profiles("corridors", "pickup_zone"),
+                "inbound_corridors": profiles("corridors", "dropoff_zone"),
+                "outbound_hourly": profiles("corridorHourly", "pickup_zone"),
+                "inbound_hourly": profiles("corridorHourly", "dropoff_zone"),
+                "coverage": {
+                    "source_completed_records": coverage.get("completed_records"),
+                    "source_observed_days": coverage.get("observed_days"),
+                    "minimum_profile_records": data.get("quality", {}).get(
+                        "minimum_profile_records"
+                    ),
+                    "spatial_basis": coverage.get("spatial_basis"),
+                    "missing_profiles": "Unknown or withheld small groups, not zero trips",
+                },
+                "profile_notes": [
+                    "Precomputed corridor/hour statistics; "
+                    "medians and percentiles cannot be pooled.",
+                    "Within-island corridors appear in both directions; do not add the two lists.",
+                    "Pickup profiles can include unmatched dropoffs; corridor profiles cannot.",
+                ],
+            }
+
+        if island_id != "island:1483":
+            result["airport"] = {
+                "status": "not_applicable",
+                "reason": "No island-specific airport series is attributed to this island",
+            }
+        elif (airport_source := source("airport")) is None:
+            result["airport"] = {"status": "unavailable", "reason": "Source snapshot unavailable"}
+        else:
+            data, metadata = airport_source
+            coverage = data.get("coverage", {})
+            result["airport"] = {
+                **metadata,
+                "status": "unattributed",
+                "period": {
+                    "from": coverage.get("firstPeriod"),
+                    "through": coverage.get("lastPeriod"),
+                },
+                "reason": (
+                    "MACL history has no named airport/route lookup; its volumes cannot be "
+                    "attributed to Hulhulé. No island airport counts are inferred."
+                ),
+            }
+        return result
+
     def _specs(self) -> dict[str, DatasetSpec]:
         result = {item.id: item for item in SPECS}
         path = self.public_dir / "policy-evidence" / "bundle.json"
@@ -605,6 +879,11 @@ class DatasetService:
         data: Any,
         population_islands: list[dict[str, Any]] | None = None,
     ) -> list[dict[str, Any]]:
+        if spec.path == "@vessel-islands":
+            return [
+                {key: value for key, value in island.items() if key not in {"daily", "hourly"}}
+                for island in data.get("islands", [])
+            ]
         if spec.path == "@passengers":
             return [
                 {
@@ -950,7 +1229,8 @@ class DatasetService:
                     raise ValueError("HDC planning values require a metric filter or grouping")
                 if request.aggregation == "sum" and (
                     any(row["unit"] == "percent" for row in filtered)
-                    or any(row["is_total"] for row in filtered) and len(filtered) > 1
+                    or any(row["is_total"] for row in filtered)
+                    and len(filtered) > 1
                 ):
                     raise ValueError("HDC plan percentages and overlapping totals cannot be summed")
             if dataset_id == "igmh-utilisation-history" and request.aggregation == "sum":
@@ -1028,6 +1308,27 @@ class DatasetService:
         items = []
         for (group, series), members in groups.items():
             values = [row[request.measure] for row in members if _number(row.get(request.measure))]
+            if (
+                dataset_id.startswith("datathon-taxi-")
+                and request.measure
+                in {"median_minutes", "p90_minutes", "median_km", "recorded_speed_kph"}
+                and request.aggregation in {"sum", "mean"}
+                and len(values) > 1
+            ):
+                raise ValueError(
+                    "Taxi medians, percentiles and speeds cannot be pooled by summing or "
+                    "averaging summaries; filter to one profile per group or use Mobility patterns"
+                )
+            if (
+                dataset_id.startswith("datathon-vessel-")
+                and request.measure == "tracked_devices"
+                and request.aggregation == "sum"
+                and len(values) > 1
+            ):
+                raise ValueError(
+                    "Tracked devices can recur across dates and islands; their summary "
+                    "counts cannot be summed into a unique fleet total"
+                )
             if request.aggregation == "count":
                 value: float | int | None = len(members)
             elif not values:

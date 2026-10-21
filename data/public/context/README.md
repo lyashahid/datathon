@@ -40,6 +40,8 @@ Published tables have differing annual totals, including a difference of 69 inte
 
 The airport operator is **Maldives Airports Company Limited (MACL)**. “MASL” was not identified as an airport-statistics publisher. [MACL Insights](https://macl.aero/insights) is a reference link; its [July 2026 terms](https://macl.aero/terms-of-service) prohibit automated scraping/mirroring without prior written authorization. The CLI does not acquire or redistribute its direct client dataset or flight feeds. `externalAccess.macl` records this restriction. The MBS/CAA observations are historical context and do not imply an operational MACL integration.
 
+Separately, the supplied [Datathon release](https://github.com/mbs-datathon/maldives-datathon-2026-datasets/releases/tag/v1.0) now contributes reviewed historical MACL movement aggregates in `data/public/datathon/airport.json`. These files are independent of this context-acquisition CLI and any live operator feed. Their periods, exclusions and source hashes are documented in `docs/datathon-dataset-review.md`.
+
 ## Validation limits
 
 The test suite uses explicitly named temporary workspace QA fixtures and never mutates the original public bundle. It checks date/time handling, all five vessel tables, schema changes, impossible values, duplicate rows, monthly completeness, published identities/differences, failed-refresh retention, archive path bounds, checksum integrity and preservation of the last valid prepared output.

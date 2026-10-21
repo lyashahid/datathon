@@ -35,6 +35,7 @@
 	import * as NativeSelect from '#lib/components/ui/native-select/index.js';
 	import * as Tabs from '#lib/components/ui/tabs/index.js';
 	import { api, subscribeApiInvalidation } from '#lib/api.js';
+	import MobilityPatterns from '#lib/components/MobilityPatterns.svelte';
 	let { active = true }: { active?: boolean } = $props();
 
 	type Dataset = {
@@ -125,7 +126,7 @@
 	let sortColumn = $state('');
 	let descending = $state(false);
 	let page = $state(0);
-	let view = $state('chart');
+	let view = $state('mobility');
 	let loading = $state(true);
 	let mounted = $state(false);
 	let needsRefresh = $state(false);
@@ -774,38 +775,46 @@
 			<h2>Loading datasets…</h2>
 			<p>Each dataset includes its dates, units and methodology.</p></Card.Root
 		>{:else if dataset}
-		<Card.Root class="collection-card"
-			><div class="collection-header">
-				<div>
-					<label for="studio-collection" class="eyebrow">1 · CHOOSE A DATASET</label
-					><NativeSelect.Root
-						id="studio-collection"
-						value={datasetId}
-						onchange={(event) => chooseDataset(event.currentTarget.value)}
-						>{#each categories as category (category)}<optgroup label={category}
-								>{#each catalogue.filter((item) => item.category === category) as item (item.id)}<option
-										value={item.id}
-										disabled={item.status !== 'available'}
-										>{item.title} · {number(item.row_count)} records</option
-									>{/each}</optgroup
-							>{/each}</NativeSelect.Root
-					>
+		{#if view !== 'mobility'}<Card.Root class="collection-card"
+				><div class="collection-header">
+					<div>
+						<label for="studio-collection" class="eyebrow">1 · CHOOSE A DATASET</label
+						><NativeSelect.Root
+							id="studio-collection"
+							value={datasetId}
+							onchange={(event) => chooseDataset(event.currentTarget.value)}
+							>{#each categories as category (category)}<optgroup label={category}
+									>{#each catalogue.filter((item) => item.category === category) as item (item.id)}<option
+											value={item.id}
+											disabled={item.status !== 'available'}
+											>{item.title} · {number(item.row_count)} records</option
+										>{/each}</optgroup
+								>{/each}</NativeSelect.Root
+						>
+					</div>
+					<div class="collection-stats">
+						<span><strong>{number(dataset.row_count)}</strong> source records</span><span
+							><strong>{columns.length}</strong> typed columns</span
+						><span><strong>{rows?.total ?? '—'}</strong> matched records</span>
+					</div>
 				</div>
-				<div class="collection-stats">
-					<span><strong>{number(dataset.row_count)}</strong> source records</span><span
-						><strong>{columns.length}</strong> typed columns</span
-					><span><strong>{rows?.total ?? '—'}</strong> matched records</span>
-				</div>
-			</div>
-			<p class="qualification">{dataset.qualification}</p></Card.Root
-		>
+				<p class="qualification">{dataset.qualification}</p></Card.Root
+			>{/if}
 		<Tabs.Root bind:value={view} class="studio-tabs"
 			><Tabs.List aria-label="Data studio views"
-				><Tabs.Trigger value="chart">Build a chart</Tabs.Trigger><Tabs.Trigger value="records"
-					>Inspect records</Tabs.Trigger
-				><Tabs.Trigger value="stories"
+				><Tabs.Trigger value="mobility">Mobility patterns</Tabs.Trigger><Tabs.Trigger value="chart"
+					>Build a chart</Tabs.Trigger
+				><Tabs.Trigger value="records">Inspect records</Tabs.Trigger><Tabs.Trigger value="stories"
 					>Saved stories <span class="tab-count">{stories.length}</span></Tabs.Trigger
 				></Tabs.List
+			>
+			<Tabs.Content value="mobility"
+				><MobilityPatterns
+					onExplore={(id) => {
+						chooseDataset(id);
+						view = 'chart';
+					}}
+				/></Tabs.Content
 			>
 			<Tabs.Content value="chart"
 				><div class="builder-layout">

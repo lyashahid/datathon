@@ -81,6 +81,166 @@ def _service(tmp_path):
     return DatasetService(public, tmp_path / "runtime")
 
 
+def test_historical_profiles_preserve_unavailable_sources_and_bound_response(tmp_path):
+    service = _service(tmp_path)
+    assert service.mobility_patterns()["taxis"] == {"status": "unavailable"}
+    folder = service.public_dir / "datathon"
+    folder.mkdir()
+    (folder / "taxis.json").write_text(
+        json.dumps(
+            {
+                "hourly": [{"hour": 16, "ride_count": 20}],
+                "sources": [{"id": "dated", "url": "https://example.test/release"}],
+                "limitations": ["Historical source records, not unique people."],
+                "unapproved_raw_rows": [{"device": "must-not-be-returned"}],
+            }
+        )
+    )
+    app = FastAPI()
+    app.state.datasets = service
+    app.include_router(router)
+    response = TestClient(app).get("/api/v1/datasets/mobility-patterns")
+    assert response.status_code == 200
+    result = response.json()
+    assert result["taxis"]["hourly"][0]["ride_count"] == 20
+    assert result["airport"]["status"] == "unavailable"
+    assert "unapproved_raw_rows" not in result["taxis"]
+    assert len(result["taxis"]["receipt"]["sha256"]) == 64
+
+
+def test_island_mobility_scopes_canonical_joins_without_fabricating_missing_activity(tmp_path):
+    service = _service(tmp_path)
+    normalized = service.runtime_dir / "cache" / "normalized"
+    normalized.mkdir(parents=True)
+    (normalized / "islands.geojson").write_text(
+        json.dumps(
+            {
+                "features": [
+                    {"id": identifier, "properties": {"name": "Same name", "atoll": "MLE"}}
+                    for identifier in ("island:1442", "island:1443", "island:1483", "island:640")
+                ]
+            }
+        )
+    )
+    folder = service.public_dir / "datathon"
+    folder.mkdir()
+    metadata = {"sources": [{"id": "reviewed"}], "limitations": ["Historical coverage only"]}
+    daily = {"date": "2025-08-01", "tracked_devices": 3, "gps_records": 50}
+    (folder / "vessels.json").write_text(
+        json.dumps(
+            {
+                **metadata,
+                "period": {"from": "2025-08-01", "through": "2025-08-31"},
+                "coverage": {"days": 31},
+                "islands": [
+                    {
+                        "island_id": "island:1442",
+                        "tracked_devices": 3,
+                        "gps_records": 50,
+                        "days_observed": 1,
+                        "daily": [{**daily, "imei": "private"}],
+                        "raw_rows": ["private"],
+                    },
+                    {"island_id": "island:1443", "daily": [{"gps_records": 999}]},
+                ],
+            }
+        )
+    )
+    zones = ["male", "hulhumale", "hulhule"]
+    corridors = [
+        {
+            "pickup_zone": start,
+            "dropoff_zone": end,
+            "ride_count": index + 30,
+            "median_minutes": index + 5,
+        }
+        for index, (start, end) in enumerate((a, b) for a in zones for b in zones)
+    ]
+    taxi_path = folder / "taxis.json"
+    taxi_path.write_text(
+        json.dumps(
+            {
+                **metadata,
+                "coverage": {"date_from": "2026-08-01", "date_to": "2026-09-30"},
+                "quality": {"minimum_profile_records": 30},
+                "zones": [{"pickup_zone": zone, "ride_count": 100} for zone in zones],
+                "zoneHourly": [
+                    {"pickup_zone": zone, "hour": 8, "ride_count": 40, "device": "private"}
+                    for zone in zones
+                ],
+                "corridors": corridors,
+                "corridorHourly": [{**row, "hour": 8, "device": "private"} for row in corridors],
+                "raw_rows": ["private"],
+            }
+        )
+    )
+    (folder / "airport.json").write_text(
+        json.dumps({**metadata, "hourly": [{"passengers": 999}], "raw_rows": ["private"]})
+    )
+    app = FastAPI()
+    app.state.datasets = service
+    app.include_router(router)
+    client = TestClient(app)
+    endpoint = "/api/v1/datasets/island-mobility"
+    for identifier, zone in zip(("island:1443", "island:1442", "island:1483"), zones, strict=True):
+        response = client.get(endpoint, params={"island_id": identifier})
+        assert response.status_code == 200
+        payload = response.json()
+        taxis = payload["taxis"]
+        assert taxis["zone"]["id"] == zone
+        assert {row["pickup_zone"] for row in taxis["outbound_corridors"]} == {zone}
+        assert {row["dropoff_zone"] for row in taxis["inbound_hourly"]} == {zone}
+        assert taxis["pickup_hourly"] == [{"pickup_zone": zone, "hour": 8, "ride_count": 40}]
+        assert "private" not in json.dumps(payload)
+        assert "hourly" not in payload["airport"]
+        if identifier == "island:1483":
+            assert payload["airport"]["status"] == "unattributed"
+        else:
+            assert payload["airport"]["status"] == "not_applicable"
+        if identifier == "island:1442":
+            assert payload["vessels"]["daily"] == [daily]
+            assert payload["vessels"]["coverage"]["source_days"] == 31
+            assert payload["vessels"]["summary"]["days_observed"] == 1
+    other = client.get(endpoint, params={"island_id": "island:640"}).json()
+    assert other["vessels"]["status"] == "no_matched_records"
+    assert other["vessels"]["summary"] is None
+    assert other["vessels"]["daily"] == []
+    assert other["taxis"]["status"] == "not_applicable"
+    assert client.get(endpoint, params={"island_id": "island:missing"}).status_code == 404
+    taxi_path.unlink()
+    assert client.get(endpoint, params={"island_id": "island:1442"}).json()["taxis"] == {
+        "status": "unavailable",
+        "reason": "Source snapshot unavailable",
+    }
+
+
+def test_taxi_summary_statistics_require_one_profile_per_chart_group(tmp_path):
+    service = _service(tmp_path)
+    folder = service.public_dir / "datathon"
+    folder.mkdir()
+    (folder / "taxis.json").write_text(
+        json.dumps(
+            {
+                "corridorHourly": [
+                    {"hour": 0, "pickup_zone": "a", "median_minutes": 10, "ride_count": 100},
+                    {"hour": 0, "pickup_zone": "b", "median_minutes": 20, "ride_count": 40},
+                ]
+            }
+        )
+    )
+    request = ChartRequest(group_by="hour", measure="median_minutes", aggregation="sum")
+    for aggregation in ("sum", "mean"):
+        request.aggregation = aggregation
+        with pytest.raises(ValueError, match="cannot be pooled"):
+            service.chart("datathon-taxi-corridor-hours", request)
+    request.filters = [DatasetFilter(column="pickup_zone", value="a")]
+    assert service.chart("datathon-taxi-corridor-hours", request)["items"][0]["value"] == 10
+    request.filters = []
+    request.measure = "ride_count"
+    request.aggregation = "sum"
+    assert service.chart("datathon-taxi-corridor-hours", request)["items"][0]["value"] == 140
+
+
 def test_typed_schema_and_receipts_preserve_missing_observations(tmp_path):
     service = _service(tmp_path)
     schema = service.schema("policy-observations")

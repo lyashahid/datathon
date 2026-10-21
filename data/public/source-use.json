@@ -47,6 +47,192 @@
       ]
     },
     {
+      "id": "datathon-2026-macl-v1",
+      "title": "MACL airport traffic, official Maldives Datathon 2026 release v1.0",
+      "urls": [
+        "https://github.com/mbs-datathon/maldives-datathon-2026-datasets/releases/download/v1.0/MACL.zip"
+      ],
+      "registries": [
+        "datathon/airport.json"
+      ],
+      "captures": [
+        {
+          "path": null,
+          "expectedSha256": "72428c8b5f57301987ceeb832070fc81f27423e5e213534b9c5610f70716e5b3",
+          "status": "captured",
+          "capturedAt": null,
+          "bytes": 3408047,
+          "url": "https://github.com/mbs-datathon/maldives-datathon-2026-datasets/releases/download/v1.0/MACL.zip"
+        },
+        {
+          "path": null,
+          "expectedSha256": "4fa7875ac279a39076d5afa1991494a1cd1dfd03d2d8f6b125495dfc607d7c08",
+          "status": "captured",
+          "capturedAt": null,
+          "archiveMember": "MACL/Airport traffic_Dataset_27092026.csv",
+          "bytes": 21078255
+        },
+        {
+          "path": null,
+          "expectedSha256": "77697f928004dd3ee54689a931a1877a8ce9141065a5aef163929fb012bee0d6",
+          "status": "captured",
+          "capturedAt": null,
+          "archiveMember": "MACL/Metadata.csv",
+          "bytes": 979
+        }
+      ],
+      "uses": [
+        {
+          "artifact": "data/public/datathon/airport.json",
+          "field": "hourly",
+          "role": "bounded_snapshot_context",
+          "description": "MACL historical event-hour and monthly airport activity",
+          "sourceReferences": 3121
+        },
+        {
+          "artifact": "data/public/datathon/airport.json",
+          "field": "monthly",
+          "role": "bounded_snapshot_context",
+          "description": "MACL historical event-hour and monthly airport activity",
+          "sourceReferences": 2136
+        }
+      ],
+      "usageStatus": "used",
+      "roles": [
+        "bounded_snapshot_context"
+      ]
+    },
+    {
+      "id": "datathon-avas-ride-v1",
+      "title": "Avas Ride journey and car fare datasets, Datathon 2026 release v1.0",
+      "urls": [
+        "https://github.com/mbs-datathon/maldives-datathon-2026-datasets/releases/download/v1.0/Avas_Ride.zip"
+      ],
+      "registries": [
+        "datathon/taxis.json"
+      ],
+      "captures": [
+        {
+          "path": null,
+          "expectedSha256": "959e575f01d4b08f75517fe5a196de127dc0e498a6648f1f179238405aff2f1b",
+          "status": "captured",
+          "capturedAt": null,
+          "url": "https://github.com/mbs-datathon/maldives-datathon-2026-datasets/releases/download/v1.0/Avas_Ride.zip"
+        },
+        {
+          "path": null,
+          "expectedSha256": "1899d9a4d33f4f503dd95a2fbb18e8fba7724fc22799218ddcae6fd56182ad40",
+          "status": "captured",
+          "capturedAt": null,
+          "archiveMember": "avas_rides_aug_sep_2026.csv",
+          "url": "https://github.com/mbs-datathon/maldives-datathon-2026-datasets/releases/download/v1.0/Avas_Ride.zip"
+        },
+        {
+          "path": null,
+          "expectedSha256": "39721713eae33ef521e0b785069b061fe2a332004d6a9a8ffa8b2f4858af2991",
+          "status": "captured",
+          "capturedAt": null,
+          "archiveMember": "car_fare_matrix.csv",
+          "url": "https://github.com/mbs-datathon/maldives-datathon-2026-datasets/releases/download/v1.0/Avas_Ride.zip"
+        }
+      ],
+      "uses": [
+        {
+          "artifact": "data/public/datathon/taxis.json",
+          "field": "summary",
+          "role": "bounded_snapshot_context",
+          "description": "Avas Ride historical trip profiles and coarse island corridors",
+          "sourceReferences": 1
+        },
+        {
+          "artifact": "data/public/datathon/taxis.json",
+          "field": "hourly",
+          "role": "bounded_snapshot_context",
+          "description": "Avas Ride historical trip profiles and coarse island corridors",
+          "sourceReferences": 24
+        },
+        {
+          "artifact": "data/public/datathon/taxis.json",
+          "field": "daily",
+          "role": "bounded_snapshot_context",
+          "description": "Avas Ride historical trip profiles and coarse island corridors",
+          "sourceReferences": 61
+        },
+        {
+          "artifact": "data/public/datathon/taxis.json",
+          "field": "zones",
+          "role": "bounded_snapshot_context",
+          "description": "Avas Ride historical trip profiles and coarse island corridors",
+          "sourceReferences": 3
+        },
+        {
+          "artifact": "data/public/datathon/taxis.json",
+          "field": "zoneHourly",
+          "role": "bounded_snapshot_context",
+          "description": "Avas Ride historical trip profiles and coarse island corridors",
+          "sourceReferences": 72
+        },
+        {
+          "artifact": "data/public/datathon/taxis.json",
+          "field": "corridors",
+          "role": "bounded_snapshot_context",
+          "description": "Avas Ride historical trip profiles and coarse island corridors",
+          "sourceReferences": 9
+        },
+        {
+          "artifact": "data/public/datathon/taxis.json",
+          "field": "corridorHourly",
+          "role": "bounded_snapshot_context",
+          "description": "Avas Ride historical trip profiles and coarse island corridors",
+          "sourceReferences": 161
+        },
+        {
+          "artifact": "data/public/datathon/taxis.json",
+          "field": "fares",
+          "role": "bounded_snapshot_context",
+          "description": "Avas Ride historical trip profiles and coarse island corridors",
+          "sourceReferences": 36
+        }
+      ],
+      "usageStatus": "used",
+      "roles": [
+        "bounded_snapshot_context"
+      ]
+    },
+    {
+      "id": "datathon-followme-aug2025",
+      "title": "FollowMe August 2025 GPS — Maldives Datathon 2026 release v1.0",
+      "urls": [
+        "https://github.com/mbs-datathon/maldives-datathon-2026-datasets/releases/download/v1.0/FollowMe.zip"
+      ],
+      "registries": [
+        "datathon/vessels.json"
+      ],
+      "captures": [
+        {
+          "path": null,
+          "expectedSha256": "1e3dd0cb95cd55962e746a2cea31209244975e12bc999b3e1e3450653fa8ac01",
+          "status": "captured",
+          "capturedAt": null,
+          "bytes": 461413929,
+          "url": "https://github.com/mbs-datathon/maldives-datathon-2026-datasets/releases/download/v1.0/FollowMe.zip"
+        }
+      ],
+      "uses": [
+        {
+          "artifact": "data/public/datathon/vessels.json",
+          "field": "islands",
+          "role": "bounded_snapshot_context",
+          "description": "FollowMe historical recorded device and near-island presence",
+          "sourceReferences": 1221
+        }
+      ],
+      "usageStatus": "used",
+      "roles": [
+        "bounded_snapshot_context"
+      ]
+    },
+    {
       "id": "dec_2023_issue",
       "title": "MBS monthly publication dec_2023_issue",
       "urls": [
@@ -60,7 +246,8 @@
           "path": null,
           "expectedSha256": "b4052e088770773caa4a40b3cc5af445b30c88d193b336dbcbf4c2c0dca89f34",
           "status": "captured",
-          "capturedAt": null
+          "capturedAt": null,
+          "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2024/02/MIF-Dec-2023.xlsx"
         }
       ],
       "uses": [
@@ -90,7 +277,8 @@
           "path": null,
           "expectedSha256": "f5a79931a5e3ab1a78e3fda26a47464eb730a58665c79071c2a6af073fa46d0d",
           "status": "captured",
-          "capturedAt": null
+          "capturedAt": null,
+          "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2025/01/MIF_Dec-2024.xlsx"
         }
       ],
       "uses": [
@@ -5553,7 +5741,8 @@
           "path": null,
           "expectedSha256": "e591c7a3adbf20937a7fea49ec5970fb28f2aa25adf53bea191436b26e15bfaa",
           "status": "captured",
-          "capturedAt": null
+          "capturedAt": null,
+          "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2026/09/MIF_June-2026.xlsx"
         }
       ],
       "uses": [
@@ -5617,7 +5806,8 @@
           "path": null,
           "expectedSha256": "c990a3eb076b226cd429e2d95ae25c7b9e112c23b357a0f58612cd948d6ce933",
           "status": "captured",
-          "capturedAt": null
+          "capturedAt": null,
+          "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2026/07/MIF-May-2026.xlsx"
         }
       ],
       "uses": [
@@ -5939,7 +6129,8 @@
           "path": null,
           "expectedSha256": "bc3e4af656119fbeacf9e66ef1c14db62a019fea0c42bbf8c86da960c7dc21d3",
           "status": "downloaded",
-          "capturedAt": "2026-10-10T10:09:23.041802+00:00"
+          "capturedAt": "2026-10-10T10:09:23.041802+00:00",
+          "url": "https://statisticsmaldives.gov.mv/yearbook/2025/wp-content/uploads/sites/12/2026/02/3.3.xlsx"
         }
       ],
       "uses": [
@@ -6011,7 +6202,8 @@
           "path": null,
           "expectedSha256": "cdfd3c0ab3926e7c7036abcb05b08896a90e1d3cdbd1e556e46a4949381cbbd6",
           "status": "downloaded",
-          "capturedAt": "2026-10-10T10:07:41.909296+00:00"
+          "capturedAt": "2026-10-10T10:07:41.909296+00:00",
+          "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2023/09/Island-Level-Indicator-Sheet-Population.xlsx"
         },
         {
           "path": "data/raw/census2022-population.xlsx",
@@ -6416,7 +6608,8 @@
           "path": null,
           "expectedSha256": "66e9f552bbd7c497eec4a2333a0a44d24e58e064fae7bac05bb6080efc2764bc",
           "status": "downloaded",
-          "capturedAt": "2026-10-10T10:07:41.956891+00:00"
+          "capturedAt": "2026-10-10T10:07:41.956891+00:00",
+          "url": "https://statisticsmaldives.gov.mv/mbs/wp-content/uploads/2026/08/IslandLevelProjection_2022-2030.xlsx"
         },
         {
           "path": "data/raw/island-projections2022-2030.xlsx",
@@ -7728,7 +7921,8 @@
           "path": null,
           "expectedSha256": null,
           "status": "inaccessible",
-          "capturedAt": "2026-10-10T18:31:18.729001+00:00"
+          "capturedAt": "2026-10-10T18:31:18.729001+00:00",
+          "url": "https://x.com/MTCCPlc/status/2102457648574812644"
         }
       ],
       "uses": [
@@ -7841,7 +8035,8 @@
           "path": null,
           "expectedSha256": "bd31eba24a76288b2f2d7c1a6b36a43b3b8fb87f3c46fffdb24e554b19bce0be",
           "status": "downloaded",
-          "capturedAt": "2026-10-10T19:23:36.544348+00:00"
+          "capturedAt": "2026-10-10T19:23:36.544348+00:00",
+          "url": "https://mtcc.mv/wp-content/uploads/2025/12/Vili-male-Ferry-Schedule-2026-V1.pdf"
         }
       ],
       "uses": [
@@ -11006,7 +11201,8 @@
           "path": null,
           "expectedSha256": "5fcc7e6b66ca4dd4fd42db6cbfda0997aacc617662574401af97a0bf9fa4e78b",
           "status": "downloaded",
-          "capturedAt": "2026-10-10T10:07:44.271051+00:00"
+          "capturedAt": "2026-10-10T10:07:44.271051+00:00",
+          "url": "https://download.geofabrik.de/asia/maldives-latest.osm.pbf"
         }
       ],
       "uses": [
@@ -12386,6 +12582,151 @@
     }
   ],
   "modelArtifacts": [
+    {
+      "path": "data/public/datathon/airport.json",
+      "sha256": "8f2efefb0b181708c608c292f9813c56345ced29dc0bd90289aeaf5600e7c9e0",
+      "purpose": "MACL historical event-hour and monthly airport activity",
+      "version": "datathon-airport-v1:4fa7875ac279a390",
+      "coverage": {
+        "records": 168959,
+        "monthly_rows": 2136,
+        "hourly_rows": 3121,
+        "firstPeriod": "2012-01",
+        "lastPeriod": "2026-07",
+        "regions": [
+          "Africa",
+          "Central Asia & CIS",
+          "East Asia",
+          "Europe",
+          "Middle East",
+          "Other",
+          "South Asia",
+          "Southeast Asia"
+        ],
+        "flight_types": {
+          "SCHEDULED": 167151,
+          "CHARTER": 1808
+        },
+        "aircraft_categories": {
+          "Narrowbody": 78546,
+          "Widebody": 84646,
+          "Turboprop": 5767
+        },
+        "eventTotals": {
+          "arrival_hourly": {
+            "movement_records": 168859,
+            "passengers": 25673561,
+            "adults": 23601237,
+            "children": 1809898,
+            "infants": 262426
+          },
+          "arrival_monthly": {
+            "movement_records": 168946,
+            "passengers": 25686620,
+            "adults": 23612811,
+            "children": 1811203,
+            "infants": 262606
+          },
+          "departure_hourly": {
+            "movement_records": 168873,
+            "passengers": 25589764,
+            "adults": 23523870,
+            "children": 1805664,
+            "infants": 260230
+          },
+          "departure_monthly": {
+            "movement_records": 168959,
+            "passengers": 25602263,
+            "adults": 23535100,
+            "children": 1806762,
+            "infants": 260401
+          }
+        }
+      },
+      "collections": {
+        "sourceReceipts": 3,
+        "hourly": 3121,
+        "monthly": 2136,
+        "limitations": 9
+      }
+    },
+    {
+      "path": "data/public/datathon/taxis.json",
+      "sha256": "3ce3d2175c2e7c39a613b90facf07e37c9c43cf1efe25c9207cdb434df474c99",
+      "purpose": "Avas Ride historical trip profiles and coarse island corridors",
+      "version": "avas-ride-v1-959e575f01d4",
+      "coverage": {
+        "source_rows": 371788,
+        "completed_records": 344541,
+        "date_from": "2026-08-01",
+        "date_to": "2026-09-30",
+        "observed_days": 61,
+        "calendar_days": 61,
+        "status_counts": {
+          "payment_completed": 320140,
+          "ride_expired": 27247,
+          "ride_completed": 24401
+        },
+        "zones": [
+          {
+            "id": "male",
+            "name": "Malé"
+          },
+          {
+            "id": "hulhumale",
+            "name": "Hulhumalé"
+          },
+          {
+            "id": "hulhule",
+            "name": "Hulhulé / airport island"
+          }
+        ],
+        "spatial_basis": "Strict containment in existing OSM-derived physical-island polygons; no snapping",
+        "boundaries_sha256": "bd81a1079a90b21507134c40ec6486013644f83835f1d3538b3ea031726862f7",
+        "both_endpoints_matched": 303990,
+        "pickup_unmatched": 13240,
+        "dropoff_unmatched": 28190
+      },
+      "collections": {
+        "hourly": 24,
+        "daily": 61,
+        "zones": 3,
+        "zoneHourly": 72,
+        "corridors": 9,
+        "corridorHourly": 161,
+        "fares": 36,
+        "limitations": 9
+      }
+    },
+    {
+      "path": "data/public/datathon/vessels.json",
+      "sha256": "a50d03c2e2ad6899ec41e349048809f06854424ed960fde81360d0b8d2cc5356",
+      "purpose": "FollowMe historical recorded device and near-island presence",
+      "version": "datathon-vessel-presence-v1:1e3dd0cb95cd5596",
+      "coverage": {
+        "files": 31,
+        "tracked_devices": 1776,
+        "islands_with_records": 1221,
+        "days": 31,
+        "rows": 17462749,
+        "invalid_or_out_of_period_device_time": 0,
+        "invalid_or_outside_maldives_position": 381,
+        "missing_device_identity": 0,
+        "database_time_before_device_time": 52253,
+        "database_delay_over_hour": 466823,
+        "retained_records": 17462368,
+        "ambiguous_nearshore_records": 2497669,
+        "outside_nearshore_records": 9403818,
+        "matched_nearshore_records": 5560881,
+        "duplicate_poll_ids": 0
+      },
+      "collections": {
+        "daily": 31,
+        "islands": 1221,
+        "file_receipts": 31,
+        "limitations": 6
+      }
+    },
     {
       "path": "data/public/planning-baseline.json",
       "sha256": "80c6029d474cd0acda58e6120f572d4438b8bb477386f6944033cb7c4c625a48",
@@ -14280,15 +14621,15 @@
     }
   ],
   "summary": {
-    "sourceIds": 270,
-    "modelArtifacts": 24,
+    "sourceIds": 273,
+    "modelArtifacts": 27,
     "unusedSourceIds": [],
     "checksumMismatches": [],
     "roleCounts": {
       "acquisition_provenance": 6,
       "audit_evidence": 113,
       "audit_search_receipt": 2,
-      "bounded_snapshot_context": 4,
+      "bounded_snapshot_context": 7,
       "coverage_audit": 4,
       "definition": 3,
       "empty_acquisition": 1,
@@ -14297,12 +14638,12 @@
       "source_validation": 8
     }
   },
-  "retention": "Original captures, definition/method documents, discovery catalogues, rejected matches and dated audit inputs are retained for reproduction. Empty/failed attempts are explicitly marked and supply no invented observations.",
+  "retention": "Original captures, definition/method documents, discovery catalogues, rejected matches and dated audit inputs are retained for reproduction. Datathon release archives are temporary review inputs rather than runtime dependencies; their pathless hash receipts identify remote bytes for reacquisition. Empty/failed attempts are explicitly marked and supply no invented observations.",
   "limits": [
     "This inventory describes the relevant quantitative project models and their acquisition/audit evidence; it does not claim every paragraph of every PDF was converted.",
     "Archive paths may be locally available but excluded from Git; receipts alone cannot recreate missing source bytes.",
     "Source IDs can have multiple dated captures. Paths and checksums preserve those distinctions.",
     "Island resident allocations do not imply complete walking, facility or scheduled public-transport coverage."
   ],
-  "version": "source-use-inventory-v1:39b8e75b9a657c52"
+  "version": "source-use-inventory-v1:bfbe428ff0cb6e88"
 }

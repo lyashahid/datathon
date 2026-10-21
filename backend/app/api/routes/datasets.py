@@ -63,6 +63,19 @@ def catalogue(service: DatasetService = Depends(get_service)) -> dict[str, Any]:
     return _invoke(service.catalogue)
 
 
+@router.get("/mobility-patterns")
+def mobility_patterns(service: DatasetService = Depends(get_service)) -> dict[str, Any]:
+    return _invoke(service.mobility_patterns)
+
+
+@router.get("/island-mobility")
+def island_mobility(
+    island_id: str = Query(min_length=1, max_length=100),
+    service: DatasetService = Depends(get_service),
+) -> dict[str, Any]:
+    return _invoke(service.island_mobility, island_id)
+
+
 @router.post("/compare")
 def compare(
     body: ChartComparisonRequest,

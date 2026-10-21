@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import {
 		Activity,
 		Anchor,
@@ -31,6 +32,7 @@
 		presentation,
 		presentationFact,
 		presentationAirport = null,
+		mobilityContext,
 		onRetry
 	}: {
 		profile: IslandProfile | null;
@@ -44,6 +46,8 @@
 		presentationFact?: { label: string; value: string; detail: string };
 		/** Retained airport evidence supplements the presenter without changing the access index. */
 		presentationAirport?: AirAirport | null;
+		/** Optional historical map context, separate from the access assessment. */
+		mobilityContext?: Snippet;
 		onRetry?: () => void;
 	} = $props();
 
@@ -162,6 +166,7 @@
 				</section>
 			{/if}
 
+			{#if !presentation && mobilityContext}{@render mobilityContext()}{/if}
 			<div class="overview-grid">
 				<section class="overview-card services-section" aria-label="Island services">
 					<div class="section-heading">

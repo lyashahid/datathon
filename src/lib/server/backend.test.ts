@@ -148,6 +148,8 @@ describe('backend integration boundary', () => {
 	});
 	it.each([
 		'map/context',
+		'datasets/mobility-patterns',
+		'datasets/island-mobility',
 		'routing/stops',
 		'planning/calibration',
 		'planning/calibration/validate',

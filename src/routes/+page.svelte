@@ -59,6 +59,7 @@
 		type SearchTravelMode
 	} from '#lib/search-directions.js';
 	import type { NationalAccessibility } from '#lib/analytics.js';
+	import type { MobilityMapSelection } from '#lib/island-mobility.js';
 	import { emptyFeatures, type MapPolicyState, type PlacementKind } from '#lib/map-policy.js';
 	import type { PolicyLens } from '#lib/policy-opportunities.js';
 	import type { Feature } from 'geojson';
@@ -178,6 +179,7 @@
 		action: 'move' | 'duplicate' | 'remove';
 	} | null>(null);
 	let policyPickKind = $state<PlacementKind | null>(null);
+	let mobilityMapSelection = $state.raw<MobilityMapSelection>(null);
 	let policyState = $state.raw<MapPolicyState>({
 		operations: [],
 		pending: null,
@@ -2016,6 +2018,15 @@
 						{focusPoint}
 						{searchSelection}
 						conditionRoute={presentationActive || seaActive ? [] : conditionRoute}
+						historicalTaxiFeatures={!presentationActive &&
+						!seaActive &&
+						!showSearchDirections &&
+						!accessExplorerOpen &&
+						policyState.panelOpen &&
+						!policyState.serviceEditor &&
+						mobilityMapSelection?.islandId === selectedId
+							? mobilityMapSelection.features
+							: emptyPolicyMap}
 						policyServiceFeatures={presentationActive || accessExplorerOpen || seaActive
 							? emptyPolicyMap
 							: policyState.serviceFeatures}
@@ -2195,6 +2206,7 @@
 					onSeaImpact={() => openSeaConnections(true)}
 					onFocus={focusPolicyPoint}
 					onFocusBounds={focusConnection}
+					onMobilityMapChange={(selection) => (mobilityMapSelection = selection)}
 					{ferryDestinationId}
 					onPickFerryOrigin={(destination, date) => {
 						ferryOriginContext = { destination, date };

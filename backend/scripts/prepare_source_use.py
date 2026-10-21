@@ -23,6 +23,9 @@ REGISTRIES = (
     "delivery-evidence/references.json",
 )
 MODELS = {
+    "datathon/airport.json": "MACL historical event-hour and monthly airport activity",
+    "datathon/taxis.json": "Avas Ride historical trip profiles and coarse island corridors",
+    "datathon/vessels.json": "FollowMe historical recorded device and near-island presence",
     "planning-baseline.json": "Existing Greater Malé planning inputs and source qualifications",
     "island-context.json": "186-island census, employment, projections and definitions",
     "national-population-origins.json": "186 additional island resident allocations",
@@ -128,7 +131,12 @@ def prepare(root: Path = ROOT) -> dict[str, Any]:
                 else "data/raw/"
             )
             path = prefix + record["file"]
-        checksum = record.get("sha256") or record.get("checksum") or receipt.get("sha256")
+        checksum = (
+            record.get("sha256")
+            or record.get("checksum")
+            or record.get("archive_sha256")
+            or receipt.get("sha256")
+        )
         if path or checksum or record.get("status"):
             capture = {
                 "path": path,
@@ -139,6 +147,12 @@ def prepare(root: Path = ROOT) -> dict[str, Any]:
                 or record.get("captured_at")
                 or record.get("checkedAt"),
             }
+            # Remote archive/member receipts deliberately have no local path.
+            # Keep their identities and checksums without inventing a capture file.
+            if not path:
+                for key in ("archiveMember", "bytes", "url"):
+                    if record.get(key) is not None:
+                        capture[key] = record[key]
             if path:
                 input_path = root / path
                 capture["existsLocally"] = input_path.is_file()
@@ -192,8 +206,40 @@ def prepare(root: Path = ROOT) -> dict[str, Any]:
         if isinstance(document, dict):
             for record in document.get("sources", []):
                 register(record, name)
+                for member, checksum in record.get("member_sha256", {}).items():
+                    register(
+                        {
+                            "id": record["id"],
+                            "title": record.get("title", record["id"]),
+                            "url": record.get("url"),
+                            "archiveMember": member,
+                            "sha256": checksum,
+                        },
+                        name,
+                    )
             for receipt in document.get("sourceReceipts", []):
-                path = receipt["path"]
+                path = receipt.get("path")
+                if not path:
+                    # Some source formats describe downloaded archive bytes and
+                    # members, rather than files retained in this checkout.
+                    records = document.get("sources", [])
+                    matching = [
+                        record
+                        for record in records
+                        if receipt.get("source_id", receipt.get("sourceId")) == record["id"]
+                        or (receipt.get("url") and receipt["url"] == record.get("url"))
+                    ]
+                    if len(matching) == 1 or len(records) == 1:
+                        source = matching[0] if len(matching) == 1 else records[0]
+                        register(
+                            {
+                                **receipt,
+                                "id": source["id"],
+                                "title": source.get("title", source["id"]),
+                            },
+                            name,
+                        )
+                    continue
                 if (root / path).is_file() and path not in inputs:
                     inputs[path] = {
                         "path": path,
@@ -202,7 +248,13 @@ def prepare(root: Path = ROOT) -> dict[str, Any]:
                     }
                 if path in inputs:
                     inputs[path].setdefault("modelConsumers", []).append("data/public/" + name)
-            role = "audit_evidence" if "audit" in name or "review" in name else "model_input"
+            role = (
+                "bounded_snapshot_context"
+                if name.startswith("datathon/")
+                else "audit_evidence"
+                if "audit" in name or "review" in name
+                else "model_input"
+            )
             for field, value in document.items():
                 if field in SKIP_FIELDS:
                     continue
@@ -611,6 +663,8 @@ def prepare(root: Path = ROOT) -> dict[str, Any]:
         "retention": (
             "Original captures, definition/method documents, discovery catalogues, "
             "rejected matches and dated audit inputs are retained for reproduction. "
+            "Datathon release archives are temporary review inputs rather than runtime "
+            "dependencies; their pathless hash receipts identify remote bytes for reacquisition. "
             "Empty/failed attempts are explicitly marked and supply no invented "
             "observations."
         ),

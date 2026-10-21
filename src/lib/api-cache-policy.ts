@@ -10,7 +10,8 @@ export function apiCachePolicy(path: string) {
 		)
 	)
 		return { maxAge: 60_000, persistent: true };
-	if (/^datasets(?:\/[^/]+\/schema)?$/.test(pathname)) return { maxAge: 30_000, persistent: true };
+	if (/^datasets(?:\/(?:mobility-patterns|island-mobility)|\/[^/]+\/schema)?$/.test(pathname))
+		return { maxAge: 30_000, persistent: true };
 	return null;
 }
 

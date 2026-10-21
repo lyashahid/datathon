@@ -88,6 +88,8 @@
 	import TransportImpact from './TransportImpact.svelte';
 	import IslandProposalImpacts from './IslandProposalImpacts.svelte';
 	import IslandOverview from './IslandOverview.svelte';
+	import IslandMobilityContext from './IslandMobilityContext.svelte';
+	import type { MobilityMapSelection } from '#lib/island-mobility.js';
 	import AccessScore from './AccessScore.svelte';
 	import { buildIslandOverview } from '#lib/island-overview.js';
 	import { transportImpactHeadline, type TransportImpactData } from '#lib/transport-impact.js';
@@ -180,6 +182,7 @@
 		onSeaImpact,
 		onFocus,
 		onFocusBounds,
+		onMobilityMapChange,
 		ferryDestinationId = null,
 		onPickFerryDestination = () => {},
 		onPickFerryOrigin = () => {},
@@ -220,6 +223,7 @@
 		onSeaImpact?: () => void;
 		onFocus: (coordinates: Coordinates) => void;
 		onFocusBounds?: (bounds: [Coordinates, Coordinates]) => void;
+		onMobilityMapChange?: (selection: MobilityMapSelection) => void;
 		ferryDestinationId?: string | null;
 		onPickFerryDestination?: (enabled: boolean) => void;
 		onPickFerryOrigin?: (destination: string, date: string) => void;
@@ -237,6 +241,7 @@
 		)
 	);
 	let opened = $state(false);
+	let mobilityVisible = $state(false);
 	let section = $state<'needs' | 'proposal'>('proposal');
 	let scoreDockBounds: DOMRect | null = null;
 	let returningToScore = false;
@@ -3632,6 +3637,7 @@
 			id="island-score-details"
 			class="policy-map-panel"
 			class:island-overview-panel={section === 'needs'}
+			class:mobility-map-panel={section === 'needs' && mobilityVisible}
 			use:resizable={{
 				key: section === 'needs' ? 'map-island-overview' : 'map-proposal',
 				minWidth: 360,
@@ -3719,7 +3725,21 @@
 						connectivity={islandConnection}
 						connectivityLoading={overviewConnectionLoading}
 						connectivityDate={date}
-					/>
+					>
+						{#snippet mobilityContext()}
+							{#if islandId}
+								<IslandMobilityContext
+									{islandId}
+									{mapFeatures}
+									onMapChange={(selection) => {
+										mobilityVisible = !!selection;
+										onMobilityMapChange?.(selection);
+									}}
+									{onFocusBounds}
+								/>
+							{/if}
+						{/snippet}
+					</IslandOverview>
 					{#if overviewConnectionError}<p class="overview-connection-status" role="status">
 							{overviewConnectionError}
 							<button onclick={() => (overviewConnectionVersion += 1)}>Retry connections</button>
@@ -5787,6 +5807,9 @@
 			height: calc(100% - var(--map-toolbar-bottom, 182px) - 24px);
 			max-height: 780px;
 			max-width: none;
+		}
+		.island-overview-panel.mobility-map-panel {
+			height: min(50%, 400px);
 		}
 		.policy-map-panel > header {
 			padding: 8px 12px;

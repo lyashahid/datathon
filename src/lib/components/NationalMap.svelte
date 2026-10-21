@@ -199,6 +199,7 @@
 		gapFeatures?: FeatureCollection;
 		coverageFillFeatures?: FeatureCollection;
 		impactFeatures?: FeatureCollection;
+		historicalTaxiFeatures?: FeatureCollection;
 		policyComparisonView?: 'current' | 'proposal';
 		comparisonPreview?: boolean;
 		policyEvaluationId?: string | null;
@@ -284,6 +285,7 @@
 		gapFeatures = { type: 'FeatureCollection', features: [] },
 		coverageFillFeatures = { type: 'FeatureCollection', features: [] },
 		impactFeatures = { type: 'FeatureCollection', features: [] },
+		historicalTaxiFeatures = { type: 'FeatureCollection', features: [] },
 		policyComparisonView = 'proposal',
 		comparisonPreview = false,
 		policyEvaluationId = null,
@@ -4141,6 +4143,7 @@
 						'sea-network',
 						'sea-islands',
 						'air-network',
+						'historical-taxi',
 						'route-vehicles',
 						'presentation-routes',
 						'presentation-trail',
@@ -5157,6 +5160,78 @@
 						}
 					});
 					instance.addLayer({
+						id: 'historical-taxi-casing',
+						type: 'line',
+						source: 'historical-taxi',
+						filter: ['==', ['get', 'kind'], 'historical_taxi_connection'],
+						layout: { 'line-cap': 'round', 'line-join': 'round' },
+						paint: {
+							'line-color': themeColors.colorffffff,
+							'line-width': 5,
+							'line-opacity': 0.62
+						}
+					});
+					instance.addLayer({
+						id: 'historical-taxi-line',
+						type: 'line',
+						source: 'historical-taxi',
+						filter: ['==', ['get', 'kind'], 'historical_taxi_connection'],
+						layout: { 'line-cap': 'round', 'line-join': 'round' },
+						paint: {
+							'line-color': themeColors.color7765b2,
+							'line-width': 2.5,
+							'line-dasharray': [2.2, 2],
+							'line-opacity': 0.78
+						}
+					});
+					instance.addLayer({
+						id: 'historical-taxi-anchors',
+						type: 'circle',
+						source: 'historical-taxi',
+						filter: ['==', ['get', 'kind'], 'historical_taxi_zone'],
+						paint: {
+							'circle-radius': 4.5,
+							'circle-color': themeColors.colorffffff,
+							'circle-stroke-color': themeColors.color7765b2,
+							'circle-stroke-width': 1.8
+						}
+					});
+					instance.addLayer({
+						id: 'historical-taxi-zone-labels',
+						type: 'symbol',
+						source: 'historical-taxi',
+						filter: ['==', ['get', 'kind'], 'historical_taxi_zone'],
+						layout: {
+							'text-field': ['get', 'name'],
+							'text-size': 11,
+							'text-anchor': 'top',
+							'text-offset': [0, 0.9]
+						},
+						paint: {
+							'text-color': themeColors.color655799,
+							'text-halo-color': themeColors.colorffffff,
+							'text-halo-width': 1.5
+						}
+					});
+					instance.addLayer({
+						id: 'historical-taxi-count-label',
+						type: 'symbol',
+						source: 'historical-taxi',
+						filter: ['==', ['get', 'kind'], 'historical_taxi_connection'],
+						layout: {
+							'symbol-placement': 'line-center',
+							'text-field': ['get', 'label'],
+							'text-size': 11,
+							'text-rotation-alignment': 'viewport',
+							'text-offset': [0, -0.8]
+						},
+						paint: {
+							'text-color': themeColors.color655799,
+							'text-halo-color': themeColors.colorffffff,
+							'text-halo-width': 1.8
+						}
+					});
+					instance.addLayer({
 						id: 'conditions-route-line',
 						type: 'line',
 						source: 'conditions-route',
@@ -5750,6 +5825,10 @@
 		if (!ready || !active || !map) return;
 		setData('policy-service', policyServiceFeatures);
 		if (inspectedSource === 'policy-service') closeInspection();
+	});
+	$effect(() => {
+		if (!ready || !map) return;
+		setData('historical-taxi', active && !presentation ? historicalTaxiFeatures : emptyCollection);
 	});
 	$effect(() => {
 		if (!ready || !active || !map) return;
@@ -6886,6 +6965,36 @@
 							left: 40,
 							right: 40
 						};
+			if (historicalTaxiFeatures.features.length) {
+				const panel = container.closest('.map-workspace')?.querySelector('.mobility-map-panel');
+				if (panel) {
+					const panelBounds = panel.getBoundingClientRect();
+					const mapBounds = container.getBoundingClientRect();
+					// Frame the connection beside the actual inspector, including its compact phone layout.
+					Object.assign(
+						padding,
+						container.clientWidth <= 700
+							? {
+									left: 24,
+									right: 24,
+									bottom: Math.max(24, mapBounds.bottom - panelBounds.top + 20)
+								}
+							: {
+									top: 100,
+									left: 48,
+									right: Math.max(48, mapBounds.right - panelBounds.left + 24),
+									bottom: Math.max(
+										100,
+										mapBounds.bottom -
+											(container.parentElement
+												?.querySelector('.map-controls')
+												?.getBoundingClientRect().top ?? mapBounds.bottom) +
+											24
+									)
+								}
+					);
+				}
+			}
 			if (container.clientWidth < 700 && serviceEditor && serviceCard) {
 				const viewport = serviceViewport();
 				// Reserve the expanded editor's space so opening details never covers a terminal.
